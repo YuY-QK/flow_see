@@ -62,9 +62,7 @@ export function migrate(raw: unknown): Animation | null {
     templateId: a.templateId,
     themeId: a.themeId ?? 'flat',
     elements: Array.isArray(a.elements) ? a.elements : [],
-    steps: Array.isArray(a.steps)
-      ? a.steps.map((s) => ({ ...s, data: s.data ?? {} }))
-      : [],
+    steps: Array.isArray(a.steps) ? a.steps.map((s) => ({ ...s, data: s.data ?? {} })) : [],
     params: a.params,
     settings: { autoNarrate: true, allowParamEdit: true, ...a.settings },
     createdAt: a.createdAt ?? Date.now(),

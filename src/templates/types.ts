@@ -29,7 +29,9 @@ export interface Template {
   minElements: number;
   maxElements: number;
   stepFields: FieldDef[];
-  /** 新建时带的示例内容 */
+  /** 空白作品（选模板后进入编辑器） */
+  createBlank(): Animation;
+  /** 示例作品（“从示例改起”） */
   createDefault(): Animation;
   /** 新增一步时的默认值，可参考上一步 */
   newStep(animation: Animation, prev?: Step): Partial<Step>;

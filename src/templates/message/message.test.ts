@@ -14,6 +14,13 @@ describe('消息传递模板', () => {
     }
   });
 
+  it('空白作品：两个角色、一个空步骤', () => {
+    const a = messageTemplate.createBlank();
+    expect(a.elements).toHaveLength(2);
+    expect(a.steps).toHaveLength(1);
+    expect(a.steps[0].data).toMatchObject({ from: a.elements[0].id, to: a.elements[1].id });
+  });
+
   it('每次新建都是独立的作品', () => {
     expect(messageTemplate.createDefault().id).not.toBe(messageTemplate.createDefault().id);
   });

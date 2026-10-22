@@ -1,0 +1,288 @@
+.page {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.content {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px clamp(16px, 5vw, 80px) 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.h1 {
+  margin: 0;
+  font-size: clamp(26px, 4vw, 32px);
+  font-weight: 700;
+}
+.sub {
+  color: var(--ink-3);
+  font-size: 15px;
+  margin: 6px 0 0;
+}
+.h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* 首页创建入口 */
+.hero {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: clamp(20px, 3vw, 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.quick {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+.quickItem {
+  border-radius: 16px;
+  padding: 16px 18px;
+  text-decoration: none;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: none;
+  text-align: left;
+}
+.quickItem:hover {
+  color: var(--ink);
+  filter: brightness(0.97);
+}
+.quickItem strong {
+  font-size: 17px;
+}
+.quickItem span {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* 作品卡片 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.thumb {
+  height: 128px;
+  border-radius: 18px 18px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+.thumb span {
+  border: 2px solid currentColor;
+  border-radius: 10px;
+  padding: 5px 12px;
+}
+.cardBody {
+  padding: 12px 8px 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cardText {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cardTitle {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cardMeta {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.menu {
+  position: absolute;
+  right: 8px;
+  bottom: 60px;
+  z-index: 3;
+  width: 170px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-pop);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+}
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: var(--touch);
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0 12px;
+  font-size: 14px;
+  border-radius: 8px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.menuItem:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+.danger {
+  color: var(--danger);
+}
+.newCard {
+  border: 1.5px dashed #b9c0d0;
+  border-radius: 18px;
+  min-height: 196px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--ink-2);
+  text-decoration: none;
+  background: transparent;
+}
+.newCard:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+.note {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+/* 选模板 */
+.tplGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 20px;
+}
+.tplCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.tplCard:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(31, 36, 51, 0.1);
+}
+.tplCard:disabled {
+  opacity: 0.6;
+}
+.tplArt {
+  height: 130px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+}
+.tplName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 19px;
+  font-weight: 700;
+}
+.soon {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+  background: var(--hover);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.tplDesc {
+  font-size: 14px;
+  color: var(--ink-3);
+  line-height: 1.6;
+}
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 18px;
+  height: var(--touch);
+  font-size: 14px;
+}
+.pill:hover {
+  background: var(--hover);
+}
+
+/* 播放页 */
+.playMain {
+  flex-grow: 1;
+  min-height: 0;
+  padding: 20px clamp(12px, 3vw, 40px) 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.playHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.playTitle {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  flex-grow: 1;
+}
+
+.center {
+  margin: auto;
+  padding: 48px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  color: var(--ink-2);
+}
+
+@media (min-width: 901px) {
+  .playPage {
+    height: 100%;
+  }
+}

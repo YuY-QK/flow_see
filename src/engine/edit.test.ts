@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { createAnimation, createElement, createStep, duplicateAnimation, migrate } from './animation';
+import {
+  createAnimation,
+  createElement,
+  createStep,
+  duplicateAnimation,
+  migrate,
+} from './animation';
 import { addStep, moveStep, removeElement, removeStep, updateStep } from './edit';
 
 function sample() {
@@ -72,7 +78,11 @@ describe('复制与数据迁移', () => {
   });
 
   it('补齐缺失字段', () => {
-    const m = migrate({ id: 'x', templateId: 'message', steps: [{ id: 's', title: 't', desc: '' }] });
+    const m = migrate({
+      id: 'x',
+      templateId: 'message',
+      steps: [{ id: 's', title: 't', desc: '' }],
+    });
     expect(m).toMatchObject({ title: '未命名动画', themeId: 'flat', elements: [] });
     expect(m?.steps[0].data).toEqual({});
     expect(m?.settings.autoNarrate).toBe(true);

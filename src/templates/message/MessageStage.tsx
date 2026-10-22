@@ -2,8 +2,8 @@ import { motion } from 'motion/react';
 import type { StageProps } from '../types';
 import type { MessageStepData } from './index';
 
-const W = 800;
-const MARGIN = 100;
+const MARGIN = 90;
+const GAP = 240;
 const BOX_W = 132;
 const BOX_H = 52;
 const TOP = 20;
@@ -13,6 +13,8 @@ const ROW_GAP = 76;
 export function MessageStage({ animation, index, theme }: StageProps) {
   const { elements, steps } = animation;
   const n = elements.length;
+  // 画布宽度随角色数量变化，角色少时字号相对更大，手机上也看得清
+  const W = Math.max(560, (n - 1) * GAP + 2 * MARGIN);
   const xOf = (id?: string) => {
     const i = elements.findIndex((e) => e.id === id);
     if (i < 0) return null;
@@ -25,7 +27,8 @@ export function MessageStage({ animation, index, theme }: StageProps) {
     <svg
       viewBox={`0 0 ${W} ${H}`}
       width="100%"
-      preserveAspectRatio="xMidYMin meet"
+      height="100%"
+      preserveAspectRatio="xMidYMid meet"
       role="img"
       aria-label={`${animation.title}：第 ${index + 1} 步`}
       style={{ fontFamily: theme.font, display: 'block' }}

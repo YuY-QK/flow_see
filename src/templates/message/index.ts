@@ -18,8 +18,25 @@ export const messageTemplate: Template = {
   stepFields: [
     { key: 'from', label: '谁发出', kind: 'element', advanced: true },
     { key: 'to', label: '发给谁', kind: 'element', advanced: true },
-    { key: 'label', label: '箭头上的标签', kind: 'text', placeholder: '留空则显示步骤标题', advanced: true },
+    {
+      key: 'label',
+      label: '箭头上的标签',
+      kind: 'text',
+      placeholder: '留空则显示步骤标题',
+      advanced: true,
+    },
   ],
+
+  createBlank() {
+    const a = createElement('角色 1');
+    const b = createElement('角色 2');
+    return createAnimation({
+      templateId: 'message',
+      title: '未命名动画',
+      elements: [a, b],
+      steps: [createStep({ title: '', desc: '', data: { from: a.id, to: b.id, label: '' } })],
+    });
+  },
 
   createDefault() {
     const client = createElement('客户端');

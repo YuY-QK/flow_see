@@ -21,7 +21,9 @@ export function addStep(a: Animation, partial: Partial<Step> = {}, afterId?: str
 export function updateStep(a: Animation, id: string, patch: Partial<Step>): Animation {
   return touch(a, {
     steps: a.steps.map((s) =>
-      s.id === id ? { ...s, ...patch, data: patch.data ? { ...s.data, ...patch.data } : s.data } : s,
+      s.id === id
+        ? { ...s, ...patch, data: patch.data ? { ...s.data, ...patch.data } : s.data }
+        : s,
     ),
   });
 }

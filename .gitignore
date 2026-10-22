@@ -26,3 +26,6 @@ dist/
 build/
 out/
 coverage/
+
+# TypeScript 增量构建缓存
+*.tsbuildinfo
