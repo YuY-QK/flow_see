@@ -1,7 +1,10 @@
+import { cycleTemplate } from './cycle';
+import { dataTemplate } from './data';
+import { flowTemplate } from './flow';
 import { messageTemplate } from './message';
 import type { Template, TemplateCard } from './types';
 
-const TEMPLATES: Template[] = [messageTemplate];
+const TEMPLATES: Template[] = [flowTemplate, messageTemplate, dataTemplate, cycleTemplate];
 
 const byId = new Map(TEMPLATES.map((t) => [t.id, t]));
 
@@ -9,7 +12,7 @@ export function getTemplate(id: string): Template | undefined {
   return byId.get(id);
 }
 
-/** 选模板页的四张卡片；尚未实现的模板标记为“即将推出”。 */
+/** 选模板页的卡片；尚未实现的模板标记为“即将推出”。 */
 export const TEMPLATE_CARDS: TemplateCard[] = [
   {
     id: 'flow',

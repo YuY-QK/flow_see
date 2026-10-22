@@ -19,7 +19,7 @@ export function ElementsEditor({
   return (
     <section className={s.section}>
       <div className={s.sectionHead}>
-        <h2 className={s.sectionTitle}>参与的{noun}</h2>
+        <h2 className={s.sectionTitle}>{noun}</h2>
       </div>
       <div className={s.chips}>
         {elements.map((e, i) => (
@@ -53,6 +53,7 @@ export function ElementsEditor({
           </button>
         ) : null}
       </div>
+      {template.elementHint ? <p className={s.elementHint}>{template.elementHint}</p> : null}
     </section>
   );
 }

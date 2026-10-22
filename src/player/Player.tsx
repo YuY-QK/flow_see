@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { getTheme, type Animation } from '@/engine';
+import { ParamsForm } from '@/editor/ParamsForm';
 import { isSpeechSupported } from '@/services/speech';
 import type { Template } from '@/templates/types';
 import { Icon } from '@/ui/Icon';
@@ -16,10 +17,48 @@ interface Props {
   variant?: 'full' | 'embed';
 }
 
-export function Player({ animation, template, focusIndex, variant = 'full' }: Props) {
+/** 给 numbers 字段随机出一组数 */
+function randomParams(template: Template, params: Record<string, unknown>) {
+  const next = { ...params };
+  for (const f of template.paramFields ?? []) {
+    if (f.kind !== 'numbers') continue;
+    const lo = Math.max(f.min ?? 1, 1);
+    const hi = Math.min(f.max ?? 30, 30);
+    const count = Math.min(
+      f.maxCount ?? 8,
+      Math.max(f.minCount ?? 2, 5 + Math.floor(Math.random() * 3)),
+    );
+    next[f.key] = Array.from(
+      { length: count },
+      () => lo + Math.floor(Math.random() * (hi - lo + 1)),
+    );
+  }
+  return next;
+}
+
+export function Player({ animation: original, template, focusIndex, variant = 'full' }: Props) {
   const speechOk = isSpeechSupported();
-  const [narrate, setNarrate] = useState(speechOk && animation.settings.autoNarrate);
+  const [narrate, setNarrate] = useState(speechOk && original.settings.autoNarrate);
+  const [tab, setTab] = useState<'steps' | 'params'>('steps');
+  // 观众“试试改参数”时的临时参数，不会保存到作品里
+  const [trial, setTrial] = useState<Record<string, unknown> | null>(null);
+  const canTry =
+    variant === 'full' &&
+    !!template.generate &&
+    !!template.paramFields?.length &&
+    original.settings.allowParamEdit;
+  const animation = useMemo(
+    () =>
+      trial && template.generate
+        ? { ...original, params: trial, steps: template.generate(trial) }
+        : original,
+    [original, trial, template],
+  );
   const { state, dispatch, step } = usePlayback(animation.steps, narrate, focusIndex ?? 0);
+  const applyTrial = (p: Record<string, unknown> | null) => {
+    setTrial(p);
+    dispatch({ type: 'seek', index: 0 });
+  };
   const rootRef = useRef<HTMLDivElement>(null);
   const theme = getTheme(animation.themeId);
   const Stage = template.Stage;
@@ -139,21 +178,67 @@ export function Player({ animation, template, focusIndex, variant = 'full' }: Pr
 
       {variant === 'full' ? (
         <aside className={s.side}>
-          <div className={s.sideTitle}>步骤目录</div>
-          <ol className={s.stepList}>
-            {animation.steps.map((st, i) => (
-              <li key={st.id}>
+          {canTry ? (
+            <div className={s.tabs} role="tablist">
+              <button role="tab" aria-selected={tab === 'steps'} onClick={() => setTab('steps')}>
+                步骤目录
+              </button>
+              <button role="tab" aria-selected={tab === 'params'} onClick={() => setTab('params')}>
+                试试改参数
+              </button>
+            </div>
+          ) : (
+            <div className={s.sideTitle}>步骤目录</div>
+          )}
+          {tab === 'params' && canTry ? (
+            <div className={s.trial}>
+              <ParamsForm
+                template={template}
+                params={animation.params ?? {}}
+                elements={animation.elements}
+                idPrefix="trial"
+                onChange={applyTrial}
+              />
+              <div className={s.trialActions}>
                 <button
-                  className={s.stepItem}
-                  data-current={i === state.index}
-                  onClick={() => dispatch({ type: 'seek', index: i })}
+                  className={ui.btn}
+                  onClick={() => applyTrial(randomParams(template, animation.params ?? {}))}
                 >
-                  <span className={s.stepNum}>{i + 1}</span>
-                  <span>{st.title || '（未填写）'}</span>
+                  随机一组
                 </button>
-              </li>
-            ))}
-          </ol>
+                <button
+                  className={`${ui.btn} ${ui.primary}`}
+                  onClick={() => {
+                    dispatch({ type: 'seek', index: 0 });
+                    dispatch({ type: 'play' });
+                  }}
+                >
+                  从头播放
+                </button>
+              </div>
+              {trial ? (
+                <button className={s.reset} onClick={() => applyTrial(null)}>
+                  恢复作者的设置
+                </button>
+              ) : null}
+              <p className={s.trialNote}>这里的修改只影响你现在看到的动画，不会改动作品本身。</p>
+            </div>
+          ) : (
+            <ol className={s.stepList}>
+              {animation.steps.map((st, i) => (
+                <li key={st.id}>
+                  <button
+                    className={s.stepItem}
+                    data-current={i === state.index}
+                    onClick={() => dispatch({ type: 'seek', index: i })}
+                  >
+                    <span className={s.stepNum}>{i + 1}</span>
+                    <span>{st.title || '（未填写）'}</span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+          )}
         </aside>
       ) : null}
     </div>

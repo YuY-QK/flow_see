@@ -7,7 +7,12 @@ import ui from '@/ui/ui.module.css';
 import { Link } from 'react-router-dom';
 import s from './Pages.module.css';
 
-const EXAMPLES = [{ templateId: 'message', title: 'TCP 三次握手' }];
+const EXAMPLES = [
+  { templateId: 'message', title: 'TCP 三次握手' },
+  { templateId: 'data', title: '冒泡排序' },
+  { templateId: 'cycle', title: '水的循环' },
+  { templateId: 'flow', title: '请假审批流程' },
+];
 
 export function CreatePage() {
   const navigate = useNavigate();
@@ -28,7 +33,7 @@ export function CreatePage() {
         <div>
           <div className={s.note}>新建动画 · 第 1 步</div>
           <h1 className={s.h1}>你想讲清楚什么？</h1>
-          <p className={s.sub}>选一个最像的样子。</p>
+          <p className={s.sub}>选一个最像的样子，之后随时能改内容。</p>
         </div>
 
         <div className={s.tplGrid}>

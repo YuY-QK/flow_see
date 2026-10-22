@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import type { FlowElement } from '@/engine';
 import type { FieldDef } from '@/templates/types';
 import ui from '@/ui/ui.module.css';
+import s from './Editor.module.css';
+import { parseNumbers } from './parseNumbers';
 
 interface Props {
   field: FieldDef;
@@ -10,8 +13,49 @@ interface Props {
   id: string;
 }
 
+function NumbersInput({ field, value, onChange, id }: Props) {
+  const initial = Array.isArray(value) ? value.join(', ') : '';
+  const [text, setText] = useState(initial);
+  const [error, setError] = useState<string | null>(null);
+  // 外部（如“随机一组”）改了值时同步输入框
+  const [lastValue, setLastValue] = useState(value);
+  if (value !== lastValue) {
+    setLastValue(value);
+    setText(initial);
+    setError(null);
+  }
+
+  return (
+    <>
+      <input
+        id={id}
+        className={ui.field}
+        inputMode="text"
+        value={text}
+        aria-invalid={!!error}
+        aria-describedby={`${id}-hint`}
+        onChange={(e) => {
+          setText(e.target.value);
+          const r = parseNumbers(e.target.value, field);
+          if ('error' in r) setError(r.error);
+          else {
+            setError(null);
+            setLastValue(r.values);
+            onChange(r.values);
+          }
+        }}
+      />
+      <span id={`${id}-hint`} className={error ? s.fieldError : s.fieldHint}>
+        {error ?? field.hint}
+      </span>
+    </>
+  );
+}
+
 /** 按模板的字段定义渲染一个表单控件 */
-export function FieldInput({ field, value, elements, onChange, id }: Props) {
+export function FieldInput(props: Props) {
+  const { field, value, elements, onChange, id } = props;
+  if (field.kind === 'numbers') return <NumbersInput {...props} />;
   if (field.kind === 'element' || field.kind === 'select') {
     const options =
       field.kind === 'element'
@@ -24,7 +68,7 @@ export function FieldInput({ field, value, elements, onChange, id }: Props) {
         value={typeof value === 'string' ? value : ''}
         onChange={(e) => onChange(e.target.value || undefined)}
       >
-        <option value="">（未指定）</option>
+        {field.kind === 'element' ? <option value="">（未指定）</option> : null}
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}

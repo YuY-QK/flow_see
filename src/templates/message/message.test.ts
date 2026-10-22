@@ -45,6 +45,6 @@ describe('模板注册表', () => {
   it('能按 id 找到已实现的模板，卡片的可用状态与注册表一致', () => {
     expect(getTemplate('message')).toBe(messageTemplate);
     expect(getTemplate('nope')).toBeUndefined();
-    expect(TEMPLATE_CARDS.filter((c) => c.available).map((c) => c.id)).toEqual(['message']);
+    expect(TEMPLATE_CARDS.every((c) => c.available)).toBe(true);
   });
 });

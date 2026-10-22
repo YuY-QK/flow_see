@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import { updateAnimation } from '@/engine';
 import { AppearancePanel } from '@/editor/AppearancePanel';
 import { ElementsEditor } from '@/editor/ElementsEditor';
+import { GeneratedSteps } from '@/editor/GeneratedSteps';
+import { ParamsForm } from '@/editor/ParamsForm';
 import { StepList } from '@/editor/StepList';
 import { useAutosave } from '@/editor/useAutosave';
 import s from '@/editor/Editor.module.css';
@@ -110,8 +112,36 @@ export function EditorPage() {
             </span>
             {template.tagline}
           </div>
-          <ElementsEditor animation={animation} template={template} />
-          <StepList animation={animation} template={template} />
+          {template.maxElements > 0 ? (
+            <ElementsEditor animation={animation} template={template} />
+          ) : null}
+          {template.paramFields?.length ? (
+            <section className={s.section}>
+              <div className={s.sectionHead}>
+                <h2 className={s.sectionTitle}>{template.paramTitle ?? '参数'}</h2>
+              </div>
+              <ParamsForm
+                template={template}
+                params={animation.params ?? {}}
+                elements={animation.elements}
+                idPrefix="param"
+                onChange={(params) => {
+                  if (template.generate) {
+                    const steps = template.generate(params);
+                    apply((a) => updateAnimation(a, { params, steps }));
+                    select(steps[0]?.id ?? null);
+                  } else {
+                    apply((a) => updateAnimation(a, { params }));
+                  }
+                }}
+              />
+            </section>
+          ) : null}
+          {template.generate ? (
+            <GeneratedSteps animation={animation} />
+          ) : (
+            <StepList animation={animation} template={template} />
+          )}
         </div>
 
         <div className={s.previewPane}>
