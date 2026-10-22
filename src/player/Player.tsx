@@ -41,8 +41,9 @@ export function Player({ animation, template, focusIndex, variant = 'full' }: Pr
   };
 
   const fullscreen = () => {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else rootRef.current?.requestFullscreen?.();
+    // 部分环境（手机、内嵌页面）不支持全屏，失败时忽略
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else rootRef.current?.requestFullscreen?.().catch(() => {});
   };
 
   return (

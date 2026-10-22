@@ -22,11 +22,17 @@ export function HomePage() {
   const navigate = useNavigate();
   const [works, setWorks] = useState<Animation[] | null>(null);
   const [menu, setMenu] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
 
   const refresh = () => repository.list().then(setWorks);
   useEffect(() => {
     refresh();
   }, []);
+
+  const toggleMenu = (id: string) => {
+    setConfirming(false);
+    setMenu(menu === id ? null : id);
+  };
 
   useEffect(() => {
     if (!menu) return;
@@ -42,9 +48,14 @@ export function HomePage() {
     setMenu(null);
     refresh();
   };
+  // 删除需要在菜单里再点一次确认（不用浏览器弹窗，App 和内嵌页面里也能用）
   const onDelete = async (a: Animation) => {
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
     setMenu(null);
-    if (!window.confirm(`确定删除「${a.title}」吗？删除后无法恢复。`)) return;
+    setConfirming(false);
     await repository.remove(a.id);
     refresh();
   };
@@ -114,7 +125,7 @@ export function HomePage() {
                       aria-label={`「${a.title}」的更多操作`}
                       aria-expanded={menu === a.id}
                       data-menu
-                      onClick={() => setMenu(menu === a.id ? null : a.id)}
+                      onClick={() => toggleMenu(a.id)}
                     >
                       <Icon name="more" />
                     </button>
@@ -131,7 +142,7 @@ export function HomePage() {
                         <Icon name="copy" size={18} /> 复制一份
                       </button>
                       <button className={`${s.menuItem} ${s.danger}`} onClick={() => onDelete(a)}>
-                        <Icon name="trash" size={18} /> 删除
+                        <Icon name="trash" size={18} /> {confirming ? '再点一次确认删除' : '删除'}
                       </button>
                     </div>
                   ) : null}
