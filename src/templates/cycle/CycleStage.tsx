@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import type { StageProps } from '../types';
 import { NODE_R, cycleGeometry, splitName, type CycleLayout } from './geometry';
 
-export function CycleStage({ animation, index, theme }: StageProps) {
+export function CycleStage({ animation, index, theme, still }: StageProps) {
   const layout: CycleLayout = animation.params?.layout === 'timeline' ? 'timeline' : 'cycle';
   const { elements, steps } = animation;
   const n = elements.length;
@@ -83,7 +83,7 @@ export function CycleStage({ animation, index, theme }: StageProps) {
             strokeWidth={on ? 5 : 3}
             strokeLinecap="round"
             markerEnd={`url(#cycle-arrow-${on ? 'on' : 'off'})`}
-            initial={{ pathLength: on ? 0 : 1 }}
+            initial={{ pathLength: on && !still ? 0 : 1 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 0.7, ease: 'easeInOut' }}
           />
@@ -99,13 +99,13 @@ export function CycleStage({ animation, index, theme }: StageProps) {
           strokeWidth={4}
           strokeDasharray="8 7"
           markerEnd="url(#cycle-arrow-on)"
-          initial={{ pathLength: 0 }}
+          initial={{ pathLength: still ? 1 : 0 }}
           animate={{ pathLength: 1 }}
           transition={{ duration: 0.7, ease: 'easeInOut' }}
         />
       ) : null}
 
-      {curLink ? (
+      {curLink && !still ? (
         <motion.circle
           key={`dot-${index}`}
           r={8}

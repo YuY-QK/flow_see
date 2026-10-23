@@ -5,7 +5,13 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules'] },
+  { ignores: ['dist', 'node_modules', 'android', 'ios', 'server/data'] },
+  {
+    files: ['server/**/*.mjs'],
+    extends: [js.configs.recommended],
+    languageOptions: { ecmaVersion: 2022, globals: globals.node },
+    rules: { 'no-unused-vars': ['error', { varsIgnorePattern: '^_', ignoreRestSiblings: true }] },
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
@@ -14,6 +20,10 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },
+      ],
     },
   },
 );

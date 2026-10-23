@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import type { StageProps } from '../types';
 import { BOX_H, BOX_W, collectEdges, edgeGeometry, layoutNodes } from './layout';
 
-export function FlowStage({ animation, index, theme }: StageProps) {
+export function FlowStage({ animation, index, theme, still }: StageProps) {
   const { nodes, width, height } = layoutNodes(animation);
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const edges = collectEdges(animation);
@@ -69,11 +69,11 @@ export function FlowStage({ animation, index, theme }: StageProps) {
               strokeWidth={isCurrent ? 4 : 2.5}
               strokeDasharray={isWalked || isCurrent ? undefined : '6 6'}
               markerEnd={`url(#flow-arrow-${isCurrent ? 'on' : 'off'})`}
-              initial={{ pathLength: isCurrent ? 0 : 1 }}
+              initial={{ pathLength: isCurrent && !still ? 0 : 1 }}
               animate={{ pathLength: 1 }}
               transition={{ duration: 0.6, ease: 'easeInOut' }}
             />
-            {isCurrent ? (
+            {isCurrent && !still ? (
               <motion.circle
                 r={7}
                 fill={theme.accent}
@@ -145,7 +145,7 @@ export function FlowStage({ animation, index, theme }: StageProps) {
             key={n.id}
             style={{ transformOrigin: `${n.cx}px ${n.cy}px`, transformBox: 'view-box' }}
             initial={false}
-            animate={{ scale: isCurrent ? [1, 1.08, 1] : 1 }}
+            animate={{ scale: isCurrent && !still ? [1, 1.08, 1] : 1 }}
             transition={{ duration: 0.5 }}
           >
             {shape}

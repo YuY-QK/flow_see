@@ -35,8 +35,9 @@ export function createAnimation(
 
 /** 复制一份作品（“复制并修改”）：新 id、新时间，步骤和元素 id 保持不变以免打断引用。 */
 export function duplicateAnimation(src: Animation, now = Date.now()): Animation {
+  const { share: _share, ...rest } = structuredClone(src);
   return {
-    ...structuredClone(src),
+    ...rest,
     id: createId('a_'),
     title: src.title + '（副本）',
     createdAt: now,
@@ -65,6 +66,7 @@ export function migrate(raw: unknown): Animation | null {
     steps: Array.isArray(a.steps) ? a.steps.map((s) => ({ ...s, data: s.data ?? {} })) : [],
     params: a.params,
     settings: { autoNarrate: true, allowParamEdit: true, ...a.settings },
+    share: a.share,
     createdAt: a.createdAt ?? Date.now(),
     updatedAt: a.updatedAt ?? Date.now(),
   };

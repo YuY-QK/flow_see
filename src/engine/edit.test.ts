@@ -77,6 +77,11 @@ describe('复制与数据迁移', () => {
     expect(b.title).toContain('副本');
   });
 
+  it('复制出的作品不带分享信息', () => {
+    const a = { ...sample(), share: { id: 'abc', token: 't', sharedAt: 1 } };
+    expect(duplicateAnimation(a).share).toBeUndefined();
+  });
+
   it('补齐缺失字段', () => {
     const m = migrate({
       id: 'x',

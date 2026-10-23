@@ -28,6 +28,8 @@ export interface StageProps {
   /** 当前播放到第几步（从 0 开始） */
   index: number;
   theme: Theme;
+  /** 静止画面（导出视频/GIF 时用）：不播放进场动画，直接画出这一步的最终样子 */
+  still?: boolean;
 }
 
 export interface Template {

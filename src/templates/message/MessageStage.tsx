@@ -10,7 +10,7 @@ const TOP = 20;
 const ROW0 = 130;
 const ROW_GAP = 76;
 
-export function MessageStage({ animation, index, theme }: StageProps) {
+export function MessageStage({ animation, index, theme, still }: StageProps) {
   const { elements, steps } = animation;
   const n = elements.length;
   // 画布宽度随角色数量变化，角色少时字号相对更大，手机上也看得清
@@ -116,12 +116,12 @@ export function MessageStage({ animation, index, theme }: StageProps) {
                 strokeWidth={active ? 4 : 3}
                 strokeLinecap="round"
                 markerEnd={`url(#arrow-${active ? 'active' : 'dim'})`}
-                initial={{ pathLength: active ? 0 : 1 }}
+                initial={{ pathLength: active && !still ? 0 : 1 }}
                 animate={{ pathLength: 1 }}
                 transition={{ duration: 0.6, ease: 'easeInOut' }}
               />
             ) : null}
-            {active && x1 !== null && x2 !== null && x1 !== x2 ? (
+            {active && !still && x1 !== null && x2 !== null && x1 !== x2 ? (
               <motion.circle
                 key={`dot-${s.id}`}
                 r={8}

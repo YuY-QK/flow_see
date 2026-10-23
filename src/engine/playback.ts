@@ -24,8 +24,8 @@ export type PlaybackAction =
   | { type: 'setSpeed'; speed: Speed }
   | { type: 'cycleSpeed' };
 
-export function initPlayback(total: number, index = 0): PlaybackState {
-  return { index: clamp(index, total), total, playing: false, speed: 1 };
+export function initPlayback(total: number, index = 0, speed: Speed = 1): PlaybackState {
+  return { index: clamp(index, total), total, playing: false, speed };
 }
 
 function clamp(i: number, total: number): number {

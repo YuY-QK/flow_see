@@ -12,7 +12,9 @@ import { Player } from '@/player/Player';
 import { repository } from '@/services/storage';
 import { useEditor } from '@/store/editor';
 import { getTemplate } from '@/templates/registry';
+import { ExportDialog } from '@/ui/ExportDialog';
 import { Icon } from '@/ui/Icon';
+import { ShareDialog } from '@/ui/ShareDialog';
 import ui from '@/ui/ui.module.css';
 import { NotFound } from './NotFound';
 
@@ -23,6 +25,7 @@ export function EditorPage() {
   const { animation, selectedId, saveState, load, apply, select } = useEditor();
   const [missingId, setMissingId] = useState<string | null>(null);
   const [appearance, setAppearance] = useState(false);
+  const [dialog, setDialog] = useState<'share' | 'export' | null>(null);
   const [tab, setTab] = useState<'edit' | 'preview'>('edit');
   useAutosave();
 
@@ -58,7 +61,7 @@ export function EditorPage() {
   return (
     <div className={s.page}>
       <header className={s.top}>
-        <Link to="/" className={s.back}>
+        <Link to="/mine" className={s.back}>
           <Icon name="back" size={18} />
           <span className={s.backText}>我的作品</span>
         </Link>
@@ -86,8 +89,13 @@ export function EditorPage() {
             <Icon name="palette" size={18} />
             <span className={s.hideMobile}>外观</span>
           </button>
-          <button className={`${ui.btn} ${s.hideMobile}`} disabled title="后续版本开放">
-            导出视频 / GIF
+          <button className={`${ui.btn} ${s.hideMobile}`} onClick={() => setDialog('export')}>
+            <Icon name="download" size={18} />
+            导出
+          </button>
+          <button className={ui.btn} aria-label="分享" onClick={() => setDialog('share')}>
+            <Icon name="share" size={18} />
+            <span className={s.hideMobile}>分享</span>
           </button>
           <Link to={`/play/${animation.id}`} className={`${ui.btn} ${ui.primary}`}>
             播放
@@ -157,6 +165,18 @@ export function EditorPage() {
           />
         </div>
       </div>
+
+      {dialog === 'share' ? (
+        <ShareDialog
+          mode="publish"
+          animation={animation}
+          onClose={() => setDialog(null)}
+          onShared={(share) => apply((a) => ({ ...a, share }))}
+        />
+      ) : null}
+      {dialog === 'export' ? (
+        <ExportDialog animation={animation} template={template} onClose={() => setDialog(null)} />
+      ) : null}
 
       <nav className={s.tabs} aria-label="编辑或预览">
         <button aria-pressed={tab === 'edit'} onClick={() => setTab('edit')}>

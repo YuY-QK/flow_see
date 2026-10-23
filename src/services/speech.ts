@@ -10,7 +10,24 @@ export function isSpeechSupported(): boolean {
   return typeof window !== 'undefined' && 'speechSynthesis' in window;
 }
 
-export function speak(text: string, opts: { rate?: number; lang?: string } = {}): SpeakHandle {
+/** 可用的朗读声音（按语言过滤）；部分浏览器异步加载声音列表 */
+export function listVoices(lang = 'zh'): SpeechSynthesisVoice[] {
+  if (!isSpeechSupported()) return [];
+  return window.speechSynthesis
+    .getVoices()
+    .filter((v) => v.lang.toLowerCase().startsWith(lang.toLowerCase()));
+}
+
+export function onVoicesChanged(cb: () => void): () => void {
+  if (!isSpeechSupported()) return () => {};
+  window.speechSynthesis.addEventListener('voiceschanged', cb);
+  return () => window.speechSynthesis.removeEventListener('voiceschanged', cb);
+}
+
+export function speak(
+  text: string,
+  opts: { rate?: number; lang?: string; voiceURI?: string } = {},
+): SpeakHandle {
   if (!isSpeechSupported() || !text.trim()) {
     return { done: Promise.resolve(), cancel() {} };
   }
@@ -19,6 +36,10 @@ export function speak(text: string, opts: { rate?: number; lang?: string } = {})
   const u = new SpeechSynthesisUtterance(text);
   u.lang = opts.lang ?? 'zh-CN';
   u.rate = Math.min(2, Math.max(0.5, opts.rate ?? 1));
+  if (opts.voiceURI) {
+    const voice = synth.getVoices().find((v) => v.voiceURI === opts.voiceURI);
+    if (voice) u.voice = voice;
+  }
 
   let finish!: () => void;
   const done = new Promise<void>((resolve) => (finish = resolve));

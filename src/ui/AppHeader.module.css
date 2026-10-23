@@ -1,12 +1,16 @@
 .header {
-  height: 64px;
+  height: calc(64px + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
   flex-shrink: 0;
-  padding: 0 clamp(16px, 4vw, 40px);
+  padding-left: max(clamp(16px, 4vw, 40px), env(safe-area-inset-left, 0px));
+  padding-right: max(clamp(16px, 4vw, 40px), env(safe-area-inset-right, 0px));
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+  position: relative;
+  z-index: 20;
 }
 
 .logo {
@@ -17,11 +21,11 @@
   font-size: 18px;
   color: var(--ink);
   text-decoration: none;
+  white-space: nowrap;
 }
 .logo:hover {
   color: var(--ink);
 }
-
 .mark {
   width: 28px;
   height: 28px;
@@ -33,6 +37,183 @@
   justify-content: center;
 }
 
+.nav {
+  display: flex;
+  gap: 4px;
+  margin-left: 20px;
+}
+.navLink {
+  color: var(--ink-2);
+  text-decoration: none;
+  font-size: 15px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.navLink:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+.navLink:global(.active) {
+  color: var(--primary);
+  background: var(--primary-soft);
+  font-weight: 600;
+}
+
 .spacer {
   flex-grow: 1;
+}
+
+.search input {
+  width: clamp(180px, 22vw, 300px);
+  height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0 14px;
+  font-size: 14px;
+  background: var(--bg);
+  outline: none;
+}
+.search input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-ring);
+}
+
+.iconBtn {
+  width: var(--touch);
+  height: var(--touch);
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.iconBtn:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.create {
+  height: var(--touch);
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  border-radius: 12px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.create:hover {
+  background: var(--primary-hover);
+  color: #fff;
+}
+
+.mobile {
+  display: none;
+}
+.mobileTitle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 700;
+  font-size: 17px;
+  pointer-events: none;
+}
+
+/* 侧边栏 */
+.drawerWrap {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+}
+.drawer {
+  width: min(300px, 82vw);
+  height: 100%;
+  background: var(--surface);
+  box-shadow: 8px 0 32px rgba(31, 36, 51, 0.18);
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 12px
+    calc(16px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: slideIn 0.18s ease-out;
+}
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+}
+.drawerHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 14px 8px;
+}
+.drawerCreate {
+  margin: 0 4px 10px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.drawerCreate:hover {
+  color: #fff;
+}
+.drawerLink {
+  padding: 14px 16px;
+  font-size: 16px;
+  color: var(--ink);
+  text-decoration: none;
+  border-radius: 12px;
+}
+.drawerLink:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+.drawerLink:global(.active) {
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 600;
+}
+.drawerNote {
+  margin-top: auto;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.scrim {
+  flex-grow: 1;
+  border: none;
+  background: rgba(31, 36, 51, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer {
+    animation: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .header {
+    padding-left: max(4px, env(safe-area-inset-left, 0px));
+    padding-right: max(4px, env(safe-area-inset-right, 0px));
+    gap: 0;
+  }
+  .desktop {
+    display: none;
+  }
+  .mobile {
+    display: flex;
+  }
 }

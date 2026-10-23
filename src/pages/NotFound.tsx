@@ -10,7 +10,7 @@ export function NotFound({ text = '页面不存在。' }: { text?: string }) {
       <div className={s.center}>
         <p>{text}</p>
         <Link to="/" className={`${ui.btn} ${ui.primary}`}>
-          回到我的作品
+          回到首页
         </Link>
       </div>
     </div>

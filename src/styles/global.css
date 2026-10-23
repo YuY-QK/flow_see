@@ -93,3 +93,9 @@ button:disabled {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* 大字号：整体放大，高度按比例收回，避免整页出现滚动条 */
+html[data-size='large'] #root {
+  zoom: 1.15;
+  height: calc(100% / 1.15);
+}

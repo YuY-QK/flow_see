@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { getTheme, type Animation } from '@/engine';
 import { ParamsForm } from '@/editor/ParamsForm';
 import { isSpeechSupported } from '@/services/speech';
+import { useSettings } from '@/store/settings';
 import type { Template } from '@/templates/types';
 import { Icon } from '@/ui/Icon';
 import ui from '@/ui/ui.module.css';
@@ -15,6 +16,8 @@ interface Props {
   focusIndex?: number;
   /** full：播放页，带步骤目录；embed：编辑器里的预览 */
   variant?: 'full' | 'embed';
+  /** 打开后自动开始播放 */
+  autoPlay?: boolean;
 }
 
 /** 给 numbers 字段随机出一组数 */
@@ -36,9 +39,18 @@ function randomParams(template: Template, params: Record<string, unknown>) {
   return next;
 }
 
-export function Player({ animation: original, template, focusIndex, variant = 'full' }: Props) {
+export function Player({
+  animation: original,
+  template,
+  focusIndex,
+  variant = 'full',
+  autoPlay = false,
+}: Props) {
   const speechOk = isSpeechSupported();
-  const [narrate, setNarrate] = useState(speechOk && original.settings.autoNarrate);
+  const settings = useSettings();
+  const [narrate, setNarrate] = useState(
+    speechOk && settings.autoNarrate && original.settings.autoNarrate,
+  );
   const [tab, setTab] = useState<'steps' | 'params'>('steps');
   // 观众“试试改参数”时的临时参数，不会保存到作品里
   const [trial, setTrial] = useState<Record<string, unknown> | null>(null);
@@ -54,7 +66,14 @@ export function Player({ animation: original, template, focusIndex, variant = 'f
         : original,
     [original, trial, template],
   );
-  const { state, dispatch, step } = usePlayback(animation.steps, narrate, focusIndex ?? 0);
+  const { state, dispatch, step } = usePlayback(animation.steps, {
+    narrate,
+    startIndex: focusIndex ?? 0,
+    speed: settings.defaultSpeed,
+    autoPlay,
+    voiceURI: settings.voiceURI,
+    speechRate: settings.speechRate,
+  });
   const applyTrial = (p: Record<string, unknown> | null) => {
     setTrial(p);
     dispatch({ type: 'seek', index: 0 });

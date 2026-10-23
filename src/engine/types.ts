@@ -28,6 +28,14 @@ export interface AnimationSettings {
   allowParamEdit: boolean;
 }
 
+/** 分享信息：上传到服务器后得到的短链接 id 与修改凭证 */
+export interface ShareInfo {
+  id: string;
+  /** 再次分享（更新服务器上的内容）时使用的凭证，只保存在作者本地 */
+  token: string;
+  sharedAt: number;
+}
+
 export interface Animation {
   id: string;
   schemaVersion: number;
@@ -42,6 +50,8 @@ export interface Animation {
   steps: Step[];
   params?: Record<string, unknown>;
   settings: AnimationSettings;
+  /** 分享过的作品才有 */
+  share?: ShareInfo;
   createdAt: number;
   updatedAt: number;
 }
