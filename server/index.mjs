@@ -35,7 +35,11 @@ async function serveStatic(_req, res, url) {
   try {
     if (!(await stat(file)).isFile()) throw new Error('dir');
   } catch {
-    // 前端路由（/play/xx、/s/xx 等）都返回 index.html
+    // 打包产物不存在就是真的不存在；其余路径是前端路由（/play/xx、/s/xx 等），返回 index.html
+    if (rel.startsWith('assets/') || rel.startsWith('assets\\')) {
+      res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+      return res.end('not found');
+    }
     file = join(DIST, 'index.html');
   }
   try {
