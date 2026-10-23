@@ -40,7 +40,7 @@ export function createFileStore(dir) {
   async function write(id, record) {
     await mkdir(dir, { recursive: true });
     // 先写临时文件再改名，避免写到一半被读到
-    const tmp = `${file(id)}.${process.pid}.tmp`;
+    const tmp = `${file(id)}.${process.pid}.${randomBytes(4).toString('hex')}.tmp`;
     await writeFile(tmp, JSON.stringify(record));
     await rename(tmp, file(id));
   }

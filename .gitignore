@@ -19,6 +19,7 @@ desktop.ini
 .env
 .env.*
 !.env.example
+!.env.*.example
 
 # 依赖与构建产物（通用）
 node_modules/

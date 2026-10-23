@@ -1,8 +1,17 @@
-// 把生成的文件交给用户：手机上优先用系统分享（App 里也能存到相册或发给别人），否则直接下载。
+// 把生成的文件交给用户：App 里交给系统分享面板；手机浏览器优先用系统分享；否则直接下载。
+import { isNative, shareFileNative } from './native';
 
 export type SaveResult = 'shared' | 'downloaded' | 'cancelled';
 
 export async function saveFile(blob: Blob, filename: string): Promise<SaveResult> {
+  if (isNative()) {
+    try {
+      await shareFileNative(blob, filename);
+      return 'shared';
+    } catch {
+      return 'cancelled';
+    }
+  }
   const file = new File([blob], filename, { type: blob.type });
   const touch = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
   if (touch && navigator.canShare?.({ files: [file] })) {

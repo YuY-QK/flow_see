@@ -1,4 +1,5 @@
-// 朗读：第一版使用浏览器自带的语音合成。
+// 朗读：网页用浏览器自带的语音合成；App 里用系统的文字转语音。
+import { isNative, speakNative, stopSpeakingNative } from './native';
 
 export interface SpeakHandle {
   /** 读完（或被取消、出错）时完成 */
@@ -7,19 +8,21 @@ export interface SpeakHandle {
 }
 
 export function isSpeechSupported(): boolean {
+  if (isNative()) return true;
   return typeof window !== 'undefined' && 'speechSynthesis' in window;
 }
 
 /** 可用的朗读声音（按语言过滤）；部分浏览器异步加载声音列表 */
 export function listVoices(lang = 'zh'): SpeechSynthesisVoice[] {
-  if (!isSpeechSupported()) return [];
+  // App 里使用系统默认声音
+  if (isNative() || !isSpeechSupported()) return [];
   return window.speechSynthesis
     .getVoices()
     .filter((v) => v.lang.toLowerCase().startsWith(lang.toLowerCase()));
 }
 
 export function onVoicesChanged(cb: () => void): () => void {
-  if (!isSpeechSupported()) return () => {};
+  if (isNative() || !isSpeechSupported()) return () => {};
   window.speechSynthesis.addEventListener('voiceschanged', cb);
   return () => window.speechSynthesis.removeEventListener('voiceschanged', cb);
 }
@@ -31,6 +34,7 @@ export function speak(
   if (!isSpeechSupported() || !text.trim()) {
     return { done: Promise.resolve(), cancel() {} };
   }
+  if (isNative()) return speakWithNative(text, opts);
   const synth = window.speechSynthesis;
   synth.cancel();
   const u = new SpeechSynthesisUtterance(text);
@@ -57,6 +61,26 @@ export function speak(
       window.clearTimeout(fallback);
       u.onend = u.onerror = null;
       synth.cancel();
+    },
+  };
+}
+
+function speakWithNative(text: string, opts: { rate?: number; lang?: string }): SpeakHandle {
+  const rate = Math.min(2, Math.max(0.5, opts.rate ?? 1));
+  let finish!: () => void;
+  const done = new Promise<void>((resolve) => (finish = resolve));
+  const fallback = window.setTimeout(finish, (text.length * 350) / rate + 3000);
+  speakNative(text, rate, opts.lang ?? 'zh-CN')
+    .catch(() => {})
+    .finally(() => {
+      window.clearTimeout(fallback);
+      finish();
+    });
+  return {
+    done,
+    cancel() {
+      window.clearTimeout(fallback);
+      void stopSpeakingNative().catch(() => {});
     },
   };
 }

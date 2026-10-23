@@ -14,8 +14,11 @@ export function GalleryPage() {
   const type = params.get('type') ?? '';
   const searchRef = useRef<HTMLInputElement>(null);
 
+  // 从手机顶部的搜索图标进来时，把光标放进搜索框（等点击产生的焦点变化结束后再设置）
   useEffect(() => {
-    if (params.get('search')) searchRef.current?.focus();
+    if (!params.get('search')) return;
+    const t = window.setTimeout(() => searchRef.current?.focus(), 50);
+    return () => window.clearTimeout(t);
   }, [params]);
 
   const update = (patch: Record<string, string>) => {

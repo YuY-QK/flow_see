@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Animation, ShareInfo } from '@/engine';
+import { isNative, shareLinkNative } from '@/services/native';
 import { copyText } from '@/services/save';
 import { publishShare, shareUrl } from '@/services/share';
 import { Dialog } from './Dialog';
@@ -31,25 +32,27 @@ export function ShareDialog(props: Props) {
   const animation = props.mode === 'publish' ? props.animation : null;
   const onShared = props.mode === 'publish' ? props.onShared : null;
 
+  // 每次打开（或点“重试”）只上传一次；开发模式下 effect 会执行两遍，用 ref 去重
+  const startedFor = useRef(-1);
   useEffect(() => {
-    if (!animation || !onShared) return;
-    let alive = true;
+    if (!animation || !onShared || startedFor.current === attempt) return;
+    startedFor.current = attempt;
     publishShare(animation)
       .then((info) => {
-        if (!alive) return;
         onShared(info);
         setUrl(shareUrl(info.id));
       })
-      .catch((e: Error) => alive && setError(e.message));
-    return () => {
-      alive = false;
-    };
-    // 只在打开对话框（或点“重试”）时上传一次
+      .catch((e: Error) => setError(e.message));
+    // 只在打开对话框（或点“重试”）时上传
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attempt]);
 
   const title = props.mode === 'publish' ? props.animation.title : props.title;
-  const canNativeShare = typeof navigator !== 'undefined' && !!navigator.share;
+  const canNativeShare = isNative() || (typeof navigator !== 'undefined' && !!navigator.share);
+  const nativeShare = (u: string) =>
+    isNative()
+      ? shareLinkNative(title, u).catch(() => {})
+      : navigator.share({ title, url: u }).catch(() => {});
 
   return (
     <Dialog title="分享" onClose={props.onClose}>
@@ -92,10 +95,7 @@ export function ShareDialog(props: Props) {
           ) : null}
           <div className={s.actions}>
             {canNativeShare ? (
-              <button
-                className={ui.btn}
-                onClick={() => navigator.share({ title, url }).catch(() => {})}
-              >
+              <button className={ui.btn} onClick={() => nativeShare(url)}>
                 用其他应用分享
               </button>
             ) : null}
