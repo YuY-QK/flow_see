@@ -1,6 +1,7 @@
 // 零件的公共定义：属性读取、颜色、包围盒。
 import type { ComponentType } from 'react';
 import type { Theme } from '@flow-see/core';
+import { sceneStyle } from './style';
 
 export type Props = Record<string, unknown>;
 export type Point = [number, number];
@@ -18,6 +19,7 @@ export interface PartContext {
   assetUrl?(id: string): string | undefined;
 }
 
+/** 零件定义。默认属性不在这里写死：来自 site.yaml 的 scene.parts.<type>，由 getPart() 补上。 */
 export interface PartDef {
   /** 配置里写的 type */
   type: string;
@@ -25,8 +27,6 @@ export interface PartDef {
   name: string;
   /** at 的含义：center = 零件中心；start = 左上角（数轴是最左端） */
   anchor: 'center' | 'start';
-  /** 默认属性 */
-  defaults: Props;
   /** 必填属性 */
   required?: string[];
   /** 这个零件认识的属性（除公共属性外），用于发现配置里的拼写错误 */
@@ -75,28 +75,18 @@ export function numList(v: unknown): number[] {
 
 /* ───────────── 颜色 ───────────── */
 
-/** 配置里可以直接写的颜色名；也可以写 #RRGGBB */
-export const NAMED_COLORS: Record<string, string> = {
-  blue: '#2F6FE4',
-  orange: '#F28C28',
-  red: '#E5484D',
-  green: '#2EA36B',
-  purple: '#7C5CE0',
-  yellow: '#F2B705',
-  pink: '#E85D9E',
-  brown: '#A0673A',
-  gray: '#9AA3B5',
-  white: '#FFFFFF',
-  black: '#1F2433',
-};
-
 /** 跟随动画主题的颜色名 */
 export const THEME_COLORS = ['ink', 'dim', 'accent', 'line'] as const;
+
+/** 配置里可以直接写的颜色名（site.yaml 的 scene.colors） */
+export function namedColors(): Record<string, string> {
+  return sceneStyle().colors;
+}
 
 export function isColor(v: unknown): boolean {
   if (typeof v !== 'string') return false;
   return (
-    v in NAMED_COLORS ||
+    Object.hasOwn(namedColors(), v) ||
     (THEME_COLORS as readonly string[]).includes(v) ||
     /^#[0-9a-fA-F]{6}$/.test(v)
   );
@@ -104,7 +94,7 @@ export function isColor(v: unknown): boolean {
 
 export function color(v: unknown, theme: Theme, fallback = 'ink'): string {
   const name = typeof v === 'string' && v ? v : fallback;
-  if (name in NAMED_COLORS) return NAMED_COLORS[name];
+  if (Object.hasOwn(namedColors(), name)) return namedColors()[name];
   if ((THEME_COLORS as readonly string[]).includes(name))
     return theme[name as (typeof THEME_COLORS)[number]];
   return /^#[0-9a-fA-F]{6}$/.test(name) ? name : theme.ink;
@@ -135,3 +125,6 @@ export function textWidth(text: string, size: number): number {
 export function boxAround(cx: number, cy: number, w: number, h: number): Box {
   return { x: cx - w / 2, y: cy - h / 2, w, h };
 }
+
+/** 取到手的零件：定义 + 配置里的默认属性 */
+export type ResolvedPart = PartDef & { defaults: Props };

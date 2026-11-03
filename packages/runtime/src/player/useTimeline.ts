@@ -24,6 +24,10 @@ export interface TimelineOptions {
   voiceURI?: string;
   /** 朗读语速，会再乘上播放速度 */
   speechRate?: number;
+  /** 时钟单帧最多推进多久（毫秒）：切到后台再回来时不要一下跳过去 */
+  maxFrameMs: number;
+  /** 读完后的停顿（毫秒，来自 site.yaml 的 player.afterSpeech） */
+  afterSpeech: { pauseMs: number; minMs: number; blockedRatio: number };
 }
 
 /**
@@ -62,7 +66,7 @@ export function useTimeline(opts: TimelineOptions): {
     let raf = 0;
     let prev = performance.now();
     const loop = (now: number) => {
-      const dt = Math.min(now - prev, 100); // 切到后台再回来时不要一下跳过去
+      const dt = Math.min(now - prev, fns.current.maxFrameMs);
       prev = now;
       dispatch({ type: 'frame', delta: (dt * speed) / ms });
       raf = requestAnimationFrame(loop);
@@ -89,7 +93,8 @@ export function useTimeline(opts: TimelineOptions): {
         // 读完后稍作停顿；太短的句子也至少留够看清动画的时间。
         // 朗读被浏览器拦下（没有点击过页面时常见）会立刻“读完”：这时按字数估算的时间停留。
         const dwell = fns.current.dwellMs(index, speed);
-        done(Math.max(500, 1200 / speed - spent, dwell * 0.6 - spent));
+        const { pauseMs, minMs, blockedRatio } = fns.current.afterSpeech;
+        done(Math.max(minMs, pauseMs / speed - spent, dwell * blockedRatio - spent));
       });
       return () => {
         cancelled = true;

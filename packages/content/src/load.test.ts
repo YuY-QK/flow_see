@@ -65,12 +65,24 @@ describe('内容配置校验', () => {
     expect(errs[0].message).toContain('defaults.grade');
   });
 
-  it('site.yaml 缺项时用默认值，未知字段报错', () => {
-    const { bundle } = loadContent(sandbox({ 'site.yaml': 'site:\n  name: 测试学堂\n' }));
+  it('site.yaml 缺项时用默认值，未知字段报错；scene、player、explore 必须给全', () => {
+    const real = readFileSync(join(CONTENT_ROOT, 'site.yaml'), 'utf8');
+    // 去掉 contact 和 learning.continueCount：用默认值
+    const trimmed = real
+      .replace('name: 动画学堂', 'name: 测试学堂')
+      .replace(/contact:[^\n]*\n( {2}[^\n]*\n)+/, '')
+      .replace(/ {2}continueCount:[^\n]*\n/, '');
+    const { bundle } = loadContent(sandbox({ 'site.yaml': trimmed }));
     expect(bundle?.site.site.name).toBe('测试学堂');
-    expect(bundle?.site.defaults.grade).toBe(1);
+    expect(bundle?.site.contact.email).toBe('');
     expect(bundle?.site.learning.continueCount.desktop).toBe(3);
-    expect(errors(sandbox({ 'site.yaml': 'colour: red\n' }))[0].message).toContain('colour');
+    expect(errors(sandbox({ 'site.yaml': real + 'colour: red\n' }))[0].message).toContain('colour');
+    // 没有默认值的三节：缺了就报错
+    expect(
+      errors(sandbox({ 'site.yaml': 'site:\n  name: x\n' }))
+        .map((e) => e.message)
+        .join(),
+    ).toMatch(/scene|player|explore/);
   });
 
   it('默认年级必须存在于 grades.yaml', () => {
@@ -92,12 +104,26 @@ describe('内容配置校验', () => {
       (e) => e.message,
     );
     expect(msgs.some((m) => m.includes('模板不存在'))).toBe(true);
-    expect(msgs.some((m) => m.includes('{count}'))).toBe(true);
+    expect(msgs.some((m) => m.includes('不存在的参数：count'))).toBe(true);
     expect(msgs.some((m) => m.includes('{n}'))).toBe(true);
 
     // 放错年级目录：和课程目录不一致
     const moved = errors(sandbox({ 'lessons/math/g1/fraction-intro.yaml': LESSON }));
     expect(moved.some((e) => e.message.includes('不一致'))).toBe(true);
+  });
+
+  it('派生值、点选例子的检查', () => {
+    const withDerived = LESSON.replace(
+      'explore:',
+      'derived:\n  rest: parts - take\n  bad: parts - nope\n  wrong: 1 +\npresets:\n  - { label: 太多, params: { parts: 99 } }\n  - { label: 没这个参数, params: { zzz: 1 } }\nexplore:',
+    );
+    const msgs = errors(sandbox({ 'lessons/math/g3/fraction-intro.yaml': withDerived })).map(
+      (e) => e.message,
+    );
+    expect(msgs.some((m) => m.includes('用到了不存在的参数或派生值：nope'))).toBe(true);
+    expect(msgs.some((m) => m.includes('算式写错了'))).toBe(true);
+    expect(msgs.some((m) => m.includes('例子“太多”') && m.includes('超出了控件的范围'))).toBe(true);
+    expect(msgs.some((m) => m.includes('参数 zzz'))).toBe(true);
   });
 
   it('已发布的知识点要有校对日期', () => {

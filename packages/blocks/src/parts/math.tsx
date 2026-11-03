@@ -14,8 +14,8 @@ export interface Hop {
 export function numberlineX(p: Props, v: number): number {
   const [x] = pt(p.at);
   const from = num(p.from, 0);
-  const to = num(p.to, 10);
-  const len = num(p.length, 600);
+  const to = num(p.to, 0);
+  const len = num(p.length, 0);
   return x + ((v - from) / (to - from || 1)) * len;
 }
 
@@ -32,12 +32,11 @@ export const numberlinePart: PartDef = {
   type: 'numberline',
   name: '数轴',
   anchor: 'start',
-  defaults: { from: 0, to: 10, step: 1, length: 600, color: 'ink', size: 22 },
   props: ['from', 'to', 'step', 'length', 'labelEvery', 'marks', 'pointer', 'hops', 'size'],
   bbox(p) {
     const [x, y] = pt(p.at);
-    const len = num(p.length, 600);
-    const span = num(p.to, 10) - num(p.from, 0) || 1;
+    const len = num(p.length, 0);
+    const span = num(p.to, 0) - num(p.from, 0) || 1;
     const hop = Math.max(0, ...hopsOf(p).map((h) => (Math.abs(h.to - h.from) / span) * len));
     const up = Math.max(30, Math.min(hop * 0.45, 120) + 30);
     return { x: x - 20, y: y - up, w: len + 40, h: up + 50 };
@@ -45,11 +44,11 @@ export const numberlinePart: PartDef = {
   Render({ p, ctx }) {
     const [x, y] = pt(p.at);
     const from = num(p.from, 0);
-    const to = num(p.to, 10);
+    const to = num(p.to, 0);
     const step = Math.max(num(p.step, 1), 1e-6);
     const every = Math.max(1, Math.round(num(p.labelEvery, 1)));
-    const len = num(p.length, 600);
-    const size = num(p.size, 22);
+    const len = num(p.length, 0);
+    const size = num(p.size, 0);
     const c = color(p.color, ctx.theme);
     const X = (v: number) => numberlineX(p, v);
     const ticks: number[] = [];
@@ -143,7 +142,6 @@ export const clockPart: PartDef = {
   type: 'clock',
   name: '钟面',
   anchor: 'center',
-  defaults: { time: 180, radius: 130, numbers: true, ticks: true, color: 'ink' },
   props: ['time', 'radius', 'numbers', 'ticks', 'hands'],
   normalize(p) {
     if (p.time === undefined) return p;
@@ -152,14 +150,14 @@ export const clockPart: PartDef = {
   },
   bbox(p) {
     const [x, y] = pt(p.at);
-    const r = num(p.radius, 130);
+    const r = num(p.radius, 0);
     return boxAround(x, y, r * 2 + 12, r * 2 + 12);
   },
   Render({ p, ctx }) {
     const [x, y] = pt(p.at);
-    const r = num(p.radius, 130);
+    const r = num(p.radius, 0);
     const c = color(p.color, ctx.theme);
-    const minutes = num(parseClockTime(p.time), 180);
+    const minutes = num(parseClockTime(p.time), 0);
     const { hour, minute } = clockAngles(minutes);
     const hands = str(p.hands, 'both');
     const polar = (deg: number, len: number): [number, number] => [
@@ -232,18 +230,17 @@ export const fractionCirclePart: PartDef = {
   type: 'fraction-circle',
   name: '分数圆',
   anchor: 'center',
-  defaults: { parts: 4, take: 0, radius: 120, color: 'orange' },
   required: ['parts'],
   props: ['parts', 'take', 'radius'],
   bbox(p) {
     const [x, y] = pt(p.at);
-    const r = num(p.radius, 120);
+    const r = num(p.radius, 0);
     return boxAround(x, y, r * 2 + 8, r * 2 + 8);
   },
   Render({ p, ctx }) {
     const [x, y] = pt(p.at);
-    const r = num(p.radius, 120);
-    const parts = Math.max(1, Math.round(num(p.parts, 4)));
+    const r = num(p.radius, 0);
+    const parts = Math.max(1, Math.round(num(p.parts, 0)));
     const take = takeOf(p, parts);
     const fill = color(p.color, ctx.theme, 'orange');
     const at = (k: number): [number, number] => {
@@ -295,20 +292,19 @@ export const fractionBarPart: PartDef = {
   type: 'fraction-bar',
   name: '分数条',
   anchor: 'center',
-  defaults: { parts: 4, take: 0, width: 480, height: 64, color: 'orange' },
   required: ['parts'],
   props: ['parts', 'take', 'width', 'height'],
   bbox(p) {
     const [x, y] = pt(p.at);
-    return boxAround(x, y, num(p.width, 480) + 6, num(p.height, 64) + 6);
+    return boxAround(x, y, num(p.width, 0) + 6, num(p.height, 0) + 6);
   },
   Render({ p, ctx }) {
     const [cx, cy] = pt(p.at);
-    const w = num(p.width, 480);
-    const h = num(p.height, 64);
+    const w = num(p.width, 0);
+    const h = num(p.height, 0);
     const x = cx - w / 2;
     const y = cy - h / 2;
-    const parts = Math.max(1, Math.round(num(p.parts, 4)));
+    const parts = Math.max(1, Math.round(num(p.parts, 0)));
     const take = takeOf(p, parts);
     const cw = w / parts;
     const fill = color(p.color, ctx.theme, 'orange');
@@ -344,18 +340,17 @@ export const gridPart: PartDef = {
   type: 'grid',
   name: '方格',
   anchor: 'start',
-  defaults: { rows: 3, cols: 4, cell: 44, filled: 0, color: 'green' },
   props: ['rows', 'cols', 'cell', 'filled'],
   bbox(p) {
     const [x, y] = pt(p.at);
-    const cell = num(p.cell, 44);
-    return { x, y, w: num(p.cols, 4) * cell, h: num(p.rows, 3) * cell };
+    const cell = num(p.cell, 0);
+    return { x, y, w: num(p.cols, 0) * cell, h: num(p.rows, 0) * cell };
   },
   Render({ p, ctx }) {
     const [x, y] = pt(p.at);
-    const rows = Math.max(1, Math.round(num(p.rows, 3)));
-    const cols = Math.max(1, Math.round(num(p.cols, 4)));
-    const cell = num(p.cell, 44);
+    const rows = Math.max(1, Math.round(num(p.rows, 0)));
+    const cols = Math.max(1, Math.round(num(p.cols, 0)));
+    const cell = num(p.cell, 0);
     const filled = Math.max(0, num(p.filled, 0));
     const fill = color(p.color, ctx.theme, 'green');
     return (

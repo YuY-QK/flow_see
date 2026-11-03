@@ -86,6 +86,51 @@
       },
       "additionalProperties": {}
     },
+    "derived": {
+      "description": "派生值：由参数算出来，如 gap: \"10 - a\"；按写的顺序计算，后面的可以用前面的",
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[A-Za-z_]\\w*$"
+      },
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "minLength": 1
+          }
+        ]
+      }
+    },
+    "presets": {
+      "description": "动手试一试：点选的例子（只写要改的参数）",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "按钮上的文字，如 8 + 6"
+          },
+          "params": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "label",
+          "params"
+        ],
+        "additionalProperties": false
+      }
+    },
     "objects": {
       "type": "array",
       "items": {
@@ -132,7 +177,7 @@
               },
               {
                 "type": "string",
-                "pattern": "^\\{[A-Za-z_]\\w*\\}$"
+                "minLength": 1
               }
             ]
           },
@@ -143,7 +188,7 @@
               },
               {
                 "type": "string",
-                "pattern": "^\\{[A-Za-z_]\\w*\\}$"
+                "minLength": 1
               }
             ]
           },

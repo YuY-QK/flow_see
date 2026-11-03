@@ -1,5 +1,5 @@
 import { useContext, useMemo } from 'react';
-import { AssetUrlContext, getPart, num, type PartContext } from '@flow-see/blocks';
+import { AssetUrlContext, getPart, num, sceneStyle, type PartContext } from '@flow-see/blocks';
 import type { StageProps } from '@flow-see/runtime/template.ts';
 import { sceneFrame } from './evaluate';
 import { sceneOf } from './scene';
@@ -36,7 +36,7 @@ export function SceneStage({ animation, index, theme, progress = 1 }: StageProps
           scale !== 1 || rotate !== 0
             ? `translate(${cx} ${cy}) rotate(${rotate}) scale(${scale}) translate(${-cx} ${-cy})`
             : undefined;
-        const pad = 12;
+        const { padding: pad, strokeWidth, fillOpacity, dash } = sceneStyle().highlight;
         return (
           <g key={o.id} opacity={opacity} transform={transform} data-part={o.id}>
             {hl > 0 ? (
@@ -47,11 +47,11 @@ export function SceneStage({ animation, index, theme, progress = 1 }: StageProps
                 height={b.h + pad * 2}
                 rx={Math.min(theme.radius, 18)}
                 fill={theme.accent}
-                fillOpacity={0.12 * hl}
+                fillOpacity={fillOpacity * hl}
                 stroke={theme.accent}
-                strokeWidth={4}
+                strokeWidth={strokeWidth}
                 strokeOpacity={hl}
-                strokeDasharray="10 6"
+                strokeDasharray={dash}
               />
             ) : null}
             <part.Render p={o.props} ctx={ctx} />

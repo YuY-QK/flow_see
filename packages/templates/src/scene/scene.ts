@@ -1,5 +1,6 @@
 import type { Animation } from '@flow-see/core';
-import { DEFAULT_STAGE, type SceneDef } from './evaluate';
+import { sceneStyle } from '@flow-see/blocks';
+import type { SceneDef } from './evaluate';
 
 const cache = new WeakMap<Animation, SceneDef>();
 
@@ -9,7 +10,7 @@ export function sceneOf(animation: Animation): SceneDef {
   if (def) return def;
   const cfg = (animation.config ?? {}) as { stage?: SceneDef['stage']; objects?: unknown };
   def = {
-    stage: cfg.stage ?? DEFAULT_STAGE,
+    stage: cfg.stage ?? sceneStyle().stage,
     objects: Array.isArray(cfg.objects) ? cfg.objects : [],
     steps: animation.steps.map((s) => (Array.isArray(s.data.do) ? s.data.do : [])),
   };

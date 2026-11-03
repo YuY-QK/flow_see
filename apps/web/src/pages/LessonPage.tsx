@@ -2,6 +2,13 @@ import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'r
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { AssetUrlContext } from '@flow-see/blocks';
 import {
+  clampParams,
+  fillParams,
+  resolveParams,
+  type ExploreControl,
+  type Scope,
+} from '@flow-see/core';
+import {
   findLesson,
   lessonNeighbors,
   lessonToAnimation,
@@ -13,6 +20,7 @@ import { Icon } from '@flow-see/runtime/ui/Icon.tsx';
 import ui from '@flow-see/runtime/ui/ui.module.css';
 import { getTemplate } from '@flow-see/templates';
 import { useDevice } from '../learn/device';
+import { ExplorePanel } from '../learn/ExplorePanel';
 import { LessonPlayer } from '../learn/LessonPlayer';
 import { lessonPath } from '../learn/paths';
 import { assetUrl, content, findSubject, gradeName, loadLesson, site } from '../site';
@@ -73,11 +81,11 @@ type Load = { kind: 'loading' } | { kind: 'error' } | { kind: 'ready'; lesson: L
 function useLessonContent(id: string) {
   const [state, setState] = useState<Load>({ kind: 'loading' });
   const [attempt, setAttempt] = useState(0);
-  // 加载不超过 300 毫秒不显示骨架，避免闪一下（规格 2.4）
+  // 加载没超过 site.yaml 的 player.skeletonDelayMs 不显示骨架，避免闪一下（规格 2.4）
   const [slow, setSlow] = useState(false);
   useEffect(() => {
     let alive = true;
-    const timer = window.setTimeout(() => alive && setSlow(true), 300);
+    const timer = window.setTimeout(() => alive && setSlow(true), site.player.skeletonDelayMs);
     loadLesson(id)
       .then((lesson) => alive && setState(lesson ? { kind: 'ready', lesson } : { kind: 'error' }))
       .catch(() => alive && setState({ kind: 'error' }));
@@ -150,27 +158,53 @@ function LessonReady({
   const device = useDevice();
   const defaultTheme = useSettings((st) => st.defaultTheme);
   const template = getTemplate(lesson.template);
+  const explore = useMemo(() => (lesson.explore ?? []) as ExploreControl[], [lesson]);
+  const presets = lesson.presets ?? [];
+  const resultIndex = (lesson.resultStep ?? lesson.steps.length) - 1;
+
+  // 动手试一试：调过的参数只在这次打开里有效（不保存）。
+  // 每次调整、换例子、回到标准讲解，播放器都重新开始（n 变了就换 key）。
+  const [session, setSession] = useState<{
+    trial: Scope | null;
+    n: number;
+    startIndex: number;
+    autoPlay: boolean;
+  }>(() => {
+    // 打开时：首次学习从第 1 步开始并自动播放；有记录则停在上次那一步、暂停；
+    // 已学完的从第 1 步开始（规格 P3、3.3）。只在打开时决定一次。
+    const r = useLearning.getState().records[lesson.id];
+    if (!r)
+      return { trial: null, n: 0, startIndex: 0, autoPlay: site.defaults.autoplayOnFirstOpen };
+    return { trial: null, n: 0, startIndex: r.completed ? 0 : r.lastStep, autoPlay: false };
+  });
   const animation = useMemo(
-    () => lessonToAnimation(lesson, { themeId: defaultTheme }),
-    [lesson, defaultTheme],
+    () => lessonToAnimation(lesson, { themeId: defaultTheme, params: session.trial ?? undefined }),
+    [lesson, defaultTheme, session.trial],
   );
+  const values = animation.params ?? {};
+  const tryParams = (patch: Scope) => {
+    // 取值超出范围时自动收回（例如“小数”不能小于“11 - 大数”）
+    const next = clampParams(
+      explore,
+      { ...lesson.params, ...(session.trial ?? {}), ...patch },
+      lesson.derived,
+    );
+    // 手动调整暂停播放，并跳到结果步骤（默认最后一步）
+    setSession((st) => ({ trial: next, n: st.n + 1, startIndex: resultIndex, autoPlay: false }));
+  };
+  const resetTrial = () =>
+    setSession((st) => ({ trial: null, n: st.n + 1, startIndex: 0, autoPlay: false }));
+  // 要点里的 {参数名} 跟着当前参数变
+  const keyPoints = fillParams(lesson.keyPoints, values);
   const record = useLearning((st) => st.records[lesson.id]);
   const visit = useLearning((st) => st.visit);
   const setCompleted = useLearning((st) => st.setCompleted);
-
-  // 打开时：首次学习从第 1 步开始并自动播放；有记录则停在上次那一步、暂停；
-  // 已学完的从第 1 步开始（规格 P3、3.3）。只在打开时决定一次。
-  const [start] = useState(() => {
-    const r = useLearning.getState().records[lesson.id];
-    if (!r) return { index: 0, autoPlay: site.defaults.autoplayOnFirstOpen };
-    return { index: r.completed ? 0 : r.lastStep, autoPlay: false };
-  });
 
   const [toast, setToast] = useState('');
   const [dialog, setDialog] = useState<'none' | 'undo' | 'export' | 'link'>('none');
   useEffect(() => {
     if (!toast) return;
-    const t = window.setTimeout(() => setToast(''), 2000);
+    const t = window.setTimeout(() => setToast(''), site.player.toastMs);
     return () => window.clearTimeout(t);
   }, [toast]);
 
@@ -227,20 +261,36 @@ function LessonReady({
         </div>
 
         <LessonPlayer
+          key={session.n}
           animation={animation}
           template={template}
-          startIndex={start.index}
-          autoPlay={start.autoPlay}
-          largeCaption={lessonKey.grade <= 2}
+          startIndex={session.startIndex}
+          autoPlay={session.autoPlay}
+          largeCaption={lessonKey.grade <= site.player.largeCaptionMaxGrade}
           onVisit={(i) => visit(lessonKey, i)}
           onFinish={markDone}
         />
+
+        {explore.length || presets.length ? (
+          <ExplorePanel
+            controls={explore}
+            presets={presets.map((p) => ({
+              label: p.label,
+              params: clampParams(explore, { ...lesson.params, ...p.params }, lesson.derived),
+            }))}
+            values={resolveParams(values, lesson.derived)}
+            changed={!!session.trial}
+            onChange={tryParams}
+            onPreset={(params) => tryParams(params)}
+            onReset={resetTrial}
+          />
+        ) : null}
 
         <div className={s.below}>
           <section className={s.points}>
             <h2 className={p.h2}>要点</h2>
             <ul>
-              {lesson.keyPoints.map((k) => (
+              {keyPoints.map((k) => (
                 <li key={k}>{k}</li>
               ))}
             </ul>

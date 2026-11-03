@@ -1,7 +1,8 @@
 // 积木层：可复用的画面零件（计数块、数轴、钟面、分数圆……）。
 // 依赖方向：templates → blocks → runtime → core。
 // 每个零件是一个 PartDef：默认属性 + 包围盒 + 渲染。零件都是纯函数：同样的属性画出同样的画面。
-import type { PartDef } from './base';
+import type { PartDef, ResolvedPart } from './base';
+import { sceneStyle } from './style';
 import { countersPart, tenframePart } from './parts/counters';
 import {
   clockPart,
@@ -14,6 +15,7 @@ import { arrowPart, imagePart, linePart, shapePart } from './parts/shapes';
 import { fractionPart, labelPart, textPart } from './parts/text';
 
 export * from './base';
+export { configureScene, sceneStyle, type SceneStyle } from './style';
 export { AssetUrlContext } from './context';
 export {
   COUNTER_LAYOUTS,
@@ -50,8 +52,9 @@ const ALIASES: Record<string, string> = { number: 'text', formula: 'text' };
 
 const byType = new Map(PARTS.map((p) => [p.type, p]));
 
-export function getPart(type: string): PartDef | undefined {
-  return byType.get(ALIASES[type] ?? type);
+export function getPart(type: string): ResolvedPart | undefined {
+  const part = byType.get(ALIASES[type] ?? type);
+  return part && { ...part, defaults: sceneStyle().parts[part.type] ?? {} };
 }
 
 export const PART_TYPES: readonly string[] = [...PARTS.map((p) => p.type), ...Object.keys(ALIASES)];

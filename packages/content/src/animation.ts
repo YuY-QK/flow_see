@@ -1,5 +1,11 @@
 // 知识点配置 → 播放器用的 Animation（浏览器和 Node 都能用）。
-import { SCHEMA_VERSION, fillParams, type Animation, type ThemeId } from '@flow-see/core';
+import {
+  SCHEMA_VERSION,
+  fillParams,
+  resolveParams,
+  type Animation,
+  type ThemeId,
+} from '@flow-see/core';
 import type { LessonContent } from './index';
 
 export interface LessonAnimationOptions {
@@ -17,7 +23,8 @@ export function lessonToAnimation(
   lesson: LessonContent,
   opts: LessonAnimationOptions = {},
 ): Animation {
-  const params = { ...lesson.params, ...opts.params };
+  // 派生值（如 gap = 10 - a）随参数一起算出来，讲解和零件里都能用
+  const params = resolveParams({ ...lesson.params, ...opts.params }, lesson.derived);
   const filled = fillParams({ objects: lesson.objects ?? [], steps: lesson.steps }, params);
   return {
     id: `lesson-${lesson.id}`,

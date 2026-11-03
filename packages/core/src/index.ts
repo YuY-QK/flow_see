@@ -4,3 +4,4 @@ export * from './edit';
 export * from './playback';
 export * from './themes';
 export * from './timeline';
+export * from './params';

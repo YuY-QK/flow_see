@@ -1,4 +1,5 @@
 // 计数块：圆片 / 方块 / 小棒，可按一排、一列、点阵或十格框排列。
+import { sceneStyle } from '../style';
 import {
   color,
   isPoint,
@@ -21,9 +22,6 @@ function layoutOf(p: Props): (typeof COUNTER_LAYOUTS)[number] {
     : 'row';
 }
 
-/** 十格框之间的间距（相对格子大小） */
-const FRAME_GAP = 0.4;
-
 /** 十格框有几个框：至少 1 个，按 count 和 capacity 中较大的算 */
 export function frameCount(p: Props): number {
   return Math.max(1, Math.ceil(Math.max(num(p.count, 0), num(p.capacity, 0)) / 10));
@@ -32,18 +30,21 @@ export function frameCount(p: Props): number {
 /** 第 i 个位置（格子中心，舞台坐标）。i 可以超出当前个数：合并时飞到“下一个空位” */
 export function counterSlot(p: Props, i: number): Point {
   const [x, y] = pt(p.at);
-  const s = num(p.size, 44);
+  const s = num(p.size, 0);
   switch (layoutOf(p)) {
     case 'column':
       return [x + s / 2, y + i * s + s / 2];
     case 'grid': {
-      const cols = Math.max(1, Math.round(num(p.cols, 5)));
+      const cols = Math.max(1, Math.round(num(p.cols, 0)));
       return [x + (i % cols) * s + s / 2, y + Math.floor(i / cols) * s + s / 2];
     }
     case 'tenframe': {
       const k = Math.floor(i / 10);
       const j = i % 10;
-      return [x + (j % 5) * s + s / 2, y + k * s * (2 + FRAME_GAP) + Math.floor(j / 5) * s + s / 2];
+      return [
+        x + (j % 5) * s + s / 2,
+        y + k * s * (2 + sceneStyle().tenframeGap) + Math.floor(j / 5) * s + s / 2,
+      ];
     }
     default:
       return [x + i * s + s / 2, y + s / 2];
@@ -69,10 +70,10 @@ export function counterColors(p: Props): string[] {
 function frameBoxes(p: Props): Box[] {
   if (layoutOf(p) !== 'tenframe') return [];
   const [x, y] = pt(p.at);
-  const s = num(p.size, 44);
+  const s = num(p.size, 0);
   return Array.from({ length: frameCount(p) }, (_, k) => ({
     x,
-    y: y + k * s * (2 + FRAME_GAP),
+    y: y + k * s * (2 + sceneStyle().tenframeGap),
     w: 5 * s,
     h: 2 * s,
   }));
@@ -82,11 +83,10 @@ export const countersPart: PartDef = {
   type: 'counters',
   name: '计数块',
   anchor: 'start',
-  defaults: { count: 1, layout: 'row', shape: 'circle', size: 44, color: 'blue' },
   required: ['count'],
   props: ['count', 'layout', 'cols', 'shape', 'size', 'capacity', 'colors', 'items'],
   bbox(p) {
-    const s = num(p.size, 44);
+    const s = num(p.size, 0);
     const boxes = [
       ...frameBoxes(p),
       ...counterItems(p).map(([cx, cy]) => ({ x: cx - s / 2, y: cy - s / 2, w: s, h: s })),
@@ -102,7 +102,7 @@ export const countersPart: PartDef = {
     return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
   },
   Render({ p, ctx }) {
-    const s = num(p.size, 44);
+    const s = num(p.size, 0);
     const fills = counterColors(p).map((c) => color(c, ctx.theme, 'blue'));
     const shape = str(p.shape, 'circle');
     const r = s * 0.38;
@@ -152,6 +152,5 @@ export const tenframePart: PartDef = {
   ...countersPart,
   type: 'tenframe',
   name: '十格框',
-  defaults: { ...countersPart.defaults, count: 0, layout: 'tenframe' },
   required: [],
 };
