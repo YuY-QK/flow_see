@@ -40,6 +40,8 @@ export interface StageProps {
 /** 知识点配置里与模板有关的部分（结构与 packages/content 的 lesson 一致，这里不依赖 content） */
 export interface LessonLike {
   params: Record<string, unknown>;
+  /** 派生值：由参数算出来的值（算式） */
+  derived?: Record<string, number | string>;
   stage?: { width: number; height: number };
   objects?: Record<string, unknown>[];
   steps: { say: string; title?: string; show?: string; do?: Record<string, unknown>[] }[];

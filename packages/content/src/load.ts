@@ -2,6 +2,13 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { LineCounter, parseDocument, type Document } from 'yaml';
+import {
+  clampParams,
+  exploreCombos,
+  exprNames,
+  resolveParams,
+  type ExploreControl,
+} from '@flow-see/core/params.ts';
 import type { z } from 'zod';
 import {
   SCHEMAS,
@@ -45,6 +52,8 @@ export interface LoadOptions {
   templateIds?: readonly string[];
   /** 讲解词超过这个字数时给出提醒（自校清单：一句不超过约 30 字） */
   sayWarnLength?: number;
+  /** site.yaml 读完、开始检查知识点之前调用（用它把场景样式等配置注入 blocks） */
+  onSite?(site: SiteConfig): void;
   /** 模板对知识点配置的检查（零件、动作等）；path 相对知识点文件根 */
   checkLesson?(lesson: LessonConfig): { path: (string | number)[]; message: string }[];
 }
@@ -149,6 +158,7 @@ export function loadContent(
     issues.push({ level: 'warning', file, line, message });
 
   const site = readYaml(root, join(root, 'site.yaml'), 'site', issues);
+  if (site) opts.onSite?.(site);
   const grades = readYaml(root, join(root, 'curriculum', 'grades.yaml'), 'grades', issues);
   const help = site ? readYaml(root, join(root, site.help.faq), 'help', issues) : undefined;
   const assets = readYaml(root, join(root, 'assets', 'manifest.yaml'), 'manifest', issues) ?? [];
@@ -206,17 +216,46 @@ export function loadContent(
         err(name, `零件 ${o.id} 引用的素材不存在：${asset}`);
     }
 
-    const params = new Set(Object.keys(lesson.params));
-    for (const ex of lesson.explore ?? []) {
-      if (!params.has(ex.param))
-        err(name, `explore 里的参数 ${ex.param} 没有在 params 中给出标准取值`);
-      for (const v of [ex.min, ex.max])
-        if (typeof v === 'string' && !params.has(v.slice(1, -1)))
-          err(name, `explore 引用了不存在的参数 ${v}`);
+    // 参数、派生值、动手试一试
+    const known = new Set(Object.keys(lesson.params));
+    const derived = lesson.derived ?? {};
+    for (const [k, expr] of Object.entries(derived)) {
+      const names = exprNames(String(expr));
+      if (!names) err(name, `derived 里 ${k} 的算式写错了：${expr}`);
+      else
+        for (const n of names)
+          if (!known.has(n)) err(name, `derived 里 ${k} 用到了不存在的参数或派生值：${n}`);
+      if (known.has(k)) err(name, `derived 里的 ${k} 和 params 里的参数重名`);
+      known.add(k);
     }
+    const std = resolveParams(lesson.params, derived);
+    for (const k of Object.keys(derived))
+      if (std[k] === undefined) err(name, `derived 里 ${k} 用标准参数算不出结果（除以 0？）`);
+    const explore = (lesson.explore ?? []) as ExploreControl[];
+    for (const ex of explore) {
+      if (!Object.hasOwn(lesson.params, ex.param))
+        err(name, `explore 里的参数 ${ex.param} 没有在 params 中给出标准取值`);
+      if (ex.control === 'slider' && (ex.min === undefined || ex.max === undefined))
+        err(name, `滑块 ${ex.param} 要写 min 和 max`);
+      if (ex.control === 'buttons' && !ex.options?.length)
+        err(name, `按钮组 ${ex.param} 要写 options`);
+      for (const v of [ex.min, ex.max]) {
+        if (typeof v !== 'string') continue;
+        const names = exprNames(v);
+        if (!names) err(name, `explore ${ex.param} 的范围算式写错了：${v}`);
+        else
+          for (const n of names) if (!known.has(n)) err(name, `explore 引用了不存在的参数：${n}`);
+      }
+    }
+    // 讲解、零件、动作里的 {参数名}
+    const used = new Set<string>();
+    JSON.stringify([lesson.objects, lesson.steps, lesson.keyPoints], (_k, v) => {
+      if (typeof v === 'string') for (const [, n] of v.matchAll(PLACEHOLDER)) used.add(n);
+      return v;
+    });
+    for (const n of used)
+      if (!known.has(n)) err(name, `配置里的 {${n}} 不是 params 或 derived 中的参数`);
     lesson.steps.forEach((st, i) => {
-      for (const [, p] of st.say.matchAll(PLACEHOLDER))
-        if (!params.has(p)) err(name, `第 ${i + 1} 步讲解里的 {${p}} 不是 params 中的参数`);
       const len = st.say.replace(PLACEHOLDER, '00').length;
       if (opts.sayWarnLength && len > opts.sayWarnLength)
         warn(
@@ -224,9 +263,64 @@ export function loadContent(
           `第 ${i + 1} 步讲解有 ${len} 个字，自校清单建议一句不超过约 ${opts.sayWarnLength} 字`,
         );
     });
-    if (!opts.templateIds || opts.templateIds.includes(lesson.template))
-      for (const i of opts.checkLesson?.(lesson) ?? [])
-        err(name, (i.path.length ? `${formatPath(i.path)}：` : '') + i.message, read.line(i.path));
+
+    // 标准取值、点选的例子、滑块能取到的每一种组合，都要能正常画出来
+    const variants: { label: string; params: Record<string, unknown> }[] = [
+      { label: '', params: lesson.params },
+    ];
+    if (clampParams(explore, lesson.params, derived)[explore[0]?.param] !== undefined) {
+      const clamped = clampParams(explore, lesson.params, derived);
+      for (const ex of explore)
+        if (clamped[ex.param] !== lesson.params[ex.param])
+          err(name, `标准取值 ${ex.param} = ${String(lesson.params[ex.param])} 超出了控件的范围`);
+    }
+    for (const pr of lesson.presets ?? []) {
+      const merged = { ...lesson.params, ...pr.params };
+      for (const k of Object.keys(pr.params))
+        if (!Object.hasOwn(lesson.params, k))
+          err(name, `例子“${pr.label}”里的参数 ${k} 没有在 params 中给出标准取值`);
+      const clamped = clampParams(explore, merged, derived);
+      for (const ex of explore)
+        if (clamped[ex.param] !== merged[ex.param])
+          err(
+            name,
+            `例子“${pr.label}”的 ${ex.param} = ${String(merged[ex.param])} 超出了控件的范围`,
+          );
+      variants.push({ label: `例子“${pr.label}”`, params: merged });
+    }
+    if (explore.length)
+      for (const p of exploreCombos(explore, lesson.params, derived))
+        variants.push({
+          label: '',
+          params: p as Record<string, unknown>,
+        });
+    if (!opts.templateIds || opts.templateIds.includes(lesson.template)) {
+      const seen = new Set<string>();
+      for (const v of variants)
+        for (const i of opts.checkLesson?.({ ...lesson, params: v.params }) ?? []) {
+          const key = formatPath(i.path) + i.message;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          // 只有换了参数才出的问题，写明是哪组参数
+          const std0 = v.params === lesson.params;
+          const when = std0
+            ? ''
+            : `（${
+                v.label ||
+                '当 ' +
+                  Object.entries(v.params)
+                    .filter(([k, x]) => x !== lesson.params[k])
+                    .map(([k, x]) => `${k}=${String(x)}`)
+                    .join('、') +
+                  ' 时'
+              }）`;
+          err(
+            name,
+            (i.path.length ? `${formatPath(i.path)}：` : '') + i.message + when,
+            read.line(i.path),
+          );
+        }
+    }
     if (lesson.resultStep && lesson.resultStep > lesson.steps.length)
       err(name, `resultStep 超出了步骤数（共 ${lesson.steps.length} 步）`);
 

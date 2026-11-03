@@ -12,6 +12,7 @@
     "schema": "tsx src/cli/schema.ts"
   },
   "dependencies": {
+    "@flow-see/blocks": "workspace:*",
     "@flow-see/core": "workspace:*",
     "@flow-see/templates": "workspace:*",
     "yaml": "^2.9.1",

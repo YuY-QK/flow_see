@@ -1,9 +1,11 @@
 # yaml-language-server: $schema=../../../schemas/lesson.schema.json
-# 凑十法：9 + 4。只用场景模板（scene）的配置做出来，不写代码。
-# 舞台 800 × 450；at 是零件位置：计数块、方格、数轴是左上角（数轴是最左端），其他零件是中心。
+# 凑十法。只用场景模板（scene）的配置做出来，不写代码。
+# 大数 a、小数 b 是参数；要拆出几个、剩几个、得数，都由 derived 算出来，所以孩子可以换成 8 + 6 等别的例子。
+# 舞台大小、零件默认值、颜色等都在 site.yaml 的 scene；
+# at 是零件位置：计数块、方格、数轴是左上角（数轴是最左端），其他零件是中心。
 id: make-ten
 title: 凑十法：9 + 4
-summary: 把 4 拆成 1 和 3，先和 9 凑成 10，再加 3
+summary: 把小数拆开，先和大数凑成 10，再加剩下的；还能自己换例子试试
 status: published
 reviewedAt: 2026-11-03
 duration: 1分钟
@@ -11,19 +13,36 @@ tags: [凑十, 凑十法, 进位加法, 加法, 十格框]
 recommended: true
 
 template: scene
-stage: { width: 800, height: 450 }
+
+params:
+  a: 9 # 大数
+  b: 4 # 小数
+derived:
+  gap: 10 - a # 大数还差几个凑成 10
+  rest: b - gap # 小数拆出 gap 个以后还剩几个
+  sum: a + b
+
+explore: # 动手试一试：只开放“凑十法”讲得通的范围（大数 6–9，小数要能把大数凑成 10 且还有剩）
+  - { param: a, control: slider, label: 大数, min: 6, max: 9 }
+  - { param: b, control: slider, label: 小数, min: 11 - a, max: 9 }
+presets: # 点选换例子
+  - { label: 9 + 4, params: { a: 9, b: 4 } }
+  - { label: 8 + 6, params: { a: 8, b: 6 } }
+  - { label: 7 + 5, params: { a: 7, b: 5 } }
+  - { label: 8 + 7, params: { a: 8, b: 7 } }
+  - { label: 6 + 9, params: { a: 6, b: 9 } }
 
 objects:
-  - id: left # 9 个蓝色圆片，按十格框排列
+  - id: left # a 个蓝色圆片，按十格框排列
     type: counters
-    count: 9
+    count: '{a}'
     layout: tenframe
     size: 52
     at: [70, 112]
     color: blue
   - id: left-num
     type: text
-    text: '9'
+    text: '{a}'
     at: [200, 262]
     size: 40
   - id: plus
@@ -31,65 +50,67 @@ objects:
     text: +
     at: [400, 164]
     size: 48
-  - id: right # 4 个橙色圆片，排成一排
+  - id: right # b 个橙色圆片，每行 5 个
     type: counters
-    count: 4
+    count: '{b}'
+    layout: grid
+    cols: 5
     size: 52
-    at: [470, 138]
+    at: [470, 112]
     color: orange
   - id: right-num
     type: text
-    text: '4'
-    at: [574, 262]
+    text: '{b}'
+    at: [600, 262]
     size: 40
   - id: hint
     type: label
-    text: 还差 1 个就满 10
+    text: 还差 {gap} 个就满 10
     at: [200, 58]
     hidden: true
   - id: formula
     type: text
-    text: 9 + 4 = ?
+    text: '{a} + {b} = ?'
     at: [400, 375]
     size: 48
 
 steps:
   - title: 提出问题
-    say: 9 加 4 等于几？我们用凑十法来算。
+    say: '{a} 加 {b} 等于几？我们用凑十法来算。'
     do:
       - highlight: formula
-  - title: 看看 9 还差几个
-    say: 十格框里有 9 个，还空着 1 格。
+  - title: 看看大数还差几个
+    say: 十格框里有 {a} 个，还空着 {gap} 格。
     do:
       - highlight: left
       - show: { target: hint, together: true }
-  - title: 把 4 拆开
-    say: 把 4 拆成 1 和 3，先拿出 1 个。
+  - title: 把小数拆开
+    say: 把 {b} 拆成 {gap} 和 {rest}，先拿出 {gap} 个。
     do:
       - highlight: right
-      - split: { target: right, take: 1, as: one }
-      - set: { target: right-num, text: 4 = 1 + 3, together: true }
+      - split: { target: right, take: '{gap}', as: one }
+      - set: { target: right-num, text: '{b} = {gap} + {rest}', together: true }
   - title: 凑成 10
-    say: 把这 1 个放进十格框，9 和 1 凑成 10。
+    say: 把这 {gap} 个放进十格框，{a} 和 {gap} 凑成 10。
     do:
       - move: { target: one, to: left, duration: 1.2s }
       - hide: { target: hint, together: true }
       - set: { target: left-num, text: '10' }
-      - set: { target: right-num, text: '3', together: true }
+      - set: { target: right-num, text: '{rest}', together: true }
       - highlight: { target: [left, left-num] }
-  - title: 再加 3
-    say: 10 加 3 等于 13。
+  - title: 再加剩下的
+    say: 10 加 {rest} 等于 {sum}。
     do:
-      - set: { target: formula, text: 10 + 3 = 13 }
+      - set: { target: formula, text: '10 + {rest} = {sum}' }
       - highlight: formula
   - title: 得出结果
-    say: 所以 9 加 4 等于 13。
+    say: 所以 {a} 加 {b} 等于 {sum}。
     do:
-      - set: { target: formula, text: 9 + 4 = 13 }
+      - set: { target: formula, text: '{a} + {b} = {sum}' }
       - color: { target: formula, to: green, together: true }
       - highlight: formula
 
 keyPoints:
   - 先看大数还差几个凑成 10，就从小数里拆出几个
   - 凑成 10 以后，再加上剩下的数，算起来更简单
-  - 9 + 4：把 4 拆成 1 和 3，9 + 1 = 10，10 + 3 = 13
+  - '{a} + {b}：把 {b} 拆成 {gap} 和 {rest}，{a} + {gap} = 10，10 + {rest} = {sum}'

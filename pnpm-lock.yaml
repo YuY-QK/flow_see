@@ -133,6 +133,9 @@ importers:
 
   packages/content:
     dependencies:
+      '@flow-see/blocks':
+        specifier: workspace:*
+        version: link:../blocks
       '@flow-see/core':
         specifier: workspace:*
         version: link:../core

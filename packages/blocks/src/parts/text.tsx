@@ -13,11 +13,10 @@ export const textPart: PartDef = {
   type: 'text',
   name: '文字',
   anchor: 'center',
-  defaults: { size: 36, color: 'ink', weight: 'bold' },
   props: ['text', 'value', 'size', 'weight'],
   bbox(p) {
     const [x, y] = pt(p.at);
-    const size = num(p.size, 36);
+    const size = num(p.size, 0);
     return boxAround(x, y, Math.max(textWidth(displayText(p), size), size * 0.6), size * 1.25);
   },
   Render({ p, ctx }) {
@@ -28,7 +27,7 @@ export const textPart: PartDef = {
         y={y}
         textAnchor="middle"
         dominantBaseline="central"
-        fontSize={num(p.size, 36)}
+        fontSize={num(p.size, 0)}
         fontWeight={str(p.weight, 'bold')}
         fill={color(p.color, ctx.theme)}
         style={{ fontVariantNumeric: 'tabular-nums' }}
@@ -44,18 +43,17 @@ export const fractionPart: PartDef = {
   type: 'fraction',
   name: '分数',
   anchor: 'center',
-  defaults: { size: 40, color: 'ink' },
   required: ['num', 'den'],
   props: ['num', 'den', 'size'],
   bbox(p) {
     const [x, y] = pt(p.at);
-    const size = num(p.size, 40);
+    const size = num(p.size, 0);
     const w = Math.max(textWidth(str(p.num), size), textWidth(str(p.den), size)) + size * 0.4;
     return boxAround(x, y, w, size * 2.4);
   },
   Render({ p, ctx }) {
     const [x, y] = pt(p.at);
-    const size = num(p.size, 40);
+    const size = num(p.size, 0);
     const c = color(p.color, ctx.theme);
     const w = Math.max(textWidth(str(p.num), size), textWidth(str(p.den), size)) + size * 0.4;
     return (
@@ -85,18 +83,17 @@ export const labelPart: PartDef = {
   type: 'label',
   name: '标注框',
   anchor: 'center',
-  defaults: { size: 26, color: 'accent' },
   required: ['text'],
   props: ['text', 'value', 'size'],
   bbox(p) {
     const [x, y] = pt(p.at);
-    const size = num(p.size, 26);
+    const size = num(p.size, 0);
     return boxAround(x, y, textWidth(displayText(p), size) + size * 1.2, size * 1.9);
   },
   Render({ p, ctx }) {
     const b = labelPart.bbox(p);
     const [x, y] = pt(p.at);
-    const size = num(p.size, 26);
+    const size = num(p.size, 0);
     const c = color(p.color, ctx.theme, 'accent');
     return (
       <g>

@@ -21,6 +21,7 @@
     "apps/web/src",
     "apps/web/vite.config.ts",
     "vitest.config.ts",
+    "vitest.setup.ts",
     "capacitor.config.ts"
   ]
 }

@@ -1,7 +1,6 @@
 // 场景求值：画面 = Stage(场景, 第几步, 步内进度 t)。
 // 纯函数：从初始零件出发，把前面各步的动作做完，再把当前步的动作做到 t 对应的时刻。
 import {
-  NAMED_COLORS,
   counterColors,
   counterItems,
   counterSlot,
@@ -9,6 +8,8 @@ import {
   isCounters,
   isPoint,
   mixColor,
+  namedColors,
+  sceneStyle,
   num,
   type Point,
   type Props,
@@ -32,8 +33,6 @@ export interface SceneObject {
 export interface SceneFrame {
   objects: SceneObject[];
 }
-
-export const DEFAULT_STAGE = { width: 800, height: 450 };
 
 /** 先快后慢（进出都平滑） */
 const smooth = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -60,7 +59,7 @@ function blend(from: unknown, to: unknown, t: number, key: string): unknown {
   if (typeof from === 'number' && typeof to === 'number') return lerp(from, to, t);
   if (isPoint(from) && isPoint(to)) return lerpPt(from, to, t);
   if (key === 'color' && typeof from === 'string' && typeof to === 'string') {
-    const hex = (c: string) => NAMED_COLORS[c] ?? c;
+    const hex = (c: string) => namedColors()[c] ?? c;
     return mixColor(hex(from), hex(to), t);
   }
   return t < 0.5 ? from : to;
@@ -138,7 +137,9 @@ function apply(world: World, a: SceneAction, p: number, current: boolean) {
       const items = counterItems(one.props);
       const take = Math.max(0, Math.min(items.length, Math.round(num(args.take, 1))));
       const size = num(one.props.size, 44);
-      const off = isPoint(args.offset) ? args.offset : ([0, -size * 0.9] as Point);
+      const off = isPoint(args.offset)
+        ? args.offset
+        : ([0, -size * sceneStyle().splitLift] as Point);
       const d: Point = [off[0] * e, off[1] * e];
       const moved = items
         .slice(items.length - take)

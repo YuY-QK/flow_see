@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getTemplate, TEMPLATE_IDS } from '@flow-see/templates';
 import { sceneFrame, sceneOf } from '@flow-see/templates/scene/index.ts';
+import { clampParams, exploreCombos, type ExploreControl } from '@flow-see/core';
 import { lessonToAnimation } from './animation';
 import { buildIndex, lessonNeighbors, type ContentIndex } from './catalog';
 import { CONTENT_ROOT } from './json-schema';
@@ -32,6 +33,59 @@ describe('真实的知识点配置', () => {
     // 每一步都有动画段（连续时间模型）
     const tpl = getTemplate('scene')!;
     for (let i = 0; i < anim.steps.length; i++) expect(tpl.motionMs!(anim, i)).toBeGreaterThan(0);
+  });
+});
+
+describe('凑十法：动手试一试，换示例', () => {
+  const lf = () => load().bundle!.lessons.find((l) => l.lesson.id === 'make-ten')!;
+  const lesson = () => ({ ...lf().lesson, subject: lf().subject, grade: lf().grade });
+  /** 最后一步的画面 */
+  const finalFrame = (params?: Record<string, unknown>) => {
+    const anim = lessonToAnimation(lesson(), { params });
+    const byId = Object.fromEntries(
+      sceneFrame(sceneOf(anim), anim.steps.length - 1).objects.map((o) => [o.id, o.props]),
+    );
+    return { anim, byId };
+  };
+
+  it('8 + 6：拆出 2 个，凑成 10，剩 4，得 14；讲解也跟着变', () => {
+    const { anim, byId } = finalFrame({ a: 8, b: 6 });
+    expect(byId.left.count).toBe(10);
+    expect(byId.right.count).toBe(4);
+    expect(byId.formula.text).toBe('8 + 6 = 14');
+    expect(anim.steps[2].desc).toBe('把 6 拆成 2 和 4，先拿出 2 个。');
+    expect(anim.steps[3].desc).toBe('把这 2 个放进十格框，8 和 2 凑成 10。');
+  });
+
+  it('点选的每个例子、滑块的每种组合都讲得通：凑成 10，剩下的数加上去等于得数', () => {
+    const l = lesson();
+    const controls = l.explore as ExploreControl[];
+    const all = exploreCombos(controls, l.params, l.derived);
+    expect(all.length).toBeGreaterThan(20);
+    for (const p of all) {
+      const a = p.a as number;
+      const b = p.b as number;
+      const { byId } = finalFrame(p);
+      expect(byId.left.count, `${a}+${b}`).toBe(10);
+      expect(byId.right.count, `${a}+${b}`).toBe(a + b - 10);
+      expect(byId.formula.text).toBe(`${a} + ${b} = ${a + b}`);
+    }
+    for (const pr of l.presets!)
+      expect(clampParams(controls, { ...l.params, ...pr.params }, l.derived)).toMatchObject(
+        pr.params,
+      );
+  });
+
+  it('取值超出范围时自动收回：大数改成 6 后，小数至少是 5', () => {
+    const l = lesson();
+    expect(clampParams(l.explore as ExploreControl[], { a: 6, b: 4 }, l.derived)).toMatchObject({
+      a: 6,
+      b: 5,
+    });
+  });
+
+  it('标准讲解（不传参数）仍是 9 + 4', () => {
+    expect(finalFrame().byId.formula.text).toBe('9 + 4 = 13');
   });
 });
 

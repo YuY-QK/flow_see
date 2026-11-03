@@ -238,7 +238,248 @@
         }
       },
       "additionalProperties": false
+    },
+    "scene": {
+      "type": "object",
+      "properties": {
+        "stage": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "height": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "width",
+            "height"
+          ],
+          "additionalProperties": false,
+          "description": "没有写 stage 的知识点用这个舞台大小"
+        },
+        "colors": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "description": "配置里可以直接写的颜色名"
+        },
+        "highlight": {
+          "type": "object",
+          "properties": {
+            "padding": {
+              "type": "number",
+              "minimum": 0
+            },
+            "strokeWidth": {
+              "type": "number",
+              "minimum": 0
+            },
+            "fillOpacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "dash": {
+              "type": "string",
+              "description": "虚线样式，如 \"10 6\""
+            }
+          },
+          "required": [
+            "padding",
+            "strokeWidth",
+            "fillOpacity",
+            "dash"
+          ],
+          "additionalProperties": false
+        },
+        "actionSeconds": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0
+          },
+          "description": "各动作没写 duration 时的默认时长（秒），键是动作名"
+        },
+        "splitLift": {
+          "type": "number",
+          "description": "拆分出来的计数块默认往上抬多少（相对格子大小）"
+        },
+        "tenframeGap": {
+          "type": "number",
+          "minimum": 0,
+          "description": "十格框之间的间距（相对格子大小）"
+        },
+        "parts": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "description": "各零件的默认属性，键是零件 type"
+        }
+      },
+      "required": [
+        "stage",
+        "colors",
+        "highlight",
+        "actionSeconds",
+        "splitLift",
+        "tenframeGap",
+        "parts"
+      ],
+      "additionalProperties": false
+    },
+    "player": {
+      "type": "object",
+      "properties": {
+        "skeletonDelayMs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "加载超过这么久才显示骨架屏，避免闪一下"
+        },
+        "toastMs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "轻提示显示多久"
+        },
+        "largeCaptionMaxGrade": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "这个年级及以下，字幕用大字号"
+        },
+        "dwell": {
+          "type": "object",
+          "properties": {
+            "msPerChar": {
+              "type": "number",
+              "minimum": 0,
+              "description": "不朗读时，每个字停留多少毫秒"
+            },
+            "minMs": {
+              "type": "number",
+              "minimum": 0,
+              "description": "不朗读时，一步至少停留多久"
+            }
+          },
+          "required": [
+            "msPerChar",
+            "minMs"
+          ],
+          "additionalProperties": false
+        },
+        "afterSpeech": {
+          "type": "object",
+          "properties": {
+            "pauseMs": {
+              "type": "number",
+              "minimum": 0,
+              "description": "读完后至少再停多久（1 倍速）"
+            },
+            "minMs": {
+              "type": "number",
+              "minimum": 0,
+              "description": "读完后停顿的下限"
+            },
+            "blockedRatio": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "朗读被浏览器拦下、瞬间“读完”时，按估算停留时间的这个比例等待"
+            }
+          },
+          "required": [
+            "pauseMs",
+            "minMs",
+            "blockedRatio"
+          ],
+          "additionalProperties": false
+        },
+        "maxFrameMs": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "时钟单帧最多推进多久，切到后台再回来时不会一下跳过去"
+        }
+      },
+      "required": [
+        "skeletonDelayMs",
+        "toastMs",
+        "largeCaptionMaxGrade",
+        "dwell",
+        "afterSpeech",
+        "maxFrameMs"
+      ],
+      "additionalProperties": false
+    },
+    "explore": {
+      "type": "object",
+      "properties": {
+        "texts": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1
+            },
+            "presets": {
+              "type": "string",
+              "minLength": 1,
+              "description": "“换个例子”区标题"
+            },
+            "controls": {
+              "type": "string",
+              "minLength": 1,
+              "description": "“自己调一调”区标题"
+            },
+            "reset": {
+              "type": "string",
+              "minLength": 1,
+              "description": "回到标准讲解按钮"
+            },
+            "hint": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "title",
+            "presets",
+            "controls",
+            "reset",
+            "hint"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "texts"
+      ],
+      "additionalProperties": false
     }
   },
+  "required": [
+    "scene",
+    "player",
+    "explore"
+  ],
   "additionalProperties": false
 }

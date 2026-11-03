@@ -1,3 +1,4 @@
+import { sceneStyle } from '@flow-see/blocks';
 // 场景模板的动作：解析配置里的 do 列表，排出每个动作在这一步里的起止时间。
 //
 // 写法（需求设计 5.5）：
@@ -7,23 +8,28 @@
 //           together: true（和上一个动作同时开始；默认依次进行）、ease: linear（匀速，默认先快后慢）。
 
 export const VERBS = {
-  show: { name: '出现', seconds: 0.5 },
-  hide: { name: '隐藏', seconds: 0.5 },
-  highlight: { name: '高亮', seconds: 0.4 },
-  unhighlight: { name: '取消高亮', seconds: 0.3 },
-  move: { name: '移动', seconds: 0.8 },
-  split: { name: '拆分', seconds: 0.5 },
-  merge: { name: '合并', seconds: 0.8 },
-  set: { name: '改文字或数值', seconds: 0.6 },
-  rotate: { name: '旋转', seconds: 0.8 },
-  scale: { name: '缩放', seconds: 0.5 },
-  color: { name: '颜色变化', seconds: 0.5 },
-  count: { name: '数字递增', seconds: 1 },
-  hop: { name: '数轴上跳一跳', seconds: 0.8 },
-  wait: { name: '停一会儿', seconds: 0.5 },
+  show: { name: '出现' },
+  hide: { name: '隐藏' },
+  highlight: { name: '高亮' },
+  unhighlight: { name: '取消高亮' },
+  move: { name: '移动' },
+  split: { name: '拆分' },
+  merge: { name: '合并' },
+  set: { name: '改文字或数值' },
+  rotate: { name: '旋转' },
+  scale: { name: '缩放' },
+  color: { name: '颜色变化' },
+  count: { name: '数字递增' },
+  hop: { name: '数轴上跳一跳' },
+  wait: { name: '停一会儿' },
 } as const;
 
 export type Verb = keyof typeof VERBS;
+
+/** 动作没写 duration 时的默认时长（毫秒）：site.yaml 的 scene.actionSeconds */
+export function defaultMs(verb: Verb): number {
+  return (sceneStyle().actionSeconds[verb] ?? 0) * 1000;
+}
 
 /** 每个动作都能写的选项 */
 export const TIMING_KEYS = ['duration', 'delay', 'together', 'ease'] as const;
@@ -121,7 +127,7 @@ export function planStep(list: readonly unknown[] | undefined): StepPlan {
   for (const raw of list ?? []) {
     const a = parseAction(raw);
     if (!a) continue;
-    const dur = parseDuration(a.args.duration) ?? VERBS[a.verb].seconds * 1000;
+    const dur = parseDuration(a.args.duration) ?? defaultMs(a.verb);
     const delay = parseDuration(a.args.delay) ?? 0;
     const start = (a.args.together === true ? prevStart : cursor) + delay;
     actions.push({ ...a, start, dur, linear: a.args.ease === 'linear' });

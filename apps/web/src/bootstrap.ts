@@ -1,4 +1,5 @@
 // 启动：把站点配置注入运行时（分享接口、署名、设置的默认值）。必须在其他模块使用 runtime 之前执行。
+import { configureScene } from '@flow-see/blocks';
 import { configureRuntime } from '@flow-see/runtime/config.ts';
 import { initSettings } from '@flow-see/runtime/store/settings.ts';
 import { site } from './site';
@@ -19,6 +20,9 @@ configureRuntime({
   shareOrigin:
     import.meta.env.VITE_SHARE_ORIGIN ?? (typeof location !== 'undefined' ? location.origin : ''),
 });
+
+// 场景零件的外观和默认值来自 site.yaml 的 scene
+configureScene(site.scene);
 
 const d = site.defaults;
 initSettings({

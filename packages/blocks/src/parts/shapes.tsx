@@ -17,16 +17,15 @@ export const shapePart: PartDef = {
   type: 'shape',
   name: '几何图形',
   anchor: 'center',
-  defaults: { shape: 'rect', width: 160, height: 100, radius: 70, angle: 90, color: 'blue' },
   props: ['shape', 'width', 'height', 'radius', 'angle', 'fill', 'stroke'],
   bbox(p) {
     const [x, y] = pt(p.at);
     const k = str(p.shape, 'rect');
     if (k === 'circle' || k === 'sector') {
-      const r = num(p.radius, 70);
+      const r = num(p.radius, 0);
       return boxAround(x, y, r * 2 + 6, r * 2 + 6);
     }
-    return boxAround(x, y, num(p.width, 160) + 6, num(p.height, 100) + 6);
+    return boxAround(x, y, num(p.width, 0) + 6, num(p.height, 0) + 6);
   },
   Render({ p, ctx }) {
     const [x, y] = pt(p.at);
@@ -41,9 +40,9 @@ export const shapePart: PartDef = {
       strokeWidth: 4,
       strokeLinejoin: 'round' as const,
     };
-    const w = num(p.width, 160);
-    const h = num(p.height, 100);
-    const r = num(p.radius, 70);
+    const w = num(p.width, 0);
+    const h = num(p.height, 0);
+    const r = num(p.radius, 0);
     switch (str(p.shape, 'rect')) {
       case 'circle':
         return <circle cx={x} cy={y} r={r} {...style} />;
@@ -55,7 +54,7 @@ export const shapePart: PartDef = {
           />
         );
       case 'sector': {
-        const a = (Math.max(1, Math.min(359.9, num(p.angle, 90))) * Math.PI) / 180;
+        const a = (Math.max(1, Math.min(359.9, num(p.angle, 0))) * Math.PI) / 180;
         const x2 = x + Math.sin(a) * r;
         const y2 = y - Math.cos(a) * r;
         return (
@@ -87,7 +86,7 @@ function renderLine(p: Props, ctx: PartContext, arrow: boolean) {
   const [x1, y1] = pt(p.from);
   const [x2, y2] = pt(p.to);
   const c = color(p.color, ctx.theme);
-  const w = num(p.width, 4);
+  const w = num(p.width, 0);
   // draw：画出来的程度 0–1（可用 set 动作逐渐画出）
   const draw = Math.max(0, Math.min(1, num(p.draw, 1)));
   const ex = x1 + (x2 - x1) * draw;
@@ -120,7 +119,6 @@ export const linePart: PartDef = {
   type: 'line',
   name: '线段',
   anchor: 'center',
-  defaults: { color: 'ink', width: 4, draw: 1 },
   required: ['from', 'to'],
   props: ['from', 'to', 'width', 'dashed', 'draw'],
   bbox: lineBox,
@@ -139,12 +137,11 @@ export const imagePart: PartDef = {
   type: 'image',
   name: '图片',
   anchor: 'center',
-  defaults: { width: 160, height: 160 },
   required: ['asset'],
   props: ['asset', 'width', 'height'],
   bbox(p) {
     const [x, y] = pt(p.at);
-    return boxAround(x, y, num(p.width, 160), num(p.height, 160));
+    return boxAround(x, y, num(p.width, 0), num(p.height, 0));
   },
   Render: function ImageRender({ p, ctx }) {
     const [failed, setFailed] = useState(false);

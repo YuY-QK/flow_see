@@ -18,6 +18,83 @@ export const SPEECH_RATES = ['slow', 'normal', 'fast'] as const;
 
 const speed = z.union([z.literal(0.5), z.literal(1), z.literal(1.5), z.literal(2)]);
 
+const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, '颜色写成 #RRGGBB');
+const nonNeg = z.number().min(0);
+
+/** 场景零件的外观与默认值（blocks 的 SceneStyle） */
+const sceneStyleSchema = z
+  .object({
+    stage: z
+      .object({ width: z.number().positive(), height: z.number().positive() })
+      .strict()
+      .describe('没有写 stage 的知识点用这个舞台大小'),
+    colors: z
+      .record(z.string().regex(/^[a-z][a-z0-9-]*$/), hexColor)
+      .describe('配置里可以直接写的颜色名'),
+    highlight: z
+      .object({
+        padding: nonNeg,
+        strokeWidth: nonNeg,
+        fillOpacity: z.number().min(0).max(1),
+        dash: z.string().describe('虚线样式，如 "10 6"'),
+      })
+      .strict(),
+    actionSeconds: z
+      .record(z.string(), nonNeg)
+      .describe('各动作没写 duration 时的默认时长（秒），键是动作名'),
+    splitLift: z.number().describe('拆分出来的计数块默认往上抬多少（相对格子大小）'),
+    tenframeGap: nonNeg.describe('十格框之间的间距（相对格子大小）'),
+    parts: z
+      .record(z.string(), z.record(z.string(), z.unknown()))
+      .describe('各零件的默认属性，键是零件 type'),
+  })
+  .strict();
+
+/** 知识点播放器的时间和行为参数 */
+const playerSchema = z
+  .object({
+    skeletonDelayMs: nonNeg.describe('加载超过这么久才显示骨架屏，避免闪一下'),
+    toastMs: nonNeg.describe('轻提示显示多久'),
+    largeCaptionMaxGrade: z.int().min(0).describe('这个年级及以下，字幕用大字号'),
+    dwell: z
+      .object({
+        msPerChar: nonNeg.describe('不朗读时，每个字停留多少毫秒'),
+        minMs: nonNeg.describe('不朗读时，一步至少停留多久'),
+      })
+      .strict(),
+    afterSpeech: z
+      .object({
+        pauseMs: nonNeg.describe('读完后至少再停多久（1 倍速）'),
+        minMs: nonNeg.describe('读完后停顿的下限'),
+        blockedRatio: z
+          .number()
+          .min(0)
+          .max(1)
+          .describe('朗读被浏览器拦下、瞬间“读完”时，按估算停留时间的这个比例等待'),
+      })
+      .strict(),
+    maxFrameMs: z
+      .number()
+      .positive()
+      .describe('时钟单帧最多推进多久，切到后台再回来时不会一下跳过去'),
+  })
+  .strict();
+
+/** 动手试一试的界面文字 */
+const exploreUiSchema = z
+  .object({
+    texts: z
+      .object({
+        title: text,
+        presets: text.describe('“换个例子”区标题'),
+        controls: text.describe('“自己调一调”区标题'),
+        reset: text.describe('回到标准讲解按钮'),
+        hint: text,
+      })
+      .strict(),
+  })
+  .strict();
+
 export const siteSchema = z
   .object({
     site: z
@@ -91,6 +168,10 @@ export const siteSchema = z
       })
       .strict()
       .prefault({}),
+    // 以下三节没有写在代码里的默认值：必须在 site.yaml 里给全（单一来源，改它就能调整）
+    scene: sceneStyleSchema,
+    player: playerSchema,
+    explore: exploreUiSchema,
   })
   .strict();
 
@@ -155,10 +236,8 @@ export const curriculumSchema = z
 
 /* ───────────── lessons/<学科>/g<年级>/<id>.yaml ───────────── */
 
-const paramRef = z.union([
-  z.number(),
-  z.string().regex(/^\{[A-Za-z_]\w*\}$/, '写数字，或用 {参数名} 引用其他参数'),
-]);
+/** 数字，或用其他参数算出来的式子，如 "{parts}"、"11 - a" */
+const paramRef = z.union([z.number(), z.string().min(1)]);
 
 const exploreSchema = z
   .object({
@@ -204,6 +283,21 @@ export const lessonSchema = z
       .strict()
       .optional(),
     params: z.record(z.string(), z.unknown()).default({}),
+    derived: z
+      .record(z.string().regex(/^[A-Za-z_]\w*$/), z.union([z.number(), z.string().min(1)]))
+      .optional()
+      .describe('派生值：由参数算出来，如 gap: "10 - a"；按写的顺序计算，后面的可以用前面的'),
+    presets: z
+      .array(
+        z
+          .object({
+            label: text.describe('按钮上的文字，如 8 + 6'),
+            params: z.record(z.string(), z.unknown()),
+          })
+          .strict(),
+      )
+      .optional()
+      .describe('动手试一试：点选的例子（只写要改的参数）'),
     objects: z.array(z.object({ id: z.string(), type: z.string() }).loose()).optional(),
     explore: z.array(exploreSchema).optional(),
     resultStep: z.int().min(1).optional().describe('调整“动手试一试”后跳到第几步，默认最后一步'),
@@ -257,6 +351,7 @@ export const SCHEMAS = {
 export type SchemaName = keyof typeof SCHEMAS;
 
 export type SiteConfig = z.output<typeof siteSchema>;
+export type SceneStyleConfig = SiteConfig['scene'];
 export type HelpConfig = z.output<typeof helpSchema>;
 export type GradesConfig = z.output<typeof gradesSchema>;
 export type CurriculumConfig = z.output<typeof curriculumSchema>;

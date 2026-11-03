@@ -9,4 +9,4 @@
 
 - 场景模板（`template: scene`）的零件和动作见 [scene.md](./scene.md)，示例：`math/g1/make-ten.yaml`（凑十法 9 + 4）。
 
-已上线：凑十法（场景模板）。认识分数、认识钟表将用 fraction、clock 模板制作。
+已上线：凑十法（场景模板，带动手试一试、可换例子）。认识分数、认识钟表将用 fraction、clock 模板制作。

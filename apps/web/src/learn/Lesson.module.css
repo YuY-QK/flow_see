@@ -346,3 +346,113 @@
     text-align: left;
   }
 }
+
+/* 动手试一试 */
+.explore {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.exploreHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.exploreTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+.reset {
+  min-height: var(--touch, 44px);
+}
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.groupLabel {
+  font-size: 14px;
+  color: var(--ink-3);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  min-width: var(--touch, 44px);
+  min-height: var(--touch, 44px);
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 600;
+}
+.chip:hover {
+  background: var(--hover);
+}
+.chip[data-on='true'] {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.controlList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px 28px;
+}
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.controlLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 16px;
+  font-weight: 600;
+}
+.controlValue {
+  font-size: 22px;
+  color: var(--primary);
+}
+.control input[type='range'] {
+  width: 100%;
+  min-height: var(--touch, 44px);
+  accent-color: var(--primary);
+}
+.controlRange {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.switchRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: var(--touch, 44px);
+}
+.switchRow input {
+  width: 44px;
+  height: 24px;
+  accent-color: var(--primary);
+}
+.exploreHint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-3);
+}

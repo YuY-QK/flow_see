@@ -30,3 +30,70 @@ share:
   apiBase: /api          # 分享接口地址；换到自己的服务器时只改这里
 help:
   faq: help.yaml         # 常见问题较长，单独一个文件，由这里引用
+
+# ───────── 知识点动画：场景零件的外观和默认值（packages/blocks 读取）─────────
+scene:
+  stage: { width: 800, height: 450 }   # 没有写 stage 的知识点用这个舞台大小
+  colors:                              # 配置里可以直接写的颜色名；也可以写 #RRGGBB，或 ink / dim / accent / line（跟随动画主题）
+    blue: "#2F6FE4"
+    orange: "#F28C28"
+    red: "#E5484D"
+    green: "#2EA36B"
+    purple: "#7C5CE0"
+    yellow: "#F2B705"
+    pink: "#E85D9E"
+    brown: "#A0673A"
+    gray: "#9AA3B5"
+    white: "#FFFFFF"
+    black: "#1F2433"
+  highlight: { padding: 12, strokeWidth: 4, fillOpacity: 0.12, dash: "10 6" }
+  actionSeconds:                       # 各动作没写 duration 时的默认时长（秒）
+    show: 0.5
+    hide: 0.5
+    highlight: 0.4
+    unhighlight: 0.3
+    move: 0.8
+    split: 0.5
+    merge: 0.8
+    set: 0.6
+    rotate: 0.8
+    scale: 0.5
+    color: 0.5
+    count: 1
+    hop: 0.8
+    wait: 0.5
+  splitLift: 0.9                       # 拆分出来的计数块默认往上抬多少（相对格子大小）
+  tenframeGap: 0.4                     # 十格框之间的间距（相对格子大小）
+  parts:                               # 各零件的默认属性；知识点里写了就用知识点的
+    text: { size: 36, color: ink, weight: bold }
+    fraction: { size: 40, color: ink }
+    label: { size: 26, color: accent }
+    counters: { count: 1, layout: row, shape: circle, size: 44, color: blue }
+    tenframe: { count: 0, layout: tenframe, shape: circle, size: 44, color: blue }
+    numberline: { from: 0, to: 10, step: 1, length: 600, color: ink, size: 22 }
+    clock: { time: 180, radius: 130, numbers: true, ticks: true, color: ink }
+    fraction-circle: { parts: 4, take: 0, radius: 120, color: orange }
+    fraction-bar: { parts: 4, take: 0, width: 480, height: 64, color: orange }
+    grid: { rows: 3, cols: 4, cell: 44, filled: 0, color: green }
+    shape: { shape: rect, width: 160, height: 100, radius: 70, angle: 90, color: blue }
+    line: { color: ink, width: 4, draw: 1 }
+    arrow: { color: ink, width: 4, draw: 1 }
+    image: { width: 160, height: 160 }
+
+# ───────── 知识点播放器的时间和行为 ─────────
+player:
+  skeletonDelayMs: 300                 # 加载超过这么久才显示骨架屏
+  toastMs: 2000                        # 轻提示显示多久
+  largeCaptionMaxGrade: 2              # 这个年级及以下，字幕用大字号
+  dwell: { msPerChar: 220, minMs: 1800 }   # 不朗读时，按字数估算每一步停留多久
+  afterSpeech: { pauseMs: 1200, minMs: 500, blockedRatio: 0.6 }   # 读完后的停顿
+  maxFrameMs: 100                      # 时钟单帧最多推进多久
+
+# ───────── 动手试一试的界面文字 ─────────
+explore:
+  texts:
+    title: 动手试一试
+    presets: 换个例子
+    controls: 自己调一调
+    reset: 回到标准讲解
+    hint: 你改的只在这里看，不会保存；刷新后回到标准讲解。

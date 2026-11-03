@@ -11,6 +11,7 @@ import {
   isPoint,
   parseClockTime,
 } from '@flow-see/blocks';
+import { fillParams, resolveParams } from '@flow-see/core';
 import type { ConfigIssue, LessonLike } from '@flow-see/runtime/template.ts';
 import {
   MULTI_TARGET,
@@ -69,8 +70,16 @@ function checkProps(
   }
 }
 
-export function checkScene(lesson: LessonLike): ConfigIssue[] {
+export function checkScene(raw: LessonLike): ConfigIssue[] {
   const out: ConfigIssue[] = [];
+  // 参数和派生值先代入，再检查（配置里的 count: "{a}" 要按代入后的数字检查）
+  const lesson = {
+    ...raw,
+    ...fillParams(
+      { objects: raw.objects ?? [], steps: raw.steps },
+      resolveParams(raw.params, raw.derived),
+    ),
+  };
   const objects = lesson.objects ?? [];
   if (!objects.length) out.push({ path: ['objects'], message: '场景模板要在 objects 里摆好零件' });
 
