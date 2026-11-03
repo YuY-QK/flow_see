@@ -45,6 +45,8 @@ export interface LoadOptions {
   templateIds?: readonly string[];
   /** 讲解词超过这个字数时给出提醒（自校清单：一句不超过约 30 字） */
   sayWarnLength?: number;
+  /** 模板对知识点配置的检查（零件、动作等）；path 相对知识点文件根 */
+  checkLesson?(lesson: LessonConfig): { path: (string | number)[]; message: string }[];
 }
 
 const rel = (root: string, file: string) => relative(root, file).split(sep).join('/');
@@ -83,6 +85,18 @@ export function readYaml<N extends SchemaName>(
   schema: N,
   issues: Issue[],
 ): z.output<(typeof SCHEMAS)[N]> | undefined {
+  return readYamlWithLines(root, file, schema, issues)?.data;
+}
+
+/** 同 readYaml，另外返回“配置路径 → 行号”的查询，供后续检查报告行号 */
+function readYamlWithLines<N extends SchemaName>(
+  root: string,
+  file: string,
+  schema: N,
+  issues: Issue[],
+):
+  | { data: z.output<(typeof SCHEMAS)[N]>; line(path: PropertyKey[]): number | undefined }
+  | undefined {
   const name = rel(root, file);
   if (!existsSync(file)) {
     issues.push({ level: 'error', file: name, message: '文件不存在' });
@@ -101,7 +115,11 @@ export function readYaml<N extends SchemaName>(
     return undefined;
   }
   const r = SCHEMAS[schema].safeParse(doc.toJS() ?? {});
-  if (r.success) return r.data as z.output<(typeof SCHEMAS)[N]>;
+  if (r.success)
+    return {
+      data: r.data as z.output<(typeof SCHEMAS)[N]>,
+      line: (path) => lineOf(doc, lc, path),
+    };
   for (const issue of r.error.issues) {
     const where = issue.path.length ? `${formatPath(issue.path)}：` : '';
     issues.push({
@@ -169,8 +187,9 @@ export function loadContent(
     }
     const [, subject, g, fileId] = m;
     const grade = Number(g);
-    const lesson = readYaml(root, file, 'lesson', issues);
-    if (!lesson) continue;
+    const read = readYamlWithLines(root, file, 'lesson', issues);
+    if (!read) continue;
+    const lesson = read.data;
     if (grades && !subjectIds.has(subject)) err(name, `学科 ${subject} 不在 grades.yaml 里`);
     if (grades && !gradeIds.has(grade)) err(name, `年级 ${grade} 不在 grades.yaml 里`);
     if (lesson.id !== fileId) err(name, `id（${lesson.id}）要和文件名（${fileId}）一致`);
@@ -205,6 +224,9 @@ export function loadContent(
           `第 ${i + 1} 步讲解有 ${len} 个字，自校清单建议一句不超过约 ${opts.sayWarnLength} 字`,
         );
     });
+    if (!opts.templateIds || opts.templateIds.includes(lesson.template))
+      for (const i of opts.checkLesson?.(lesson) ?? [])
+        err(name, (i.path.length ? `${formatPath(i.path)}：` : '') + i.message, read.line(i.path));
     if (lesson.resultStep && lesson.resultStep > lesson.steps.length)
       err(name, `resultStep 超出了步骤数（共 ${lesson.steps.length} 步）`);
 

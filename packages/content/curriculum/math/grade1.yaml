@@ -7,7 +7,7 @@ units:
   - id: add-within-20
     title: 20 以内的进位加法
     lessons:
-      - { id: make-ten, title: 凑十法：9 + 4 }
+      - make-ten
   - id: clock
     title: 认识钟表
     lessons:

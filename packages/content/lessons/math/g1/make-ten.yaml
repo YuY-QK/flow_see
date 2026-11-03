@@ -1,0 +1,95 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 凑十法：9 + 4。只用场景模板（scene）的配置做出来，不写代码。
+# 舞台 800 × 450；at 是零件位置：计数块、方格、数轴是左上角（数轴是最左端），其他零件是中心。
+id: make-ten
+title: 凑十法：9 + 4
+summary: 把 4 拆成 1 和 3，先和 9 凑成 10，再加 3
+status: published
+reviewedAt: 2026-11-03
+duration: 1分钟
+tags: [凑十, 凑十法, 进位加法, 加法, 十格框]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+objects:
+  - id: left # 9 个蓝色圆片，按十格框排列
+    type: counters
+    count: 9
+    layout: tenframe
+    size: 52
+    at: [70, 112]
+    color: blue
+  - id: left-num
+    type: text
+    text: '9'
+    at: [200, 262]
+    size: 40
+  - id: plus
+    type: text
+    text: +
+    at: [400, 164]
+    size: 48
+  - id: right # 4 个橙色圆片，排成一排
+    type: counters
+    count: 4
+    size: 52
+    at: [470, 138]
+    color: orange
+  - id: right-num
+    type: text
+    text: '4'
+    at: [574, 262]
+    size: 40
+  - id: hint
+    type: label
+    text: 还差 1 个就满 10
+    at: [200, 58]
+    hidden: true
+  - id: formula
+    type: text
+    text: 9 + 4 = ?
+    at: [400, 375]
+    size: 48
+
+steps:
+  - title: 提出问题
+    say: 9 加 4 等于几？我们用凑十法来算。
+    do:
+      - highlight: formula
+  - title: 看看 9 还差几个
+    say: 十格框里有 9 个，还空着 1 格。
+    do:
+      - highlight: left
+      - show: { target: hint, together: true }
+  - title: 把 4 拆开
+    say: 把 4 拆成 1 和 3，先拿出 1 个。
+    do:
+      - highlight: right
+      - split: { target: right, take: 1, as: one }
+      - set: { target: right-num, text: 4 = 1 + 3, together: true }
+  - title: 凑成 10
+    say: 把这 1 个放进十格框，9 和 1 凑成 10。
+    do:
+      - move: { target: one, to: left, duration: 1.2s }
+      - hide: { target: hint, together: true }
+      - set: { target: left-num, text: '10' }
+      - set: { target: right-num, text: '3', together: true }
+      - highlight: { target: [left, left-num] }
+  - title: 再加 3
+    say: 10 加 3 等于 13。
+    do:
+      - set: { target: formula, text: 10 + 3 = 13 }
+      - highlight: formula
+  - title: 得出结果
+    say: 所以 9 加 4 等于 13。
+    do:
+      - set: { target: formula, text: 9 + 4 = 13 }
+      - color: { target: formula, to: green, together: true }
+      - highlight: formula
+
+keyPoints:
+  - 先看大数还差几个凑成 10，就从小数里拆出几个
+  - 凑成 10 以后，再加上剩下的数，算起来更简单
+  - 9 + 4：把 4 拆成 1 和 3，9 + 1 = 10，10 + 3 = 13

@@ -49,6 +49,11 @@ export interface Animation {
   elements: FlowElement[];
   steps: Step[];
   params?: Record<string, unknown>;
+  /**
+   * 模板专属的静态配置（如场景模板的舞台尺寸和零件），来自知识点配置文件。
+   * 现有四个模板不用它。
+   */
+  config?: Record<string, unknown>;
   settings: AnimationSettings;
   /** 分享过的作品才有 */
   share?: ShareInfo;

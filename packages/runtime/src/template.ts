@@ -30,6 +30,25 @@ export interface StageProps {
   theme: Theme;
   /** 静止画面（导出视频/GIF 时用）：不播放进场动画，直接画出这一步的最终样子 */
   still?: boolean;
+  /**
+   * 连续时间模型：这一步动画段的进度 t∈[0,1]（教学平台方案 4.1）。
+   * 不传时按 1 处理（这一步的完整画面）；现有四个模板可以不管它。
+   */
+  progress?: number;
+}
+
+/** 知识点配置里与模板有关的部分（结构与 packages/content 的 lesson 一致，这里不依赖 content） */
+export interface LessonLike {
+  params: Record<string, unknown>;
+  stage?: { width: number; height: number };
+  objects?: Record<string, unknown>[];
+  steps: { say: string; title?: string; show?: string; do?: Record<string, unknown>[] }[];
+}
+
+/** 模板对配置的检查结果；path 相对知识点文件根，如 ['steps', 1, 'do', 0] */
+export interface ConfigIssue {
+  path: (string | number)[];
+  message: string;
 }
 
 export interface Template {
@@ -60,6 +79,13 @@ export interface Template {
   /** 新增一步时的默认值，可参考上一步 */
   newStep(animation: Animation, prev?: Step): Partial<Step>;
   Stage: ComponentType<StageProps>;
+  /**
+   * 连续时间模型：第 index 步动画段的时长（毫秒，按 1 倍速）。
+   * 没有或返回 0 时，这一步没有动画段，进入即是完整画面。
+   */
+  motionMs?(animation: Animation, index: number): number;
+  /** 检查知识点配置里模板专属的部分（零件、动作等），供 pnpm content:check 使用 */
+  checkConfig?(lesson: LessonLike): ConfigIssue[];
 }
 
 /** 选模板页展示用的信息；available=false 表示后续版本开放。 */
