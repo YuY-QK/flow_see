@@ -194,3 +194,31 @@ export function searchLessons(
     .slice(0, limit)
     .map(({ h }) => h);
 }
+
+/** 搜索词拆成小写的词（空格分隔） */
+export function splitQuery(query: string): string[] {
+  return query.toLowerCase().split(/\s+/).filter(Boolean);
+}
+
+export interface TextPart {
+  text: string;
+  hit: boolean;
+}
+
+/** 把文字按搜索词切成命中 / 未命中的片段，用于高亮；重叠的命中合并成一段 */
+export function highlightParts(text: string, words: string[]): TextPart[] {
+  const lower = text.toLowerCase();
+  const hit = new Array<boolean>(text.length).fill(false);
+  for (const w of words) {
+    if (!w) continue;
+    for (let i = lower.indexOf(w); i !== -1; i = lower.indexOf(w, i + 1))
+      hit.fill(true, i, i + w.length);
+  }
+  const parts: TextPart[] = [];
+  for (let i = 0; i < text.length; i++) {
+    const last = parts[parts.length - 1];
+    if (last && last.hit === hit[i]) last.text += text[i];
+    else parts.push({ text: text[i], hit: hit[i] });
+  }
+  return parts;
+}

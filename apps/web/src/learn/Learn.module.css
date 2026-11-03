@@ -251,3 +251,11 @@ a.card:hover {
   flex-direction: column;
   gap: 10px;
 }
+
+/* 搜索命中的字 */
+.mark {
+  background: color-mix(in srgb, #ffc53d 45%, transparent);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 1px;
+}

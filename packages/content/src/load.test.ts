@@ -2,7 +2,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { buildIndex, findLesson, searchLessons } from './catalog';
+import { buildIndex, findLesson, highlightParts, searchLessons } from './catalog';
 import { generateSchemas, CONTENT_ROOT } from './json-schema';
 import { loadContent } from './load';
 
@@ -159,5 +159,30 @@ describe('目录索引与搜索', () => {
     expect(searchLessons(index, '分数', 3, 50)[0].lesson.id).toBe('fraction-intro');
     expect(searchLessons(index, '分数 钟表', 3, 50)).toEqual([]);
     expect(searchLessons(index, '  ', 3, 50)).toEqual([]);
+  });
+});
+
+describe('搜索高亮', () => {
+  it('命中的字单独成段，不区分大小写', () => {
+    expect(highlightParts('认识分数', ['分数'])).toEqual([
+      { text: '认识', hit: false },
+      { text: '分数', hit: true },
+    ]);
+    expect(highlightParts('Fraction 分数', ['fra', '分'])).toEqual([
+      { text: 'Fra', hit: true },
+      { text: 'ction ', hit: false },
+      { text: '分', hit: true },
+      { text: '数', hit: false },
+    ]);
+  });
+
+  it('多个词重叠时合并；没有命中或没有词时是一整段', () => {
+    expect(highlightParts('平均分成', ['平均', '均分'])).toEqual([
+      { text: '平均分', hit: true },
+      { text: '成', hit: false },
+    ]);
+    expect(highlightParts('钟表', ['分数'])).toEqual([{ text: '钟表', hit: false }]);
+    expect(highlightParts('钟表', [])).toEqual([{ text: '钟表', hit: false }]);
+    expect(highlightParts('', ['分'])).toEqual([]);
   });
 });

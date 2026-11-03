@@ -1,5 +1,5 @@
 import { Link, useSearchParams } from 'react-router-dom';
-import { searchLessons } from '@flow-see/content';
+import { searchLessons, splitQuery } from '@flow-see/content';
 import { LessonCard } from '../learn/LessonCard';
 import { content, site } from '../site';
 import { useLearning } from '../store/learning';
@@ -15,6 +15,7 @@ export function SearchPage() {
   const grade = useCurrentGrade();
   const setGrade = useBrowse((st) => st.setGrade);
   const records = useLearning((st) => st.records);
+  const words = splitQuery(q);
   const results = searchLessons(content, q, grade, site.search.maxResults);
 
   const hints = (
@@ -58,6 +59,7 @@ export function SearchPage() {
                   record={records[lesson.id]}
                   showWhere
                   unitTitle={unit.title}
+                  highlight={words}
                 />
               ))}
             </div>
