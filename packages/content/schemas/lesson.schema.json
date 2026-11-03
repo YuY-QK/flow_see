@@ -1,0 +1,242 @@
+{
+  "title": "知识点 lessons/<学科>/g<年级>/<id>.yaml",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "default": "draft",
+      "type": "string",
+      "enum": [
+        "draft",
+        "reviewed",
+        "published"
+      ]
+    },
+    "reviewedAt": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+    },
+    "duration": {
+      "type": "string"
+    },
+    "tags": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "recommended": {
+      "default": false,
+      "type": "boolean"
+    },
+    "thumbnail": {
+      "description": "素材 id",
+      "type": "string"
+    },
+    "template": {
+      "type": "string"
+    },
+    "theme": {
+      "type": "string",
+      "enum": [
+        "flat",
+        "cute",
+        "chalk",
+        "pro"
+      ]
+    },
+    "stage": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    },
+    "params": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type"
+        ],
+        "additionalProperties": {}
+      }
+    },
+    "explore": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "param": {
+            "type": "string"
+          },
+          "control": {
+            "type": "string",
+            "enum": [
+              "slider",
+              "buttons",
+              "switch"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\{[A-Za-z_]\\w*\\}$"
+              }
+            ]
+          },
+          "max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\{[A-Za-z_]\\w*\\}$"
+              }
+            ]
+          },
+          "step": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {},
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "value",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "param",
+          "control",
+          "label"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "resultStep": {
+      "description": "调整“动手试一试”后跳到第几步，默认最后一步",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "steps": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "say": {
+            "type": "string",
+            "minLength": 1,
+            "description": "这一步的讲解，会朗读；可以用 {参数名} 代入参数"
+          },
+          "title": {
+            "type": "string"
+          },
+          "show": {
+            "description": "模板约定的画面状态",
+            "type": "string"
+          },
+          "do": {
+            "description": "场景模板：这一步对零件做的动作",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            }
+          }
+        },
+        "required": [
+          "say"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "keyPoints": {
+      "minItems": 2,
+      "maxItems": 4,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "summary",
+    "template",
+    "steps",
+    "keyPoints"
+  ],
+  "additionalProperties": false
+}

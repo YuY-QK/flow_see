@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=./schemas/site.schema.json
+# 站点公共配置（《小学版页面规格》2.7）。改这里不需要改代码；缺项时用 schema 里的默认值。
+site:
+  name: 动画学堂
+  slogan: 看动画，动手试，弄明白为什么
+  logo: assets/brand/logo.svg
+contact:                 # 全部留空 → 帮助页隐藏反馈区
+  email: ""              # 例：hello@example.com
+  wechat: ""
+defaults:                # 第一次打开时的默认值；用户改过后以本机设置为准
+  grade: 1
+  subject: math
+  uiTheme: light         # light | dark | auto
+  animTheme: cute        # flat | cute | chalk | pro
+  fontSize: normal       # normal | large
+  narrate: true          # 自动朗读
+  speechRate: normal     # slow | normal | fast
+  speed: 1               # 0.5 | 1 | 1.5 | 2
+  autoplayOnFirstOpen: true
+learning:
+  recordLimit: 200
+  continueCount: { desktop: 3, pad: 2, phone: 2 }
+  recommendedLimit: 4
+  prevNextCrossGrade: false
+  prevNextCrossSubject: false
+search:
+  hints: [分数, 钟表, 凑十, 植物, 水]
+  maxResults: 50
+share:
+  apiBase: /api          # 分享接口地址；换到自己的服务器时只改这里
+help:
+  faq: help.yaml         # 常见问题较长，单独一个文件，由这里引用
