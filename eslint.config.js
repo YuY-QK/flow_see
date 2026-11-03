@@ -21,7 +21,7 @@ const layer = (files, banned, message) => ({
 export default tseslint.config(
   { ignores: ['**/dist', '**/node_modules', 'android', 'ios', 'server/data', '.wrangler'] },
   {
-    files: ['server/**/*.mjs', 'functions/**/*.{js,mjs}'],
+    files: ['server/**/*.mjs', 'functions/**/*.{js,mjs}', 'scripts/**/*.mjs'],
     extends: [js.configs.recommended],
     languageOptions: { ecmaVersion: 2022, globals: { ...globals.node, ...globals.worker } },
     rules: { 'no-unused-vars': ['error', { varsIgnorePattern: '^_', ignoreRestSiblings: true }] },
