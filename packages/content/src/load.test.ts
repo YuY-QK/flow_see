@@ -41,7 +41,7 @@ steps:
 keyPoints: [一定要平均分, 分母表示分成几份]
 `;
 
-const errors = (root: string, templateIds = ['message']) =>
+const errors = (root: string, templateIds = ['message', 'scene']) =>
   loadContent(root, { templateIds }).issues.filter((i) => i.level === 'error');
 
 describe('内容配置校验', () => {

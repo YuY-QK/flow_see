@@ -54,10 +54,20 @@ export function contentPlugin(opts: { root?: string } = {}): Plugin {
               `  ${JSON.stringify(l.lesson.id)}: () => import(${JSON.stringify(LESSON_PREFIX + l.lesson.id)}),`,
           )
           .join('\n');
+        // 素材：按 manifest 的 id 给出地址（零件 image 用）；构建时由 Vite 处理成带哈希的文件
+        const assetImports = b.assets.map(
+          (a, i) =>
+            `import asset${i} from ${JSON.stringify(join(root, 'assets', a.file) + '?url')};`,
+        );
+        const assetUrls = b.assets
+          .map((a, i) => `  ${JSON.stringify(a.id)}: asset${i},`)
+          .join('\n');
         return [
           `import logoUrl from ${logo};`,
+          ...assetImports,
           `export const content = ${JSON.stringify(index)};`,
           `export const assets = { logo: logoUrl };`,
+          `export const assetUrls = {\n${assetUrls}\n};`,
           `const loaders = {\n${loaders}\n};`,
           `export function loadLesson(id) {`,
           `  const load = loaders[id];`,

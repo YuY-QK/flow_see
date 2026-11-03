@@ -222,3 +222,35 @@ export function highlightParts(text: string, words: string[]): TextPart[] {
   }
   return parts;
 }
+
+export interface LessonPlace {
+  lesson: CatalogLesson;
+  entry: CatalogEntry;
+  unit: CatalogUnit;
+}
+
+/**
+ * 上一个 / 下一个（规格 3.5）：按目录里单元顺序 + 单元内顺序，可以跨单元，跳过“即将上线”的。
+ * 默认不跨年级、不跨学科（site.yaml 的 learning.prevNextCrossGrade / prevNextCrossSubject）。
+ */
+export function lessonNeighbors(
+  index: ContentIndex,
+  id: string,
+  opts: { crossGrade: boolean; crossSubject: boolean },
+): { prev?: LessonPlace; next?: LessonPlace } {
+  const here = findLesson(index, id);
+  if (!here) return {};
+  const subjectOrder = (s: string) => index.subjects.findIndex((x) => x.id === s);
+  const entries = index.catalog
+    .filter(
+      (c) =>
+        (opts.crossGrade || c.grade === here.entry.grade) &&
+        (opts.crossSubject || c.subject === here.entry.subject),
+    )
+    .sort((a, b) => a.grade - b.grade || subjectOrder(a.subject) - subjectOrder(b.subject));
+  const list: LessonPlace[] = entries.flatMap((entry) =>
+    availableLessons(entry).map(({ unit, ...lesson }) => ({ lesson, entry, unit })),
+  );
+  const i = list.findIndex((p) => p.lesson.id === id);
+  return { prev: list[i - 1], next: list[i + 1] };
+}

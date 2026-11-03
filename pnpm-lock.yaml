@@ -81,6 +81,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@flow-see/blocks':
+        specifier: workspace:*
+        version: link:../../packages/blocks
       '@flow-see/content':
         specifier: workspace:*
         version: link:../../packages/content
@@ -124,6 +127,9 @@ importers:
       '@flow-see/runtime':
         specifier: workspace:*
         version: link:../runtime
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
 
   packages/content:
     dependencies:

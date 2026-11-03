@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@flow-see/core": "workspace:*",
-    "@flow-see/runtime": "workspace:*"
+    "@flow-see/runtime": "workspace:*",
+    "react": "^19.3.1"
   }
 }

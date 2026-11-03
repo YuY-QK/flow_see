@@ -1,12 +1,16 @@
 // pnpm content:check：检查全部内容配置。有错误时退出码为 1（构建和自动部署会因此中止）。
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { TEMPLATE_IDS } from '@flow-see/templates';
+import { TEMPLATE_IDS, getTemplate } from '@flow-see/templates';
 import { CONTENT_ROOT, generateSchemas } from '../json-schema';
 import { formatIssue, loadContent, type Issue } from '../load';
 
 const root = process.argv[2] ?? CONTENT_ROOT;
-const { bundle, issues } = loadContent(root, { templateIds: TEMPLATE_IDS, sayWarnLength: 30 });
+const { bundle, issues } = loadContent(root, {
+  templateIds: TEMPLATE_IDS,
+  sayWarnLength: 30,
+  checkLesson: (lesson) => getTemplate(lesson.template)?.checkConfig?.(lesson) ?? [],
+});
 
 // 编辑器用的 JSON Schema 要和格式定义保持一致
 const stale: Issue[] = Object.entries(generateSchemas())

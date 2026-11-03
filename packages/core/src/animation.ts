@@ -65,6 +65,7 @@ export function migrate(raw: unknown): Animation | null {
     elements: Array.isArray(a.elements) ? a.elements : [],
     steps: Array.isArray(a.steps) ? a.steps.map((s) => ({ ...s, data: s.data ?? {} })) : [],
     params: a.params,
+    config: a.config,
     settings: { autoNarrate: true, allowParamEdit: true, ...a.settings },
     share: a.share,
     createdAt: a.createdAt ?? Date.now(),

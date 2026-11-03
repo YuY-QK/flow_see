@@ -1,8 +1,13 @@
 // 站点配置与内容目录（来自 packages/content，构建时由 contentPlugin 生成）。
 // 页面里用到的名称、默认值、条数上限等都从这里读，不在代码里写死（规格 2.7）。
-import { assets, content, loadLesson } from 'virtual:content';
+import { assets, assetUrls, content, loadLesson } from 'virtual:content';
 
 export { assets, content, loadLesson };
+
+/** 素材 id → 地址；找不到时 undefined（零件显示灰色占位） */
+export function assetUrl(id: string): string | undefined {
+  return Object.hasOwn(assetUrls, id) ? assetUrls[id] : undefined;
+}
 export const site = content.site;
 
 export type Grade = (typeof content.grades)[number];
