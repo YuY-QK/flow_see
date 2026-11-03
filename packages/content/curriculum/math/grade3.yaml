@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../../schemas/curriculum.schema.json
+subject: math
+grade: 3
+units:
+  - id: fraction
+    title: 分数的初步认识
+    lessons:
+      - { id: fraction-intro, title: 认识分数 }

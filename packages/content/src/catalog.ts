@@ -1,0 +1,196 @@
+// 目录索引：首页、学科页、搜索只需要它；知识点的完整内容按需加载。
+// 这里只放纯数据和纯函数，浏览器和 Node 都能用。
+import type { GradesConfig, HelpConfig, LessonStatus, SiteConfig } from './schema';
+
+export interface LessonMeta {
+  id: string;
+  title: string;
+  summary: string;
+  duration?: string;
+  tags: string[];
+  recommended: boolean;
+  status: LessonStatus;
+  /** 缩略图素材 id */
+  thumbnail?: string;
+  template: string;
+  steps: number;
+}
+
+export interface CatalogLesson {
+  id: string;
+  title: string;
+  /** false = 目录里列了但还没有可用的知识点文件，显示“即将上线” */
+  available: boolean;
+  meta?: LessonMeta;
+}
+
+export interface CatalogUnit {
+  id: string;
+  title: string;
+  lessons: CatalogLesson[];
+}
+
+export interface CatalogEntry {
+  subject: string;
+  grade: number;
+  units: CatalogUnit[];
+}
+
+export interface ContentIndex {
+  site: SiteConfig;
+  help: HelpConfig;
+  grades: GradesConfig['grades'];
+  subjects: GradesConfig['subjects'];
+  catalog: CatalogEntry[];
+  /** 开发模式：草稿和待发布的知识点也显示（带标记） */
+  dev: boolean;
+}
+
+export interface IndexSource {
+  site: SiteConfig;
+  help: HelpConfig;
+  grades: GradesConfig;
+  curricula: {
+    data: {
+      subject: string;
+      grade: number;
+      units: { id: string; title: string; lessons: (string | { id: string; title: string })[] }[];
+    };
+  }[];
+  lessons: {
+    lesson: {
+      id: string;
+      title: string;
+      summary: string;
+      duration?: string;
+      tags: string[];
+      recommended: boolean;
+      status: LessonStatus;
+      thumbnail?: string;
+      template: string;
+      steps: unknown[];
+    };
+  }[];
+}
+
+/** 线上只显示已发布的知识点；未发布的在目录里直接隐藏（规格 3.6） */
+export function isVisible(status: LessonStatus, dev: boolean): boolean {
+  return dev || status === 'published';
+}
+
+export function buildIndex(src: IndexSource, dev: boolean): ContentIndex {
+  const metas = new Map<string, LessonMeta>(
+    src.lessons.map(({ lesson: l }) => [
+      l.id,
+      {
+        id: l.id,
+        title: l.title,
+        summary: l.summary,
+        duration: l.duration,
+        tags: l.tags,
+        recommended: l.recommended,
+        status: l.status,
+        thumbnail: l.thumbnail,
+        template: l.template,
+        steps: l.steps.length,
+      },
+    ]),
+  );
+  const catalog: CatalogEntry[] = src.curricula.map(({ data }) => ({
+    subject: data.subject,
+    grade: data.grade,
+    units: data.units.map((u) => ({
+      id: u.id,
+      title: u.title,
+      lessons: u.lessons.flatMap((entry): CatalogLesson[] => {
+        const id = typeof entry === 'string' ? entry : entry.id;
+        const meta = metas.get(id);
+        if (!meta)
+          return [{ id, title: typeof entry === 'string' ? id : entry.title, available: false }];
+        if (!isVisible(meta.status, dev)) return [];
+        return [{ id, title: meta.title, available: true, meta }];
+      }),
+    })),
+  }));
+  return {
+    site: src.site,
+    help: src.help,
+    grades: src.grades.grades,
+    subjects: src.grades.subjects,
+    catalog,
+    dev,
+  };
+}
+
+/* ───────────── 页面上常用的查询 ───────────── */
+
+export function findEntry(
+  index: ContentIndex,
+  grade: number,
+  subject: string,
+): CatalogEntry | undefined {
+  return index.catalog.find((c) => c.grade === grade && c.subject === subject);
+}
+
+/** 某年级某学科已上线（可学习）的知识点，按目录顺序 */
+export function availableLessons(
+  entry: CatalogEntry | undefined,
+): (CatalogLesson & { unit: CatalogUnit })[] {
+  if (!entry) return [];
+  return entry.units.flatMap((unit) =>
+    unit.lessons.filter((l) => l.available).map((l) => ({ ...l, unit })),
+  );
+}
+
+/** 按 id 找知识点（id 全站唯一）；只返回可学习的 */
+export function findLesson(
+  index: ContentIndex,
+  id: string,
+): { lesson: CatalogLesson; entry: CatalogEntry; unit: CatalogUnit } | undefined {
+  for (const entry of index.catalog)
+    for (const unit of entry.units)
+      for (const lesson of unit.lessons)
+        if (lesson.id === id && lesson.available) return { lesson, entry, unit };
+  return undefined;
+}
+
+/** 搜索（规格 3.7）：标题、简介、标签、单元名；多个词需同时匹配；当前年级在前，标题命中优先 */
+export function searchLessons(
+  index: ContentIndex,
+  query: string,
+  currentGrade: number,
+  limit: number,
+) {
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+  const hits: {
+    lesson: CatalogLesson;
+    entry: CatalogEntry;
+    unit: CatalogUnit;
+    titleHit: boolean;
+  }[] = [];
+  for (const entry of index.catalog)
+    for (const unit of entry.units)
+      for (const lesson of unit.lessons) {
+        if (!lesson.available || !lesson.meta) continue;
+        const m = lesson.meta;
+        const hay = [m.title, m.summary, ...m.tags, unit.title].join(' ').toLowerCase();
+        if (!words.every((w) => hay.includes(w))) continue;
+        hits.push({
+          lesson,
+          entry,
+          unit,
+          titleHit: words.some((w) => m.title.toLowerCase().includes(w)),
+        });
+      }
+  return hits
+    .map((h, i) => ({ h, i }))
+    .sort(
+      (a, b) =>
+        Number(b.h.entry.grade === currentGrade) - Number(a.h.entry.grade === currentGrade) ||
+        Number(b.h.titleHit) - Number(a.h.titleHit) ||
+        a.i - b.i,
+    )
+    .slice(0, limit)
+    .map(({ h }) => h);
+}

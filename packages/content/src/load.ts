@@ -1,0 +1,274 @@
+// 读取并校验 packages/content 下的全部配置（只在 Node 里运行：构建、开发服务器、content:check）。
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative, sep } from 'node:path';
+import { LineCounter, parseDocument, type Document } from 'yaml';
+import type { z } from 'zod';
+import {
+  SCHEMAS,
+  type AssetEntry,
+  type CurriculumConfig,
+  type GradesConfig,
+  type HelpConfig,
+  type LessonConfig,
+  type SchemaName,
+  type SiteConfig,
+} from './schema';
+
+export interface Issue {
+  level: 'error' | 'warning';
+  /** 相对 packages/content 的路径 */
+  file: string;
+  line?: number;
+  message: string;
+}
+
+export interface LessonFile {
+  file: string;
+  /** 由文件位置决定：lessons/<学科>/g<年级>/<id>.yaml */
+  subject: string;
+  grade: number;
+  lesson: LessonConfig;
+}
+
+export interface ContentBundle {
+  root: string;
+  site: SiteConfig;
+  help: HelpConfig;
+  grades: GradesConfig;
+  curricula: { file: string; data: CurriculumConfig }[];
+  lessons: LessonFile[];
+  assets: AssetEntry[];
+}
+
+export interface LoadOptions {
+  /** 已注册的模板 id；提供时检查知识点引用的模板是否存在 */
+  templateIds?: readonly string[];
+  /** 讲解词超过这个字数时给出提醒（自校清单：一句不超过约 30 字） */
+  sayWarnLength?: number;
+}
+
+const rel = (root: string, file: string) => relative(root, file).split(sep).join('/');
+
+function walk(dir: string, ext = '.yaml'): string[] {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .sort()
+    .flatMap((name) => {
+      const p = join(dir, name);
+      return statSync(p).isDirectory() ? walk(p, ext) : name.endsWith(ext) ? [p] : [];
+    });
+}
+
+/** 把 zod 报错的路径对应到 YAML 文件的行号 */
+function lineOf(doc: Document, lc: LineCounter, path: PropertyKey[]): number | undefined {
+  for (let n = path.length; n >= 0; n--) {
+    const node = n === 0 ? doc.contents : doc.getIn(path.slice(0, n) as unknown[], true);
+    const range = (node as { range?: [number, number] } | undefined)?.range;
+    // 缺少字段时指向它所在的对象
+    if (range) return lc.linePos(range[0]).line;
+  }
+  return undefined;
+}
+
+function formatPath(path: PropertyKey[]): string {
+  return path
+    .map((p) => (typeof p === 'number' ? `[${p}]` : `.${String(p)}`))
+    .join('')
+    .replace(/^\./, '');
+}
+
+export function readYaml<N extends SchemaName>(
+  root: string,
+  file: string,
+  schema: N,
+  issues: Issue[],
+): z.output<(typeof SCHEMAS)[N]> | undefined {
+  const name = rel(root, file);
+  if (!existsSync(file)) {
+    issues.push({ level: 'error', file: name, message: '文件不存在' });
+    return undefined;
+  }
+  const lc = new LineCounter();
+  const doc = parseDocument(readFileSync(file, 'utf8'), { lineCounter: lc, prettyErrors: false });
+  if (doc.errors.length) {
+    for (const e of doc.errors)
+      issues.push({
+        level: 'error',
+        file: name,
+        line: lc.linePos(e.pos[0]).line,
+        message: `YAML 格式错误：${e.message}`,
+      });
+    return undefined;
+  }
+  const r = SCHEMAS[schema].safeParse(doc.toJS() ?? {});
+  if (r.success) return r.data as z.output<(typeof SCHEMAS)[N]>;
+  for (const issue of r.error.issues) {
+    const where = issue.path.length ? `${formatPath(issue.path)}：` : '';
+    issues.push({
+      level: 'error',
+      file: name,
+      line: lineOf(doc, lc, issue.path),
+      message: where + issue.message,
+    });
+  }
+  return undefined;
+}
+
+/** 讲解词里的 {参数名} */
+const PLACEHOLDER = /\{([A-Za-z_]\w*)\}/g;
+
+/**
+ * 读取全部配置。返回的 bundle 只在没有 error 时可用（有 error 时为 undefined）。
+ */
+export function loadContent(
+  root: string,
+  opts: LoadOptions = {},
+): { bundle?: ContentBundle; issues: Issue[] } {
+  const issues: Issue[] = [];
+  const err = (file: string, message: string, line?: number) =>
+    issues.push({ level: 'error', file, line, message });
+  const warn = (file: string, message: string, line?: number) =>
+    issues.push({ level: 'warning', file, line, message });
+
+  const site = readYaml(root, join(root, 'site.yaml'), 'site', issues);
+  const grades = readYaml(root, join(root, 'curriculum', 'grades.yaml'), 'grades', issues);
+  const help = site ? readYaml(root, join(root, site.help.faq), 'help', issues) : undefined;
+  const assets = readYaml(root, join(root, 'assets', 'manifest.yaml'), 'manifest', issues) ?? [];
+
+  const gradeIds = new Set(grades?.grades.map((g) => g.id));
+  const subjectIds = new Set(grades?.subjects.map((s) => s.id));
+
+  // 素材
+  const assetIds = new Set<string>();
+  for (const a of assets) {
+    if (assetIds.has(a.id)) err('assets/manifest.yaml', `素材 id 重复：${a.id}`);
+    assetIds.add(a.id);
+    if (!existsSync(join(root, 'assets', a.file)))
+      err('assets/manifest.yaml', `素材 ${a.id} 的文件不存在：assets/${a.file}`);
+  }
+
+  // 站点配置里的引用
+  if (site && grades) {
+    if (!gradeIds.has(site.defaults.grade))
+      err('site.yaml', `defaults.grade 不在 grades.yaml 的年级里：${site.defaults.grade}`);
+    if (!subjectIds.has(site.defaults.subject))
+      err('site.yaml', `defaults.subject 不在 grades.yaml 的学科里：${site.defaults.subject}`);
+  }
+  if (site && !existsSync(join(root, site.site.logo)))
+    err('site.yaml', `site.logo 文件不存在：${site.site.logo}`);
+
+  // 知识点文件
+  const lessons: LessonFile[] = [];
+  const lessonById = new Map<string, LessonFile>();
+  for (const file of walk(join(root, 'lessons'))) {
+    const name = rel(root, file);
+    const m = name.match(/^lessons\/([a-z0-9-]+)\/g(\d+)\/([^/]+)\.yaml$/);
+    if (!m) {
+      err(name, '知识点文件要放在 lessons/<学科>/g<年级>/<id>.yaml');
+      continue;
+    }
+    const [, subject, g, fileId] = m;
+    const grade = Number(g);
+    const lesson = readYaml(root, file, 'lesson', issues);
+    if (!lesson) continue;
+    if (grades && !subjectIds.has(subject)) err(name, `学科 ${subject} 不在 grades.yaml 里`);
+    if (grades && !gradeIds.has(grade)) err(name, `年级 ${grade} 不在 grades.yaml 里`);
+    if (lesson.id !== fileId) err(name, `id（${lesson.id}）要和文件名（${fileId}）一致`);
+    const dup = lessonById.get(lesson.id);
+    if (dup) err(name, `知识点 id 重复，已在 ${dup.file} 中使用：${lesson.id}`);
+
+    if (opts.templateIds && !opts.templateIds.includes(lesson.template))
+      err(name, `模板不存在：${lesson.template}（已有：${opts.templateIds.join('、')}）`);
+    if (lesson.thumbnail && !assetIds.has(lesson.thumbnail))
+      err(name, `缩略图素材不存在：${lesson.thumbnail}`);
+    for (const o of lesson.objects ?? []) {
+      const asset = (o as { asset?: unknown }).asset;
+      if (typeof asset === 'string' && !assetIds.has(asset))
+        err(name, `零件 ${o.id} 引用的素材不存在：${asset}`);
+    }
+
+    const params = new Set(Object.keys(lesson.params));
+    for (const ex of lesson.explore ?? []) {
+      if (!params.has(ex.param))
+        err(name, `explore 里的参数 ${ex.param} 没有在 params 中给出标准取值`);
+      for (const v of [ex.min, ex.max])
+        if (typeof v === 'string' && !params.has(v.slice(1, -1)))
+          err(name, `explore 引用了不存在的参数 ${v}`);
+    }
+    lesson.steps.forEach((st, i) => {
+      for (const [, p] of st.say.matchAll(PLACEHOLDER))
+        if (!params.has(p)) err(name, `第 ${i + 1} 步讲解里的 {${p}} 不是 params 中的参数`);
+      const len = st.say.replace(PLACEHOLDER, '00').length;
+      if (opts.sayWarnLength && len > opts.sayWarnLength)
+        warn(
+          name,
+          `第 ${i + 1} 步讲解有 ${len} 个字，自校清单建议一句不超过约 ${opts.sayWarnLength} 字`,
+        );
+    });
+    if (lesson.resultStep && lesson.resultStep > lesson.steps.length)
+      err(name, `resultStep 超出了步骤数（共 ${lesson.steps.length} 步）`);
+
+    const lf = { file: name, subject, grade, lesson };
+    lessons.push(lf);
+    lessonById.set(lesson.id, lf);
+  }
+
+  // 课程目录
+  const curricula: ContentBundle['curricula'] = [];
+  const listed = new Map<string, string>();
+  for (const file of walk(join(root, 'curriculum'))) {
+    const name = rel(root, file);
+    if (name === 'curriculum/grades.yaml') continue;
+    const m = name.match(/^curriculum\/([a-z0-9-]+)\/grade(\d+)\.yaml$/);
+    if (!m) {
+      err(name, '课程目录文件要放在 curriculum/<学科>/grade<年级>.yaml');
+      continue;
+    }
+    const data = readYaml(root, file, 'curriculum', issues);
+    if (!data) continue;
+    if (data.subject !== m[1] || data.grade !== Number(m[2]))
+      err(name, `文件里的 subject/grade（${data.subject}/${data.grade}）和文件位置不一致`);
+    if (grades && !subjectIds.has(data.subject))
+      err(name, `学科 ${data.subject} 不在 grades.yaml 里`);
+    if (grades && !gradeIds.has(data.grade)) err(name, `年级 ${data.grade} 不在 grades.yaml 里`);
+    const unitIds = new Set<string>();
+    for (const unit of data.units) {
+      if (unitIds.has(unit.id)) err(name, `单元 id 重复：${unit.id}`);
+      unitIds.add(unit.id);
+      for (const entry of unit.lessons) {
+        const id = typeof entry === 'string' ? entry : entry.id;
+        if (listed.has(id))
+          err(name, `知识点 ${id} 在目录里出现了两次（另一处：${listed.get(id)}）`);
+        listed.set(id, name);
+        const lf = lessonById.get(id);
+        if (!lf) {
+          if (typeof entry === 'string')
+            warn(
+              name,
+              `${id} 还没有知识点文件，会显示为“即将上线”；建议写成 { id, title } 给出名称`,
+            );
+        } else if (lf.subject !== data.subject || lf.grade !== data.grade) {
+          err(name, `知识点 ${id} 的文件在 ${lf.file}，和本目录的学科/年级不一致`);
+        }
+      }
+    }
+    curricula.push({ file: name, data });
+  }
+  for (const lf of lessons)
+    if (!listed.has(lf.lesson.id))
+      warn(lf.file, `知识点 ${lf.lesson.id} 没有列在任何课程目录里，页面上看不到它`);
+
+  const ok = !issues.some((i) => i.level === 'error');
+  return {
+    bundle:
+      ok && site && grades && help
+        ? { root, site, help, grades, curricula, lessons, assets }
+        : undefined,
+    issues,
+  };
+}
+
+export function formatIssue(i: Issue): string {
+  const where = i.line ? `${i.file}:${i.line}` : i.file;
+  return `${i.level === 'error' ? '✗' : '!'} ${where}  ${i.message}`;
+}

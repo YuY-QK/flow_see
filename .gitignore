@@ -33,3 +33,4 @@ coverage/
 
 # 分享服务的本地数据
 server/data/
+.wrangler/

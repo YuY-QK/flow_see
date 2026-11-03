@@ -12,8 +12,15 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "types": ["vite/client", "node"],
-    "paths": { "@/*": ["./src/*"] }
+    "paths": { "@/*": ["./apps/web/src/*"] }
   },
-  "include": ["src", "vite.config.ts", "capacitor.config.ts"]
+  "include": [
+    "packages/*/src",
+    "apps/web/src",
+    "apps/web/vite.config.ts",
+    "vitest.config.ts",
+    "capacitor.config.ts"
+  ]
 }

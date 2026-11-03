@@ -1,4 +1,4 @@
-// 动画流服务端：分享接口 + 提供打包后的前端页面。
+// 分享服务端（Node 部署方式）：分享接口 + 提供打包后的前端页面。
 //   开发：pnpm server（配合 pnpm dev，Vite 会把 /api 转发到这里）
 //   生产：pnpm build && pnpm start
 import { createReadStream } from 'node:fs';
@@ -12,7 +12,7 @@ import { createFileStore } from './store.mjs';
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const PORT = Number(process.env.PORT ?? 8787);
 const DATA_DIR = process.env.DATA_DIR ?? join(root, 'server', 'data', 'shares');
-const DIST = join(root, 'dist');
+const DIST = join(root, 'apps', 'web', 'dist');
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -58,5 +58,5 @@ async function serveStatic(_req, res, url) {
 
 const app = createApp({ store: createFileStore(DATA_DIR), fallback: serveStatic });
 createServer(app).listen(PORT, () => {
-  console.log(`动画流服务已启动：http://localhost:${PORT}`);
+  console.log(`服务已启动：http://localhost:${PORT}`);
 });

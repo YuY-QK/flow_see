@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../../schemas/curriculum.schema.json
+subject: science
+grade: 3
+units:
+  - id: water
+    title: 水
+    lessons:
+      - { id: water-states, title: 水的三态变化 }

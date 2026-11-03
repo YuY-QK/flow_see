@@ -1,0 +1,17 @@
+{
+  "name": "@flow-see/templates",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*"
+  },
+  "dependencies": {
+    "@flow-see/blocks": "workspace:*",
+    "@flow-see/core": "workspace:*",
+    "@flow-see/runtime": "workspace:*",
+    "motion": "^14.6.0",
+    "react": "^19.3.1"
+  }
+}

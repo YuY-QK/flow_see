@@ -1,0 +1,20 @@
+{
+  "name": "@flow-see/content",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "check": "tsx src/cli/check.ts",
+    "schema": "tsx src/cli/schema.ts"
+  },
+  "dependencies": {
+    "@flow-see/core": "workspace:*",
+    "@flow-see/templates": "workspace:*",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.7"
+  }
+}

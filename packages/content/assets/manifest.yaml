@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=../schemas/manifest.schema.json
+# 素材清单：每个素材登记来源。开源素材写 author、license、url；AI 生成的写 tool。
+# file 是相对 assets/ 的路径；知识点里用 id 引用。
+- id: brand-logo
+  file: brand/logo.svg
+  source: 自绘
+  createdAt: 2026-11-03
