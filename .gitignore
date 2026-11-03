@@ -19,6 +19,7 @@ desktop.ini
 .env
 .env.*
 !.env.example
+!.env.*.example
 
 # 依赖与构建产物（通用）
 node_modules/
@@ -26,3 +27,9 @@ dist/
 build/
 out/
 coverage/
+
+# TypeScript 增量构建缓存
+*.tsbuildinfo
+
+# 分享服务的本地数据
+server/data/
