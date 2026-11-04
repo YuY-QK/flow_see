@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
 import { parse } from 'yaml';
-import { ALLOW_CHINESE, type Allow } from './allow';
+import { ALLOW_CHINESE, ALLOW_COLOR_IN_CODE, ALLOW_CSS_LITERALS, type Allow } from './allow';
 
 export const ROOT = join(import.meta.dirname, '..', '..');
 
@@ -49,6 +49,8 @@ export interface TextCall {
   key?: string;
   /** 第二个参数是对象字面量时，里面的变量名 */
   vars?: string[];
+  /** 有没有第二个参数（不是对象字面量时，没法检查变量名） */
+  hasVarsArg: boolean;
 }
 
 export function findTextCalls(sf: ts.SourceFile): TextCall[] {
@@ -67,7 +69,7 @@ export function findTextCalls(sf: ts.SourceFile): TextCall[] {
             : [],
         );
       }
-      out.push({ file: sf.fileName, line, key, vars });
+      out.push({ file: sf.fileName, line, key, vars, hasVarsArg: !!b });
     }
     ts.forEachChild(n, visit);
   };
@@ -163,7 +165,7 @@ export function textKeysMatch(files = sourceFiles()): Problem[] {
               line: c.line,
               message: `${c.key} 的文案里没有 {${v}}，多传了`,
             });
-      } else if ([...text.matchAll(PLACEHOLDER)].length) {
+      } else if (!c.hasVarsArg && [...text.matchAll(PLACEHOLDER)].length) {
         out.push({
           rule: 'text-keys',
           file,
@@ -184,9 +186,91 @@ export function textKeysMatch(files = sourceFiles()): Problem[] {
   return out;
 }
 
+/* ───────────── 规则 3：代码里不写颜色值 ───────────── */
+
+const COLOR_LITERAL = /#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?)\(/;
+
+/** 源码里字符串写了颜色值的地方：颜色放 CSS 变量（global.css）或 style.yaml / site.yaml */
+export function colorsIn(sf: ts.SourceFile): { line: number; text: string }[] {
+  const out: { line: number; text: string }[] = [];
+  const visit = (n: ts.Node) => {
+    if (
+      (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) &&
+      COLOR_LITERAL.test(n.text)
+    )
+      out.push({ line: sf.getLineAndCharacterOfPosition(n.getStart()).line + 1, text: n.text });
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
+  return out;
+}
+
+export function noColorInCode(files = sourceFiles()): Problem[] {
+  return files
+    .filter((file) => !allowed(file, ALLOW_COLOR_IN_CODE))
+    .flatMap((file) =>
+      colorsIn(parseSource(file)).map(({ line, text }) => ({
+        rule: 'no-color-in-code',
+        file,
+        line,
+        message: `代码里不要直接写颜色：${text.slice(0, 30)}。界面颜色用 CSS 变量（global.css），动画主题和导出的颜色放 style.yaml，零件颜色放 site.yaml 的 scene.colors`,
+      })),
+    );
+}
+
+/* ───────────── 规则 4：样式文件里的颜色和字号 ───────────── */
+
+const STYLE_FILES = /^(apps\/web\/src|packages\/[a-z]+\/src)\/.*\.css$/;
+const TOKEN_FILE = 'apps/web/src/styles/global.css';
+
+/** 一条样式问题：行号 + 原文 */
+export function styleProblems(
+  css: string,
+  isTokenFile: boolean,
+): { line: number; kind: 'color' | 'font-size'; text: string }[] {
+  const out: { line: number; kind: 'color' | 'font-size'; text: string }[] = [];
+  const noComments = css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
+  // 变量块：global.css 里选择器是 :root 或 html[data-theme…] 的块，颜色和字号变量在这里定义
+  const tokenRanges: [number, number][] = [];
+  if (isTokenFile)
+    for (const m of noComments.matchAll(/(:root|html\[data-theme[^\]]*\])\s*\{[^{}]*\}/g))
+      tokenRanges.push([m.index!, m.index! + m[0].length]);
+  const inToken = (i: number) => tokenRanges.some(([a, b]) => i >= a && i < b);
+  const lineAt = (i: number) => noComments.slice(0, i).split('\n').length;
+  for (const m of noComments.matchAll(/#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?)\(/g))
+    if (!inToken(m.index!)) out.push({ line: lineAt(m.index!), kind: 'color', text: m[0] });
+  for (const m of noComments.matchAll(/font-size:\s*([^;}]+)/g)) {
+    const v = m[1].trim();
+    if (!/^(var\(--fs-[\w-]+\)|inherit|initial|unset)$/.test(v))
+      out.push({ line: lineAt(m.index!), kind: 'font-size', text: `font-size: ${v}` });
+  }
+  return out;
+}
+
+export function styleRules(files = trackedFiles()): Problem[] {
+  return files
+    .filter((f) => STYLE_FILES.test(f) && !allowed(f, ALLOW_CSS_LITERALS))
+    .flatMap((file) =>
+      styleProblems(readFileSync(join(ROOT, file), 'utf8'), file === TOKEN_FILE).map((p) => ({
+        rule: p.kind === 'color' ? 'css-color' : 'css-font-size',
+        file,
+        line: p.line,
+        message:
+          p.kind === 'color'
+            ? `样式里不要直接写颜色：${p.text}。用 global.css 里的 CSS 变量；没有合适的变量就在 :root（和深色主题）里新增一个`
+            : `字号要用 global.css 里的 --fs-* 变量，不要写 ${p.text}`,
+      })),
+    );
+}
+
 export function runAll(): Problem[] {
   const files = sourceFiles();
-  return [...noChineseInCode(files), ...textKeysMatch(files)];
+  return [
+    ...noChineseInCode(files),
+    ...textKeysMatch(files),
+    ...noColorInCode(files),
+    ...styleRules(),
+  ];
 }
 
 export function format(p: Problem): string {

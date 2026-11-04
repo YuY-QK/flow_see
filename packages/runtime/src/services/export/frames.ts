@@ -2,10 +2,8 @@
 import { runtimeConfig } from '../../config';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { getTheme, stepDurationMs, type Animation, t } from '@flow-see/core';
+import { exportStyle, getTheme, stepDurationMs, type Animation, t } from '@flow-see/core';
 import type { Template } from '../../template';
-
-const UI_FONT = '"PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif';
 
 export interface FramePlan {
   /** 每一步的画面 */
@@ -23,7 +21,7 @@ async function stageImage(
   h: number,
 ): Promise<HTMLImageElement> {
   const base = getTheme(animation.themeId);
-  const theme = { ...base, font: base.font === 'inherit' ? UI_FONT : base.font };
+  const theme = { ...base, font: base.font === 'inherit' ? exportStyle().font : base.font };
   let svg = renderToStaticMarkup(
     createElement(template.Stage, { animation, index, theme, still: true }),
   );
@@ -81,17 +79,20 @@ export async function planFrames(
   onProgress?: (p: number) => void,
 ): Promise<FramePlan> {
   const theme = getTheme(animation.themeId);
-  const u = width / 1280; // 以 1280 宽为基准缩放
-  const pad = 32 * u;
-  const captionH = 150 * u;
-  const titleH = 44 * u;
+  const x = exportStyle();
+  const u = width / x.baseWidth; // 以基准宽度缩放
+  const { pad: padBase, titleH: titleBase, captionH: captionBase } = x.layout;
+  const pad = padBase * u;
+  const captionH = captionBase * u;
+  const titleH = titleBase * u;
   const stageBox = {
     x: pad,
     y: pad + titleH,
     w: width - pad * 2,
     h: height - pad * 3 - titleH - captionH,
   };
-  const dark = theme.id === 'chalk';
+  const dark = x.darkThemes.includes(theme.id);
+  const font = (s: { weight: number; size: number }) => `${s.weight} ${s.size * u}px ${x.font}`;
   const frames: HTMLCanvasElement[] = [];
   const holds: number[] = [];
   const total = animation.steps.length;
@@ -108,7 +109,7 @@ export async function planFrames(
 
     // 标题
     ctx.fillStyle = theme.ink;
-    ctx.font = `700 ${24 * u}px ${UI_FONT}`;
+    ctx.font = font(x.title);
     ctx.textBaseline = 'middle';
     ctx.fillText(animation.title || t('common.wei_ming_ming_dong'), pad, pad + titleH / 2);
 
@@ -124,40 +125,38 @@ export async function planFrames(
 
     // 字幕
     const cy = height - pad - captionH;
-    ctx.fillStyle = dark ? 'rgba(0,0,0,0.28)' : 'rgba(255,255,255,0.92)';
-    roundRect(ctx, pad, cy, width - pad * 2, captionH, 18 * u);
+    ctx.fillStyle = dark ? x.caption.darkBg : x.caption.bg;
+    roundRect(ctx, pad, cy, width - pad * 2, captionH, x.layout.captionRadius * u);
     ctx.fill();
-    ctx.strokeStyle = dark ? 'rgba(255,255,255,0.12)' : 'rgba(31,36,51,0.08)';
+    ctx.strokeStyle = dark ? x.caption.darkBorder : x.caption.border;
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    const tx = pad + 28 * u;
-    const textW = width - pad * 2 - 56 * u;
-    const ink = dark ? theme.ink : '#1F2433';
-    const sub = dark ? theme.dim : '#5B6275';
+    const tx = pad + x.layout.captionInset * u;
+    const textW = width - pad * 2 - x.layout.captionInset * 2 * u;
     ctx.textBaseline = 'top';
-    ctx.fillStyle = sub;
-    ctx.font = `400 ${17 * u}px ${UI_FONT}`;
-    ctx.fillText(t('common.step_counter', { n: i + 1, total }), tx, cy + 20 * u);
-    ctx.fillStyle = ink;
-    ctx.font = `700 ${28 * u}px ${UI_FONT}`;
-    ctx.fillText(wrapText(ctx, step.title || '', textW, 1)[0] ?? '', tx, cy + 48 * u);
-    ctx.fillStyle = dark ? theme.ink : '#3A4152';
-    ctx.font = `400 ${20 * u}px ${UI_FONT}`;
-    wrapText(ctx, step.desc || '', textW, 2).forEach((line, k) => {
-      ctx.fillText(line, tx, cy + 90 * u + k * 28 * u);
+    ctx.fillStyle = dark ? theme.dim : x.caption.counter;
+    ctx.font = font(x.counter);
+    ctx.fillText(t('common.step_counter', { n: i + 1, total }), tx, cy + x.counter.top * u);
+    ctx.fillStyle = dark ? theme.ink : x.caption.step;
+    ctx.font = font(x.step);
+    ctx.fillText(wrapText(ctx, step.title || '', textW, 1)[0] ?? '', tx, cy + x.step.top * u);
+    ctx.fillStyle = dark ? theme.ink : x.caption.desc;
+    ctx.font = font(x.desc);
+    wrapText(ctx, step.desc || '', textW, x.desc.maxLines).forEach((line, k) => {
+      ctx.fillText(line, tx, cy + x.desc.top * u + k * x.desc.lineHeight * u);
     });
 
     // 署名
-    ctx.fillStyle = sub;
-    ctx.font = `600 ${15 * u}px ${UI_FONT}`;
+    ctx.fillStyle = dark ? theme.dim : x.caption.counter;
+    ctx.font = font(x.signature);
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
     ctx.fillText(runtimeConfig().siteName, width - pad, pad + titleH / 2);
     ctx.textAlign = 'left';
 
     frames.push(canvas);
-    holds.push(Math.min(6000, Math.max(1600, stepDurationMs(step, 1))));
+    holds.push(Math.min(x.hold.maxMs, Math.max(x.hold.minMs, stepDurationMs(step, 1))));
     onProgress?.((i + 1) / total);
   }
   return { frames, holds };

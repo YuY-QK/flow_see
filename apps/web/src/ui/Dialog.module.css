@@ -11,7 +11,7 @@
   position: absolute;
   inset: 0;
   border: none;
-  background: rgba(31, 36, 51, 0.4);
+  background: var(--scrim);
 }
 .dialog {
   position: relative;
@@ -34,7 +34,7 @@
 }
 .title {
   margin: 0;
-  font-size: 18px;
+  font-size: var(--fs-2xl);
   font-weight: 700;
   flex-grow: 1;
 }

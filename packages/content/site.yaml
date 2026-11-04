@@ -31,6 +31,7 @@ share:
 help:
   faq: help.yaml         # 常见问题较长，单独一个文件，由这里引用
 texts: texts.yaml        # 界面文案：分组 → 键 → 文字；代码里用 t('分组.键') 读取
+style: style.yaml        # 动画主题（配色、圆角、字体）和导出视频/GIF 的画面样式
 
 # ───────── 知识点动画：场景零件的外观和默认值（packages/blocks 读取）─────────
 scene:

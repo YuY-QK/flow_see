@@ -20,7 +20,7 @@
   gap: 10px;
   align-items: center;
   flex-wrap: wrap;
-  font-size: 14px;
+  font-size: var(--fs-md);
   color: var(--ink-3);
 }
 .tag {
@@ -29,7 +29,7 @@
   border-radius: 999px;
   padding: 2px 10px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: var(--fs-sm);
 }
 .headActions {
   display: flex;
@@ -99,16 +99,16 @@
   gap: 4px;
 }
 .counter {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--ink-3);
 }
 .say {
-  font-size: 19px;
+  font-size: var(--fs-3xl);
   font-weight: 600;
   line-height: 1.5;
 }
 .caption[data-large='true'] .say {
-  font-size: 23px;
+  font-size: var(--fs-6xl);
 }
 
 .controls {
@@ -150,7 +150,7 @@
   border-radius: 50%;
   border: none;
   background: var(--primary);
-  color: #fff;
+  color: var(--on-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -229,13 +229,13 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 16px;
+  font-size: var(--fs-lg);
   line-height: 1.6;
 }
 .learned {
   min-height: 52px;
   padding: 0 24px;
-  font-size: 17px;
+  font-size: var(--fs-xl);
 }
 .learnedDone {
   color: var(--success);
@@ -269,7 +269,7 @@
 }
 .navLink small {
   color: var(--ink-3);
-  font-size: 13px;
+  font-size: var(--fs-sm);
 }
 .navNext {
   text-align: right;
@@ -301,7 +301,7 @@
   color: var(--surface);
   padding: 10px 18px;
   border-radius: 999px;
-  font-size: 14px;
+  font-size: var(--fs-md);
   z-index: 50;
 }
 .confirm {
@@ -328,10 +328,10 @@
     flex-basis: 100%;
   }
   .say {
-    font-size: 17px;
+    font-size: var(--fs-xl);
   }
   .caption[data-large='true'] .say {
-    font-size: 20px;
+    font-size: var(--fs-4xl);
   }
   .below {
     grid-template-columns: 1fr;
@@ -369,7 +369,7 @@
 }
 .exploreTitle {
   margin: 0;
-  font-size: 18px;
+  font-size: var(--fs-2xl);
   font-weight: 700;
 }
 .reset {
@@ -381,7 +381,7 @@
   gap: 8px;
 }
 .groupLabel {
-  font-size: 14px;
+  font-size: var(--fs-md);
   color: var(--ink-3);
 }
 .chips {
@@ -397,7 +397,7 @@
   border: 1px solid var(--border-strong);
   background: var(--surface);
   color: var(--ink);
-  font-size: 17px;
+  font-size: var(--fs-xl);
   font-weight: 600;
 }
 .chip:hover {
@@ -406,7 +406,7 @@
 .chip[data-on='true'] {
   background: var(--primary);
   border-color: var(--primary);
-  color: #fff;
+  color: var(--on-color);
 }
 .controlList {
   display: grid;
@@ -422,11 +422,11 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 16px;
+  font-size: var(--fs-lg);
   font-weight: 600;
 }
 .controlValue {
-  font-size: 22px;
+  font-size: var(--fs-5xl);
   color: var(--primary);
 }
 .control input[type='range'] {
@@ -437,7 +437,7 @@
 .controlRange {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--ink-3);
 }
 .switchRow {
@@ -453,6 +453,6 @@
 }
 .exploreHint {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--ink-3);
 }

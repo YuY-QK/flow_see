@@ -19,6 +19,7 @@ import {
   type LessonConfig,
   type SchemaName,
   type SiteConfig,
+  type StyleConfigData,
   type TextsConfig,
 } from './schema';
 
@@ -43,6 +44,7 @@ export interface ContentBundle {
   site: SiteConfig;
   help: HelpConfig;
   texts: TextsConfig;
+  style: StyleConfigData;
   grades: GradesConfig;
   curricula: { file: string; data: CurriculumConfig }[];
   lessons: LessonFile[];
@@ -163,6 +165,7 @@ export function loadContent(
   if (site) opts.onSite?.(site);
   const grades = readYaml(root, join(root, 'curriculum', 'grades.yaml'), 'grades', issues);
   const help = site ? readYaml(root, join(root, site.help.faq), 'help', issues) : undefined;
+  const style = site ? readYaml(root, join(root, site.style), 'style', issues) : undefined;
   const texts = site ? readYaml(root, join(root, site.texts), 'texts', issues) : undefined;
   const assets = readYaml(root, join(root, 'assets', 'manifest.yaml'), 'manifest', issues) ?? [];
 
@@ -380,8 +383,8 @@ export function loadContent(
   const ok = !issues.some((i) => i.level === 'error');
   return {
     bundle:
-      ok && site && grades && help && texts
-        ? { root, site, help, texts, grades, curricula, lessons, assets }
+      ok && site && grades && help && texts && style
+        ? { root, site, help, texts, style, grades, curricula, lessons, assets }
         : undefined,
     issues,
   };

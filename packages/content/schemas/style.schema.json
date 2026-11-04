@@ -1,0 +1,658 @@
+{
+  "title": "动画主题与导出样式 style.yaml",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "themes": {
+      "type": "object",
+      "properties": {
+        "flat": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "主题名称（设置页和创作的外观面板里显示）"
+            },
+            "stageBg": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "stageBorder": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "ink": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "dim": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "accent": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "line": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "labelBg": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "palette": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+              },
+              "description": "元素依次使用的颜色"
+            },
+            "elementInk": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "radius": {
+              "type": "number",
+              "minimum": 0
+            },
+            "font": {
+              "type": "string",
+              "minLength": 1,
+              "description": "字体；inherit = 跟随界面"
+            }
+          },
+          "required": [
+            "name",
+            "stageBg",
+            "stageBorder",
+            "ink",
+            "dim",
+            "accent",
+            "line",
+            "labelBg",
+            "palette",
+            "elementInk",
+            "radius",
+            "font"
+          ],
+          "additionalProperties": false
+        },
+        "cute": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "主题名称（设置页和创作的外观面板里显示）"
+            },
+            "stageBg": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "stageBorder": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "ink": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "dim": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "accent": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "line": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "labelBg": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "palette": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+              },
+              "description": "元素依次使用的颜色"
+            },
+            "elementInk": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "radius": {
+              "type": "number",
+              "minimum": 0
+            },
+            "font": {
+              "type": "string",
+              "minLength": 1,
+              "description": "字体；inherit = 跟随界面"
+            }
+          },
+          "required": [
+            "name",
+            "stageBg",
+            "stageBorder",
+            "ink",
+            "dim",
+            "accent",
+            "line",
+            "labelBg",
+            "palette",
+            "elementInk",
+            "radius",
+            "font"
+          ],
+          "additionalProperties": false
+        },
+        "chalk": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "主题名称（设置页和创作的外观面板里显示）"
+            },
+            "stageBg": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "stageBorder": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "ink": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "dim": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "accent": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "line": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "labelBg": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "palette": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+              },
+              "description": "元素依次使用的颜色"
+            },
+            "elementInk": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "radius": {
+              "type": "number",
+              "minimum": 0
+            },
+            "font": {
+              "type": "string",
+              "minLength": 1,
+              "description": "字体；inherit = 跟随界面"
+            }
+          },
+          "required": [
+            "name",
+            "stageBg",
+            "stageBorder",
+            "ink",
+            "dim",
+            "accent",
+            "line",
+            "labelBg",
+            "palette",
+            "elementInk",
+            "radius",
+            "font"
+          ],
+          "additionalProperties": false
+        },
+        "pro": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "主题名称（设置页和创作的外观面板里显示）"
+            },
+            "stageBg": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "stageBorder": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "ink": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "dim": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "accent": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "line": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "labelBg": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "palette": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+              },
+              "description": "元素依次使用的颜色"
+            },
+            "elementInk": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "radius": {
+              "type": "number",
+              "minimum": 0
+            },
+            "font": {
+              "type": "string",
+              "minLength": 1,
+              "description": "字体；inherit = 跟随界面"
+            }
+          },
+          "required": [
+            "name",
+            "stageBg",
+            "stageBorder",
+            "ink",
+            "dim",
+            "accent",
+            "line",
+            "labelBg",
+            "palette",
+            "elementInk",
+            "radius",
+            "font"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "flat",
+        "cute",
+        "chalk",
+        "pro"
+      ],
+      "additionalProperties": false,
+      "description": "动画主题：只影响动画画面，不影响界面本身"
+    },
+    "export": {
+      "type": "object",
+      "properties": {
+        "font": {
+          "type": "string",
+          "minLength": 1
+        },
+        "baseWidth": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "下面的尺寸都以这个宽度为基准，按实际输出宽度等比缩放"
+        },
+        "darkThemes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "flat",
+              "cute",
+              "chalk",
+              "pro"
+            ]
+          },
+          "description": "深色的动画主题：字幕直接用主题自己的文字色"
+        },
+        "hold": {
+          "type": "object",
+          "properties": {
+            "minMs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "maxMs": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "minMs",
+            "maxMs"
+          ],
+          "additionalProperties": false
+        },
+        "video": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "height": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "fps": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "codec": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bitrate": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "width",
+            "height",
+            "fps",
+            "codec",
+            "bitrate"
+          ],
+          "additionalProperties": false
+        },
+        "gif": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "height": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "colors": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 256
+            },
+            "fadeFrames": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "width",
+            "height",
+            "colors",
+            "fadeFrames"
+          ],
+          "additionalProperties": false
+        },
+        "fadeMs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "两步之间的叠化时长"
+        },
+        "layout": {
+          "type": "object",
+          "properties": {
+            "pad": {
+              "type": "number",
+              "minimum": 0
+            },
+            "titleH": {
+              "type": "number",
+              "minimum": 0
+            },
+            "captionH": {
+              "type": "number",
+              "minimum": 0
+            },
+            "captionRadius": {
+              "type": "number",
+              "minimum": 0
+            },
+            "captionInset": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "pad",
+            "titleH",
+            "captionH",
+            "captionRadius",
+            "captionInset"
+          ],
+          "additionalProperties": false
+        },
+        "title": {
+          "type": "object",
+          "properties": {
+            "weight": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 900
+            },
+            "size": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "weight",
+            "size"
+          ],
+          "additionalProperties": false
+        },
+        "signature": {
+          "type": "object",
+          "properties": {
+            "weight": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 900
+            },
+            "size": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "weight",
+            "size"
+          ],
+          "additionalProperties": false
+        },
+        "counter": {
+          "type": "object",
+          "properties": {
+            "weight": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 900
+            },
+            "size": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "top": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "weight",
+            "size",
+            "top"
+          ],
+          "additionalProperties": false
+        },
+        "step": {
+          "type": "object",
+          "properties": {
+            "weight": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 900
+            },
+            "size": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "top": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "weight",
+            "size",
+            "top"
+          ],
+          "additionalProperties": false
+        },
+        "desc": {
+          "type": "object",
+          "properties": {
+            "weight": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 900
+            },
+            "size": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "top": {
+              "type": "number",
+              "minimum": 0
+            },
+            "lineHeight": {
+              "type": "number",
+              "minimum": 0
+            },
+            "maxLines": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "weight",
+            "size",
+            "top",
+            "lineHeight",
+            "maxLines"
+          ],
+          "additionalProperties": false
+        },
+        "caption": {
+          "type": "object",
+          "properties": {
+            "bg": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "border": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "darkBg": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "darkBorder": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "counter": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "step": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            },
+            "desc": {
+              "type": "string",
+              "pattern": "^(#[0-9a-fA-F]{6}|transparent|rgba?\\([\\d\\s.,]+\\))$"
+            }
+          },
+          "required": [
+            "bg",
+            "border",
+            "darkBg",
+            "darkBorder",
+            "counter",
+            "step",
+            "desc"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "font",
+        "baseWidth",
+        "darkThemes",
+        "hold",
+        "video",
+        "gif",
+        "fadeMs",
+        "layout",
+        "title",
+        "signature",
+        "counter",
+        "step",
+        "desc",
+        "caption"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "themes",
+    "export"
+  ],
+  "additionalProperties": false
+}

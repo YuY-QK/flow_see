@@ -26,8 +26,8 @@ export function Avatar({ color, size = 36 }: { color: number; size?: number }) {
       aria-hidden
     >
       <svg viewBox="0 0 36 36" width={size * 0.72} height={size * 0.72}>
-        <circle cx="18" cy="14" r="7" fill="#fff" opacity="0.95" />
-        <path d="M6 33c1.5-7 6.5-10 12-10s10.5 3 12 10" fill="#fff" opacity="0.95" />
+        <circle cx="18" cy="14" r="7" fill="currentColor" opacity="0.95" />
+        <path d="M6 33c1.5-7 6.5-10 12-10s10.5 3 12 10" fill="currentColor" opacity="0.95" />
       </svg>
     </span>
   );

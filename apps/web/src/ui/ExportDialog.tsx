@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import type { Animation } from '@flow-see/core';
+import { exportStyle, t, type Animation } from '@flow-see/core';
 import type { ExportFormat } from '@flow-see/runtime/services/export/encode.ts';
 import { saveFile } from '@flow-see/runtime/services/save.ts';
 import type { Template } from '@flow-see/runtime/template.ts';
@@ -7,7 +7,6 @@ import { Dialog } from './Dialog';
 import ui from '@flow-see/runtime/ui/ui.module.css';
 import s from './Panels.module.css';
 
-import { t } from '@flow-see/core';
 interface Props {
   animation: Animation;
   template: Template;
@@ -20,9 +19,18 @@ type Phase =
   | { kind: 'done'; how: string }
   | { kind: 'error'; message: string };
 
-const FORMATS: { id: ExportFormat; name: string; desc: string }[] = [
-  { id: 'video', name: t('exportDialog.shi_pin'), desc: t('exportDialog.shi_he_fang_jin') },
-  { id: 'gif', name: t('exportDialog.dong_tu'), desc: t('exportDialog.shi_he_liao_tian') },
+// 尺寸来自 style.yaml 的 export，说明文字里的尺寸随它变
+const formats = (): { id: ExportFormat; name: string; desc: string }[] => [
+  {
+    id: 'video',
+    name: t('exportDialog.shi_pin'),
+    desc: t('exportDialog.shi_he_fang_jin', exportStyle().video),
+  },
+  {
+    id: 'gif',
+    name: t('exportDialog.dong_tu'),
+    desc: t('exportDialog.shi_he_liao_tian', exportStyle().gif),
+  },
 ];
 
 export function ExportDialog({ animation, template, onClose }: Props) {
@@ -76,7 +84,7 @@ export function ExportDialog({ animation, template, onClose }: Props) {
             role="radiogroup"
             aria-label={t('exportDialog.dao_chu_ge_shi')}
           >
-            {FORMATS.map((f) => (
+            {formats().map((f) => (
               <button
                 key={f.id}
                 role="radio"

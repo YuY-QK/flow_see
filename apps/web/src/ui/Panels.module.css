@@ -1,6 +1,6 @@
 .muted {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--fs-md);
   color: var(--ink-3);
 }
 .actions {
@@ -39,7 +39,7 @@
   background: var(--primary-soft);
 }
 .option span {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--ink-3);
 }
 .progress {

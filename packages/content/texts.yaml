@@ -190,9 +190,9 @@ explorePanel:
   hint: 你改的只在这里看，不会保存；刷新后回到标准讲解。
 exportDialog:
   shi_pin: 视频
-  shi_he_fang_jin: 1280×720，适合放进 PPT、发给朋友
+  shi_he_fang_jin: "{width}×{height}，适合放进 PPT、发给朋友"
   dong_tu: GIF 动图
-  shi_he_liao_tian: 640×360，适合聊天和网页，文件较大时画质会降低
+  shi_he_liao_tian: "{width}×{height}，适合聊天和网页，文件较大时画质会降低"
   zhun_bei_zhong: 准备中
   yi_jiao_gei_xi: 已交给系统分享。
   yi_qu_xiao_bao: 已取消保存。
@@ -483,11 +483,6 @@ subjectPage:
   summary: "{units} 个单元 · {lessons} 个知识点 · 已学完 {done} 个"
   unit_no: 第 {n} 单元
   unit_done: 已学完 {done} / {total}
-themes:
-  zhuan_ye_feng: 专业风
-  jian_jie_bian_ping: 简洁扁平
-  ka_tong_ke_ai: 卡通可爱
-  shou_hui_hei_ban: 手绘黑板
 topBar:
   nian_ji: 年级
   da_kai_cai_dan: 打开菜单

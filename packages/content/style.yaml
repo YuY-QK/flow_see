@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=./schemas/style.schema.json
+# 动画主题（只影响动画画面，不影响界面本身）和导出视频/GIF 的画面样式。
+# 界面（按钮、页面）的颜色和字号在 apps/web/src/styles/global.css 的 CSS 变量里；改这里不用改代码。
+themes:
+  pro:
+    name: 专业风
+    stageBg: "#FFFFFF"
+    stageBorder: "#E6E8EF"
+    ink: "#1F2433"
+    dim: "#9AA3B5"
+    accent: "#1F2A44"
+    line: "#C9CEDA"
+    labelBg: "#EEF1F7"
+    palette: ["#1F2A44", "#3A4A6B", "#56657F", "#2B5D7C"]
+    elementInk: "#FFFFFF"
+    radius: 6
+    font: inherit
+  flat:
+    name: 简洁扁平
+    stageBg: "#F4F7FF"
+    stageBorder: "#DCE5FF"
+    ink: "#1F2433"
+    dim: "#A9B6DA"
+    accent: "#2F5FE0"
+    line: "#BFCBEF"
+    labelBg: "#DCE5FF"
+    palette: ["#2F5FE0", "#C25A00", "#1E7F4F", "#6B4FD8"]
+    elementInk: "#FFFFFF"
+    radius: 14
+    font: inherit
+  cute:
+    name: 卡通可爱
+    stageBg: "#FFF6EC"
+    stageBorder: "#FFE0C2"
+    ink: "#5A3A22"
+    dim: "#E9B999"
+    accent: "#E8603C"
+    line: "#F5C9A6"
+    labelBg: "#FFE3CC"
+    palette: ["#FF8A65", "#7C83FD", "#4DB6AC", "#F6B93B"]
+    elementInk: "#FFFFFF"
+    radius: 28
+    font: '"Comic Sans MS", "PingFang SC", sans-serif'
+  chalk:
+    name: 手绘黑板
+    stageBg: "#24443A"
+    stageBorder: "#24443A"
+    ink: "#F2F0E6"
+    dim: "#7F9A8F"
+    accent: "#F6D776"
+    line: "#6E8C80"
+    labelBg: transparent
+    palette: ["#F2F0E6", "#F6D776", "#A8E0C8", "#F4B6B6"]
+    elementInk: "#24443A"
+    radius: 4
+    font: '"Kaiti SC", STKaiti, KaiTi, serif'
+
+# 导出视频 / GIF 时，每一步画成一张图：舞台 + 标题 + 字幕。
+export:
+  font: '"PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif'
+  baseWidth: 1280            # 下面的尺寸都以这个宽度为基准，按实际输出宽度等比缩放
+  darkThemes: [chalk]        # 深色的动画主题：字幕直接用主题自己的文字色
+  hold: { minMs: 1600, maxMs: 6000 }   # 每一步在视频里最少、最多停留多久
+  video: { width: 1280, height: 720, fps: 30, codec: avc1.42001f, bitrate: 3000000 }
+  gif: { width: 640, height: 360, colors: 256, fadeFrames: 3 }
+  fadeMs: 400                # 两步之间的叠化时长
+  layout: { pad: 32, titleH: 44, captionH: 150, captionRadius: 18, captionInset: 28 }
+  title: { weight: 700, size: 24 }
+  signature: { weight: 600, size: 15 }
+  counter: { weight: 400, size: 17, top: 20 }
+  step: { weight: 700, size: 28, top: 48 }
+  desc: { weight: 400, size: 20, top: 90, lineHeight: 28, maxLines: 2 }
+  caption:                   # 字幕框：浅色主题的配色；深色主题用 darkBg / darkBorder，文字用主题色
+    bg: "rgba(255,255,255,0.92)"
+    border: "rgba(31,36,51,0.08)"
+    darkBg: "rgba(0,0,0,0.28)"
+    darkBorder: "rgba(255,255,255,0.12)"
+    counter: "#5B6275"
+    step: "#1F2433"
+    desc: "#3A4152"

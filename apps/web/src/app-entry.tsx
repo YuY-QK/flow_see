@@ -1,4 +1,4 @@
-// 先注入站点配置（必须最先执行；界面文案已由 main.tsx 注入）
+// 先注入站点配置（必须最先执行；界面文案和样式已由 main.tsx 注入）
 import './bootstrap';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';

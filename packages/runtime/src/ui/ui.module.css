@@ -4,7 +4,7 @@
   border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--surface);
-  font-size: 15px;
+  font-size: var(--fs-base);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -24,12 +24,12 @@
 .primary {
   background: var(--primary);
   border-color: var(--primary);
-  color: #fff;
+  color: var(--on-color);
   font-weight: 600;
 }
 .primary:hover:not(:disabled) {
   background: var(--primary-hover);
-  color: #fff;
+  color: var(--on-color);
 }
 
 .ghost {
@@ -53,7 +53,7 @@
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
-  font-size: 15px;
+  font-size: var(--fs-base);
   background: var(--surface);
   outline: none;
   min-height: var(--touch);
@@ -64,7 +64,7 @@
 }
 
 .label {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--ink-3);
 }
 
@@ -73,7 +73,7 @@
   height: 28px;
   border: none;
   border-radius: 999px;
-  background: #c9ced9;
+  background: var(--switch-off);
   position: relative;
   padding: 0;
   flex-shrink: 0;
@@ -86,7 +86,7 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--on-color);
   transition: left 0.15s ease;
 }
 .toggle[aria-checked='true'] {
@@ -99,7 +99,7 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 600;
   border-radius: 999px;
   padding: 3px 10px;

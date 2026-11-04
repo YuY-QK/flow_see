@@ -16,6 +16,10 @@ export const ALLOW_CHINESE: Allow[] = [
     reason: '场景模板的配置检查报错和动作名，面向写配置的人（出现在 content:check 里）',
   },
   {
+    path: /^packages\/core\/src\/(texts|style)\.ts$/,
+    reason: '文案、样式还没注入时给开发者看的报错（此时读不到文案）',
+  },
+  {
     path: /^packages\/blocks\//,
     reason: '零件的中文名和提示，只用于 content:check 的报错，面向写配置的人',
   },
@@ -25,3 +29,9 @@ export const ALLOW_CHINESE: Allow[] = [
       '【待还】创作页的示例动画数据，计划在 dev/phase1-examples-data 里迁到 packages/content/examples/*.yaml',
   },
 ];
+
+/** 允许在代码里直接写颜色值（#RRGGBB、rgba(...)）的文件 */
+export const ALLOW_COLOR_IN_CODE: Allow[] = [];
+
+/** 允许在样式文件里直接写颜色值或固定字号的文件（颜色和字号变量只能在 global.css 的变量块里定义，不在此列） */
+export const ALLOW_CSS_LITERALS: Allow[] = [];

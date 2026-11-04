@@ -25,11 +25,11 @@
   height: 56px;
   border-radius: 16px;
   background: var(--subject);
-  color: #fff;
+  color: var(--on-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
+  font-size: var(--fs-8xl);
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -41,11 +41,11 @@
   min-width: 0;
 }
 .subjectText strong {
-  font-size: 20px;
+  font-size: var(--fs-4xl);
 }
 .subjectText small {
   color: var(--ink-3);
-  font-size: 14px;
+  font-size: var(--fs-md);
 }
 .progress {
   height: 6px;
@@ -70,7 +70,7 @@
 .unitNo {
   color: var(--ink-3);
   font-weight: 500;
-  font-size: 14px;
+  font-size: var(--fs-md);
   margin-right: 8px;
 }
 
@@ -91,7 +91,7 @@
 }
 a.card:hover {
   color: var(--ink);
-  box-shadow: 0 10px 28px rgba(31, 36, 51, 0.08);
+  box-shadow: var(--shadow-card);
 }
 .soon {
   opacity: 0.55;
@@ -105,7 +105,7 @@ a.card:hover {
   justify-content: center;
 }
 .thumb span {
-  font-size: 36px;
+  font-size: var(--fs-hero);
   font-weight: 700;
   color: var(--subject, var(--primary));
 }
@@ -117,13 +117,13 @@ a.card:hover {
 }
 .cardTitle {
   font-weight: 700;
-  font-size: 16px;
+  font-size: var(--fs-lg);
   display: flex;
   gap: 8px;
   align-items: center;
 }
 .devMark {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 500;
   color: var(--danger);
   border: 1px solid currentColor;
@@ -131,18 +131,18 @@ a.card:hover {
   padding: 0 6px;
 }
 .cardWhere {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--ink-3);
 }
 .cardSummary {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--fs-md);
   color: var(--ink-2);
 }
 .cardMeta {
   display: flex;
   gap: 12px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--ink-3);
 }
 .done {
@@ -185,7 +185,7 @@ a.card:hover {
   gap: 6px;
 }
 .field > span {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--ink-3);
 }
 .avatars {
@@ -216,10 +216,10 @@ a.card:hover {
   display: flex;
   flex-direction: column;
   color: var(--ink-3);
-  font-size: 14px;
+  font-size: var(--fs-md);
 }
 .stats strong {
-  font-size: 28px;
+  font-size: var(--fs-9xl);
   color: var(--ink);
 }
 
@@ -254,7 +254,7 @@ a.card:hover {
 
 /* 搜索命中的字 */
 .mark {
-  background: color-mix(in srgb, #ffc53d 45%, transparent);
+  background: color-mix(in srgb, var(--mark) 45%, transparent);
   color: inherit;
   border-radius: 3px;
   padding: 0 1px;

@@ -5,7 +5,7 @@ import type { Animation } from '@flow-see/core';
 import type { Template } from '../../template';
 import { blend, planFrames } from './frames';
 
-import { t } from '@flow-see/core';
+import { exportStyle, t } from '@flow-see/core';
 export type ExportFormat = 'video' | 'gif';
 
 export interface ExportResult {
@@ -17,8 +17,6 @@ export interface ExportOptions {
   onProgress?: (stage: string, p: number) => void;
   signal?: AbortSignal;
 }
-
-const FADE_MS = 400;
 
 function safeName(title: string) {
   return (
@@ -56,8 +54,7 @@ export async function exportAnimation(
 // ---------- GIF ----------
 
 async function encodeGif(animation: Animation, template: Template, opts: ExportOptions) {
-  const W = 640;
-  const H = 360;
+  const { width: W, height: H, colors, fadeFrames: FADE_FRAMES } = exportStyle().gif;
   const plan = await planFrames(animation, template, W, H, (p) =>
     opts.onProgress?.(t('encode.hui_zhi_hua_mian'), p * 0.5),
   );
@@ -66,11 +63,10 @@ async function encodeGif(animation: Animation, template: Template, opts: ExportO
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
-  const FADE_FRAMES = 3;
 
   const write = (delay: number) => {
     const { data } = ctx.getImageData(0, 0, W, H);
-    const palette = quantize(data, 256);
+    const palette = quantize(data, colors);
     gif.writeFrame(applyPalette(data, palette), W, H, { palette, delay });
   };
 
@@ -79,7 +75,7 @@ async function encodeGif(animation: Animation, template: Template, opts: ExportO
     if (i > 0) {
       for (let k = 1; k <= FADE_FRAMES; k++) {
         blend(ctx, plan.frames[i - 1], plan.frames[i], k / (FADE_FRAMES + 1));
-        write(FADE_MS / FADE_FRAMES);
+        write(exportStyle().fadeMs / FADE_FRAMES);
       }
     }
     // GIF 每一帧可以有自己的停留时间，静止部分只写一帧，文件更小
@@ -94,16 +90,14 @@ async function encodeGif(animation: Animation, template: Template, opts: ExportO
 
 // ---------- MP4（WebCodecs） ----------
 
-const VIDEO = { width: 1280, height: 720, fps: 30, codec: 'avc1.42001f', bitrate: 3_000_000 };
-
 async function canUseWebCodecs() {
   if (typeof VideoEncoder === 'undefined' || typeof VideoFrame === 'undefined') return false;
   try {
     const r = await VideoEncoder.isConfigSupported({
-      codec: VIDEO.codec,
-      width: VIDEO.width,
-      height: VIDEO.height,
-      bitrate: VIDEO.bitrate,
+      codec: exportStyle().video.codec,
+      width: exportStyle().video.width,
+      height: exportStyle().video.height,
+      bitrate: exportStyle().video.bitrate,
     });
     return !!r.supported;
   } catch {
@@ -116,7 +110,7 @@ function* timeline(plan: { frames: HTMLCanvasElement[]; holds: number[] }, fps: 
   const frameMs = 1000 / fps;
   for (let i = 0; i < plan.frames.length; i++) {
     if (i > 0) {
-      const n = Math.round(FADE_MS / frameMs);
+      const n = Math.round(exportStyle().fadeMs / frameMs);
       for (let k = 1; k <= n; k++)
         yield { from: plan.frames[i - 1], to: plan.frames[i], t: k / n, step: i };
     }
@@ -126,7 +120,7 @@ function* timeline(plan: { frames: HTMLCanvasElement[]; holds: number[] }, fps: 
 }
 
 async function encodeMp4(animation: Animation, template: Template, opts: ExportOptions) {
-  const { width, height, fps } = VIDEO;
+  const { width, height, fps } = exportStyle().video;
   const plan = await planFrames(animation, template, width, height, (p) =>
     opts.onProgress?.(t('encode.hui_zhi_hua_mian'), p * 0.3),
   );
@@ -140,7 +134,13 @@ async function encodeMp4(animation: Animation, template: Template, opts: ExportO
     output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
     error: (e) => (failure = e),
   });
-  encoder.configure({ codec: VIDEO.codec, width, height, bitrate: VIDEO.bitrate, framerate: fps });
+  encoder.configure({
+    codec: exportStyle().video.codec,
+    width,
+    height,
+    bitrate: exportStyle().video.bitrate,
+    framerate: fps,
+  });
 
   const canvas = document.createElement('canvas');
   canvas.width = width;
@@ -172,7 +172,7 @@ async function encodeMp4(animation: Animation, template: Template, opts: ExportO
 
 async function recordWebm(animation: Animation, template: Template, opts: ExportOptions) {
   if (typeof MediaRecorder === 'undefined') throw new Error(t('encode.zhe_ge_liu_lan'));
-  const { width, height, fps } = VIDEO;
+  const { width, height, fps } = exportStyle().video;
   const plan = await planFrames(animation, template, width, height, (p) =>
     opts.onProgress?.(t('encode.hui_zhi_hua_mian'), p * 0.2),
   );
