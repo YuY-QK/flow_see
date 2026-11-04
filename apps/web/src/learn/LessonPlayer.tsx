@@ -40,6 +40,8 @@ interface Props {
   animation: Animation;
   /** 学习方式，默认看一看 */
   mode?: HandsMode;
+  /** 放在舞台右上角的内容（“我学会了 / 已学完”） */
+  corner?: React.ReactNode;
   template: Template;
   startIndex: number;
   autoPlay: boolean;
@@ -64,6 +66,7 @@ function isTyping(el: EventTarget | null): boolean {
 export function LessonPlayer({
   animation,
   mode = 'watch',
+  corner,
   template,
   startIndex,
   autoPlay,
@@ -268,23 +271,35 @@ export function LessonPlayer({
 
   return (
     <div ref={rootRef} className={s.player} data-full={isFull}>
-      <div
-        className={s.stage}
-        style={
-          {
-            background: theme.stageBg,
-            borderColor: theme.stageBorder,
-            '--ratio': `${stage.width} / ${stage.height}`,
-          } as CSSProperties
-        }
-      >
-        <Stage
-          animation={animation}
-          index={state.index}
-          progress={demoing ? (tp.demo ?? 0) : state.progress}
-          theme={theme}
-          tryIt={tryIt}
-        />
+      <div className={s.stageBox}>
+        <div
+          className={s.stage}
+          style={
+            {
+              background: theme.stageBg,
+              borderColor: theme.stageBorder,
+              '--ratio': `${stage.width} / ${stage.height}`,
+            } as CSSProperties
+          }
+        >
+          <Stage
+            animation={animation}
+            index={state.index}
+            progress={demoing ? (tp.demo ?? 0) : state.progress}
+            theme={theme}
+            tryIt={tryIt}
+          />
+        </div>
+        {corner ? <div className={s.cornerTop}>{corner}</div> : null}
+        {canFullscreen ? (
+          <button
+            className={`${s.ctrl} ${s.cornerBottom}`}
+            aria-label={isFull ? t('lessonPlayer.tui_chu_quan_ping') : t('common.quan_ping')}
+            onClick={toggleFullscreen}
+          >
+            <Icon name="fullscreen" />
+          </button>
+        ) : null}
       </div>
 
       <div className={s.caption} data-large={largeCaption} aria-live="polite">
@@ -393,15 +408,6 @@ export function LessonPlayer({
             onClick={() => settings.set({ autoNarrate: !narrate })}
           >
             <Icon name={narrate ? 'sound' : 'mute'} />
-          </button>
-        ) : null}
-        {canFullscreen ? (
-          <button
-            className={s.ctrl}
-            aria-label={isFull ? t('lessonPlayer.tui_chu_quan_ping') : t('common.quan_ping')}
-            onClick={toggleFullscreen}
-          >
-            <Icon name="fullscreen" />
           </button>
         ) : null}
       </div>

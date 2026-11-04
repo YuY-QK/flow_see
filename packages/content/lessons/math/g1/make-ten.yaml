@@ -4,7 +4,7 @@
 # 舞台大小、零件默认值、颜色等都在 site.yaml 的 scene；
 # at 是零件位置：计数块、方格、数轴是左上角（数轴是最左端），其他零件是中心。
 id: make-ten
-title: 凑十法：9 + 4
+title: 凑十法
 summary: 把小数拆开，先和大数凑成 10，再加剩下的；还能自己换例子试试
 status: published
 reviewedAt: 2026-11-03
@@ -13,6 +13,7 @@ tags: [凑十, 凑十法, 进位加法, 加法, 十格框]
 recommended: true
 
 template: scene
+stage: { width: 800, height: 400 } # 比默认的矮一些，上下不留多余空白
 
 params:
   a: 9 # 大数
@@ -38,17 +39,17 @@ objects:
     count: '{a}'
     layout: tenframe
     size: 52
-    at: [70, 112]
+    at: [70, 90]
     color: blue
   - id: left-num
     type: text
     text: '{a}'
-    at: [200, 262]
+    at: [200, 240]
     size: 40
   - id: plus
     type: text
     text: +
-    at: [400, 164]
+    at: [400, 142]
     size: 48
   - id: right # b 个橙色圆片，每行 5 个
     type: counters
@@ -56,22 +57,22 @@ objects:
     layout: grid
     cols: 5
     size: 52
-    at: [470, 112]
+    at: [470, 90]
     color: orange
   - id: right-num
     type: text
     text: '{b}'
-    at: [600, 262]
+    at: [600, 240]
     size: 40
   - id: hint
     type: label
     text: 还差 {gap} 个就满 10
-    at: [200, 58]
+    at: [200, 36]
     hidden: true
   - id: formula
     type: text
     text: '{a} + {b} = ?'
-    at: [400, 375]
+    at: [400, 353]
     size: 48
 
 steps:
