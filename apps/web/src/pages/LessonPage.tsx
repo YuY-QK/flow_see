@@ -17,7 +17,6 @@ import {
   type LessonPlace,
 } from '@flow-see/content';
 import { useSettings } from '@flow-see/runtime/store/settings.ts';
-import { Icon } from '@flow-see/runtime/ui/Icon.tsx';
 import ui from '@flow-see/runtime/ui/ui.module.css';
 import { getTemplate } from '@flow-see/templates';
 import { useDevice } from '../learn/device';
@@ -119,16 +118,12 @@ function LessonBody({ lessonId, lessonKey }: { lessonId: string; lessonKey: Less
   const header = (
     <div className={s.head}>
       <h1 className={p.h1}>{meta?.title ?? lessonId}</h1>
-      <div className={s.meta}>
-        {meta?.duration ? <span>{meta.duration}</span> : null}
-        {meta?.steps ? <span>{t('common.steps_total', { n: meta.steps })}</span> : null}
-      </div>
     </div>
   );
 
   if (state.kind !== 'ready')
     return (
-      <main className={p.content}>
+      <main className={`${p.content} ${s.lessonMain}`}>
         {header}
         {state.kind === 'error' ? (
           <div className={s.problem}>
@@ -269,7 +264,7 @@ function LessonReady({
 
   if (!template)
     return (
-      <main className={p.content}>
+      <main className={`${p.content} ${s.lessonMain}`}>
         {header}
         <div className={s.problem}>
           <div>{t('lessonPage.zhe_ge_dong_hua')}</div>
@@ -290,11 +285,11 @@ function LessonReady({
 
   return (
     <AssetUrlContext.Provider value={assetUrl}>
-      <main className={p.content}>
+      <main className={`${p.content} ${s.lessonMain}`}>
         {header}
 
-        <div className={s.toolbar}>
-          {hasTry ? (
+        {hasTry ? (
+          <div className={s.toolbar}>
             <div className={s.modes} role="group" aria-label={t('handsOn.modes_aria')}>
               {(['watch', 'guided', 'self'] as const).map((m) => (
                 <button
@@ -308,18 +303,8 @@ function LessonReady({
                 </button>
               ))}
             </div>
-          ) : null}
-          <div className={s.headActions}>
-            <button className={ui.btn} onClick={share}>
-              <Icon name="share" size={18} /> {t('common.fen_xiang')}
-            </button>
-            {device !== 'phone' ? (
-              <button className={ui.btn} onClick={() => setDialog('export')}>
-                <Icon name="download" size={18} /> {t('common.dao_chu')}
-              </button>
-            ) : null}
           </div>
-        </div>
+        ) : null}
 
         <LessonPlayer
           key={session.n}
@@ -332,19 +317,30 @@ function LessonReady({
           onVisit={(i) => visit(lessonKey, i)}
           onFinish={onFinish}
           corner={
-            record?.completed ? (
-              <button
-                className={`${ui.btn} ${s.learned} ${s.learnedDone}`}
-                onClick={() => setDialog('undo')}
-              >
-                <Icon name="check" size={18} /> {t('common.yi_xue_wan')}
-              </button>
-            ) : (
-              <button className={`${ui.btn} ${ui.primary} ${s.learned}`} onClick={markDone}>
-                {t('lessonPage.wo_xue_hui_le')}
-              </button>
-            )
+            <span className={s.stageMeta}>
+              {[lesson.duration, t('common.steps_total', { n: lesson.steps.length })]
+                .filter(Boolean)
+                .join(' · ')}
+            </span>
           }
+          learned={{
+            done: !!record?.completed,
+            onMark: markDone,
+            onUndo: () => setDialog('undo'),
+          }}
+          tools={[
+            { id: 'share', icon: 'share', label: t('common.fen_xiang'), onClick: share },
+            ...(device !== 'phone'
+              ? [
+                  {
+                    id: 'export',
+                    icon: 'download' as const,
+                    label: t('common.dao_chu'),
+                    onClick: () => setDialog('export'),
+                  },
+                ]
+              : []),
+          ]}
         />
 
         {hasTry && finished ? (

@@ -9,6 +9,7 @@ import type { StageTry, Template, TrySpec } from '@flow-see/runtime/template.ts'
 import { Icon } from '@flow-see/runtime/ui/Icon.tsx';
 import type { TimelineAction } from '@flow-see/core';
 import { site } from '../site';
+import { ToolFan, type ToolItem } from './ToolFan';
 import { useDevice } from './device';
 import ui from '@flow-see/runtime/ui/ui.module.css';
 import s from './Lesson.module.css';
@@ -40,8 +41,12 @@ interface Props {
   animation: Animation;
   /** 学习方式，默认看一看 */
   mode?: HandsMode;
-  /** 放在舞台右上角的内容（“我学会了 / 已学完”） */
+  /** 放在舞台右上角的内容（时长、步数） */
   corner?: React.ReactNode;
+  /** 学完状态：已学完显示成功图标，没学完显示进度环；点它标为已学完 / 取消 */
+  learned?: { done: boolean; onMark(): void; onUndo(): void };
+  /** 舞台右下角扇形菜单里的工具（分享、导出……）；全屏由播放器自己加 */
+  tools?: ToolItem[];
   template: Template;
   startIndex: number;
   autoPlay: boolean;
@@ -67,6 +72,8 @@ export function LessonPlayer({
   animation,
   mode = 'watch',
   corner,
+  learned,
+  tools = [],
   template,
   startIndex,
   autoPlay,
@@ -291,27 +298,47 @@ export function LessonPlayer({
           />
         </div>
         {corner ? <div className={s.cornerTop}>{corner}</div> : null}
-        {canFullscreen ? (
-          <button
-            className={`${s.ctrl} ${s.cornerBottom}`}
-            aria-label={isFull ? t('lessonPlayer.tui_chu_quan_ping') : t('common.quan_ping')}
-            onClick={toggleFullscreen}
-          >
-            <Icon name="fullscreen" />
-          </button>
-        ) : null}
+        <ToolFan
+          items={[
+            ...tools,
+            ...(canFullscreen
+              ? [
+                  {
+                    id: 'fullscreen',
+                    icon: 'fullscreen' as const,
+                    label: isFull ? t('lessonPlayer.tui_chu_quan_ping') : t('common.quan_ping'),
+                    onClick: toggleFullscreen,
+                  },
+                ]
+              : []),
+          ]}
+        />
       </div>
 
       <div className={s.caption} data-large={largeCaption} aria-live="polite">
-        <span className={s.captionIcon} data-on={narrate && state.playing} aria-hidden>
-          <Icon name={narrate ? 'sound' : 'mute'} size={20} />
-        </span>
+        {speechOk ? (
+          <button
+            className={s.captionIcon}
+            data-on={narrate}
+            aria-label={narrate ? t('common.guan_bi_lang_du') : t('common.da_kai_lang_du')}
+            aria-pressed={narrate}
+            onClick={() => settings.set({ autoNarrate: !narrate })}
+          >
+            <Icon name={narrate ? 'sound' : 'mute'} size={20} />
+          </button>
+        ) : (
+          <span className={s.captionIcon} aria-hidden>
+            <Icon name="mute" size={20} />
+          </span>
+        )}
         <div className={s.captionText}>
-          <div className={s.counter}>
-            {doing ? <span className={s.yourTurn}>{t('handsOn.your_turn')}</span> : null}
-            {step?.title
-              ? t('common.step_counter_title', { n: state.index + 1, total, title: step.title })
-              : t('common.step_counter', { n: state.index + 1, total })}
+          <div className={s.counterRow}>
+            <div className={s.counter}>
+              {doing ? <span className={s.yourTurn}>{t('handsOn.your_turn')}</span> : null}
+              {step?.title
+                ? t('common.step_counter_title', { n: state.index + 1, total, title: step.title })
+                : t('common.step_counter', { n: state.index + 1, total })}
+            </div>
           </div>
           <div className={s.say}>{doing || demoing ? spec?.task : step?.desc}</div>
           {doing || demoing ? (
@@ -328,6 +355,7 @@ export function LessonPlayer({
             {t('handsOn.show_me')}
           </button>
         ) : null}
+        {learned ? <LearnedBadge learned={learned} ratio={position / Math.max(total, 1)} /> : null}
       </div>
 
       <div className={s.controls}>
@@ -356,26 +384,31 @@ export function LessonPlayer({
         </button>
 
         <div className={s.track}>
-          {/* 动手做时不能拖进度跳过 */}
-          <label className={s.seek} hidden={hands}>
+          {/* 进度点就在进度条上：点一个点回到那一步的开头；动手做时不能拖进度跳过 */}
+          <label className={s.seekWrap}>
             <span className="sr-only">{t('lessonPlayer.tuo_dong_jin_du')}</span>
             <input
+              className={s.seek}
               type="range"
               min={0}
               max={total}
               step={0.01}
               value={position}
+              data-locked={hands}
+              tabIndex={hands ? -1 : undefined}
+              style={{ '--fill': `${(position / Math.max(total, 1)) * 100}%` } as CSSProperties}
               aria-valuetext={t('common.step_n', { n: state.index + 1 })}
               onChange={(e) => act({ type: 'scrub', position: Number(e.target.value) })}
             />
           </label>
-          <div className={s.dots}>
+          <div className={s.marks}>
             {steps.map((st, i) => (
               <button
                 key={st.id}
                 className={s.dot}
-                data-current={i === state.index}
-                data-done={i < state.index}
+                style={{ '--at': i / Math.max(total, 1) } as CSSProperties}
+                data-current={i === state.index && state.progress === 0}
+                data-done={i < state.index || (i === state.index && state.progress > 0)}
                 aria-label={
                   st.title
                     ? t('common.step_n_title', { n: i + 1, title: st.title })
@@ -399,18 +432,47 @@ export function LessonPlayer({
             {state.speed}×
           </button>
         ) : null}
-        {speechOk ? (
-          <button
-            className={s.ctrl}
-            data-active={narrate}
-            aria-label={narrate ? t('common.guan_bi_lang_du') : t('common.da_kai_lang_du')}
-            aria-pressed={narrate}
-            onClick={() => settings.set({ autoNarrate: !narrate })}
-          >
-            <Icon name={narrate ? 'sound' : 'mute'} />
-          </button>
-        ) : null}
       </div>
     </div>
+  );
+}
+
+/** 学完状态：已学完 = 成功的圆形图标；没学完 = 进度环（学到哪了），点一下标为已学完 */
+function LearnedBadge({
+  learned,
+  ratio,
+}: {
+  learned: { done: boolean; onMark(): void; onUndo(): void };
+  ratio: number;
+}) {
+  const r = 11;
+  const c = 2 * Math.PI * r;
+  const label = learned.done ? t('common.yi_xue_wan') : t('lessonPage.wo_xue_hui_le');
+  return (
+    <button
+      className={s.badge}
+      data-done={learned.done}
+      aria-label={label}
+      title={label}
+      onClick={learned.done ? learned.onUndo : learned.onMark}
+    >
+      {learned.done ? (
+        <Icon name="check" size={16} />
+      ) : (
+        <svg viewBox="0 0 28 28" width="28" height="28" aria-hidden>
+          <circle cx="14" cy="14" r={r} className={s.ringTrack} />
+          <circle
+            cx="14"
+            cy="14"
+            r={r}
+            className={s.ringFill}
+            strokeDasharray={c}
+            strokeDashoffset={c * (1 - Math.max(0, Math.min(1, ratio)))}
+            transform="rotate(-90 14 14)"
+          />
+          <path d="M9.5 14.5l3 3 6-7" className={s.ringCheck} />
+        </svg>
+      )}
+    </button>
   );
 }
