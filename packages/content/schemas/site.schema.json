@@ -332,6 +332,28 @@
           "minimum": 0,
           "description": "十格框之间的间距（相对格子大小）"
         },
+        "counterBorder": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": "number",
+              "minimum": 0,
+              "description": "边框粗细（舞台坐标）"
+            },
+            "darken": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "边框比填充色深多少，0 = 同色，1 = 黑色"
+            }
+          },
+          "required": [
+            "width",
+            "darken"
+          ],
+          "additionalProperties": false,
+          "description": "计数块的边框：让靠在一起、叠在一起的块也分得清"
+        },
         "tryIt": {
           "type": "object",
           "properties": {
@@ -381,6 +403,7 @@
         "actionSeconds",
         "splitLift",
         "tenframeGap",
+        "counterBorder",
         "tryIt",
         "parts"
       ],
@@ -480,7 +503,7 @@
             "selfDwellMs": {
               "type": "number",
               "minimum": 0,
-              "description": "自己做：不用动手的步骤停留多久（不朗读讲解）"
+              "description": "自己做：最后一步（结果）显示多久后算做完"
             }
           },
           "required": [

@@ -23,6 +23,8 @@ export interface TimelineOptions {
   autoPlay?: boolean;
   /** 动手做：要等孩子做完的步骤（只在开始时读一次） */
   gates?: boolean[];
+  /** 自己做：要跳过的步骤（只在开始时读一次） */
+  skips?: boolean[];
   voiceURI?: string;
   /** 朗读语速，会再乘上播放速度 */
   speechRate?: number;
@@ -49,6 +51,7 @@ export function useTimeline(opts: TimelineOptions): {
       speed: opts.speed,
       autoPlay: opts.autoPlay,
       gates: opts.gates,
+      skips: opts.skips,
     }),
   );
   // 回调每次渲染都可能是新函数，用 ref 读取最新的，避免重启计时

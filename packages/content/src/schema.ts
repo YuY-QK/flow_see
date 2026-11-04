@@ -44,6 +44,13 @@ const sceneStyleSchema = z
       .describe('各动作没写 duration 时的默认时长（秒），键是动作名'),
     splitLift: z.number().describe('拆分出来的计数块默认往上抬多少（相对格子大小）'),
     tenframeGap: nonNeg.describe('十格框之间的间距（相对格子大小）'),
+    counterBorder: z
+      .object({
+        width: nonNeg.describe('边框粗细（舞台坐标）'),
+        darken: z.number().min(0).max(1).describe('边框比填充色深多少，0 = 同色，1 = 黑色'),
+      })
+      .strict()
+      .describe('计数块的边框：让靠在一起、叠在一起的块也分得清'),
     tryIt: z
       .object({
         dropPadding: nonNeg.describe('放到目标零件外面这么远以内也算放进去（舞台坐标）'),
@@ -90,7 +97,7 @@ const playerSchema = z
         targetAfterMisses: z.int().min(1).describe('做错几次后，高亮该放到哪里'),
         demoAfterMisses: z.int().min(1).describe('做错几次后，自动“看我做一遍”'),
         demoPauseMs: nonNeg.describe('演示放完后停多久，再让孩子自己做'),
-        selfDwellMs: nonNeg.describe('自己做：不用动手的步骤停留多久（不朗读讲解）'),
+        selfDwellMs: nonNeg.describe('自己做：最后一步（结果）显示多久后算做完'),
       })
       .strict()
       .describe('动手做：跟着做 / 自己做'),

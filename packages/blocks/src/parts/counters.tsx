@@ -3,6 +3,7 @@ import { sceneStyle } from '../style';
 import {
   color,
   isPoint,
+  mixColor,
   num,
   pt,
   str,
@@ -106,6 +107,10 @@ export const countersPart: PartDef = {
     const fills = counterColors(p).map((c) => color(c, ctx.theme, 'blue'));
     const shape = str(p.shape, 'circle');
     const r = s * 0.38;
+    // 边框：比填充色深一些，靠在一起、叠在一起的块也分得清
+    const { width: bw, darken } = sceneStyle().counterBorder;
+    const darkest = color('black', ctx.theme);
+    const edge = (c: string) => mixColor(c, darkest, darken);
     return (
       <g>
         {frameBoxes(p).map((b, k) => (
@@ -127,6 +132,8 @@ export const countersPart: PartDef = {
               height={r * 2}
               rx={r * 0.25}
               fill={fills[i]}
+              stroke={edge(fills[i])}
+              strokeWidth={bw}
             />
           ) : shape === 'stick' ? (
             <rect
@@ -137,9 +144,19 @@ export const countersPart: PartDef = {
               height={s * 0.84}
               rx={s * 0.08}
               fill={fills[i]}
+              stroke={edge(fills[i])}
+              strokeWidth={bw}
             />
           ) : (
-            <circle key={i} cx={cx} cy={cy} r={r} fill={fills[i]} />
+            <circle
+              key={i}
+              cx={cx}
+              cy={cy}
+              r={r}
+              fill={fills[i]}
+              stroke={edge(fills[i])}
+              strokeWidth={bw}
+            />
           ),
         )}
       </g>

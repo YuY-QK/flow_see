@@ -66,6 +66,7 @@ scene:
     wait: 0.5
   splitLift: 0.9                       # 拆分出来的计数块默认往上抬多少（相对格子大小）
   tenframeGap: 0.4                     # 十格框之间的间距（相对格子大小）
+  counterBorder: { width: 2.5, darken: 0.3 }   # 计数块的边框：粗细、比填充色深多少
   tryIt:                               # 动手做（跟着做 / 自己做）时舞台上的拖动
     dropPadding: 30                    # 放到目标零件外面这么远以内也算放进去（舞台坐标）
     hitScale: 1.6                      # 能拖的零件，按下的范围是它本身的几倍（手指好按；手机上零件会缩小）
@@ -99,7 +100,7 @@ player:
     targetAfterMisses: 2               # 做错几次后，高亮该放到哪里
     demoAfterMisses: 3                 # 做错几次后，自动“看我做一遍”
     demoPauseMs: 800                   # 演示放完后停多久，再让孩子自己做
-    selfDwellMs: 1500                  # 自己做：不用动手的步骤停留多久（不朗读讲解）
+    selfDwellMs: 1500                  # 自己做：最后一步（结果）显示多久后算做完
 
 # ───────── 个人中心 ─────────
 profile:
