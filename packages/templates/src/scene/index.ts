@@ -5,12 +5,13 @@ import type { Template } from '@flow-see/runtime/template.ts';
 import { checkScene } from './check';
 import { stepMotionMs } from './evaluate';
 import { sceneOf } from './scene';
-import { SceneStage } from './SceneStage';
+import { SceneStage } from './stage';
 
 export { VERBS, parseDuration, planStep } from './actions';
 export { checkScene } from './check';
 export { sceneFrame, stepMotionMs, type SceneDef } from './evaluate';
 export { sceneOf } from './scene';
+export { makeSceneStage } from './stage';
 
 export const sceneTemplate: Template = {
   id: 'scene',

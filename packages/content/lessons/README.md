@@ -7,6 +7,6 @@
 - `status`：`draft`（草稿）→ `reviewed`（已校对，需写 `reviewedAt`）→ `published`（上线）。线上只显示 `published`。
 - 写完后在课程目录 `curriculum/<学科>/grade<年级>.yaml` 里加上它的 id，然后运行 `pnpm content:check`。
 
-- 场景模板（`template: scene`）的零件和动作见 [scene.md](./scene.md)，示例：`math/g1/make-ten.yaml`（凑十法 9 + 4）。
+- 场景模板（`template: scene`）的零件和动作见 [scene.md](./scene.md)；fraction、clock 等由参数生成画面的模板见 [templates.md](./templates.md)，示例：`math/g1/make-ten.yaml`（凑十法 9 + 4）。
 
-已上线：凑十法（场景模板，带动手试一试、可换例子）。认识分数、认识钟表将用 fraction、clock 模板制作。
+已上线：凑十法（场景模板）、认识分数（fraction 模板），都带动手试一试。认识钟表将用 clock 模板制作。

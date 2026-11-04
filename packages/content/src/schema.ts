@@ -149,6 +149,22 @@ const themeSchema = z
   })
   .strict();
 
+const point = z.tuple([z.number(), z.number()]);
+const labelLayout = z.object({ at: point, size: z.number().positive() }).strict();
+
+/** fraction 模板的版式 */
+const fractionLayoutSchema = z
+  .object({
+    stage: z.object({ width: z.number().positive(), height: z.number().positive() }).strict(),
+    shapeAt: point.describe('图形中心'),
+    radius: z.number().positive().describe('圆的半径'),
+    bar: z.object({ width: z.number().positive(), height: z.number().positive() }).strict(),
+    color: text.describe('涂色的颜色（site.yaml scene.colors 里的颜色名）'),
+    caption: labelLayout.describe('图形下方的说明'),
+    fraction: labelLayout.describe('右侧的分数'),
+  })
+  .strict();
+
 /** 动画主题 + 导出视频/GIF 的画面样式 */
 export const styleSchema = z
   .object({
@@ -217,6 +233,10 @@ export const styleSchema = z
           .strict(),
       })
       .strict(),
+    templates: z
+      .object({ fraction: fractionLayoutSchema })
+      .strict()
+      .describe('由参数生成画面的模板（fraction、clock）的版式'),
   })
   .strict();
 

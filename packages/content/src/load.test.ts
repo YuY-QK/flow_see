@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { buildIndex, findLesson, highlightParts, searchLessons } from './catalog';
 import { generateSchemas, CONTENT_ROOT } from './json-schema';
 import { loadContent } from './load';
+import { TEMPLATE_IDS } from '@flow-see/templates';
 
 const roots: string[] = [];
 afterEach(() => roots.splice(0).forEach((r) => rmSync(r, { recursive: true, force: true })));
@@ -50,7 +51,7 @@ steps:
 keyPoints: [一定要平均分, 分母表示分成几份]
 `;
 
-const errors = (root: string, templateIds = ['message', 'scene', 'flow', 'cycle', 'data']) =>
+const errors = (root: string, templateIds: readonly string[] = TEMPLATE_IDS) =>
   loadContent(root, { templateIds }).issues.filter((i) => i.level === 'error');
 
 describe('内容配置校验', () => {
@@ -117,7 +118,9 @@ describe('内容配置校验', () => {
     expect(msgs.some((m) => m.includes('{n}'))).toBe(true);
 
     // 放错年级目录：和课程目录不一致
-    const moved = errors(sandbox({ 'lessons/math/g1/fraction-intro.yaml': LESSON }));
+    const movedRoot = sandbox({ 'lessons/math/g1/fraction-intro.yaml': LESSON });
+    rmSync(join(movedRoot, 'lessons/math/g3/fraction-intro.yaml'));
+    const moved = errors(movedRoot);
     expect(moved.some((e) => e.message.includes('不一致'))).toBe(true);
   });
 

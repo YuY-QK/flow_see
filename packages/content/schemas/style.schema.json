@@ -648,11 +648,156 @@
         "caption"
       ],
       "additionalProperties": false
+    },
+    "templates": {
+      "type": "object",
+      "properties": {
+        "fraction": {
+          "type": "object",
+          "properties": {
+            "stage": {
+              "type": "object",
+              "properties": {
+                "width": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "height": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "width",
+                "height"
+              ],
+              "additionalProperties": false
+            },
+            "shapeAt": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2,
+              "description": "图形中心"
+            },
+            "radius": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "圆的半径"
+            },
+            "bar": {
+              "type": "object",
+              "properties": {
+                "width": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "height": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "width",
+                "height"
+              ],
+              "additionalProperties": false
+            },
+            "color": {
+              "type": "string",
+              "minLength": 1,
+              "description": "涂色的颜色（site.yaml scene.colors 里的颜色名）"
+            },
+            "caption": {
+              "type": "object",
+              "properties": {
+                "at": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "size": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "at",
+                "size"
+              ],
+              "additionalProperties": false,
+              "description": "图形下方的说明"
+            },
+            "fraction": {
+              "type": "object",
+              "properties": {
+                "at": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "size": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "at",
+                "size"
+              ],
+              "additionalProperties": false,
+              "description": "右侧的分数"
+            }
+          },
+          "required": [
+            "stage",
+            "shapeAt",
+            "radius",
+            "bar",
+            "color",
+            "caption",
+            "fraction"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "fraction"
+      ],
+      "additionalProperties": false,
+      "description": "由参数生成画面的模板（fraction、clock）的版式"
     }
   },
   "required": [
     "themes",
-    "export"
+    "export",
+    "templates"
   ],
   "additionalProperties": false
 }

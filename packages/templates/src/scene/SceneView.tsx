@@ -1,13 +1,17 @@
 import { useContext, useMemo } from 'react';
 import { AssetUrlContext, getPart, num, sceneStyle, type PartContext } from '@flow-see/blocks';
 import type { StageProps } from '@flow-see/runtime/template.ts';
-import { sceneFrame } from './evaluate';
-import { sceneOf } from './scene';
-
 import { t } from '@flow-see/core';
-/** 场景舞台：纯函数，画面只由 (动画, 第几步, 步内进度) 决定 */
-export function SceneStage({ animation, index, theme, progress = 1 }: StageProps) {
-  const def = sceneOf(animation);
+import { sceneFrame, type SceneDef } from './evaluate';
+
+/** 场景画面：纯函数，画面只由 (场景, 第几步, 步内进度) 决定 */
+export function SceneView({
+  def,
+  animation,
+  index,
+  theme,
+  progress = 1,
+}: StageProps & { def: SceneDef }) {
   const assetUrl = useContext(AssetUrlContext);
   const frame = useMemo(() => sceneFrame(def, index, progress), [def, index, progress]);
   const ctx: PartContext = useMemo(() => ({ theme, assetUrl }), [theme, assetUrl]);
