@@ -95,6 +95,13 @@ export function LessonPlayer({
   );
   // 动手做：有 try 的步骤要等孩子做完；做对以后这一步按 solved 放（被孩子做掉的动作直接到位）
   const gates = useMemo(() => (hands ? tries.map(Boolean) : undefined), [hands, tries]);
+  // 自己做：不播放讲解，只剩孩子要做的步骤和最后一步（结果）；从第一个要做的步骤开始，不自动播放
+  const self = mode === 'self';
+  const skips = useMemo(
+    () => (self ? tries.map((tr, i) => !tr && i !== tries.length - 1) : undefined),
+    [self, tries],
+  );
+  const firstStep = skips ? Math.max(0, skips.indexOf(false)) : startIndex;
   const phaseOf = (i: number): StageTry['phase'] | undefined =>
     hands && tries[i] ? 'solved' : undefined;
   const narrationFor = (i: number, waiting: boolean): string => {
@@ -110,6 +117,7 @@ export function LessonPlayer({
   const { state, dispatch } = useTimeline({
     total,
     gates,
+    skips,
     motionMs: (i) => template.motionMs?.(animation, i, phaseOf(i)) ?? 0,
     narration: narrationFor,
     // 不朗读时按字数估算停留时间（site.yaml 的 player.dwell）；自己做时不用动手的步骤快速带过
@@ -122,8 +130,8 @@ export function LessonPlayer({
     maxFrameMs: site.player.maxFrameMs,
     afterSpeech: site.player.afterSpeech,
     narrate,
-    startIndex,
-    autoPlay,
+    startIndex: self ? firstStep : startIndex,
+    autoPlay: self ? false : autoPlay,
     speed: settings.defaultSpeed,
     voiceURI: settings.voiceURI,
     speechRate: settings.speechRate,
@@ -135,7 +143,7 @@ export function LessonPlayer({
     setTouched(true);
     dispatch(a);
   };
-  const engaged = touched || state.index !== startIndex || state.finishes > 0;
+  const engaged = touched || state.index !== (self ? firstStep : startIndex) || state.finishes > 0;
 
   // ───── 动手做：拖对、做错后的逐级引导（提示 → 高亮目标 → 看我做一遍）─────
   const tryKey = `${state.index}:${state.waiting}`;
@@ -340,7 +348,15 @@ export function LessonPlayer({
                 : t('common.step_counter', { n: state.index + 1, total })}
             </div>
           </div>
-          <div className={s.say}>{doing || demoing ? spec?.task : step?.desc}</div>
+          {/* “看我做一遍”和讲解文字顶部对齐，在右侧 */}
+          <div className={s.sayRow}>
+            <div className={s.say}>{doing || demoing ? spec?.task : step?.desc}</div>
+            {doing && !demoing ? (
+              <button className={`${ui.btn} ${s.showMe}`} onClick={() => startDemo(tp.misses)}>
+                {t('handsOn.show_me')}
+              </button>
+            ) : null}
+          </div>
           {doing || demoing ? (
             <div className={s.tryNote} data-miss={tp.misses > 0 && !demoing} key={tp.misses}>
               {tp.note ||
@@ -350,11 +366,6 @@ export function LessonPlayer({
             </div>
           ) : null}
         </div>
-        {doing && !demoing ? (
-          <button className={`${ui.btn} ${s.showMe}`} onClick={() => startDemo(tp.misses)}>
-            {t('handsOn.show_me')}
-          </button>
-        ) : null}
         {learned ? <LearnedBadge learned={learned} ratio={position / Math.max(total, 1)} /> : null}
       </div>
 
@@ -363,22 +374,25 @@ export function LessonPlayer({
           className={s.ctrl}
           aria-label={t('common.shang_yi_bu')}
           onClick={() => act({ type: 'prev' })}
-          disabled={state.index === 0}
+          disabled={!steps.some((_, i) => i < state.index && !skips?.[i])}
         >
           <Icon name="prev" />
         </button>
-        <button
-          className={s.play}
-          aria-label={state.playing ? t('common.zan_ting') : t('common.bo_fang')}
-          onClick={() => act({ type: 'toggle' })}
-        >
-          <Icon name={state.playing ? 'pause' : 'play'} size={24} />
-        </button>
+        {/* 自己做：没有播放，每一步都由孩子自己点或拖 */}
+        {!self ? (
+          <button
+            className={s.play}
+            aria-label={state.playing ? t('common.zan_ting') : t('common.bo_fang')}
+            onClick={() => act({ type: 'toggle' })}
+          >
+            <Icon name={state.playing ? 'pause' : 'play'} size={24} />
+          </button>
+        ) : null}
         <button
           className={s.ctrl}
           aria-label={t('common.xia_yi_bu')}
           onClick={() => act({ type: 'next' })}
-          disabled={state.index >= total - 1 || doing}
+          disabled={!steps.some((_, i) => i > state.index && !skips?.[i]) || doing}
         >
           <Icon name="next" />
         </button>
@@ -415,6 +429,8 @@ export function LessonPlayer({
                     : t('common.step_n', { n: i + 1 })
                 }
                 aria-current={i === state.index ? 'step' : undefined}
+                disabled={!!skips?.[i]}
+                data-skip={!!skips?.[i]}
                 onClick={() => act({ type: 'seek', index: i })}
               >
                 <span />
@@ -457,9 +473,9 @@ function LearnedBadge({
       onClick={learned.done ? learned.onUndo : learned.onMark}
     >
       {learned.done ? (
-        <Icon name="check" size={16} />
+        <Icon name="check" size={13} />
       ) : (
-        <svg viewBox="0 0 28 28" width="28" height="28" aria-hidden>
+        <svg viewBox="0 0 28 28" width="20" height="20" aria-hidden>
           <circle cx="14" cy="14" r={r} className={s.ringTrack} />
           <circle
             cx="14"

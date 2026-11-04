@@ -110,7 +110,7 @@
   align-items: center;
   gap: 8px;
   /* 右边给右上角的学完状态留位置 */
-  padding-right: 36px;
+  padding-right: 28px;
 }
 .counter {
   font-size: var(--fs-sm);
@@ -119,10 +119,10 @@
 /* 学完状态：已学完 = 成功的圆形图标；没学完 = 进度环 */
 .badge {
   position: absolute;
-  top: 8px;
+  top: 9px;
   right: 12px;
-  width: 28px;
-  height: 28px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   border: 0;
   padding: 0;
@@ -308,6 +308,13 @@
 .dot[data-done='true'] span {
   background: var(--surface);
   border-color: var(--primary);
+}
+/* 自己做时被跳过的步骤：点不了，淡一些 */
+.dot[data-skip='true'] {
+  pointer-events: none;
+}
+.dot[data-skip='true'] span {
+  opacity: 0.4;
 }
 /* 当前这一步开头：进度条上的圆钮正好盖在这里，不挡住拖动 */
 .dot[data-current='true'] {
@@ -613,10 +620,19 @@
     animation: none;
   }
 }
+.sayRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.sayRow .say {
+  flex: 1 1 0;
+  min-width: 0;
+}
 .showMe {
-  margin-left: auto;
   flex-shrink: 0;
-  align-self: flex-end;
+  min-height: 36px;
+  padding: 0 14px;
 }
 .nextMode {
   width: 100%;

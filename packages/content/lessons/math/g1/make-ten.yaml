@@ -44,7 +44,7 @@ objects:
   - id: left-num
     type: text
     text: '{a}'
-    at: [200, 236]
+    at: [200, 246]
     size: 40
   - id: plus
     type: text
@@ -62,17 +62,17 @@ objects:
   - id: right-num
     type: text
     text: '{b}'
-    at: [600, 236]
+    at: [600, 246]
     size: 40
   - id: hint
     type: label
     text: 还差 {gap} 个就满 10
-    at: [200, 178]
+    at: [200, 188]
     hidden: true
   - id: formula
     type: text
     text: '{a} + {b} = ?'
-    at: [400, 312]
+    at: [400, 318]
     size: 48
 
 steps:

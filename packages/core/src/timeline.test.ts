@@ -158,3 +158,29 @@ describe('参数代入', () => {
     });
   });
 });
+
+describe('自己做：跳过不用孩子动手的步骤', () => {
+  // 0 讲解（跳过）、1 孩子做、2 讲解（跳过）、3 结果
+  const skips = [true, false, true, false];
+  const gates = [false, true, false, false];
+
+  it('下一步、上一步、自动播放都绕过被跳过的步骤', () => {
+    let s = initTimeline(4, { index: 1, gates, skips });
+    expect(s.waiting).toBe(true);
+    s = r(s, { type: 'solve' });
+    s = r(s, { type: 'frame', delta: 1 });
+    s = r(s, { type: 'spoken', epoch: s.epoch });
+    expect(s.index).toBe(3);
+    s = r(s, { type: 'prev' });
+    expect(s.index).toBe(1);
+    expect(r(s, { type: 'prev' })).toMatchObject({ index: 1, playing: false });
+  });
+
+  it('最后一步放完算播完', () => {
+    let s = initTimeline(4, { index: 1, gates, skips });
+    s = r(s, { type: 'solve' });
+    s = finishStep(s);
+    s = finishStep(s);
+    expect(s.finishes).toBe(1);
+  });
+});

@@ -31,6 +31,11 @@ export interface TimelineState {
   gates: boolean[];
   /** 正在等孩子动手：动画不走，讲解读完也不进入下一步 */
   waiting: boolean;
+  /**
+   * 自己做：要跳过的步骤（不用孩子动手的讲解步骤）。上一步、下一步、自动进入下一步都绕过它们，
+   * 只剩孩子要做的步骤和最后一步（结果）。
+   */
+  skips: boolean[];
 }
 
 export type TimelineAction =
@@ -59,6 +64,8 @@ export interface TimelineInit {
   autoPlay?: boolean;
   /** 要等孩子动手的步骤（动手做模式） */
   gates?: boolean[];
+  /** 要跳过的步骤（自己做模式） */
+  skips?: boolean[];
 }
 
 const clampIndex = (i: number, total: number) =>
@@ -83,7 +90,14 @@ export function initTimeline(total: number, init: TimelineInit = {}): TimelineSt
     finishes: 0,
     gates,
     waiting,
+    skips: init.skips ?? [],
   };
+}
+
+/** 往后（dir = 1）或往前（dir = -1）找第一个没有被跳过的步骤；没有时返回 undefined */
+function stepFrom(s: TimelineState, from: number, dir: 1 | -1): number | undefined {
+  for (let i = from + dir; i >= 0 && i < s.total; i += dir) if (!s.skips[i]) return i;
+  return undefined;
 }
 
 /** 进入某一步：动画段从头开始走 */
@@ -105,7 +119,8 @@ function enter(s: TimelineState, index: number, playing: boolean): TimelineState
 /** 播放中且动画段、讲解都结束 → 下一步；最后一步结束 → 停止并记一次“播完” */
 function maybeAdvance(s: TimelineState): TimelineState {
   if (!s.playing || !s.spoken || s.progress < 1 || s.waiting) return s;
-  if (s.index < s.total - 1) return enter(s, s.index + 1, true);
+  const next = stepFrom(s, s.index, 1);
+  if (next !== undefined) return enter(s, next, true);
   return { ...s, playing: false, running: false, finishes: s.finishes + 1 };
 }
 
@@ -129,10 +144,14 @@ export function timelineReducer(s: TimelineState, a: TimelineAction): TimelineSt
     case 'toggle':
       return timelineReducer(s, { type: s.playing ? 'pause' : 'play' });
     // 手动操作一律暂停（规格 P3：单步、点步骤点、拖进度都会暂停播放）
-    case 'next':
-      return s.index >= last ? { ...s, playing: false } : enter(s, s.index + 1, false);
-    case 'prev':
-      return s.index <= 0 ? { ...s, playing: false } : enter(s, s.index - 1, false);
+    case 'next': {
+      const to = stepFrom(s, s.index, 1);
+      return to === undefined ? { ...s, playing: false } : enter(s, to, false);
+    }
+    case 'prev': {
+      const to = stepFrom(s, s.index, -1);
+      return to === undefined ? { ...s, playing: false } : enter(s, to, false);
+    }
     case 'seek':
       return enter(s, a.index, false);
     case 'scrub': {
