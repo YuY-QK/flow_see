@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../schemas/example.schema.json
+id: digestion
+title: 一顿饭的消化之旅
+category: 人体与生命
+featured: false
+summary: 食物在身体里走过的一段旅程。
+template: cycle
+theme: flat
+params:
+  layout: timeline
+elements:
+  - 口腔
+  - 食道
+  - 胃
+  - 小肠
+  - 大肠
+steps:
+  - stage: 口腔
+    title: 口腔
+    desc: 牙齿把食物嚼碎，唾液开始分解淀粉。
+  - stage: 食道
+    title: 食道
+    desc: 食物顺着食道被推进胃里。
+  - stage: 胃
+    title: 胃
+    desc: 胃把食物搅拌成糊状，继续消化。
+  - stage: 小肠
+    title: 小肠
+    desc: 大部分营养在小肠里被吸收。
+  - stage: 大肠
+    title: 大肠
+    desc: 吸收剩下的水分，残渣排出体外。

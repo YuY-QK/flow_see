@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=../schemas/example.schema.json
+id: code-review
+title: 一次代码评审
+category: 工作流程
+featured: false
+summary: 开发者、自动检查和评审人之间的一次协作。
+template: message
+theme: pro
+elements:
+  - 开发者
+  - 自动检查
+  - 评审人
+steps:
+  - from: 开发者
+    to: 自动检查
+    label: 提交代码
+    title: 开发者提交代码
+    desc: 开发者把改动提交上去，触发自动检查。
+  - from: 自动检查
+    to: 开发者
+    label: 检查通过
+    title: 自动检查通过
+    desc: 测试和格式检查都通过了。
+  - from: 开发者
+    to: 评审人
+    label: 请求评审
+    title: 请评审人看看
+    desc: 开发者邀请同事评审这次改动。
+  - from: 评审人
+    to: 开发者
+    label: 修改建议
+    title: 评审人提出建议
+    desc: “这里的命名可以更清楚一点。”
+  - from: 开发者
+    to: 评审人
+    label: 已修改
+    title: 开发者修改后再提交
+    desc: 按建议改好，再请评审人看。
+  - from: 评审人
+    to: 开发者
+    label: 批准
+    title: 评审通过
+    desc: 评审人批准，代码可以合并了。

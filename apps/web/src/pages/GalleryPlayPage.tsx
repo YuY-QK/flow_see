@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { findOfficial } from '@flow-see/content/examples/official.ts';
+import { findOfficial } from '../examples';
 import { duplicateAnimation, t } from '@flow-see/core';
 import { Player } from '@flow-see/runtime/player/Player.tsx';
 import { repository } from '@flow-see/runtime/services/storage.ts';

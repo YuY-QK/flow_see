@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../schemas/example.schema.json
+id: tcp-teardown
+title: TCP 四次挥手
+category: 网络协议
+featured: false
+summary: 断开连接时，双方各自说“再见”并确认。
+template: message
+theme: pro
+elements:
+  - 客户端
+  - 服务器
+steps:
+  - from: 客户端
+    to: 服务器
+    label: FIN
+    title: 客户端发送 FIN
+    desc: 客户端：我的数据发完了，想断开连接。
+  - from: 服务器
+    to: 客户端
+    label: ACK
+    title: 服务器回复 ACK
+    desc: 服务器：知道了，但我可能还有数据没发完。
+  - from: 服务器
+    to: 客户端
+    label: FIN
+    title: 服务器发送 FIN
+    desc: 服务器：我也发完了，可以断开了。
+  - from: 客户端
+    to: 服务器
+    label: ACK
+    title: 客户端回复 ACK
+    desc: 客户端：好的，再见。连接关闭。

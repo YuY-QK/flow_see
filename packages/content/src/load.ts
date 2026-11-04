@@ -14,6 +14,8 @@ import {
   SCHEMAS,
   type AssetEntry,
   type CurriculumConfig,
+  type ExampleConfig,
+  type ExamplesConfig,
   type GradesConfig,
   type HelpConfig,
   type LessonConfig,
@@ -45,6 +47,7 @@ export interface ContentBundle {
   help: HelpConfig;
   texts: TextsConfig;
   style: StyleConfigData;
+  examples: ExamplesConfig;
   grades: GradesConfig;
   curricula: { file: string; data: CurriculumConfig }[];
   lessons: LessonFile[];
@@ -335,6 +338,60 @@ export function loadContent(
     lessonById.set(lesson.id, lf);
   }
 
+  // 创作示例：examples/index.yaml + examples/<id>.yaml
+  const exIndex = readYaml(root, join(root, 'examples', 'index.yaml'), 'examples', issues);
+  const exampleList: ExampleConfig[] = [];
+  if (exIndex) {
+    const seen = new Set<string>();
+    for (const id of exIndex.items) {
+      const name = `examples/${id}.yaml`;
+      if (seen.has(id)) err('examples/index.yaml', `示例重复列出：${id}`);
+      seen.add(id);
+      const read = readYamlWithLines(root, join(root, name), 'example', issues);
+      if (!read) continue;
+      const ex = read.data;
+      const bad = (path: (string | number)[], msg: string) => err(name, msg, read.line(path));
+      if (ex.id !== id) bad(['id'], `id（${ex.id}）要和文件名（${id}）一致`);
+      if (!exIndex.categories.includes(ex.category))
+        bad(['category'], `分类 ${ex.category} 不在 examples/index.yaml 的 categories 里`);
+      if (opts.templateIds && !opts.templateIds.includes(ex.template))
+        bad(['template'], `模板不存在：${ex.template}`);
+      const els = ex.elements ?? [];
+      if (new Set(els).size !== els.length)
+        bad(['elements'], '元素名字不能重复（步骤里靠名字找元素）');
+      if (ex.template === 'data') {
+        const values = ex.params?.values;
+        if (!Array.isArray(values) || !values.length || !values.every((v) => typeof v === 'number'))
+          bad(['params', 'values'], '数据变化示例要在 params.values 里写一组数字');
+      } else {
+        if (!els.length) bad(['elements'], '要写 elements（角色 / 节点 / 阶段的名字）');
+        if (!ex.steps?.length) bad(['steps'], '要写 steps');
+        const refKeys =
+          { message: ['from', 'to'], flow: ['node'], cycle: ['stage'] }[ex.template] ?? [];
+        (ex.steps ?? []).forEach((st, i) => {
+          for (const k of refKeys) {
+            const v = st[k as keyof typeof st] as string | undefined;
+            if (v === undefined) bad(['steps', i], `这一步要写 ${k}`);
+            else if (!els.includes(v)) bad(['steps', i, k], `${k} 里的“${v}”不在 elements 里`);
+          }
+        });
+      }
+      exampleList.push(ex);
+    }
+    for (const file of walk(join(root, 'examples')))
+      if (
+        file.endsWith('index.yaml')
+          ? false
+          : !exIndex.items.includes(
+              file
+                .split(/[\\/]/)
+                .pop()!
+                .replace(/\.yaml$/, ''),
+            )
+      )
+        warn(rel(root, file), '没有列在 examples/index.yaml 的 items 里，页面上看不到它');
+  }
+
   // 课程目录
   const curricula: ContentBundle['curricula'] = [];
   const listed = new Map<string, string>();
@@ -383,8 +440,19 @@ export function loadContent(
   const ok = !issues.some((i) => i.level === 'error');
   return {
     bundle:
-      ok && site && grades && help && texts && style
-        ? { root, site, help, texts, style, grades, curricula, lessons, assets }
+      ok && site && grades && help && texts && style && exIndex
+        ? {
+            root,
+            site,
+            help,
+            texts,
+            style,
+            examples: { ...exIndex, list: exampleList },
+            grades,
+            curricula,
+            lessons,
+            assets,
+          }
         : undefined,
     issues,
   };

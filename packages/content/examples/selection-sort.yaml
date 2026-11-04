@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=../schemas/example.schema.json
+id: selection-sort
+title: 选择排序
+category: 算法
+featured: false
+summary: 每一轮挑出最小的数，放到最前面。
+template: data
+theme: pro
+params:
+  values: [29, 10, 14, 37, 13]
+  algorithm: selection
+  order: asc

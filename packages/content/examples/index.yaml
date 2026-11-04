@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../schemas/examples.schema.json
+# 创作页里的示例动画。items 的顺序就是页面上的顺序；每个示例一个文件 examples/<id>.yaml。
+categories:
+  - 算法
+  - 网络协议
+  - 自然科学
+  - 人体与生命
+  - 生活流程
+  - 工作流程
+source: 官方
+author: 官方示例
+items:
+  - bubble-sort
+  - selection-sort
+  - insertion-sort
+  - tcp-handshake
+  - tcp-teardown
+  - open-web-page
+  - water-cycle
+  - photosynthesis
+  - butterfly
+  - digestion
+  - make-tea
+  - express-delivery
+  - leave-approval
+  - code-review

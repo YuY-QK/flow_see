@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=../schemas/example.schema.json
+id: make-tea
+title: 泡一杯茶
+category: 生活流程
+featured: true
+summary: 一个带判断的小流程：水开了没有？
+template: flow
+theme: cute
+elements:
+  - 烧水
+  - 水开了吗？
+  - 再等等
+  - 放茶叶
+  - 倒热水
+  - 闷两分钟
+steps:
+  - node: 烧水
+    title: 烧水
+    desc: 把水壶装满水，开始烧水。
+  - node: 水开了吗？
+    title: 检查水开了没有
+    desc: 看看水有没有冒大泡。
+  - node: 再等等
+    via: 还没开
+    title: 再等等
+    desc: 水还没开，再等一会儿。
+  - node: 水开了吗？
+    via: 再看看
+    title: 再检查一次
+    desc: 这次水开了。
+  - node: 放茶叶
+    via: 开了
+    title: 放茶叶
+    desc: 在杯子里放一小撮茶叶。
+  - node: 倒热水
+    title: 倒热水
+    desc: 把开水倒进杯子。
+  - node: 闷两分钟
+    title: 闷两分钟
+    desc: 等茶叶舒展开，一杯茶就泡好了。

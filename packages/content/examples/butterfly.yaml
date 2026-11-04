@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../schemas/example.schema.json
+id: butterfly
+title: 蝴蝶的一生
+category: 人体与生命
+featured: true
+summary: 从一颗卵到美丽的蝴蝶，再产下新的卵。
+template: cycle
+theme: cute
+params:
+  layout: cycle
+elements:
+  - 卵
+  - 毛毛虫
+  - 蛹
+  - 蝴蝶
+steps:
+  - stage: 卵
+    title: 卵
+    desc: 蝴蝶妈妈把卵产在叶子上。
+  - stage: 毛毛虫
+    title: 毛毛虫
+    desc: 卵孵化出毛毛虫，它不停地吃叶子长大。
+  - stage: 蛹
+    title: 蛹
+    desc: 毛毛虫吐丝把自己包起来，变成蛹。
+  - stage: 蝴蝶
+    title: 蝴蝶
+    desc: 蛹里钻出一只漂亮的蝴蝶。
+  - stage: 卵
+    title: 新的卵
+    desc: 蝴蝶又产下新的卵，生命继续循环。

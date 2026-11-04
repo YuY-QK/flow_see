@@ -416,6 +416,57 @@ export const lessonSchema = z
       });
   });
 
+/* ───────────── examples/*.yaml ───────────── */
+
+/** 创作页示例的目录：分类、显示顺序、来源署名 */
+export const examplesIndexSchema = z
+  .object({
+    categories: z.array(text).min(1).describe('分类，显示顺序同这里'),
+    source: text.describe('来源：第一版只有官方；以后社区投稿入选精选后显示作者名'),
+    author: text.describe('示例作品的署名'),
+    items: z
+      .array(z.string().regex(/^[a-z0-9][a-z0-9-]*$/))
+      .describe('示例的显示顺序，对应 examples/<id>.yaml'),
+  })
+  .strict();
+
+/**
+ * 一个示例动画。元素用名字写（不用 id）：
+ * - message：每步 from / to（角色名）、label；
+ * - flow：每步 node（节点名）、via；
+ * - cycle：每步 stage（阶段名），params.layout 是 cycle 或 timeline；
+ * - data：不写 steps，由 params（values、algorithm、order）自动生成。
+ */
+export const exampleSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/, '示例 id 用小写英文、数字和 -'),
+    title: text,
+    category: text.describe('必须是 examples/index.yaml 里 categories 的一项'),
+    featured: z.boolean().default(false),
+    summary: text,
+    template: z.enum(['message', 'flow', 'cycle', 'data']),
+    theme: z.enum(ANIM_THEMES),
+    elements: z.array(text).optional().describe('角色 / 节点 / 阶段的名字，不能重复'),
+    params: z.record(z.string(), z.unknown()).optional(),
+    steps: z
+      .array(
+        z
+          .object({
+            title: text,
+            desc: z.string().default(''),
+            from: z.string().optional(),
+            to: z.string().optional(),
+            label: z.string().optional(),
+            node: z.string().optional(),
+            via: z.string().optional(),
+            stage: z.string().optional(),
+          })
+          .strict(),
+      )
+      .optional(),
+  })
+  .strict();
+
 /* ───────────── assets/manifest.yaml ───────────── */
 
 export const AI_SOURCE = 'AI 生成';
@@ -447,6 +498,8 @@ export const SCHEMAS = {
   help: helpSchema,
   texts: textsSchema,
   style: styleSchema,
+  examples: examplesIndexSchema,
+  example: exampleSchema,
   grades: gradesSchema,
   curriculum: curriculumSchema,
   lesson: lessonSchema,
@@ -459,6 +512,10 @@ export type SceneStyleConfig = SiteConfig['scene'];
 export type HelpConfig = z.output<typeof helpSchema>;
 export type TextsConfig = z.output<typeof textsSchema>;
 export type StyleConfigData = z.output<typeof styleSchema>;
+export type ExamplesIndexConfig = z.output<typeof examplesIndexSchema>;
+export type ExampleConfig = z.output<typeof exampleSchema>;
+/** 创作页的示例：目录 + 全部示例（按 items 的顺序） */
+export type ExamplesConfig = ExamplesIndexConfig & { list: ExampleConfig[] };
 export type GradesConfig = z.output<typeof gradesSchema>;
 export type CurriculumConfig = z.output<typeof curriculumSchema>;
 export type LessonConfig = z.output<typeof lessonSchema>;

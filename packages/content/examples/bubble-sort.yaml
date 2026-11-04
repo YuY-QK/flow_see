@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=../schemas/example.schema.json
+id: bubble-sort
+title: 冒泡排序
+category: 算法
+featured: true
+summary: 反复比较相邻的两个数，把大的往后“冒”。
+template: data
+theme: flat
+params:
+  values: [5, 2, 8, 1, 9]
+  algorithm: bubble
+  order: asc

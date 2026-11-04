@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import type { OfficialItem } from '@flow-see/content/examples/official.ts';
+import type { OfficialItem } from '../examples';
 import { getTemplate } from '@flow-see/templates';
 import { Thumb } from '../ui/Thumb';
 import s from './Pages.module.css';

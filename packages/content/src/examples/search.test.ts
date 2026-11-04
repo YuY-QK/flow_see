@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { findOfficial } from './official';
+import { realOfficialItems } from './fixtures';
 import { matches } from './search';
 
 describe('广场搜索', () => {
-  const tcp = findOfficial('official-tcp-handshake')!;
+  const tcp = realOfficialItems().items.find((i) => i.id === 'official-tcp-handshake')!;
   it('按标题、分类、模板名、步骤标题匹配，不区分大小写', () => {
     expect(matches(tcp, 'tcp')).toBe(true);
     expect(matches(tcp, '网络协议')).toBe(true);
