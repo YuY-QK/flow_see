@@ -307,6 +307,9 @@ lessonPage:
 lessonPlayer:
   tuo_dong_jin_du: 拖动进度
   tui_chu_quan_ping: 退出全屏
+lessonTools:
+  open: 工具
+  close: 收起
 handsOn:
   modes_aria: 学习方式
   mode_watch: 看一看

@@ -13,7 +13,7 @@ tags: [凑十, 凑十法, 进位加法, 加法, 十格框]
 recommended: true
 
 template: scene
-stage: { width: 800, height: 400 } # 比默认的矮一些，上下不留多余空白
+stage: { width: 800, height: 360 } # 比默认的矮一些，上下不留多余空白
 
 params:
   a: 9 # 大数
@@ -39,17 +39,17 @@ objects:
     count: '{a}'
     layout: tenframe
     size: 52
-    at: [70, 90]
+    at: [70, 40]
     color: blue
   - id: left-num
     type: text
     text: '{a}'
-    at: [200, 240]
+    at: [200, 236]
     size: 40
   - id: plus
     type: text
     text: +
-    at: [400, 142]
+    at: [400, 92]
     size: 48
   - id: right # b 个橙色圆片，每行 5 个
     type: counters
@@ -57,22 +57,22 @@ objects:
     layout: grid
     cols: 5
     size: 52
-    at: [470, 90]
+    at: [470, 66]
     color: orange
   - id: right-num
     type: text
     text: '{b}'
-    at: [600, 240]
+    at: [600, 236]
     size: 40
   - id: hint
     type: label
     text: 还差 {gap} 个就满 10
-    at: [200, 36]
+    at: [200, 178]
     hidden: true
   - id: formula
     type: text
     text: '{a} + {b} = ?'
-    at: [400, 353]
+    at: [400, 312]
     size: 48
 
 steps:
