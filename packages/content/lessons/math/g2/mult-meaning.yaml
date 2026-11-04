@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 乘法的意义：几个相同的数相加 → 点阵 → 乘法算式。只用场景模板（scene）的配置做出来。
+# 每份的个数 n 是参数，可以在“动手试一试”里换；份数固定为 3（加法算式里写 3 个 n）。
+# 算式写成“每份个数 × 份数”（n × 3 表示 3 个 n 相加）。
+id: mult-meaning
+title: 乘法的意义
+summary: 几个相同的数相加，可以写成乘法；还能自己换例子试试
+status: published
+reviewedAt: 2026-11-04
+duration: 1分钟
+tags: [乘法, 乘法的意义, 相同加数, 点阵, 表内乘法]
+recommended: false
+
+template: scene
+
+params:
+  n: 4 # 每行几个
+derived:
+  total: n * 3
+  x0: (800 - n * 48) / 2 # 让圆点左右居中
+
+explore: # 动手试一试：每行 2–9 个（表内乘法）
+  - { param: n, control: slider, label: 每行几个, min: 2, max: 9 }
+presets:
+  - { label: 4 × 3, params: { n: 4 } }
+  - { label: 2 × 3, params: { n: 2 } }
+  - { label: 5 × 3, params: { n: 5 } }
+  - { label: 6 × 3, params: { n: 6 } }
+  - { label: 9 × 3, params: { n: 9 } }
+
+objects:
+  - { id: r1, type: counters, count: '{n}', layout: row, size: 48, at: ['{x0}', 40], color: blue }
+  - { id: r2, type: counters, count: '{n}', layout: row, size: 48, at: ['{x0}', 120], color: blue, hidden: true }
+  - { id: r3, type: counters, count: '{n}', layout: row, size: 48, at: ['{x0}', 200], color: blue, hidden: true }
+  - { id: add, type: text, text: '{n} + {n} + {n} = {total}', at: [400, 320], size: 44, hidden: true }
+  - { id: mul, type: text, text: '{n} × 3 = {total}', at: [400, 400], size: 52, hidden: true }
+
+steps:
+  - title: 数一数
+    say: 这一行有 {n} 个圆点。
+    do:
+      - highlight: r1
+  - title: 再摆两行
+    say: 再摆两行，每行也是 {n} 个，一共 3 行。
+    do:
+      - show: [r2, r3]
+      - highlight: [r1, r2, r3]
+  - title: 几个相同的数
+    say: 3 行，每行 {n} 个，就是 3 个 {n}。
+    do:
+      - highlight: [r1, r2, r3]
+  - title: 写成加法
+    say: 3 个 {n} 相加：{n} + {n} + {n} = {total}。
+    do:
+      - show: add
+      - highlight: add
+  - title: 写成乘法
+    say: 相同的数相加，可以写成乘法：{n} × 3 = {total}。
+    do:
+      - show: mul
+      - color: { target: mul, to: green, together: true }
+      - highlight: mul
+  - title: 乘法怎么读
+    say: '{n} × 3 读作 {n} 乘 3，表示 3 个 {n} 相加。'
+    do:
+      - highlight: mul
+
+keyPoints:
+  - 几个相同的数相加，可以用乘法算
+  - '{n} + {n} + {n} = {n} × 3 = {total}，表示 3 个 {n} 相加'
