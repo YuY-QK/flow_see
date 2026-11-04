@@ -7,11 +7,13 @@ import { buildIndex, lessonNeighbors, type ContentIndex } from './catalog';
 import { CONTENT_ROOT } from './json-schema';
 import { loadContent } from './load';
 
+// 读一遍内容要检查所有知识点的每种参数组合，比较慢：整个文件只读一次
+let loaded: ReturnType<typeof loadContent> | undefined;
 const load = () =>
-  loadContent(CONTENT_ROOT, {
+  (loaded ??= loadContent(CONTENT_ROOT, {
     templateIds: TEMPLATE_IDS,
     checkLesson: (l) => getTemplate(l.template)?.checkConfig?.(l) ?? [],
-  });
+  }));
 
 describe('真实的知识点配置', () => {
   it('全部通过检查（含场景模板的零件和动作）', () => {
