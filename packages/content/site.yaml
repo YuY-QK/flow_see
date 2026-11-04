@@ -66,6 +66,10 @@ scene:
     wait: 0.5
   splitLift: 0.9                       # 拆分出来的计数块默认往上抬多少（相对格子大小）
   tenframeGap: 0.4                     # 十格框之间的间距（相对格子大小）
+  tryIt:                               # 动手做（跟着做 / 自己做）时舞台上的拖动
+    dropPadding: 30                    # 放到目标零件外面这么远以内也算放进去（舞台坐标）
+    hitScale: 1.6                      # 能拖的零件，按下的范围是它本身的几倍（手指好按；手机上零件会缩小）
+    liftScale: 1.15                    # 拖起来时放大一点
   parts:                               # 各零件的默认属性；知识点里写了就用知识点的
     text: { size: 36, color: ink, weight: bold }
     fraction: { size: 40, color: ink }
@@ -91,6 +95,11 @@ player:
   dwell: { msPerChar: 220, minMs: 1800 }   # 不朗读时，按字数估算每一步停留多久
   afterSpeech: { pauseMs: 1200, minMs: 500, blockedRatio: 0.6 }   # 读完后的停顿
   maxFrameMs: 100                      # 时钟单帧最多推进多久
+  handsOn:                             # 动手做：跟着做 / 自己做（规格 P3）
+    targetAfterMisses: 2               # 做错几次后，高亮该放到哪里
+    demoAfterMisses: 3                 # 做错几次后，自动“看我做一遍”
+    demoPauseMs: 800                   # 演示放完后停多久，再让孩子自己做
+    selfDwellMs: 1500                  # 自己做：不用动手的步骤停留多久（不朗读讲解）
 
 # ───────── 个人中心 ─────────
 profile:

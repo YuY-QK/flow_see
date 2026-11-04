@@ -35,6 +35,29 @@ export interface StageProps {
    * 不传时按 1 处理（这一步的完整画面）；现有四个模板可以不管它。
    */
   progress?: number;
+  /** 动手做（跟着做 / 自己做）：这一步由孩子来做；不传时照常播放 */
+  tryIt?: StageTry;
+}
+
+/** 动手做的配置（知识点步骤里的 try，已代入参数） */
+export interface TrySpec {
+  task: string;
+  drag?: { from: string; to: string; count: number | string };
+  hints?: string[];
+}
+
+/**
+ * 舞台上的动手做：
+ * - doing：画面停在这一步开头，孩子拖动；moved 是已经拖对的计数块（按原来的序号）；
+ * - solved：孩子做对了，这一步接着放，被孩子做掉的动作（拖动对应的拆分、移动）直接到位。
+ */
+export interface StageTry {
+  phase: 'doing' | 'solved';
+  moved?: number[];
+  /** 高亮该放到哪里（做错几次后） */
+  showTarget?: boolean;
+  /** 孩子放下一个计数块：ok = 放进了目标 */
+  onDrop?(index: number, ok: boolean): void;
 }
 
 /** 知识点配置里与模板有关的部分（结构与 packages/content 的 lesson 一致，这里不依赖 content） */
@@ -44,7 +67,13 @@ export interface LessonLike {
   derived?: Record<string, number | string>;
   stage?: { width: number; height: number };
   objects?: Record<string, unknown>[];
-  steps: { say: string; title?: string; show?: string; do?: Record<string, unknown>[] }[];
+  steps: {
+    say: string;
+    title?: string;
+    show?: string;
+    do?: Record<string, unknown>[];
+    try?: TrySpec;
+  }[];
 }
 
 /** 模板对配置的检查结果；path 相对知识点文件根，如 ['steps', 1, 'do', 0] */
@@ -85,7 +114,7 @@ export interface Template {
    * 连续时间模型：第 index 步动画段的时长（毫秒，按 1 倍速）。
    * 没有或返回 0 时，这一步没有动画段，进入即是完整画面。
    */
-  motionMs?(animation: Animation, index: number): number;
+  motionMs?(animation: Animation, index: number, tryPhase?: StageTry['phase']): number;
   /** 检查知识点配置里模板专属的部分（零件、动作等），供 pnpm content:check 使用 */
   checkConfig?(lesson: LessonLike): ConfigIssue[];
 }

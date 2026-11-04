@@ -98,6 +98,12 @@ steps:
       - set: { target: left-num, text: '10' }
       - set: { target: right-num, text: '{rest}', together: true }
       - highlight: { target: [left, left-num] }
+    try: # 跟着做 / 自己做：孩子把拆出来的圆片拖进十格框；上面的 do 是标准做法（演示、做对后的结果）
+      task: 把 {gap} 个橙色圆片拖进十格框。
+      drag: { from: one, to: left, count: '{gap}' }
+      hints:
+        - 要放进左边的十格框里哦。
+        - 看，放到亮起来的十格框里。
   - title: 再加剩下的
     say: 10 加 {rest} 等于 {sum}。
     do:

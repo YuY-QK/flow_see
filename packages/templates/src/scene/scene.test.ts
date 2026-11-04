@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { counterSlot } from '@flow-see/blocks';
 import { parseDuration, planStep } from './actions';
 import { checkScene } from './check';
-import { sceneFrame, stepMotionMs, type SceneDef } from './evaluate';
+import { coveredActions, dragFrame, sceneFrame, stepMotionMs, type SceneDef } from './evaluate';
 
 const makeTen: SceneDef = {
   stage: { width: 800, height: 450 },
@@ -154,5 +154,63 @@ describe('场景模板：配置检查', () => {
       msgs([{ split: { target: 'a', take: 1, as: 'x' } }, { move: { target: 'x', to: 'b' } }]),
     ).toEqual([]);
     expect(msgs([{ move: { target: 'a', to: [1, 2], speed: 3 } }])[0]).toMatch(/没有参数 speed/);
+  });
+});
+
+describe('动手做：拖动', () => {
+  // 第 2 步由孩子把拆出来的 1 个拖进十格框（标准做法：split + move）
+  const def: SceneDef = {
+    ...makeTen,
+    tries: [undefined, { task: '拖', drag: { from: 'right', to: 'left', count: 1 } }],
+  };
+
+  it('拖动对应的拆分、移动算作孩子做掉的动作', () => {
+    expect([...coveredActions(def.steps[1], def.tries?.[1])]).toEqual([0, 1]);
+    expect(coveredActions(def.steps[2], def.tries?.[1]).size).toBe(0);
+  });
+
+  it('等孩子动手时停在这一步开头；拖对的放进目标的空位', () => {
+    const f0 = dragFrame(def, 1, []);
+    expect(f0.items).toHaveLength(4);
+    expect(f0.from?.props.count).toBe(4);
+    expect(f0.to?.props.count).toBe(9);
+    const f1 = dragFrame(def, 1, [2]);
+    expect(f1.items.map((i) => i.index)).toEqual([0, 1, 3]);
+    expect(f1.to?.props.count).toBe(10);
+    // 正在拖的那一个先拿掉
+    expect(dragFrame(def, 1, [], 0).items.map((i) => i.index)).toEqual([1, 2, 3]);
+    expect(stepMotionMs(def, 1, 'doing')).toBe(0);
+  });
+
+  it('做对后这一步不再放被孩子做掉的动作，结果和标准做法一样', () => {
+    expect(stepMotionMs(def, 1, 'solved')).toBe(0);
+    expect(stepMotionMs(def, 1)).toBeGreaterThan(0);
+    const solved = sceneFrame(def, 1, 0, 'solved').objects.find((o) => o.id === 'left');
+    expect(solved?.props.count).toBe(10);
+    expect(obj(def, 1, 1, 'left')?.props.count).toBe(10);
+  });
+
+  it('配置检查：零件不存在、个数对不上、do 里没有标准做法时报错', () => {
+    const steps = (tryIt: Record<string, unknown>, d = makeTen.steps[1]) => [
+      { say: '看', do: makeTen.steps[0] as Record<string, unknown>[] },
+      { say: '做', do: d as Record<string, unknown>[], try: tryIt as never },
+    ];
+    const msgs = (tryIt: Record<string, unknown>, d?: unknown[]) =>
+      checkScene({ params: {}, objects: makeTen.objects, steps: steps(tryIt, d) }).map(
+        (i) => i.message,
+      );
+    expect(msgs({ task: '拖', drag: { from: 'right', to: 'left', count: 1 } })).toEqual([]);
+    expect(msgs({ task: '拖', drag: { from: 'nope', to: 'left', count: 1 } })[0]).toMatch(/不存在/);
+    expect(msgs({ task: '拖', drag: { from: 'right', to: 'left', count: 2 } })[0]).toMatch(
+      /标准做法移过去的是 1 个/,
+    );
+    expect(msgs({ task: '拖', drag: { from: 'right', to: 'left', count: 9 } })[0]).toMatch(
+      /只有 4 个/,
+    );
+    expect(
+      msgs({ task: '拖', drag: { from: 'right', to: 'left', count: 1 } }, [
+        { highlight: 'left' },
+      ])[0],
+    ).toMatch(/do 里要有/);
   });
 });

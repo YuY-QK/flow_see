@@ -13,14 +13,16 @@ export interface TimelineOptions {
   total: number;
   /** 第 i 步动画段的时长（毫秒，1 倍速）；0 = 没有动画段 */
   motionMs(index: number): number;
-  /** 第 i 步要朗读的文字 */
-  narration(index: number): string;
+  /** 第 i 步要朗读的文字；waiting = 正在等孩子动手（这时读任务提示） */
+  narration(index: number, waiting: boolean): string;
   /** 不朗读时第 i 步的停留时间（毫秒，已按速度换算） */
   dwellMs(index: number, speed: number): number;
   narrate: boolean;
   startIndex?: number;
   speed?: Speed;
   autoPlay?: boolean;
+  /** 动手做：要等孩子做完的步骤（只在开始时读一次） */
+  gates?: boolean[];
   voiceURI?: string;
   /** 朗读语速，会再乘上播放速度 */
   speechRate?: number;
@@ -42,7 +44,12 @@ export function useTimeline(opts: TimelineOptions): {
 } {
   const { total, narrate, voiceURI, speechRate = 1 } = opts;
   const [state, dispatch] = useReducer(timelineReducer, undefined, () =>
-    initTimeline(total, { index: opts.startIndex, speed: opts.speed, autoPlay: opts.autoPlay }),
+    initTimeline(total, {
+      index: opts.startIndex,
+      speed: opts.speed,
+      autoPlay: opts.autoPlay,
+      gates: opts.gates,
+    }),
   );
   // 回调每次渲染都可能是新函数，用 ref 读取最新的，避免重启计时
   const fns = useRef(opts);
@@ -55,7 +62,7 @@ export function useTimeline(opts: TimelineOptions): {
   }, [total]);
 
   // 动画段时钟
-  const { running, index, speed, playing, epoch } = state;
+  const { running, index, speed, playing, epoch, waiting } = state;
   useEffect(() => {
     if (!running) return;
     const ms = fns.current.motionMs(index);
@@ -75,10 +82,10 @@ export function useTimeline(opts: TimelineOptions): {
     return () => cancelAnimationFrame(raf);
   }, [running, index, speed]);
 
-  // 讲解段：只在播放时朗读
+  // 讲解段：只在播放时朗读；等孩子动手时也读一遍任务提示
   useEffect(() => {
-    if (!playing) return;
-    const text = fns.current.narration(index);
+    if (!playing && !waiting) return;
+    const text = fns.current.narration(index, waiting);
     let cancelled = false;
     let timer: number | undefined;
     const done = (ms: number) => {
@@ -107,7 +114,7 @@ export function useTimeline(opts: TimelineOptions): {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [playing, epoch, index, speed, narrate, voiceURI, speechRate]);
+  }, [playing, waiting, epoch, index, speed, narrate, voiceURI, speechRate]);
 
   return { state, dispatch };
 }
