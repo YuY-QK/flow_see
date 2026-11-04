@@ -1,24 +1,26 @@
 # yaml-language-server: $schema=../../../schemas/lesson.schema.json
 # 认识钟表：用 clock 模板，只写参数和讲解，不写代码。
 # clock 模板每一步的 show：face（钟面）、minute-hand（突出分针）、hour-hand（突出时针）、
-# read（读出现在的时间）、run（时间连续走 runMinutes 分钟，之后的步骤从新时间算）。
+# read（读出现在的时间）、run（时间连续走 runMinutes 分钟，之后的步骤从新时间算）、
+# run:30（这一步走 30 分钟，N 写在 show 里，可以是 1–720）。
 # 钟面的位置、大小，走 1 小时用几秒，在 style.yaml 的 templates.clock。
 id: clock-basics
 title: 认识钟表
-summary: 认识时针和分针，会读整点；看分针走一圈、时针走一大格
+summary: 认识时针和分针，会读整点、半点和几时几分；看分针走一圈、时针走一大格
 status: published
 reviewedAt: 2026-11-04
-duration: 2分钟
-tags: [钟表, 时针, 分针, 整点, 时间]
+duration: 3分钟
+tags: [钟表, 时针, 分针, 整点, 半点, 几时几分, 时间]
 recommended: true
 
 template: clock
 params:
   hour: 3 # 从几时开始
-  minute: 0 # 这一课只讲整点
+  minute: 0 # 一开始是整点
   runMinutes: 60 # 走一走：分针走一圈
 derived:
   next: hour % 12 + 1 # 走了 1 小时以后是几时
+  next2: next % 12 + 1 # 再下一个整点
 
 explore: # 动手试一试：换一个整点
   - { param: hour, control: slider, label: 几时, min: 1, max: 12 }
@@ -47,8 +49,21 @@ steps:
   - title: 再读一读
     say: 分针又指着 12，时针指着 {next}，现在是 {next} 时。
     show: read
+  - title: 走半小时
+    say: 再走半小时，分针从 12 走到 6，走了半圈。
+    show: run:30
+  - title: 读半点
+    say: 分针指着 6，时针在 {next} 和 {next2} 中间，是 {next} 时半。
+    show: read
+  - title: 再走 15 分钟
+    say: 再走 15 分钟，分针走到 9。
+    show: run:15
+  - title: 读几时几分
+    say: 分针指着 9，是 45 分，现在是 {next} 时 45 分。
+    show: read
 
 keyPoints:
   - 分针又细又长，时针又粗又短
   - 分针指着 12，时针指着几，就是几时
   - 分针走一圈，时针走一大格，就是 1 小时
+  - 分针指着 6 是半点（30 分）；读几时几分，先看时针指着几，再看分针走到哪
