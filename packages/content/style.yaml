@@ -78,3 +78,14 @@ export:
     counter: "#5B6275"
     step: "#1F2433"
     desc: "#3A4152"
+
+# 由参数生成画面的模板（fraction、clock）的版式。坐标、尺寸都是舞台坐标；颜色写 site.yaml scene.colors 里的颜色名。
+templates:
+  fraction:
+    stage: { width: 800, height: 450 }
+    shapeAt: [280, 215]        # 图形中心
+    radius: 150                # 圆的半径
+    bar: { width: 440, height: 90 }   # 长条的宽、高
+    color: orange              # 涂色的颜色
+    caption: { at: [280, 405], size: 30 }    # 图形下方的说明（“平均分成 4 份”）
+    fraction: { at: [620, 215], size: 72 }   # 右侧的分数

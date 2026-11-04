@@ -485,3 +485,13 @@ topBar:
   da_kai_cai_dan: 打开菜单
   dang_qian_wei_zhi: 当前位置
   sou_suo_zhi_shi: 搜索知识点
+fractionTemplate:
+  name: 分数
+  tagline: 把一个整体平均分，取其中几份
+  split: 平均分成 {parts} 份
+  take: 取其中 {take} 份
+  sample_title: 认识分数
+  sample_whole: 这是一个完整的饼。
+  sample_split: 把它平均分成 4 份，每一份都一样大。
+  sample_take_one: 取其中的 1 份，就是 4 分之 1。
+  sample_take_many: 取其中的 3 份，就是 4 分之 3。

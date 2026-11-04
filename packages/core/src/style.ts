@@ -60,6 +60,8 @@ export interface ExportStyle {
 export interface StyleConfig {
   themes: Record<ThemeId, Omit<Theme, 'id'>>;
   export: ExportStyle;
+  /** 由参数生成画面的模板的版式；具体结构由各模板自己定义（templates 包），格式由 content 的 schema 校验 */
+  templates: Record<string, unknown>;
 }
 
 let current: StyleConfig | undefined;

@@ -12,8 +12,8 @@ export const ALLOW_CHINESE: Allow[] = [
     reason: '内容校验、JSON Schema 的说明和报错，面向写配置的人，不是产品界面',
   },
   {
-    path: /^packages\/templates\/src\/scene\/(check|actions)\.ts$/,
-    reason: '场景模板的配置检查报错和动作名，面向写配置的人（出现在 content:check 里）',
+    path: /^packages\/templates\/src\/(scene\/(check|actions)|math\/[a-z-]+\/check)\.ts$/,
+    reason: '模板的配置检查报错和动作名，面向写配置的人（出现在 content:check 里）',
   },
   {
     path: /^packages\/core\/src\/(texts|style)\.ts$/,

@@ -1,7 +1,7 @@
 // 仓库约定检查：把 CLAUDE.md 里“配置优先”的规则变成会失败的检查（pnpm test、pnpm build 都会跑）。
 // 每条规则返回问题列表；问题为空才算通过。新增规则时：在这里加函数，并加进 runAll()。
 import { execSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
 import { parse } from 'yaml';
@@ -27,7 +27,13 @@ const SOURCE = /^(apps\/web\/src|packages\/[a-z]+\/src)\/.*\.(ts|tsx)$/;
 const IS_TEST = /\.test\.tsx?$|\.d\.ts$/;
 
 export function trackedFiles(): string[] {
-  return execSync('git ls-files', { cwd: ROOT, encoding: 'utf8' }).split('\n').filter(Boolean);
+  // 包括还没提交的新文件（--others），否则新写的代码要等提交后才会被检查
+  return execSync('git ls-files --cached --others --exclude-standard', {
+    cwd: ROOT,
+    encoding: 'utf8',
+  })
+    .split('\n')
+    .filter((f) => f && existsSync(join(ROOT, f)));
 }
 
 /** 产品源码文件（不含测试和类型声明） */
