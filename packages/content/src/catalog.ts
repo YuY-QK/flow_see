@@ -1,6 +1,7 @@
 // 目录索引：首页、学科页、搜索只需要它；知识点的完整内容按需加载。
 // 这里只放纯数据和纯函数，浏览器和 Node 都能用。
 import type {
+  ExamplesConfig,
   GradesConfig,
   HelpConfig,
   LessonStatus,
@@ -50,6 +51,8 @@ export interface ContentIndex {
   texts: TextsConfig;
   /** 动画主题与导出样式（style.yaml） */
   style: StyleConfigData;
+  /** 创作页的示例动画（examples/） */
+  examples: ExamplesConfig;
   grades: GradesConfig['grades'];
   subjects: GradesConfig['subjects'];
   catalog: CatalogEntry[];
@@ -62,6 +65,7 @@ export interface IndexSource {
   help: HelpConfig;
   texts: TextsConfig;
   style: StyleConfigData;
+  examples: ExamplesConfig;
   grades: GradesConfig;
   curricula: {
     data: {
@@ -130,6 +134,7 @@ export function buildIndex(src: IndexSource, dev: boolean): ContentIndex {
     help: src.help,
     texts: src.texts,
     style: src.style,
+    examples: src.examples,
     grades: src.grades.grades,
     subjects: src.grades.subjects,
     catalog,

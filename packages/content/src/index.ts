@@ -3,6 +3,8 @@ export * from './catalog';
 export type {
   AssetEntry,
   CurriculumConfig,
+  ExampleConfig,
+  ExamplesConfig,
   GradesConfig,
   HelpConfig,
   LessonConfig,

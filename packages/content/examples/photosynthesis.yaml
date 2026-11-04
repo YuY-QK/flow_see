@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../schemas/example.schema.json
+id: photosynthesis
+title: 光合作用
+category: 自然科学
+featured: false
+summary: 植物用阳光、水和二氧化碳制造养分。
+template: flow
+theme: flat
+elements:
+  - 吸收阳光
+  - 吸收水分
+  - 吸收二氧化碳
+  - 叶绿体加工
+  - 产生糖和氧气
+steps:
+  - node: 吸收阳光
+    title: 叶子吸收阳光
+    desc: 叶子里的叶绿素吸收太阳光，获得能量。
+  - node: 吸收水分
+    title: 根吸收水分
+    desc: 根从土壤里吸水，送到叶子。
+  - node: 吸收二氧化碳
+    title: 叶子吸入二氧化碳
+    desc: 叶子上的小孔从空气里吸入二氧化碳。
+  - node: 叶绿体加工
+    title: 叶绿体加工
+    desc: 叶绿体用光的能量，把水和二氧化碳加工起来。
+  - node: 产生糖和氧气
+    title: 产生糖和氧气
+    desc: 做出植物需要的糖，同时放出氧气。

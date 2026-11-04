@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { getTemplate } from '@flow-see/templates';
-import { CATEGORIES, findOfficial, officialItems } from './official';
+import { realOfficialItems } from './fixtures';
 
 describe('官方内容', () => {
-  const items = officialItems();
+  const { items, categories } = realOfficialItems();
+  const findOfficial = (id: string) => items.find((i) => i.id === id);
 
   it('每个分类都有内容，id 唯一且稳定', () => {
-    for (const c of CATEGORIES) expect(items.some((i) => i.category === c)).toBe(true);
+    for (const c of categories) expect(items.some((i) => i.category === c)).toBe(true);
     expect(new Set(items.map((i) => i.id)).size).toBe(items.length);
-    expect(officialItems()).toBe(items);
     expect(findOfficial('official-tcp-handshake')?.animation.title).toBe('TCP 三次握手');
   });
 

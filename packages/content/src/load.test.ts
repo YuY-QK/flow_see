@@ -18,6 +18,7 @@ function sandbox(files: Record<string, string> = {}): string {
     'help.yaml',
     'texts.yaml',
     'style.yaml',
+    'examples',
     'curriculum',
     'lessons',
     'assets',
@@ -49,7 +50,7 @@ steps:
 keyPoints: [一定要平均分, 分母表示分成几份]
 `;
 
-const errors = (root: string, templateIds = ['message', 'scene']) =>
+const errors = (root: string, templateIds = ['message', 'scene', 'flow', 'cycle', 'data']) =>
   loadContent(root, { templateIds }).issues.filter((i) => i.level === 'error');
 
 describe('内容配置校验', () => {
@@ -132,6 +133,26 @@ describe('内容配置校验', () => {
     expect(msgs.some((m) => m.includes('算式写错了'))).toBe(true);
     expect(msgs.some((m) => m.includes('例子“太多”') && m.includes('超出了控件的范围'))).toBe(true);
     expect(msgs.some((m) => m.includes('参数 zzz'))).toBe(true);
+  });
+
+  it('创作示例：引用的元素名、分类、列表都要对得上', () => {
+    const ex = (file: string, edit: (s: string) => string) =>
+      sandbox({
+        [`examples/${file}.yaml`]: edit(
+          readFileSync(join(CONTENT_ROOT, `examples/${file}.yaml`), 'utf8'),
+        ),
+      });
+    expect(errors(ex('tcp-handshake', (s) => s))).toEqual([]);
+    const msgs = (root: string) => errors(root).map((e) => e.message);
+    expect(
+      msgs(ex('tcp-handshake', (s) => s.replace('to: 服务器', 'to: 路由器'))).join(),
+    ).toContain('“路由器”不在 elements 里');
+    expect(
+      msgs(ex('tcp-handshake', (s) => s.replace('category: 网络协议', 'category: 其他'))).join(),
+    ).toContain('不在 examples/index.yaml 的 categories 里');
+    expect(msgs(ex('bubble-sort', (s) => s.replace(/values:.*/, 'values: []'))).join()).toContain(
+      'params.values',
+    );
   });
 
   it('已发布的知识点要有校对日期', () => {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { CATEGORIES, officialItems } from '@flow-see/content/examples/official.ts';
+import { CATEGORIES, officialItems } from '../examples';
 import { matches } from '@flow-see/content/examples/search.ts';
 import { TEMPLATE_CARDS } from '@flow-see/templates';
 import { TopBar } from '../ui/TopBar';

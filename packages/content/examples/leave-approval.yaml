@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=../schemas/example.schema.json
+id: leave-approval
+title: 请假审批流程
+category: 工作流程
+featured: false
+summary: 提交、审批、退回、再提交，直到通过。
+template: flow
+theme: pro
+elements:
+  - 提交申请
+  - 主管审批？
+  - 退回修改
+  - 人事备案
+  - 完成
+steps:
+  - node: 提交申请
+    title: 提交请假申请
+    desc: 员工填写请假单并提交。
+  - node: 主管审批？
+    title: 主管审批
+    desc: 主管查看申请，决定是否同意。
+  - node: 退回修改
+    via: 不同意
+    title: 不同意，退回修改
+    desc: 理由不充分，申请被退回。
+  - node: 提交申请
+    via: 重新提交
+    title: 修改后重新提交
+    desc: 员工补充说明后再次提交。
+  - node: 主管审批？
+    title: 主管再次审批
+    desc: 这次理由充分了。
+  - node: 人事备案
+    via: 同意
+    title: 同意，交人事备案
+    desc: 主管同意，人事部门登记备案。
+  - node: 完成
+    title: 完成
+    desc: 请假流程结束，可以安心休假了。

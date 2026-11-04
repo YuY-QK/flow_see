@@ -16,6 +16,7 @@ if (texts) configureTexts(texts, { strict: true });
 const style = early && readYaml(root, join(root, early.style), 'style', []);
 if (style) configureStyle(style);
 const { TEMPLATE_IDS, getTemplate } = await import('@flow-see/templates');
+const { buildOfficialItems } = await import('../examples/official');
 
 const { bundle, issues } = loadContent(root, {
   templateIds: TEMPLATE_IDS,
@@ -36,7 +37,20 @@ const stale: Issue[] = Object.entries(generateSchemas())
     message: '和 src/schema.ts 不一致，请运行 pnpm content:schema',
   }));
 
-const all = [...issues, ...stale];
+// 创作示例要能真正生成作品（数据变化示例会在这里跑一遍算法）
+const exampleIssues: Issue[] = [];
+if (bundle) {
+  try {
+    const items = buildOfficialItems(bundle.examples);
+    for (const it of items)
+      if (!getTemplate(it.animation.templateId)?.Stage)
+        exampleIssues.push({ level: 'error', file: 'examples', message: `${it.id} 的模板不可用` });
+  } catch (e) {
+    exampleIssues.push({ level: 'error', file: 'examples', message: (e as Error).message });
+  }
+}
+
+const all = [...issues, ...exampleIssues, ...stale];
 for (const i of all) console.log(formatIssue(i));
 
 const errors = all.filter((i) => i.level === 'error').length;
@@ -44,7 +58,7 @@ const warnings = all.length - errors;
 if (bundle) {
   const published = bundle.lessons.filter((l) => l.lesson.status === 'published').length;
   console.log(
-    `\n内容：${bundle.curricula.length} 个课程目录，${bundle.lessons.length} 个知识点（已发布 ${published}），${bundle.assets.length} 个素材`,
+    `\n内容：${bundle.curricula.length} 个课程目录，${bundle.lessons.length} 个知识点（已发布 ${published}），${bundle.assets.length} 个素材，${bundle.examples.list.length} 个创作示例`,
   );
 }
 console.log(
