@@ -88,6 +88,15 @@
   flex-shrink: 0;
   font-weight: 700;
 }
+/* 当前位置也可以点（如知识点页的“单元”回到目录）：样式和普通文字一样，悬停时变色 */
+.crumbCurrent a {
+  color: var(--ink);
+  text-decoration: none;
+  padding: 10px 2px;
+}
+.crumbCurrent a:hover {
+  color: var(--primary);
+}
 .crumbsPhone {
   display: none;
 }

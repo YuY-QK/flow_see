@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { AssetUrlContext } from '@flow-see/blocks';
 import {
@@ -68,7 +68,7 @@ export function LessonPage() {
           { label: t('common.xue_xi'), to: '/' },
           { label: gName, to: '/', onClick: () => setGrade(entry.grade) },
           { label: subj?.name ?? entry.subject, to: `/learn/${entry.grade}/${entry.subject}` },
-          { label: lesson.title },
+          { label: unit.title, to: `/learn/${entry.grade}/${entry.subject}` },
         ]}
         grade={entry.grade}
         subject={entry.subject}
@@ -82,7 +82,6 @@ export function LessonPage() {
       <LessonBody
         key={lesson.id}
         lessonId={lesson.id}
-        unitTitle={unit.title}
         lessonKey={{ lessonId: lesson.id, grade: entry.grade, subject: entry.subject }}
       />
     </div>
@@ -114,25 +113,13 @@ function useLessonContent(id: string) {
   return { state, slow, retry };
 }
 
-function LessonBody({
-  lessonId,
-  unitTitle,
-  lessonKey,
-}: {
-  lessonId: string;
-  unitTitle: string;
-  lessonKey: LessonKey;
-}) {
+function LessonBody({ lessonId, lessonKey }: { lessonId: string; lessonKey: LessonKey }) {
   const { state, slow, retry } = useLessonContent(lessonId);
   const meta = findLesson(content, lessonId)?.lesson.meta;
-  const subj = findSubject(lessonKey.subject);
-
   const header = (
-    <div className={s.headText}>
-      <div className={p.note}>{unitTitle}</div>
+    <div className={s.head}>
       <h1 className={p.h1}>{meta?.title ?? lessonId}</h1>
-      <div className={s.meta} style={{ ['--subject' as string]: subj?.color } as CSSProperties}>
-        <span className={s.tag}>{subj?.name ?? lessonKey.subject}</span>
+      <div className={s.meta}>
         {meta?.duration ? <span>{meta.duration}</span> : null}
         {meta?.steps ? <span>{t('common.steps_total', { n: meta.steps })}</span> : null}
       </div>
@@ -142,7 +129,7 @@ function LessonBody({
   if (state.kind !== 'ready')
     return (
       <main className={p.content}>
-        <div className={s.head}>{header}</div>
+        {header}
         {state.kind === 'error' ? (
           <div className={s.problem}>
             <div>{t('lessonPage.nei_rong_mei_jia')}</div>
@@ -283,7 +270,7 @@ function LessonReady({
   if (!template)
     return (
       <main className={p.content}>
-        <div className={s.head}>{header}</div>
+        {header}
         <div className={s.problem}>
           <div>{t('lessonPage.zhe_ge_dong_hua')}</div>
           <button className={`${ui.btn} ${ui.primary}`} onClick={() => location.reload()}>
@@ -304,8 +291,24 @@ function LessonReady({
   return (
     <AssetUrlContext.Provider value={assetUrl}>
       <main className={p.content}>
-        <div className={s.head}>
-          {header}
+        {header}
+
+        <div className={s.toolbar}>
+          {hasTry ? (
+            <div className={s.modes} role="group" aria-label={t('handsOn.modes_aria')}>
+              {(['watch', 'guided', 'self'] as const).map((m) => (
+                <button
+                  key={m}
+                  className={s.mode}
+                  data-on={mode === m}
+                  aria-pressed={mode === m}
+                  onClick={() => switchMode(m)}
+                >
+                  {MODE_NAMES[m]()}
+                </button>
+              ))}
+            </div>
+          ) : null}
           <div className={s.headActions}>
             <button className={ui.btn} onClick={share}>
               <Icon name="share" size={18} /> {t('common.fen_xiang')}
@@ -318,22 +321,6 @@ function LessonReady({
           </div>
         </div>
 
-        {hasTry ? (
-          <div className={s.modes} role="group" aria-label={t('handsOn.modes_aria')}>
-            {(['watch', 'guided', 'self'] as const).map((m) => (
-              <button
-                key={m}
-                className={s.mode}
-                data-on={mode === m}
-                aria-pressed={mode === m}
-                onClick={() => switchMode(m)}
-              >
-                {MODE_NAMES[m]()}
-              </button>
-            ))}
-          </div>
-        ) : null}
-
         <LessonPlayer
           key={session.n}
           mode={mode}
@@ -344,6 +331,20 @@ function LessonReady({
           largeCaption={lessonKey.grade <= site.player.largeCaptionMaxGrade}
           onVisit={(i) => visit(lessonKey, i)}
           onFinish={onFinish}
+          corner={
+            record?.completed ? (
+              <button
+                className={`${ui.btn} ${s.learned} ${s.learnedDone}`}
+                onClick={() => setDialog('undo')}
+              >
+                <Icon name="check" size={18} /> {t('common.yi_xue_wan')}
+              </button>
+            ) : (
+              <button className={`${ui.btn} ${ui.primary} ${s.learned}`} onClick={markDone}>
+                {t('lessonPage.wo_xue_hui_le')}
+              </button>
+            )
+          }
         />
 
         {hasTry && finished ? (
@@ -384,28 +385,14 @@ function LessonReady({
           />
         ) : null}
 
-        <div className={s.below}>
-          <section className={s.points}>
-            <h2 className={p.h2}>{t('lessonPage.yao_dian')}</h2>
-            <ul>
-              {keyPoints.map((k) => (
-                <li key={k}>{k}</li>
-              ))}
-            </ul>
-          </section>
-          {record?.completed ? (
-            <button
-              className={`${ui.btn} ${s.learned} ${s.learnedDone}`}
-              onClick={() => setDialog('undo')}
-            >
-              <Icon name="check" size={20} /> {t('common.yi_xue_wan')}
-            </button>
-          ) : (
-            <button className={`${ui.btn} ${ui.primary} ${s.learned}`} onClick={markDone}>
-              {t('lessonPage.wo_xue_hui_le')}
-            </button>
-          )}
-        </div>
+        <section className={s.points}>
+          <h2 className={p.h2}>{t('lessonPage.yao_dian')}</h2>
+          <ul>
+            {keyPoints.map((k) => (
+              <li key={k}>{k}</li>
+            ))}
+          </ul>
+        </section>
 
         <nav className={s.nav} aria-label={t('lessonPage.shang_yi_ge_he')}>
           {prev ? (

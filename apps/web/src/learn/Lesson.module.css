@@ -4,16 +4,10 @@
   max-width: 1000px;
   margin: 0 auto;
   display: flex;
-  gap: 16px;
-  align-items: flex-end;
+  gap: 8px 16px;
+  align-items: baseline;
+  justify-content: space-between;
   flex-wrap: wrap;
-}
-.headText {
-  flex: 1 1 280px;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
 }
 .meta {
   display: flex;
@@ -23,17 +17,21 @@
   font-size: var(--fs-md);
   color: var(--ink-3);
 }
-.tag {
-  color: var(--subject, var(--primary));
-  background: color-mix(in srgb, var(--subject, var(--primary)) 12%, var(--surface));
-  border-radius: 999px;
-  padding: 2px 10px;
-  font-weight: 600;
-  font-size: var(--fs-sm);
+/* 学习方式在左，分享、导出在最右；和标题、动画区域同宽、左右对齐 */
+.toolbar {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
 }
 .headActions {
   display: flex;
   gap: 10px;
+  margin-left: auto;
 }
 
 /* 播放区 */
@@ -50,6 +48,23 @@
   height: 100%;
   background: var(--bg);
   padding: 20px;
+}
+.stageBox {
+  position: relative;
+}
+/* 动画区域右上角：我学会了 / 已学完；右下角：全屏 */
+.cornerTop {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1;
+}
+.cornerBottom {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 1;
+  background: var(--surface);
 }
 .stage {
   aspect-ratio: var(--ratio, 16 / 9);
@@ -207,17 +222,11 @@
   transform: scale(1.25);
 }
 
-/* 要点、我学会了、上一个/下一个 */
-.below {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 20px;
-  align-items: start;
+/* 要点、上一个/下一个 */
+.points {
   width: 100%;
   max-width: 1000px;
   margin: 0 auto;
-}
-.points {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -233,9 +242,10 @@
   line-height: 1.6;
 }
 .learned {
-  min-height: 52px;
-  padding: 0 24px;
-  font-size: var(--fs-xl);
+  min-height: var(--touch, 44px);
+  padding: 0 18px;
+  font-size: var(--fs-lg);
+  box-shadow: var(--shadow-float);
 }
 .learnedDone {
   color: var(--success);
@@ -319,6 +329,20 @@
 }
 
 @media (max-width: 767px) {
+  /* 手机上舞台很小：右上角、右下角的按钮缩小，学习方式和分享挤在一行 */
+  .cornerTop {
+    top: 6px;
+    right: 6px;
+  }
+  .cornerBottom {
+    right: 6px;
+    bottom: 6px;
+    min-width: 32px;
+    min-height: 32px;
+    width: 32px;
+    height: 32px;
+  }
+
   .controls {
     flex-wrap: wrap;
     gap: 6px;
@@ -332,12 +356,6 @@
   }
   .caption[data-large='true'] .say {
     font-size: var(--fs-4xl);
-  }
-  .below {
-    grid-template-columns: 1fr;
-  }
-  .learned {
-    width: 100%;
   }
   .nav {
     grid-template-columns: 1fr;
@@ -464,7 +482,6 @@
   padding: 4px;
   background: var(--surface-3);
   border-radius: 999px;
-  align-self: flex-start;
 }
 .mode {
   min-height: var(--touch, 44px);
@@ -539,4 +556,19 @@
 }
 .nextMode > span {
   flex: 1 1 220px;
+}
+
+@media (max-width: 767px) {
+  .mode {
+    padding: 0 12px;
+    font-size: var(--fs-md);
+  }
+  .cornerBottom {
+    padding: 0;
+  }
+  .learned {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: var(--fs-sm);
+  }
 }
