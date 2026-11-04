@@ -459,11 +459,8 @@ sharedPage:
   go_see: 去{name}看看
   author: 作者：{author}
 stepCard:
+  seconds: "{n} 秒"
   zi_dong_an_lang: 自动（按朗读长度）
-  miao: 1 秒
-  miao_2: 2 秒
-  miao_3: 3 秒
-  miao_4: 5 秒
   shan_chu_zhe_yi: 删除这一步
   zhe_yi_bu_fa: 这一步发生了什么
   li_ru_ke_hu: 例如：客户端发送 SYN

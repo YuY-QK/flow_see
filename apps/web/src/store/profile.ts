@@ -4,10 +4,6 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { safeStorage } from '@flow-see/runtime/store/safeStorage.ts';
 import { site } from '../site';
 
-/** 头像颜色的个数，颜色本身在 global.css 的 --avatar-0… 里 */
-export const AVATAR_COUNT = 4;
-export const NICKNAME_MAX = 8;
-
 interface ProfileState {
   nickname: string;
   avatar: number;

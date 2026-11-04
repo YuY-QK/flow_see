@@ -80,6 +80,46 @@ const playerSchema = z
   })
   .strict();
 
+const profileSchema = z
+  .object({
+    avatarCount: z
+      .int()
+      .positive()
+      .describe('头像颜色的个数，须和 global.css 的 --avatar-N 个数一致'),
+    nicknameMax: z.int().positive().describe('昵称最多几个字'),
+  })
+  .strict();
+
+const speechSchema = z
+  .object({
+    rates: z
+      .object(
+        Object.fromEntries(SPEECH_RATES.map((k) => [k, z.number().positive()])) as Record<
+          (typeof SPEECH_RATES)[number],
+          z.ZodNumber
+        >,
+      )
+      .strict()
+      .describe('朗读语速三档对应的倍率'),
+  })
+  .strict();
+
+const editorSchema = z
+  .object({
+    autosaveMs: nonNeg.describe('改动后多久自动保存'),
+    stepDurations: z
+      .array(z.number().positive())
+      .describe('“停留时间”下拉里除“自动按朗读”外的可选秒数'),
+  })
+  .strict();
+
+const uiSchema = z
+  .object({
+    focusDelayMs: nonNeg.describe('展开搜索框后，等多久再让输入框获得焦点'),
+    saveRevokeMs: nonNeg.describe('导出文件下载后，多久释放临时地址'),
+  })
+  .strict();
+
 /* ───────────── style.yaml ───────────── */
 
 const colorValue = z
@@ -264,6 +304,10 @@ export const siteSchema = z
     // 以下两节没有写在代码里的默认值：必须在 site.yaml 里给全（单一来源，改它就能调整）
     scene: sceneStyleSchema,
     player: playerSchema,
+    profile: profileSchema,
+    speech: speechSchema,
+    editor: editorSchema,
+    ui: uiSchema,
   })
   .strict();
 

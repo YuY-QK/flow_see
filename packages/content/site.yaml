@@ -90,3 +90,22 @@ player:
   dwell: { msPerChar: 220, minMs: 1800 }   # 不朗读时，按字数估算每一步停留多久
   afterSpeech: { pauseMs: 1200, minMs: 500, blockedRatio: 0.6 }   # 读完后的停顿
   maxFrameMs: 100                      # 时钟单帧最多推进多久
+
+# ───────── 个人中心 ─────────
+profile:
+  avatarCount: 4                       # 头像颜色的个数；颜色在 apps/web/src/styles/global.css 的 --avatar-0…（个数要一致，约定检查会核对）
+  nicknameMax: 8                       # 昵称最多几个字
+
+# ───────── 朗读 ─────────
+speech:
+  rates: { slow: 0.8, normal: 1, fast: 1.2 }   # 设置里“朗读语速”三档对应的倍率
+
+# ───────── 创作编辑器 ─────────
+editor:
+  autosaveMs: 600                      # 改动后多久自动保存
+  stepDurations: [1, 2, 3, 5]          # “停留时间”下拉里除“自动按朗读”外的可选秒数
+
+# ───────── 界面的时间参数 ─────────
+ui:
+  focusDelayMs: 50                     # 展开搜索框后，等多久再让输入框获得焦点
+  saveRevokeMs: 60000                  # 导出文件下载后，多久释放临时地址

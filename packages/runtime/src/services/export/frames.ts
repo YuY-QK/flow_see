@@ -156,7 +156,12 @@ export async function planFrames(
     ctx.textAlign = 'left';
 
     frames.push(canvas);
-    holds.push(Math.min(x.hold.maxMs, Math.max(x.hold.minMs, stepDurationMs(step, 1))));
+    holds.push(
+      Math.min(
+        x.hold.maxMs,
+        Math.max(x.hold.minMs, stepDurationMs(step, 1, runtimeConfig().player.dwell)),
+      ),
+    );
     onProgress?.((i + 1) / total);
   }
   return { frames, holds };

@@ -1,4 +1,5 @@
 // 把生成的文件交给用户：App 里交给系统分享面板；手机浏览器优先用系统分享；否则直接下载。
+import { runtimeConfig } from '../config';
 import { isNative, shareFileNative } from './native';
 
 export type SaveResult = 'shared' | 'downloaded' | 'cancelled';
@@ -30,7 +31,7 @@ export async function saveFile(blob: Blob, filename: string): Promise<SaveResult
   document.body.appendChild(a);
   a.click();
   a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  setTimeout(() => URL.revokeObjectURL(url), runtimeConfig().saveRevokeMs);
   return 'downloaded';
 }
 

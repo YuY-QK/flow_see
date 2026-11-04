@@ -30,3 +30,6 @@ export const ALLOW_COLOR_IN_CODE: Allow[] = [];
 
 /** 允许在样式文件里直接写颜色值或固定字号的文件（颜色和字号变量只能在 global.css 的变量块里定义，不在此列） */
 export const ALLOW_CSS_LITERALS: Allow[] = [];
+
+/** 允许在代码里直接给 setTimeout / setInterval 写数字时长的文件（时长要放 site.yaml，能不加就不加） */
+export const ALLOW_TIMING: Allow[] = [];

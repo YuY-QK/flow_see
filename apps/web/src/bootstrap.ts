@@ -4,9 +4,6 @@ import { configureRuntime } from '@flow-see/runtime/config.ts';
 import { initSettings } from '@flow-see/runtime/store/settings.ts';
 import { site } from './site';
 
-/** site.yaml 里的语速档位 → 朗读接口的语速 */
-const SPEECH_RATE = { slow: 0.8, normal: 1, fast: 1.2 } as const;
-
 /** App 打包时用环境变量把相对地址换成公网服务器地址 */
 function apiBase(): string {
   const base = site.share.apiBase;
@@ -17,6 +14,9 @@ function apiBase(): string {
 configureRuntime({
   siteName: site.site.name,
   shareApiBase: apiBase().replace(/\/$/, ''),
+  player: site.player,
+  editor: site.editor,
+  saveRevokeMs: site.ui.saveRevokeMs,
   shareOrigin:
     import.meta.env.VITE_SHARE_ORIGIN ?? (typeof location !== 'undefined' ? location.origin : ''),
 });
@@ -32,7 +32,7 @@ initSettings({
   largeText: d.fontSize === 'large',
   autoNarrate: d.narrate,
   voiceURI: '',
-  speechRate: SPEECH_RATE[d.speechRate],
+  speechRate: site.speech.rates[d.speechRate],
   defaultSpeed: d.speed,
 });
 

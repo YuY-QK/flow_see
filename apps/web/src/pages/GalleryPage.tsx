@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CATEGORIES, officialItems } from '../examples';
+import { site } from '../site';
 import { matches } from '@flow-see/content/examples/search.ts';
 import { TEMPLATE_CARDS } from '@flow-see/templates';
 import { TopBar } from '../ui/TopBar';
@@ -18,7 +19,7 @@ export function GalleryPage() {
   // 从手机顶部的搜索图标进来时，把光标放进搜索框（等点击产生的焦点变化结束后再设置）
   useEffect(() => {
     if (!params.get('search')) return;
-    const t = window.setTimeout(() => searchRef.current?.focus(), 50);
+    const t = window.setTimeout(() => searchRef.current?.focus(), site.ui.focusDelayMs);
     return () => window.clearTimeout(t);
   }, [params]);
 

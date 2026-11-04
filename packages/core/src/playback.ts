@@ -75,11 +75,24 @@ export function narrationText(step: Step): string {
   return (step.narration?.trim() || step.desc.trim() || step.title.trim()).trim();
 }
 
+/** 不朗读时按字数估算停留时间的参数（site.yaml 的 player.dwell） */
+export interface DwellConfig {
+  msPerChar: number;
+  minMs: number;
+}
+
+/** 读完后的停顿（site.yaml 的 player.afterSpeech） */
+export interface AfterSpeechConfig {
+  pauseMs: number;
+  minMs: number;
+  blockedRatio: number;
+}
+
 /** 不朗读时，这一步停留多久（毫秒）。 */
-export function stepDurationMs(step: Step, speed: number): number {
+export function stepDurationMs(step: Step, speed: number, dwell: DwellConfig): number {
   const base =
     step.duration && step.duration > 0
       ? step.duration * 1000
-      : Math.max(1800, narrationText(step).length * 220);
+      : Math.max(dwell.minMs, narrationText(step).length * dwell.msPerChar);
   return Math.round(base / speed);
 }

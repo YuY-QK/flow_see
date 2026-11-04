@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
+import { runtimeConfig } from '../config';
 import { repository } from '../services/storage';
 import { useEditor } from '../store/editor';
-
-const DELAY = 600;
 
 /** 作品有改动后稍等片刻自动保存；离开页面前把未保存的改动写入。 */
 export function useAutosave() {
@@ -29,7 +28,7 @@ export function useAutosave() {
       pending = st.animation;
       st.setSaveState('saving');
       window.clearTimeout(timer);
-      timer = window.setTimeout(flush, DELAY);
+      timer = window.setTimeout(flush, runtimeConfig().editor.autosaveMs);
     });
 
     const onHide = () => void flush();

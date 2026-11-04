@@ -6,7 +6,8 @@ import ui from '@flow-see/runtime/ui/ui.module.css';
 import { LessonCard } from '../learn/LessonCard';
 import { content } from '../site';
 import { useLearning } from '../store/learning';
-import { AVATAR_COUNT, NICKNAME_MAX, useProfile } from '../store/profile';
+import { site } from '../site';
+import { useProfile } from '../store/profile';
 import { Avatar } from '../ui/Brand';
 import { TopBar } from '../ui/TopBar';
 import s from '../learn/Learn.module.css';
@@ -41,7 +42,7 @@ export function MePage() {
                 role="radiogroup"
                 aria-label={t('mePage.tou_xiang_yan_se')}
               >
-                {Array.from({ length: AVATAR_COUNT }, (_, i) => (
+                {Array.from({ length: site.profile.avatarCount }, (_, i) => (
                   <button
                     key={i}
                     role="radio"
@@ -60,9 +61,11 @@ export function MePage() {
               <input
                 className={ui.field}
                 value={profile.nickname}
-                maxLength={NICKNAME_MAX}
-                placeholder={t('mePage.nickname_hint', { n: NICKNAME_MAX })}
-                onChange={(e) => profile.set({ nickname: e.target.value.slice(0, NICKNAME_MAX) })}
+                maxLength={site.profile.nicknameMax}
+                placeholder={t('mePage.nickname_hint', { n: site.profile.nicknameMax })}
+                onChange={(e) =>
+                  profile.set({ nickname: e.target.value.slice(0, site.profile.nicknameMax) })
+                }
               />
             </label>
             <label className={s.field}>
