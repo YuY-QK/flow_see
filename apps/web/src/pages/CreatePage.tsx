@@ -8,11 +8,12 @@ import { TopBar } from '../ui/TopBar';
 import { Thumb } from '../ui/Thumb';
 import s from './Pages.module.css';
 
+import { t } from '@flow-see/core';
 const EXAMPLES = [
-  { templateId: 'message', title: 'TCP 三次握手' },
-  { templateId: 'data', title: '冒泡排序' },
-  { templateId: 'cycle', title: '水的循环' },
-  { templateId: 'flow', title: '请假审批流程' },
+  { templateId: 'message', title: t('common.san_ci_wo_shou') },
+  { templateId: 'data', title: t('common.mao_pao_pai_xu') },
+  { templateId: 'cycle', title: t('common.shui_de_xun_huan') },
+  { templateId: 'flow', title: t('common.qing_jia_shen_pi') },
 ];
 
 export function CreatePage() {
@@ -47,13 +48,14 @@ export function CreatePage() {
 
   return (
     <div className={s.page}>
-      <TopBar title="创作" />
+      <TopBar title={t('common.chuang_zuo')} />
       <main className={s.content}>
         <div>
-          <div className={s.note}>新建动画 · 第 1 步</div>
-          <h1 className={s.h1}>你想讲清楚什么？</h1>
+          <div className={s.note}>{t('createPage.xin_jian_dong_hua')}</div>
+          <h1 className={s.h1}>{t('createPage.ni_xiang_jiang_qing')}</h1>
           <p className={s.sub}>
-            选一个最像的样子，之后随时能改内容。<Link to="/mine">我的作品 →</Link>
+            {t('createPage.xuan_yi_ge_zui')}
+            <Link to="/mine">{t('createPage.wo_de_zuo_pin')}</Link>
           </p>
         </div>
 
@@ -76,7 +78,7 @@ export function CreatePage() {
                 )}
                 <span className={s.tplName}>{c.name}</span>
                 <span className={s.tplDesc}>
-                  {c.tagline}。适合：{c.scenes}
+                  {t('createPage.tagline_scenes', { tagline: c.tagline, scenes: c.scenes })}
                 </span>
               </button>
             );
@@ -84,7 +86,7 @@ export function CreatePage() {
         </div>
 
         <section className={s.section}>
-          <h2 className={s.h2}>不确定？从一个示例改起</h2>
+          <h2 className={s.h2}>{t('createPage.bu_que_ding_cong')}</h2>
           <div className={s.pills}>
             {EXAMPLES.map((e) => (
               <button
@@ -99,7 +101,7 @@ export function CreatePage() {
               </button>
             ))}
             <Link to="/gallery" className={s.pill}>
-              看看更多示例 →
+              {t('createPage.kan_kan_geng_duo')}
             </Link>
           </div>
         </section>

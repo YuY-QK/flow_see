@@ -6,7 +6,12 @@ import { Highlight } from './Highlight';
 import { lessonPath } from './paths';
 import s from './Learn.module.css';
 
-const DEV_MARK = { draft: '草稿', reviewed: '待发布', published: '' } as const;
+import { t } from '@flow-see/core';
+const DEV_MARK = {
+  draft: t('common.cao_gao'),
+  reviewed: t('lessonCard.dai_fa_bu'),
+  published: '',
+} as const;
 
 interface Props {
   lesson: CatalogLesson;
@@ -33,12 +38,12 @@ export function LessonCard({
   const subj = findSubject(subject);
   const meta = lesson.meta;
   const status = !lesson.available
-    ? '即将上线'
+    ? t('lessonCard.ji_jiang_shang_xian')
     : record?.completed
-      ? '已学完'
+      ? t('common.yi_xue_wan')
       : record
-        ? `第 ${record.lastStep + 1} / ${meta?.steps ?? '?'} 步`
-        : '未学';
+        ? t('lessonCard.progress', { n: record.lastStep + 1, total: meta?.steps ?? '?' })
+        : t('lessonCard.wei_xue');
   const body = (
     <>
       <div className={s.thumb} style={{ ['--subject' as string]: subj?.color }} aria-hidden>
@@ -73,7 +78,11 @@ export function LessonCard({
   );
   if (!lesson.available)
     return (
-      <div className={`${s.card} ${s.soon}`} title="即将上线" aria-disabled="true">
+      <div
+        className={`${s.card} ${s.soon}`}
+        title={t('lessonCard.ji_jiang_shang_xian')}
+        aria-disabled="true"
+      >
         {body}
       </div>
     );

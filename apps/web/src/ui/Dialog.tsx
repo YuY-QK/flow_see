@@ -2,6 +2,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { Icon } from '@flow-see/runtime/ui/Icon.tsx';
 import s from './Dialog.module.css';
 
+import { t } from '@flow-see/core';
 interface Props {
   title: string;
   onClose(): void;
@@ -25,7 +26,12 @@ export function Dialog({ title, onClose, children }: Props) {
 
   return (
     <div className={s.wrap}>
-      <button className={s.scrim} aria-label="关闭" onClick={onClose} tabIndex={-1} />
+      <button
+        className={s.scrim}
+        aria-label={t('dialog.guan_bi')}
+        onClick={onClose}
+        tabIndex={-1}
+      />
       <div
         className={s.dialog}
         role="dialog"
@@ -36,7 +42,7 @@ export function Dialog({ title, onClose, children }: Props) {
       >
         <div className={s.head}>
           <h2 className={s.title}>{title}</h2>
-          <button className={s.close} aria-label="关闭" onClick={onClose}>
+          <button className={s.close} aria-label={t('dialog.guan_bi')} onClick={onClose}>
             <Icon name="close" size={18} />
           </button>
         </div>

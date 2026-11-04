@@ -1,8 +1,7 @@
 // 动手试一试（规格 P3）：点选换例子 + 滑块 / 按钮组 / 开关调参数。
 // 控件、取值范围、例子都来自知识点配置，界面文字来自 site.yaml 的 explore.texts。
-import { sliderRange, type ExploreControl, type Scope } from '@flow-see/core';
+import { sliderRange, t, type ExploreControl, type Scope } from '@flow-see/core';
 import ui from '@flow-see/runtime/ui/ui.module.css';
-import { site } from '../site';
 import s from './Lesson.module.css';
 
 interface Props {
@@ -26,22 +25,21 @@ export function ExplorePanel({
   onPreset,
   onReset,
 }: Props) {
-  const t = site.explore.texts;
   return (
-    <section className={s.explore} aria-label={t.title}>
+    <section className={s.explore} aria-label={t('explorePanel.title')}>
       <div className={s.exploreHead}>
-        <h2 className={s.exploreTitle}>{t.title}</h2>
+        <h2 className={s.exploreTitle}>{t('explorePanel.title')}</h2>
         {changed ? (
           <button className={`${ui.btn} ${s.reset}`} onClick={onReset}>
-            {t.reset}
+            {t('explorePanel.reset')}
           </button>
         ) : null}
       </div>
 
       {presets.length ? (
         <div className={s.group}>
-          <div className={s.groupLabel}>{t.presets}</div>
-          <div className={s.chips} role="group" aria-label={t.presets}>
+          <div className={s.groupLabel}>{t('explorePanel.presets')}</div>
+          <div className={s.chips} role="group" aria-label={t('explorePanel.presets')}>
             {presets.map((p) => {
               const on = Object.entries(p.params).every(([k, v]) => values[k] === v);
               return (
@@ -62,7 +60,7 @@ export function ExplorePanel({
 
       {controls.length ? (
         <div className={s.group}>
-          <div className={s.groupLabel}>{t.controls}</div>
+          <div className={s.groupLabel}>{t('explorePanel.controls')}</div>
           <div className={s.controlList}>
             {controls.map((c) => (
               <Control key={c.param} c={c} values={values} onChange={onChange} />
@@ -70,7 +68,7 @@ export function ExplorePanel({
           </div>
         </div>
       ) : null}
-      <p className={s.exploreHint}>{t.hint}</p>
+      <p className={s.exploreHint}>{t('explorePanel.hint')}</p>
     </section>
   );
 }

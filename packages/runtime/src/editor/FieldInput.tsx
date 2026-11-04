@@ -5,6 +5,7 @@ import ui from '../ui/ui.module.css';
 import s from './Editor.module.css';
 import { parseNumbers } from './parseNumbers';
 
+import { t } from '@flow-see/core';
 interface Props {
   field: FieldDef;
   value: unknown;
@@ -59,7 +60,7 @@ export function FieldInput(props: Props) {
   if (field.kind === 'element' || field.kind === 'select') {
     const options =
       field.kind === 'element'
-        ? elements.map((e) => ({ value: e.id, label: e.name || '（未命名）' }))
+        ? elements.map((e) => ({ value: e.id, label: e.name || t('fieldInput.wei_ming_ming') }))
         : (field.options ?? []);
     return (
       <select
@@ -68,7 +69,7 @@ export function FieldInput(props: Props) {
         value={typeof value === 'string' ? value : ''}
         onChange={(e) => onChange(e.target.value || undefined)}
       >
-        {field.kind === 'element' ? <option value="">（未指定）</option> : null}
+        {field.kind === 'element' ? <option value="">{t('fieldInput.wei_zhi_ding')}</option> : null}
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}

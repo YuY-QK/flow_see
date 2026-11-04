@@ -1,4 +1,4 @@
-// 运行时配置：由应用（apps/web）启动时根据 site.yaml 注入。
+import { t } from '@flow-see/core'; // 运行时配置：由应用（apps/web）启动时根据 site.yaml 注入。
 // runtime 处在内容层之下，不能直接读取内容配置，所以通过这里传进来。
 export interface RuntimeConfig {
   /** 网站名称：导出视频的署名、备份文件提示等 */
@@ -16,6 +16,6 @@ export function configureRuntime(config: RuntimeConfig): void {
 }
 
 export function runtimeConfig(): RuntimeConfig {
-  if (!current) throw new Error('runtime 还没有配置：应用启动时要先调用 configureRuntime()');
+  if (!current) throw new Error(t('runtimeConfig.hai_mei_you_pei'));
   return current;
 }

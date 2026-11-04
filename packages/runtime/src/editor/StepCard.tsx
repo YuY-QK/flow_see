@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { removeStep, updateStep, type Step } from '@flow-see/core';
+import { removeStep, updateStep, type Step, t } from '@flow-see/core';
 import { useEditor } from '../store/editor';
 import type { Template } from '../template';
 import { Icon } from '../ui/Icon';
@@ -19,11 +19,11 @@ interface Props {
 }
 
 const DURATIONS = [
-  { value: '', label: '自动（按朗读长度）' },
-  { value: '1', label: '1 秒' },
-  { value: '2', label: '2 秒' },
-  { value: '3', label: '3 秒' },
-  { value: '5', label: '5 秒' },
+  { value: '', label: t('stepCard.zi_dong_an_lang') },
+  { value: '1', label: t('stepCard.miao') },
+  { value: '2', label: t('stepCard.miao_2') },
+  { value: '3', label: t('stepCard.miao_3') },
+  { value: '5', label: t('stepCard.miao_4') },
 ];
 
 export function StepCard({
@@ -61,7 +61,7 @@ export function StepCard({
     <button
       ref={setActivatorNodeRef}
       className={s.handle}
-      aria-label={`拖动排序：第 ${index + 1} 步`}
+      aria-label={t('stepCard.drag_aria', { n: index + 1 })}
       {...attributes}
       {...listeners}
     >
@@ -76,7 +76,7 @@ export function StepCard({
         <button className={s.stepCollapsed} onClick={() => select(step.id)}>
           <span className={s.num}>{index + 1}</span>
           <span className={s.stepSummary}>
-            <span className={s.stepSummaryTitle}>{step.title || '（未填写）'}</span>
+            <span className={s.stepSummaryTitle}>{step.title || t('common.wei_tian_xie')}</span>
             {step.desc ? <span className={s.stepSummaryDesc}>{step.desc}</span> : null}
           </span>
         </button>
@@ -90,11 +90,11 @@ export function StepCard({
       <div className={s.stepOpen}>
         <div className={s.stepOpenHead}>
           <span className={`${s.num} ${s.numOn}`}>{index + 1}</span>
-          <span className={s.stepOpenLabel}>第 {index + 1} 步</span>
+          <span className={s.stepOpenLabel}>{t('common.step_n', { n: index + 1 })}</span>
           {canDelete ? (
             <button
               className={`${ui.btn} ${ui.ghost} ${ui.icon}`}
-              aria-label="删除这一步"
+              aria-label={t('stepCard.shan_chu_zhe_yi')}
               onClick={() => apply((a) => removeStep(a, step.id))}
             >
               <Icon name="trash" size={18} />
@@ -104,26 +104,26 @@ export function StepCard({
 
         <div className={s.fieldGroup}>
           <label className={ui.label} htmlFor={fid('title')}>
-            这一步发生了什么
+            {t('stepCard.zhe_yi_bu_fa')}
           </label>
           <input
             id={fid('title')}
             className={ui.field}
             value={step.title}
-            placeholder="例如：客户端发送 SYN"
+            placeholder={t('stepCard.li_ru_ke_hu')}
             onChange={(e) => patch({ title: e.target.value })}
             autoFocus={!step.title}
           />
         </div>
         <div className={s.fieldGroup}>
           <label className={ui.label} htmlFor={fid('desc')}>
-            一句话解释（会显示并朗读）
+            {t('stepCard.yi_ju_hua_jie')}
           </label>
           <input
             id={fid('desc')}
             className={ui.field}
             value={step.desc}
-            placeholder="用大白话说说为什么"
+            placeholder={t('stepCard.yong_da_bai_hua')}
             onChange={(e) => patch({ desc: e.target.value })}
           />
         </div>
@@ -144,7 +144,7 @@ export function StepCard({
         ))}
 
         <button className={s.moreBtn} onClick={onToggleAdvanced} aria-expanded={showAdvanced}>
-          {showAdvanced ? '收起更多设置 ▴' : '更多设置 ▾'}
+          {showAdvanced ? t('stepCard.shou_qi_geng_duo') : t('stepCard.geng_duo_she_zhi')}
         </button>
 
         {showAdvanced ? (
@@ -165,7 +165,7 @@ export function StepCard({
             ))}
             <div className={s.fieldGroup}>
               <label className={ui.label} htmlFor={fid('duration')}>
-                这一步停留
+                {t('stepCard.zhe_yi_bu_ting')}
               </label>
               <select
                 id={fid('duration')}
@@ -184,13 +184,13 @@ export function StepCard({
             </div>
             <div className={`${s.fieldGroup} ${s.span2}`}>
               <label className={ui.label} htmlFor={fid('narration')}>
-                朗读内容（留空则读上面的解释）
+                {t('stepCard.lang_du_nei_rong')}
               </label>
               <input
                 id={fid('narration')}
                 className={ui.field}
                 value={step.narration ?? ''}
-                placeholder="可以写得更口语一点"
+                placeholder={t('stepCard.ke_yi_xie_de')}
                 onChange={(e) => patch({ narration: e.target.value || undefined })}
               />
             </div>

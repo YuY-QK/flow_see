@@ -7,6 +7,7 @@ import { Dialog } from './Dialog';
 import ui from '@flow-see/runtime/ui/ui.module.css';
 import s from './Panels.module.css';
 
+import { t } from '@flow-see/core';
 interface Props {
   animation: Animation;
   template: Template;
@@ -20,8 +21,8 @@ type Phase =
   | { kind: 'error'; message: string };
 
 const FORMATS: { id: ExportFormat; name: string; desc: string }[] = [
-  { id: 'video', name: '视频', desc: '1280×720，适合放进 PPT、发给朋友' },
-  { id: 'gif', name: 'GIF 动图', desc: '640×360，适合聊天和网页，文件较大时画质会降低' },
+  { id: 'video', name: t('exportDialog.shi_pin'), desc: t('exportDialog.shi_he_fang_jin') },
+  { id: 'gif', name: t('exportDialog.dong_tu'), desc: t('exportDialog.shi_he_liao_tian') },
 ];
 
 export function ExportDialog({ animation, template, onClose }: Props) {
@@ -31,7 +32,7 @@ export function ExportDialog({ animation, template, onClose }: Props) {
 
   const start = async () => {
     abort.current = new AbortController();
-    setPhase({ kind: 'working', stage: '准备中', progress: 0 });
+    setPhase({ kind: 'working', stage: t('exportDialog.zhun_bei_zhong'), progress: 0 });
     try {
       // 编码相关的代码较大，用到时才加载
       const { exportAnimation } = await import('@flow-see/runtime/services/export/encode.ts');
@@ -44,17 +45,20 @@ export function ExportDialog({ animation, template, onClose }: Props) {
         kind: 'done',
         how:
           r === 'shared'
-            ? '已交给系统分享。'
+            ? t('exportDialog.yi_jiao_gei_xi')
             : r === 'cancelled'
-              ? '已取消保存。'
-              : `已下载：${filename}`,
+              ? t('exportDialog.yi_qu_xiao_bao')
+              : t('exportDialog.downloaded', { filename }),
       });
     } catch (e) {
       if ((e as DOMException).name === 'AbortError') {
         setPhase({ kind: 'choose' });
         return;
       }
-      setPhase({ kind: 'error', message: (e as Error).message || '导出失败，请重试。' });
+      setPhase({
+        kind: 'error',
+        message: (e as Error).message || t('exportDialog.dao_chu_shi_bai'),
+      });
     }
   };
 
@@ -64,10 +68,14 @@ export function ExportDialog({ animation, template, onClose }: Props) {
   };
 
   return (
-    <Dialog title="导出" onClose={close}>
+    <Dialog title={t('common.dao_chu')} onClose={close}>
       {phase.kind === 'choose' ? (
         <>
-          <div className={s.options} role="radiogroup" aria-label="导出格式">
+          <div
+            className={s.options}
+            role="radiogroup"
+            aria-label={t('exportDialog.dao_chu_ge_shi')}
+          >
             {FORMATS.map((f) => (
               <button
                 key={f.id}
@@ -81,15 +89,13 @@ export function ExportDialog({ animation, template, onClose }: Props) {
               </button>
             ))}
           </div>
-          <p className={s.muted}>
-            每一步会按朗读长度停留，画面下方带字幕。共 {animation.steps.length} 步。
-          </p>
+          <p className={s.muted}>{t('exportDialog.note', { n: animation.steps.length })}</p>
           <div className={s.actions}>
             <button className={ui.btn} onClick={close}>
-              取消
+              {t('common.qu_xiao')}
             </button>
             <button className={`${ui.btn} ${ui.primary}`} onClick={start}>
-              开始导出
+              {t('exportDialog.kai_shi_dao_chu')}
             </button>
           </div>
         </>
@@ -101,7 +107,7 @@ export function ExportDialog({ animation, template, onClose }: Props) {
           <progress className={s.progress} value={phase.progress} max={1} />
           <div className={s.actions}>
             <button className={ui.btn} onClick={() => abort.current?.abort()}>
-              取消导出
+              {t('exportDialog.qu_xiao_dao_chu')}
             </button>
           </div>
         </>
@@ -110,10 +116,10 @@ export function ExportDialog({ animation, template, onClose }: Props) {
           <p>{phase.how}</p>
           <div className={s.actions}>
             <button className={ui.btn} onClick={() => setPhase({ kind: 'choose' })}>
-              再导出一个
+              {t('exportDialog.zai_dao_chu_yi')}
             </button>
             <button className={`${ui.btn} ${ui.primary}`} onClick={close}>
-              完成
+              {t('common.wan_cheng')}
             </button>
           </div>
         </>
@@ -121,7 +127,7 @@ export function ExportDialog({ animation, template, onClose }: Props) {
         <div className={s.error} role="alert">
           <p>{phase.message}</p>
           <button className={ui.btn} onClick={() => setPhase({ kind: 'choose' })}>
-            返回
+            {t('exportDialog.fan_hui')}
           </button>
         </div>
       )}

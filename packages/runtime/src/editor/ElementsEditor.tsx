@@ -4,6 +4,7 @@ import type { Template } from '../template';
 import { Icon } from '../ui/Icon';
 import s from './Editor.module.css';
 
+import { t } from '@flow-see/core';
 export function ElementsEditor({
   animation,
   template,
@@ -28,7 +29,7 @@ export function ElementsEditor({
             <input
               className={s.chipInput}
               value={e.name}
-              aria-label={`${noun} ${i + 1} 的名字`}
+              aria-label={t('elementsEditor.name_aria', { noun, n: i + 1 })}
               placeholder={`${noun} ${i + 1}`}
               size={Math.max(3, e.name.length + 1)}
               onChange={(ev) => apply((a) => renameElement(a, e.id, ev.target.value))}
@@ -36,7 +37,7 @@ export function ElementsEditor({
             {elements.length > template.minElements ? (
               <button
                 className={s.chipRemove}
-                aria-label={`删除${noun}「${e.name}」`}
+                aria-label={t('elementsEditor.remove_aria', { noun, name: e.name })}
                 onClick={() => apply((a) => removeElement(a, e.id))}
               >
                 <Icon name="close" size={14} />
@@ -49,7 +50,7 @@ export function ElementsEditor({
             className={s.chipAdd}
             onClick={() => apply((a) => addElement(a, `${noun} ${a.elements.length + 1}`))}
           >
-            + 添加{noun}
+            {t('elementsEditor.add', { noun })}
           </button>
         ) : null}
       </div>

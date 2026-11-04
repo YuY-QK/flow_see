@@ -3,6 +3,7 @@ import { runtimeConfig } from '../config';
 import { migrate, type Animation } from '@flow-see/core';
 import type { AnimationRepository } from './storage';
 
+import { t } from '@flow-see/core';
 export const BACKUP_KIND = 'flow-see-backup';
 
 export interface Backup {
@@ -28,11 +29,11 @@ export async function importBackup(text: string, repo: AnimationRepository): Pro
   try {
     data = JSON.parse(text);
   } catch {
-    throw new Error(`这不是${runtimeConfig().siteName}的备份文件。`);
+    throw new Error(t('backup.not_backup', { name: runtimeConfig().siteName }));
   }
   const b = data as Partial<Backup>;
   if (b?.kind !== BACKUP_KIND || !Array.isArray(b.animations)) {
-    throw new Error(`这不是${runtimeConfig().siteName}的备份文件。`);
+    throw new Error(t('backup.not_backup', { name: runtimeConfig().siteName }));
   }
   const result: ImportResult = { added: 0, updated: 0, skipped: 0 };
   for (const raw of b.animations) {

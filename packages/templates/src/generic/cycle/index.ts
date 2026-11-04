@@ -1,54 +1,61 @@
-import { createAnimation, createElement, createStep } from '@flow-see/core';
+import { createAnimation, createElement, createStep, t } from '@flow-see/core';
 import type { Template } from '@flow-see/runtime/template.ts';
 import { CycleStage } from './CycleStage';
 
 export const cycleTemplate: Template = {
   id: 'cycle',
-  name: '循环 / 时间线',
-  tagline: '按时间或绕圈推进',
-  elementNoun: '阶段',
+  name: t('common.xun_huan_shi_jian'),
+  tagline: t('common.an_shi_jian_huo'),
+  elementNoun: t('cycle.jie_duan'),
   minElements: 1,
   maxElements: 10,
-  stepFields: [{ key: 'stage', label: '这一步到了哪个阶段', kind: 'element' }],
-  paramTitle: '布局',
+  stepFields: [{ key: 'stage', label: t('cycle.zhe_yi_bu_dao'), kind: 'element' }],
+  paramTitle: t('cycle.bu_ju'),
   paramFields: [
     {
       key: 'layout',
-      label: '阶段怎么排',
+      label: t('cycle.jie_duan_zen_me'),
       kind: 'select',
       options: [
-        { value: 'cycle', label: '绕成一圈（循环）' },
-        { value: 'timeline', label: '排成一行（时间线）' },
+        { value: 'cycle', label: t('cycle.rao_cheng_yi_quan') },
+        { value: 'timeline', label: t('cycle.pai_cheng_yi_hang') },
       ],
     },
   ],
 
   createBlank() {
-    const els = ['阶段 1', '阶段 2', '阶段 3'].map(createElement);
+    const els = [t('cycle.jie_duan_2'), t('cycle.jie_duan_3'), t('cycle.jie_duan_4')].map(
+      createElement,
+    );
     return createAnimation({
       templateId: 'cycle',
-      title: '未命名动画',
+      title: t('common.wei_ming_ming_dong'),
       params: { layout: 'cycle' },
       elements: els,
-      steps: [createStep({ title: '阶段 1', desc: '', data: { stage: els[0].id } })],
+      steps: [createStep({ title: t('cycle.jie_duan_2'), desc: '', data: { stage: els[0].id } })],
     });
   },
 
   createDefault() {
-    const [evap, cond, rain, flow] = ['蒸发', '凝结', '降水', '汇集'].map(createElement);
+    const [evap, cond, rain, flow] = [
+      t('cycle.zheng_fa'),
+      t('cycle.ning_jie'),
+      t('cycle.jiang_shui'),
+      t('cycle.hui_ji'),
+    ].map(createElement);
     const step = (title: string, desc: string, stage: string) =>
       createStep({ title, desc, data: { stage } });
     return createAnimation({
       templateId: 'cycle',
-      title: '水的循环',
+      title: t('common.shui_de_xun_huan'),
       params: { layout: 'cycle' },
       elements: [evap, cond, rain, flow],
       steps: [
-        step('蒸发', '太阳加热，海洋和湖泊里的水变成水蒸气升上天空。', evap.id),
-        step('凝结', '水蒸气遇冷，凝结成小水滴，聚在一起形成云。', cond.id),
-        step('降水', '小水滴越聚越大，落下来变成雨或雪。', rain.id),
-        step('汇集', '雨水流进江河湖海，或者渗入地下。', flow.id),
-        step('再次蒸发', '水又被太阳加热，开始新的一轮循环。', evap.id),
+        step(t('cycle.zheng_fa'), t('cycle.tai_yang_jia_re'), evap.id),
+        step(t('cycle.ning_jie'), t('cycle.shui_zheng_qi_yu'), cond.id),
+        step(t('cycle.jiang_shui'), t('cycle.xiao_shui_di_yue'), rain.id),
+        step(t('cycle.hui_ji'), t('cycle.yu_shui_liu_jin'), flow.id),
+        step(t('cycle.zai_ci_zheng_fa'), t('cycle.shui_you_bei_tai'), evap.id),
       ],
     });
   },
@@ -57,7 +64,7 @@ export const cycleTemplate: Template = {
     const els = animation.elements;
     const i = els.findIndex((e) => e.id === prev?.data.stage);
     const next = els[(i + 1) % Math.max(els.length, 1)];
-    return { title: next?.name ?? '新的一步', desc: '', data: { stage: next?.id } };
+    return { title: next?.name ?? t('common.xin_de_yi_bu'), desc: '', data: { stage: next?.id } };
   },
 
   Stage: CycleStage,

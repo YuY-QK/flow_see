@@ -80,21 +80,6 @@ const playerSchema = z
   })
   .strict();
 
-/** 动手试一试的界面文字 */
-const exploreUiSchema = z
-  .object({
-    texts: z
-      .object({
-        title: text,
-        presets: text.describe('“换个例子”区标题'),
-        controls: text.describe('“自己调一调”区标题'),
-        reset: text.describe('回到标准讲解按钮'),
-        hint: text,
-      })
-      .strict(),
-  })
-  .strict();
-
 export const siteSchema = z
   .object({
     site: z
@@ -168,12 +153,25 @@ export const siteSchema = z
       })
       .strict()
       .prefault({}),
-    // 以下三节没有写在代码里的默认值：必须在 site.yaml 里给全（单一来源，改它就能调整）
+    texts: z
+      .string()
+      .default('texts.yaml')
+      .describe('界面文案文件，相对 packages/content；代码里用 t("分组.键") 读取'),
+    // 以下两节没有写在代码里的默认值：必须在 site.yaml 里给全（单一来源，改它就能调整）
     scene: sceneStyleSchema,
     player: playerSchema,
-    explore: exploreUiSchema,
   })
   .strict();
+
+/* ───────────── texts.yaml ───────────── */
+
+/** 界面文案：分组 → 键 → 文字。文字里的 {名字} 由代码代入。 */
+export const textsSchema = z
+  .record(
+    z.string().regex(/^[a-z][A-Za-z0-9]*$/, '分组名用英文小驼峰，如 lessonPage'),
+    z.record(z.string().regex(/^[a-z][A-Za-z0-9_]*$/, '键用英文、数字、下划线'), z.string()),
+  )
+  .describe('界面文案：分组 → 键 → 文字；文字里的 {名字} 由代码代入');
 
 /* ───────────── help.yaml ───────────── */
 
@@ -343,6 +341,7 @@ export const manifestSchema = z.array(assetSchema);
 export const SCHEMAS = {
   site: siteSchema,
   help: helpSchema,
+  texts: textsSchema,
   grades: gradesSchema,
   curriculum: curriculumSchema,
   lesson: lessonSchema,
@@ -353,6 +352,7 @@ export type SchemaName = keyof typeof SCHEMAS;
 export type SiteConfig = z.output<typeof siteSchema>;
 export type SceneStyleConfig = SiteConfig['scene'];
 export type HelpConfig = z.output<typeof helpSchema>;
+export type TextsConfig = z.output<typeof textsSchema>;
 export type GradesConfig = z.output<typeof gradesSchema>;
 export type CurriculumConfig = z.output<typeof curriculumSchema>;
 export type LessonConfig = z.output<typeof lessonSchema>;

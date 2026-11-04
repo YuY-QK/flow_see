@@ -1,15 +1,6 @@
-// 先注入站点配置（必须最先执行）
-import './bootstrap';
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import { setupNative } from '@flow-see/runtime/services/native.ts';
-import { App } from './App';
-import './styles/global.css';
+// 入口：先注入界面文案，再加载其余所有模块。
+// 不少模块（模板、动画主题）在加载时就会读文案；构建后它们会被拆进共用的代码块，
+// 共用块会先于入口自己的代码执行，所以不能靠 import 的先后顺序，必须用动态 import 把“其余模块”整体推迟到文案注入之后。
+import './texts-init';
 
-void setupNative();
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+void import('./app-entry');

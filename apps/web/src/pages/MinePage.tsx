@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { duplicateAnimation, type Animation } from '@flow-see/core';
+import { duplicateAnimation, type Animation, t } from '@flow-see/core';
 import { repository } from '@flow-see/runtime/services/storage.ts';
 import { getTemplate } from '@flow-see/templates';
 import { TopBar } from '../ui/TopBar';
@@ -14,9 +14,9 @@ import s from './Pages.module.css';
 
 type Tab = 'all' | 'draft' | 'shared';
 const TABS: { id: Tab; name: string }[] = [
-  { id: 'all', name: '全部' },
-  { id: 'draft', name: '草稿' },
-  { id: 'shared', name: '已分享' },
+  { id: 'all', name: t('common.quan_bu') },
+  { id: 'draft', name: t('common.cao_gao') },
+  { id: 'shared', name: t('minePage.yi_fen_xiang') },
 ];
 
 export function MinePage() {
@@ -71,18 +71,18 @@ export function MinePage() {
 
   return (
     <div className={s.page}>
-      <TopBar title="创作" />
+      <TopBar title={t('common.chuang_zuo')} />
       <main className={s.content}>
-        <h1 className={s.h1}>我的作品</h1>
+        <h1 className={s.h1}>{t('common.wo_de_zuo_pin')}</h1>
 
         <div className={s.banner}>
-          <span>作品保存在这台设备上。分享过的作品会存一份到云端，换设备也能通过链接打开。</span>
+          <span>{t('minePage.zuo_pin_bao_cun')}</span>
           <Link to="/settings#data" className={s.more}>
-            备份 / 导入
+            {t('minePage.bei_fen_dao_ru')}
           </Link>
         </div>
 
-        <div className={s.chips} role="group" aria-label="筛选">
+        <div className={s.chips} role="group" aria-label={t('minePage.shai_xuan')}>
           {TABS.map((t) => (
             <button
               key={t.id}
@@ -99,30 +99,39 @@ export function MinePage() {
           {tab !== 'shared' ? (
             <Link to="/create" className={s.newCard}>
               <Icon name="plus" size={28} />
-              新建动画
+              {t('minePage.xin_jian_dong_hua')}
             </Link>
           ) : null}
           {shown.map((a) => (
             <article className={s.card} key={a.id}>
-              <Link to={`/edit/${a.id}`} className={s.cardLink} aria-label={`编辑「${a.title}」`}>
+              <Link
+                to={`/edit/${a.id}`}
+                className={s.cardLink}
+                aria-label={t('minePage.edit_aria', { title: a.title })}
+              >
                 <Thumb animation={a} className={s.thumb} />
               </Link>
               <div className={s.cardBody}>
                 <div className={s.cardText}>
                   <Link to={`/edit/${a.id}`} className={s.cardTitle}>
-                    {a.title || '未命名动画'}
+                    {a.title || t('common.wei_ming_ming_dong')}
                   </Link>
                   <div className={s.cardMeta}>
-                    <span className={s.tag}>{a.share ? '已分享' : '草稿'}</span>
+                    <span className={s.tag}>
+                      {a.share ? t('minePage.yi_fen_xiang') : t('common.cao_gao')}
+                    </span>
                     <span>
-                      {getTemplate(a.templateId)?.name} · {a.steps.length} 步 ·{' '}
-                      {timeAgo(a.updatedAt)}
+                      {t('minePage.card_meta', {
+                        template: getTemplate(a.templateId)?.name,
+                        steps: a.steps.length,
+                        time: timeAgo(a.updatedAt),
+                      })}
                     </span>
                   </div>
                 </div>
                 <button
                   className={`${ui.btn} ${ui.ghost} ${ui.icon}`}
-                  aria-label={`「${a.title}」的更多操作`}
+                  aria-label={t('minePage.more_aria', { title: a.title })}
                   aria-expanded={menu === a.id}
                   data-menu
                   onClick={() => toggleMenu(a.id)}
@@ -133,10 +142,10 @@ export function MinePage() {
               {menu === a.id ? (
                 <div className={s.menu} data-menu>
                   <button className={s.menuItem} onClick={() => navigate(`/edit/${a.id}`)}>
-                    <Icon name="edit" size={18} /> 编辑
+                    <Icon name="edit" size={18} /> {t('common.bian_ji')}
                   </button>
                   <button className={s.menuItem} onClick={() => navigate(`/play/${a.id}`)}>
-                    <Icon name="play" size={18} /> 播放
+                    <Icon name="play" size={18} /> {t('common.bo_fang')}
                   </button>
                   <button
                     className={s.menuItem}
@@ -145,7 +154,7 @@ export function MinePage() {
                       setSharing(a);
                     }}
                   >
-                    <Icon name="link" size={18} /> 分享链接
+                    <Icon name="link" size={18} /> {t('common.fen_xiang_lian_jie')}
                   </button>
                   <button
                     className={s.menuItem}
@@ -154,13 +163,14 @@ export function MinePage() {
                       setExporting(a);
                     }}
                   >
-                    <Icon name="download" size={18} /> 导出视频 / GIF
+                    <Icon name="download" size={18} /> {t('minePage.dao_chu_shi_pin')}
                   </button>
                   <button className={s.menuItem} onClick={() => onDuplicate(a)}>
-                    <Icon name="copy" size={18} /> 复制一份
+                    <Icon name="copy" size={18} /> {t('minePage.fu_zhi_yi_fen')}
                   </button>
                   <button className={`${s.menuItem} ${s.danger}`} onClick={() => onDelete(a)}>
-                    <Icon name="trash" size={18} /> {confirming ? '再点一次确认删除' : '删除'}
+                    <Icon name="trash" size={18} />{' '}
+                    {confirming ? t('minePage.zai_dian_yi_ci') : t('minePage.shan_chu')}
                   </button>
                 </div>
               ) : null}
@@ -168,7 +178,7 @@ export function MinePage() {
           ))}
         </div>
         {works && tab === 'shared' && shown.length === 0 ? (
-          <div className={s.empty}>还没有分享过作品。在作品的“⋯”菜单里选“分享链接”试试。</div>
+          <div className={s.empty}>{t('minePage.hai_mei_you_fen')}</div>
         ) : null}
       </main>
 

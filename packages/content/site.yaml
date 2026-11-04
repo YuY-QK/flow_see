@@ -30,6 +30,7 @@ share:
   apiBase: /api          # 分享接口地址；换到自己的服务器时只改这里
 help:
   faq: help.yaml         # 常见问题较长，单独一个文件，由这里引用
+texts: texts.yaml        # 界面文案：分组 → 键 → 文字；代码里用 t('分组.键') 读取
 
 # ───────── 知识点动画：场景零件的外观和默认值（packages/blocks 读取）─────────
 scene:
@@ -88,12 +89,3 @@ player:
   dwell: { msPerChar: 220, minMs: 1800 }   # 不朗读时，按字数估算每一步停留多久
   afterSpeech: { pauseMs: 1200, minMs: 500, blockedRatio: 0.6 }   # 读完后的停顿
   maxFrameMs: 100                      # 时钟单帧最多推进多久
-
-# ───────── 动手试一试的界面文字 ─────────
-explore:
-  texts:
-    title: 动手试一试
-    presets: 换个例子
-    controls: 自己调一调
-    reset: 回到标准讲解
-    hint: 你改的只在这里看，不会保存；刷新后回到标准讲解。

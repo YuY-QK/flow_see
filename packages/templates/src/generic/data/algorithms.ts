@@ -1,5 +1,5 @@
 // 排序算法的步骤生成器：把算法的每一步记录成一帧快照，供舞台绘制。
-import { createStep, type Step } from '@flow-see/core';
+import { createStep, type Step, t } from '@flow-see/core';
 
 export type Algorithm = 'bubble' | 'selection' | 'insertion';
 export type Order = 'asc' | 'desc';
@@ -29,9 +29,9 @@ export interface DataFrame {
 }
 
 export const ALGORITHM_NAMES: Record<Algorithm, string> = {
-  bubble: '冒泡排序',
-  selection: '选择排序',
-  insertion: '插入排序',
+  bubble: t('common.mao_pao_pai_xu'),
+  selection: t('algorithms.xuan_ze_pai_xu'),
+  insertion: t('algorithms.cha_ru_pai_xu'),
 };
 
 export const DEFAULT_PARAMS: DataParams = {
@@ -99,8 +99,8 @@ function outOfOrder(a: number, b: number, order: Order) {
 
 function bubble(r: Recorder, order: Order) {
   const n = r.values.length;
-  const big = order === 'asc' ? '大' : '小';
-  r.frame('开始', `冒泡排序会反复比较相邻的两个数，把较${big}的往后“冒”。`);
+  const big = order === 'asc' ? t('algorithms.da') : t('algorithms.xiao');
+  r.frame(t('common.kai_shi'), t('algorithms.bubble_intro', { big }));
   for (let i = 0; i < n - 1; i++) {
     let swappedThisPass = false;
     const sorted = range(n - i, n);
@@ -110,14 +110,14 @@ function bubble(r: Recorder, order: Order) {
       r.compares++;
       const need = outOfOrder(a, b, order);
       r.frame(
-        `比较 ${a} 和 ${b}`,
-        need ? `${a} 比 ${b} ${big}，位置不对，要交换。` : '顺序没问题，不用动。',
+        t('algorithms.compare', { a, b }),
+        need ? t('algorithms.bubble_swap', { a, b, big }) : t('algorithms.shun_xu_mei_wen'),
         { active: [j, j + 1], sorted },
       );
       if (need) {
         r.swap(j, j + 1);
         swappedThisPass = true;
-        r.frame(`交换 ${a} 和 ${b}`, '两个数换了位置。', {
+        r.frame(t('algorithms.swap_title', { a, b }), t('algorithms.liang_ge_shu_huan'), {
           active: [j, j + 1],
           swapped: true,
           sorted,
@@ -126,23 +126,27 @@ function bubble(r: Recorder, order: Order) {
     }
     const done = range(n - 1 - i, n);
     if (!swappedThisPass) {
-      r.frame(`第 ${i + 1} 轮没有交换`, '一次交换都没有，说明已经全部排好，可以提前结束。', {
+      r.frame(t('algorithms.pass_no_swap', { n: i + 1 }), t('algorithms.yi_ci_jiao_huan'), {
         sorted: range(0, n),
       });
       break;
     }
-    r.frame(`第 ${i + 1} 轮结束`, `${r.v(n - 1 - i)} 已经到了它最终的位置。`, { sorted: done });
+    r.frame(
+      t('algorithms.pass_done', { n: i + 1 }),
+      t('algorithms.pass_done_desc', { v: r.v(n - 1 - i) }),
+      { sorted: done },
+    );
   }
 }
 
 function selection(r: Recorder, order: Order) {
   const n = r.values.length;
-  const small = order === 'asc' ? '小' : '大';
-  r.frame('开始', `选择排序每一轮从没排好的数里挑出最${small}的，放到前面。`);
+  const small = order === 'asc' ? t('algorithms.xiao') : t('algorithms.da');
+  r.frame(t('common.kai_shi'), t('algorithms.selection_intro', { small }));
   for (let i = 0; i < n - 1; i++) {
     const sorted = range(0, i);
     let m = i;
-    r.frame(`第 ${i + 1} 轮`, `先假设 ${r.v(i)} 是剩下的数里最${small}的。`, {
+    r.frame(t('algorithms.pass_n', { n: i + 1 }), t('algorithms.assume', { v: r.v(i), small }), {
       active: [i],
       marker: m,
       sorted,
@@ -153,8 +157,10 @@ function selection(r: Recorder, order: Order) {
       const prev = r.v(m);
       if (better) m = j;
       r.frame(
-        `比较 ${r.v(j)} 和 ${prev}`,
-        better ? `${r.v(j)} 更${small}，记住它。` : `${prev} 仍然是最${small}的。`,
+        t('algorithms.compare', { a: r.v(j), b: prev }),
+        better
+          ? t('algorithms.remember', { v: r.v(j), small })
+          : t('algorithms.still', { v: prev, small }),
         { active: [j], marker: m, sorted },
       );
     }
@@ -162,13 +168,13 @@ function selection(r: Recorder, order: Order) {
       const a = r.v(i);
       const b = r.v(m);
       r.swap(i, m);
-      r.frame(`交换 ${a} 和 ${b}`, `把最${small}的 ${b} 放到第 ${i + 1} 个位置。`, {
+      r.frame(t('algorithms.swap_title', { a, b }), t('algorithms.place', { small, b, n: i + 1 }), {
         active: [i, m],
         swapped: true,
         sorted: range(0, i + 1),
       });
     } else {
-      r.frame(`${r.v(i)} 不用动`, `它已经在第 ${i + 1} 个位置上了。`, {
+      r.frame(t('algorithms.stay_title', { v: r.v(i) }), t('algorithms.stay_desc', { n: i + 1 }), {
         sorted: range(0, i + 1),
       });
     }
@@ -177,11 +183,11 @@ function selection(r: Recorder, order: Order) {
 
 function insertion(r: Recorder, order: Order) {
   const n = r.values.length;
-  r.frame('开始', '插入排序像整理扑克牌：每次拿起一张，插到前面已排好的牌里合适的位置。', {
+  r.frame(t('common.kai_shi'), t('algorithms.cha_ru_pai_xu_2'), {
     sorted: [0],
   });
   for (let i = 1; i < n; i++) {
-    r.frame(`拿起 ${r.v(i)}`, `把 ${r.v(i)} 插到前面已经排好的部分里。`, {
+    r.frame(t('algorithms.pick', { v: r.v(i) }), t('algorithms.insert_into', { v: r.v(i) }), {
       active: [i],
       sorted: range(0, i),
     });
@@ -191,14 +197,14 @@ function insertion(r: Recorder, order: Order) {
       const a = r.v(j - 1);
       const b = r.v(j);
       if (!outOfOrder(a, b, order)) {
-        r.frame(`比较 ${a} 和 ${b}`, `${b} 找到了位置，停在这里。`, {
+        r.frame(t('algorithms.compare', { a, b }), t('algorithms.found', { b }), {
           active: [j - 1, j],
           sorted: range(0, i),
         });
         break;
       }
       r.swap(j - 1, j);
-      r.frame(`${b} 往前移`, `${a} 应该排在 ${b} 后面，两者交换。`, {
+      r.frame(t('algorithms.move_forward', { b }), t('algorithms.should_after', { a, b }), {
         active: [j - 1, j],
         swapped: true,
         sorted: range(0, i),
@@ -213,13 +219,17 @@ export function generateDataSteps(raw: Record<string, unknown> | undefined): Ste
   const r = new Recorder(p.values);
   const n = p.values.length;
   if (n < 2) {
-    r.frame('只有一个数', '一个数本身就是排好的。', { sorted: range(0, n) });
+    r.frame(t('algorithms.zhi_you_yi_ge'), t('algorithms.yi_ge_shu_ben'), { sorted: range(0, n) });
     return r.steps;
   }
   ({ bubble, selection, insertion })[p.algorithm](r, p.order);
-  r.frame('排好了！', `一共比较了 ${r.compares} 次，交换了 ${r.swaps} 次。`, {
-    sorted: range(0, n),
-  });
+  r.frame(
+    t('algorithms.pai_hao_le'),
+    t('algorithms.summary', { compares: r.compares, swaps: r.swaps }),
+    {
+      sorted: range(0, n),
+    },
+  );
   return r.steps;
 }
 

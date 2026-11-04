@@ -14,7 +14,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { addStep, moveStep, type Animation } from '@flow-see/core';
+import { addStep, moveStep, type Animation, t } from '@flow-see/core';
 import { useEditor } from '../store/editor';
 import type { Template } from '../template';
 import { StepCard } from './StepCard';
@@ -46,8 +46,8 @@ export function StepList({ animation, template }: { animation: Animation; templa
   return (
     <section className={s.section}>
       <div className={s.sectionHead}>
-        <h2 className={s.sectionTitle}>步骤</h2>
-        <span className={s.hint}>点一步来编辑，按住左侧把手拖动排序</span>
+        <h2 className={s.sectionTitle}>{t('stepList.bu_zhou')}</h2>
+        <span className={s.hint}>{t('stepList.dian_yi_bu_lai')}</span>
       </div>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <SortableContext
@@ -71,7 +71,7 @@ export function StepList({ animation, template }: { animation: Animation; templa
         </SortableContext>
       </DndContext>
       <button className={s.addStep} onClick={onAdd}>
-        + 添加一步
+        {t('stepList.tian_jia_yi_bu')}
       </button>
     </section>
   );

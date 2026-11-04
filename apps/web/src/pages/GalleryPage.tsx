@@ -7,6 +7,7 @@ import { TopBar } from '../ui/TopBar';
 import { OfficialCard } from './OfficialCard';
 import s from './Pages.module.css';
 
+import { t } from '@flow-see/core';
 export function GalleryPage() {
   const [params, setParams] = useSearchParams();
   const q = params.get('q') ?? '';
@@ -44,29 +45,29 @@ export function GalleryPage() {
 
   return (
     <div className={s.page}>
-      <TopBar title="创作" />
+      <TopBar title={t('common.chuang_zuo')} />
       <main className={s.content}>
         <div className={s.searchRow}>
           <div>
-            <h1 className={s.h1}>动画广场</h1>
-            <p className={s.sub}>官方制作和精选作品。看到喜欢的，可以一键复制再改成自己的。</p>
+            <h1 className={s.h1}>{t('common.dong_hua_guang_chang')}</h1>
+            <p className={s.sub}>{t('galleryPage.guan_fang_zhi_zuo')}</p>
           </div>
           <label className="sr-only" htmlFor="gallery-q">
-            搜索动画
+            {t('galleryPage.sou_suo_dong_hua')}
           </label>
           <input
             id="gallery-q"
             ref={searchRef}
             className={s.searchInput}
             type="search"
-            placeholder="搜索动画"
+            placeholder={t('galleryPage.sou_suo_dong_hua')}
             value={q}
             onChange={(e) => update({ q: e.target.value })}
           />
         </div>
 
         <div className={s.filterRow}>
-          <div className={s.chips} role="group" aria-label="按主题筛选">
+          <div className={s.chips} role="group" aria-label={t('galleryPage.an_zhu_ti_shai')}>
             {['', ...CATEGORIES].map((c) => (
               <button
                 key={c || 'all'}
@@ -74,18 +75,18 @@ export function GalleryPage() {
                 aria-pressed={cat === c}
                 onClick={() => update({ cat: c })}
               >
-                {c || '全部'}
+                {c || t('common.quan_bu')}
               </button>
             ))}
           </div>
           <label className={s.note}>
-            动画类型：
+            {t('galleryPage.dong_hua_lei_xing')}
             <select
               className={s.select}
               value={type}
               onChange={(e) => update({ type: e.target.value })}
             >
-              <option value="">全部</option>
+              <option value="">{t('common.quan_bu')}</option>
               {TEMPLATE_CARDS.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
@@ -102,7 +103,7 @@ export function GalleryPage() {
             ))}
           </div>
         ) : (
-          <div className={s.empty}>没有找到相关的动画。换个关键词，或者自己做一个吧。</div>
+          <div className={s.empty}>{t('galleryPage.mei_you_zhao_dao')}</div>
         )}
       </main>
     </div>

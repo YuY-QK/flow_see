@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { THEME_LIST, updateAnimation, type Animation } from '@flow-see/core';
+import { THEME_LIST, updateAnimation, type Animation, t } from '@flow-see/core';
 import { useEditor } from '../store/editor';
 import ui from '../ui/ui.module.css';
 import s from './Editor.module.css';
@@ -26,9 +26,9 @@ export function AppearancePanel({ animation, onClose }: { animation: Animation; 
     apply((a) => updateAnimation(a, { settings: { ...a.settings, [k]: v } }));
 
   return (
-    <div className={s.popover} ref={ref} role="dialog" aria-label="外观">
-      <div className={s.popTitle}>外观</div>
-      <div className={s.popLabel}>动画主题</div>
+    <div className={s.popover} ref={ref} role="dialog" aria-label={t('common.wai_guan')}>
+      <div className={s.popTitle}>{t('common.wai_guan')}</div>
+      <div className={s.popLabel}>{t('appearancePanel.dong_hua_zhu_ti')}</div>
       <div className={s.themeGrid}>
         {THEME_LIST.map((t) => (
           <button
@@ -47,24 +47,24 @@ export function AppearancePanel({ animation, onClose }: { animation: Animation; 
         ))}
       </div>
       <div className={s.popRow}>
-        <span>自动朗读每一步</span>
+        <span>{t('common.zi_dong_lang_du')}</span>
         <button
           className={ui.toggle}
           role="switch"
-          aria-label="自动朗读每一步"
+          aria-label={t('common.zi_dong_lang_du')}
           aria-checked={animation.settings.autoNarrate}
           onClick={() => setSetting('autoNarrate', !animation.settings.autoNarrate)}
         />
       </div>
       <div className={s.popRow}>
         <span>
-          观众可以改参数
-          <span className={s.popHint}>（支持参数的模板生效）</span>
+          {t('appearancePanel.guan_zhong_ke_yi')}
+          <span className={s.popHint}>{t('appearancePanel.zhi_chi_can_shu')}</span>
         </span>
         <button
           className={ui.toggle}
           role="switch"
-          aria-label="观众可以改参数"
+          aria-label={t('appearancePanel.guan_zhong_ke_yi')}
           aria-checked={animation.settings.allowParamEdit}
           onClick={() => setSetting('allowParamEdit', !animation.settings.allowParamEdit)}
         />

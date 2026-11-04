@@ -9,6 +9,7 @@ import { Brand } from '../ui/Brand';
 import ui from '@flow-see/runtime/ui/ui.module.css';
 import s from './Pages.module.css';
 
+import { t } from '@flow-see/core';
 type State =
   | { kind: 'loading' }
   | { kind: 'ready'; animation: Animation }
@@ -37,22 +38,22 @@ export function SharedPage() {
     <div className={`${s.page} ${s.playPage}`}>
       <div className={s.sharedBar}>
         <Brand />
-        <p className={ui.hideNarrow}>有人用{site.site.name}做了这个动画，分享给你</p>
+        <p className={ui.hideNarrow}>{t('sharedPage.shared_with_you', { name: site.site.name })}</p>
         <span style={{ flexGrow: 1 }} />
         <Link to="/create" className={`${ui.btn} ${ui.primary}`}>
-          我也要做一个
+          {t('sharedPage.wo_ye_yao_zuo')}
         </Link>
       </div>
 
       {state.kind === 'loading' ? (
         <div className={s.center} aria-live="polite">
-          正在打开…
+          {t('sharedPage.zheng_zai_da_kai')}
         </div>
       ) : state.kind === 'missing' ? (
         <div className={s.center}>
-          <p>这个分享链接不存在，或者已经失效了。</p>
+          <p>{t('sharedPage.zhe_ge_fen_xiang')}</p>
           <Link to="/" className={ui.btn}>
-            去{site.site.name}看看
+            {t('sharedPage.go_see', { name: site.site.name })}
           </Link>
         </div>
       ) : state.kind === 'error' ? (
@@ -65,17 +66,17 @@ export function SharedPage() {
               setAttempt((n) => n + 1);
             }}
           >
-            重试
+            {t('common.chong_shi')}
           </button>
         </div>
       ) : !template ? (
-        <div className={s.center}>这个动画使用的模板在当前版本里还不支持。</div>
+        <div className={s.center}>{t('sharedPage.zhe_ge_dong_hua')}</div>
       ) : (
         <main className={s.playMain}>
           <div className={s.playHead}>
             <div className={s.playTitleBox}>
               <h1 className={s.playTitle}>
-                {state.animation.title || '未命名动画'}
+                {state.animation.title || t('common.wei_ming_ming_dong')}
                 <span
                   className={ui.badge}
                   style={{
@@ -87,7 +88,9 @@ export function SharedPage() {
                 </span>
               </h1>
               {state.animation.author ? (
-                <div className={s.crumb}>作者：{state.animation.author}</div>
+                <div className={s.crumb}>
+                  {t('sharedPage.author', { author: state.animation.author })}
+                </div>
               ) : null}
             </div>
           </div>

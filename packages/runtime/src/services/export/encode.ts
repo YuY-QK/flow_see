@@ -5,6 +5,7 @@ import type { Animation } from '@flow-see/core';
 import type { Template } from '../../template';
 import { blend, planFrames } from './frames';
 
+import { t } from '@flow-see/core';
 export type ExportFormat = 'video' | 'gif';
 
 export interface ExportResult {
@@ -21,15 +22,15 @@ const FADE_MS = 400;
 
 function safeName(title: string) {
   return (
-    (title || '动画')
+    (title || t('encode.dong_hua'))
       .replace(/[\\/:*?"<>|]+/g, '')
       .trim()
-      .slice(0, 40) || '动画'
+      .slice(0, 40) || t('encode.dong_hua')
   );
 }
 
 function checkAbort(signal?: AbortSignal) {
-  if (signal?.aborted) throw new DOMException('已取消', 'AbortError');
+  if (signal?.aborted) throw new DOMException(t('encode.yi_qu_xiao'), 'AbortError');
 }
 
 export async function exportAnimation(
@@ -38,7 +39,7 @@ export async function exportAnimation(
   format: ExportFormat,
   opts: ExportOptions = {},
 ): Promise<ExportResult> {
-  if (animation.steps.length === 0) throw new Error('还没有步骤，无法导出。');
+  if (animation.steps.length === 0) throw new Error(t('encode.hai_mei_you_bu'));
   const name = safeName(animation.title);
   if (format === 'gif') {
     const blob = await encodeGif(animation, template, opts);
@@ -58,7 +59,7 @@ async function encodeGif(animation: Animation, template: Template, opts: ExportO
   const W = 640;
   const H = 360;
   const plan = await planFrames(animation, template, W, H, (p) =>
-    opts.onProgress?.('绘制画面', p * 0.5),
+    opts.onProgress?.(t('encode.hui_zhi_hua_mian'), p * 0.5),
   );
   const gif = GIFEncoder();
   const canvas = document.createElement('canvas');
@@ -84,7 +85,7 @@ async function encodeGif(animation: Animation, template: Template, opts: ExportO
     // GIF 每一帧可以有自己的停留时间，静止部分只写一帧，文件更小
     blend(ctx, plan.frames[i], plan.frames[i], 1);
     write(plan.holds[i]);
-    opts.onProgress?.('生成 GIF', 0.5 + ((i + 1) / plan.frames.length) * 0.5);
+    opts.onProgress?.(t('encode.sheng_cheng'), 0.5 + ((i + 1) / plan.frames.length) * 0.5);
     await new Promise((r) => setTimeout(r));
   }
   gif.finish();
@@ -127,7 +128,7 @@ function* timeline(plan: { frames: HTMLCanvasElement[]; holds: number[] }, fps: 
 async function encodeMp4(animation: Animation, template: Template, opts: ExportOptions) {
   const { width, height, fps } = VIDEO;
   const plan = await planFrames(animation, template, width, height, (p) =>
-    opts.onProgress?.('绘制画面', p * 0.3),
+    opts.onProgress?.(t('encode.hui_zhi_hua_mian'), p * 0.3),
   );
   const muxer = new Muxer({
     target: new ArrayBufferTarget(),
@@ -157,7 +158,8 @@ async function encodeMp4(animation: Animation, template: Template, opts: ExportO
     n++;
     // 控制编码队列长度，避免占用过多内存
     if (encoder.encodeQueueSize > 10) await new Promise((r) => setTimeout(r, 0));
-    if (n % 15 === 0) opts.onProgress?.('生成视频', 0.3 + (n / totalFrames) * 0.7);
+    if (n % 15 === 0)
+      opts.onProgress?.(t('encode.sheng_cheng_shi_pin'), 0.3 + (n / totalFrames) * 0.7);
   }
   await encoder.flush();
   if (failure) throw failure;
@@ -169,11 +171,10 @@ async function encodeMp4(animation: Animation, template: Template, opts: ExportO
 // ---------- WebM（MediaRecorder 兜底） ----------
 
 async function recordWebm(animation: Animation, template: Template, opts: ExportOptions) {
-  if (typeof MediaRecorder === 'undefined')
-    throw new Error('这个浏览器不支持导出视频，可以改为导出 GIF。');
+  if (typeof MediaRecorder === 'undefined') throw new Error(t('encode.zhe_ge_liu_lan'));
   const { width, height, fps } = VIDEO;
   const plan = await planFrames(animation, template, width, height, (p) =>
-    opts.onProgress?.('绘制画面', p * 0.2),
+    opts.onProgress?.(t('encode.hui_zhi_hua_mian'), p * 0.2),
   );
   const canvas = document.createElement('canvas');
   canvas.width = width;
@@ -200,7 +201,8 @@ async function recordWebm(animation: Animation, template: Template, opts: Export
     if (wait > 0) await new Promise((r) => setTimeout(r, wait));
     const f = frames[n];
     blend(ctx, f.from, f.to, f.t);
-    if (n % 15 === 0) opts.onProgress?.('录制视频', 0.2 + (n / frames.length) * 0.8);
+    if (n % 15 === 0)
+      opts.onProgress?.(t('encode.lu_zhi_shi_pin'), 0.2 + (n / frames.length) * 0.8);
   }
   rec.stop();
   await stopped;

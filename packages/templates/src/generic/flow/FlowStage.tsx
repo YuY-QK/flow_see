@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import type { StageProps } from '@flow-see/runtime/template.ts';
 import { BOX_H, BOX_W, collectEdges, edgeGeometry, layoutNodes } from './layout';
 
+import { t } from '@flow-see/core';
 export function FlowStage({ animation, index, theme, still }: StageProps) {
   const { nodes, width, height } = layoutNodes(animation);
   const byId = new Map(nodes.map((n) => [n.id, n]));
@@ -29,7 +30,7 @@ export function FlowStage({ animation, index, theme, still }: StageProps) {
       height="100%"
       preserveAspectRatio="xMidYMid meet"
       role="img"
-      aria-label={`${animation.title}：第 ${index + 1} 步`}
+      aria-label={t('common.stage_aria', { title: animation.title, n: index + 1 })}
       style={{ fontFamily: theme.font, display: 'block' }}
     >
       <defs>
@@ -158,7 +159,7 @@ export function FlowStage({ animation, index, theme, still }: StageProps) {
               fontWeight={700}
               fill={ink}
             >
-              {n.name || `节点 ${i + 1}`}
+              {n.name || t('flowStage.node', { n: i + 1 })}
             </text>
           </motion.g>
         );

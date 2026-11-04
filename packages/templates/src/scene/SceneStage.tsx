@@ -4,6 +4,7 @@ import type { StageProps } from '@flow-see/runtime/template.ts';
 import { sceneFrame } from './evaluate';
 import { sceneOf } from './scene';
 
+import { t } from '@flow-see/core';
 /** 场景舞台：纯函数，画面只由 (动画, 第几步, 步内进度) 决定 */
 export function SceneStage({ animation, index, theme, progress = 1 }: StageProps) {
   const def = sceneOf(animation);
@@ -19,7 +20,7 @@ export function SceneStage({ animation, index, theme, progress = 1 }: StageProps
       height="100%"
       preserveAspectRatio="xMidYMid meet"
       role="img"
-      aria-label={`${animation.title}：第 ${index + 1} 步`}
+      aria-label={t('common.stage_aria', { title: animation.title, n: index + 1 })}
       style={{ fontFamily: theme.font, display: 'block' }}
     >
       {frame.objects.map((o) => {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { updateAnimation } from '@flow-see/core';
+import { updateAnimation, t } from '@flow-see/core';
 import { AppearancePanel } from '@flow-see/runtime/editor/AppearancePanel.tsx';
 import { ElementsEditor } from '@flow-see/runtime/editor/ElementsEditor.tsx';
 import { GeneratedSteps } from '@flow-see/runtime/editor/GeneratedSteps.tsx';
@@ -18,7 +18,11 @@ import { ShareDialog } from '../ui/ShareDialog';
 import ui from '@flow-see/runtime/ui/ui.module.css';
 import { NotFound } from './NotFound';
 
-const SAVE_TEXT = { saved: '已自动保存', saving: '保存中…', error: '保存失败' };
+const SAVE_TEXT = {
+  saved: t('editorPage.yi_zi_dong_bao'),
+  saving: t('editorPage.bao_cun_zhong'),
+  error: t('editorPage.bao_cun_shi_bai'),
+};
 
 export function EditorPage() {
   const { id = '' } = useParams();
@@ -47,11 +51,11 @@ export function EditorPage() {
     select(animation.steps[animation.steps.length - 1]?.id ?? null);
   }, [animation, selectedId, select]);
 
-  if (missingId === id) return <NotFound text="找不到这个作品，它可能已被删除。" />;
+  if (missingId === id) return <NotFound text={t('common.zhao_bu_dao_zhe')} />;
   if (!animation || animation.id !== id) return null;
 
   const template = getTemplate(animation.templateId);
-  if (!template) return <NotFound text="这个作品使用的模板暂不支持。" />;
+  if (!template) return <NotFound text={t('common.zhe_ge_zuo_pin')} />;
 
   const selectedIndex = Math.max(
     0,
@@ -63,10 +67,10 @@ export function EditorPage() {
       <header className={s.top}>
         <Link to="/mine" className={s.back}>
           <Icon name="back" size={18} />
-          <span className={s.backText}>我的作品</span>
+          <span className={s.backText}>{t('common.wo_de_zuo_pin')}</span>
         </Link>
         <label className="sr-only" htmlFor="doc-title">
-          动画名称
+          {t('editorPage.dong_hua_ming_cheng')}
         </label>
         <input
           id="doc-title"
@@ -82,23 +86,27 @@ export function EditorPage() {
           <button
             className={`${ui.btn} ${appearance ? ui.active : ''}`}
             data-appearance-toggle
-            aria-label="外观"
+            aria-label={t('common.wai_guan')}
             aria-expanded={appearance}
             onClick={() => setAppearance((v) => !v)}
           >
             <Icon name="palette" size={18} />
-            <span className={s.hideMobile}>外观</span>
+            <span className={s.hideMobile}>{t('common.wai_guan')}</span>
           </button>
           <button className={`${ui.btn} ${s.hideMobile}`} onClick={() => setDialog('export')}>
             <Icon name="download" size={18} />
-            导出
+            {t('common.dao_chu')}
           </button>
-          <button className={ui.btn} aria-label="分享" onClick={() => setDialog('share')}>
+          <button
+            className={ui.btn}
+            aria-label={t('common.fen_xiang')}
+            onClick={() => setDialog('share')}
+          >
             <Icon name="share" size={18} />
-            <span className={s.hideMobile}>分享</span>
+            <span className={s.hideMobile}>{t('common.fen_xiang')}</span>
           </button>
           <Link to={`/play/${animation.id}`} className={`${ui.btn} ${ui.primary}`}>
-            播放
+            {t('common.bo_fang')}
           </Link>
         </div>
         {appearance ? (
@@ -126,7 +134,7 @@ export function EditorPage() {
           {template.paramFields?.length ? (
             <section className={s.section}>
               <div className={s.sectionHead}>
-                <h2 className={s.sectionTitle}>{template.paramTitle ?? '参数'}</h2>
+                <h2 className={s.sectionTitle}>{template.paramTitle ?? t('editorPage.can_shu')}</h2>
               </div>
               <ParamsForm
                 template={template}
@@ -154,8 +162,8 @@ export function EditorPage() {
 
         <div className={s.previewPane}>
           <div className={s.previewHead}>
-            实时预览
-            <span>按空格播放 / 暂停，← → 切换步骤</span>
+            {t('editorPage.shi_shi_yu_lan')}
+            <span>{t('editorPage.an_kong_ge_bo')}</span>
           </div>
           <Player
             animation={animation}
@@ -178,12 +186,12 @@ export function EditorPage() {
         <ExportDialog animation={animation} template={template} onClose={() => setDialog(null)} />
       ) : null}
 
-      <nav className={s.tabs} aria-label="编辑或预览">
+      <nav className={s.tabs} aria-label={t('editorPage.bian_ji_huo_yu')}>
         <button aria-pressed={tab === 'edit'} onClick={() => setTab('edit')}>
-          编辑
+          {t('common.bian_ji')}
         </button>
         <button aria-pressed={tab === 'preview'} onClick={() => setTab('preview')}>
-          预览
+          {t('editorPage.yu_lan')}
         </button>
       </nav>
     </div>

@@ -7,6 +7,7 @@ import {
   resolveParams,
   type ExploreControl,
   type Scope,
+  t,
 } from '@flow-see/core';
 import {
   findLesson,
@@ -52,7 +53,7 @@ export function LessonPage() {
     <div className={p.page}>
       <TopBar
         crumbs={[
-          { label: '学习', to: '/' },
+          { label: t('common.xue_xi'), to: '/' },
           { label: gName, to: '/', onClick: () => setGrade(entry.grade) },
           { label: subj?.name ?? entry.subject, to: `/learn/${entry.grade}/${entry.subject}` },
           { label: lesson.title },
@@ -121,7 +122,7 @@ function LessonBody({
       <div className={s.meta} style={{ ['--subject' as string]: subj?.color } as CSSProperties}>
         <span className={s.tag}>{subj?.name ?? lessonKey.subject}</span>
         {meta?.duration ? <span>{meta.duration}</span> : null}
-        {meta?.steps ? <span>共 {meta.steps} 步</span> : null}
+        {meta?.steps ? <span>{t('common.steps_total', { n: meta.steps })}</span> : null}
       </div>
     </div>
   );
@@ -132,13 +133,13 @@ function LessonBody({
         <div className={s.head}>{header}</div>
         {state.kind === 'error' ? (
           <div className={s.problem}>
-            <div>内容没加载出来</div>
+            <div>{t('lessonPage.nei_rong_mei_jia')}</div>
             <button className={`${ui.btn} ${ui.primary}`} onClick={retry}>
-              重试
+              {t('common.chong_shi')}
             </button>
           </div>
         ) : slow ? (
-          <div className={s.skeleton} aria-label="加载中" />
+          <div className={s.skeleton} aria-label={t('lessonPage.jia_zai_zhong')} />
         ) : null}
       </main>
     );
@@ -214,7 +215,7 @@ function LessonReady({
   const share = async () => {
     try {
       await navigator.clipboard.writeText(url);
-      setToast('链接已复制，打开后从第 1 步开始');
+      setToast(t('lessonPage.lian_jie_yi_fu'));
     } catch {
       setDialog('link');
     }
@@ -227,9 +228,9 @@ function LessonReady({
       <main className={p.content}>
         <div className={s.head}>{header}</div>
         <div className={s.problem}>
-          <div>这个动画需要更新网站才能播放</div>
+          <div>{t('lessonPage.zhe_ge_dong_hua')}</div>
           <button className={`${ui.btn} ${ui.primary}`} onClick={() => location.reload()}>
-            刷新
+            {t('lessonPage.shua_xin')}
           </button>
         </div>
       </main>
@@ -250,11 +251,11 @@ function LessonReady({
           {header}
           <div className={s.headActions}>
             <button className={ui.btn} onClick={share}>
-              <Icon name="share" size={18} /> 分享
+              <Icon name="share" size={18} /> {t('common.fen_xiang')}
             </button>
             {device !== 'phone' ? (
               <button className={ui.btn} onClick={() => setDialog('export')}>
-                <Icon name="download" size={18} /> 导出
+                <Icon name="download" size={18} /> {t('common.dao_chu')}
               </button>
             ) : null}
           </div>
@@ -288,7 +289,7 @@ function LessonReady({
 
         <div className={s.below}>
           <section className={s.points}>
-            <h2 className={p.h2}>要点</h2>
+            <h2 className={p.h2}>{t('lessonPage.yao_dian')}</h2>
             <ul>
               {keyPoints.map((k) => (
                 <li key={k}>{k}</li>
@@ -300,48 +301,48 @@ function LessonReady({
               className={`${ui.btn} ${s.learned} ${s.learnedDone}`}
               onClick={() => setDialog('undo')}
             >
-              <Icon name="check" size={20} /> 已学完
+              <Icon name="check" size={20} /> {t('common.yi_xue_wan')}
             </button>
           ) : (
             <button className={`${ui.btn} ${ui.primary} ${s.learned}`} onClick={markDone}>
-              我学会了
+              {t('lessonPage.wo_xue_hui_le')}
             </button>
           )}
         </div>
 
-        <nav className={s.nav} aria-label="上一个和下一个知识点">
+        <nav className={s.nav} aria-label={t('lessonPage.shang_yi_ge_he')}>
           {prev ? (
             <Link className={s.navLink} to={navTo(prev)}>
-              <small>上一个</small>
+              <small>{t('lessonPage.shang_yi_ge')}</small>
               <strong>{prev.lesson.title}</strong>
             </Link>
           ) : (
             <Link className={s.navLink} to={subjectPath}>
-              <small>上一个</small>
-              <strong>回到{where}</strong>
+              <small>{t('lessonPage.shang_yi_ge')}</small>
+              <strong>{t('lessonPage.back_to', { where })}</strong>
             </Link>
           )}
           {next ? (
             <Link className={`${s.navLink} ${s.navNext}`} to={navTo(next)}>
-              <small>下一个</small>
+              <small>{t('lessonPage.xia_yi_ge')}</small>
               <strong>{next.lesson.title}</strong>
             </Link>
           ) : (
             <Link className={`${s.navLink} ${s.navNext}`} to={subjectPath}>
-              <small>下一个</small>
-              <strong>{where}都学完了，回到目录</strong>
+              <small>{t('lessonPage.xia_yi_ge')}</small>
+              <strong>{t('lessonPage.all_done', { where })}</strong>
             </Link>
           )}
         </nav>
       </main>
 
       {dialog === 'undo' ? (
-        <Dialog title="取消已学完？" onClose={() => setDialog('none')}>
+        <Dialog title={t('lessonPage.qu_xiao_yi_xue')} onClose={() => setDialog('none')}>
           <div className={s.confirm}>
-            <p>取消后，这个知识点会显示为“学习中”。</p>
+            <p>{t('lessonPage.qu_xiao_hou_zhe')}</p>
             <div className={s.confirmActions}>
               <button className={ui.btn} onClick={() => setDialog('none')}>
-                不取消
+                {t('lessonPage.bu_qu_xiao')}
               </button>
               <button
                 className={`${ui.btn} ${ui.primary}`}
@@ -350,7 +351,7 @@ function LessonReady({
                   setDialog('none');
                 }}
               >
-                取消已学完
+                {t('lessonPage.qu_xiao_yi_xue_2')}
               </button>
             </div>
           </div>
@@ -360,7 +361,7 @@ function LessonReady({
         <ExportDialog animation={animation} template={template} onClose={() => setDialog('none')} />
       ) : null}
       {dialog === 'link' ? (
-        <Dialog title="复制链接" onClose={() => setDialog('none')}>
+        <Dialog title={t('common.fu_zhi_lian_jie')} onClose={() => setDialog('none')}>
           <input
             className={`${ui.field} ${s.linkBox}`}
             readOnly

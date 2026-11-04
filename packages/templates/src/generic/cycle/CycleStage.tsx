@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import type { StageProps } from '@flow-see/runtime/template.ts';
 import { NODE_R, cycleGeometry, splitName, type CycleLayout } from './geometry';
 
+import { t } from '@flow-see/core';
 export function CycleStage({ animation, index, theme, still }: StageProps) {
   const layout: CycleLayout = animation.params?.layout === 'timeline' ? 'timeline' : 'cycle';
   const { elements, steps } = animation;
@@ -36,7 +37,7 @@ export function CycleStage({ animation, index, theme, still }: StageProps) {
       height="100%"
       preserveAspectRatio="xMidYMid meet"
       role="img"
-      aria-label={`${animation.title}：第 ${index + 1} 步`}
+      aria-label={t('common.stage_aria', { title: animation.title, n: index + 1 })}
       style={{ fontFamily: theme.font, display: 'block' }}
     >
       <defs>
@@ -66,7 +67,7 @@ export function CycleStage({ animation, index, theme, still }: StageProps) {
           fontWeight={700}
           fill={theme.dim}
         >
-          第 {laps} 圈
+          {t('cycleStage.lap', { n: laps })}
         </text>
       ) : null}
 
@@ -124,7 +125,7 @@ export function CycleStage({ animation, index, theme, still }: StageProps) {
         const p = g.points[i];
         const isCur = i === cur;
         const seen = visited.has(i);
-        const lines = splitName(e.name || `阶段 ${i + 1}`);
+        const lines = splitName(e.name || t('cycleStage.stage', { n: i + 1 }));
         return (
           <motion.g
             key={e.id}

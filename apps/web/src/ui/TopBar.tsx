@@ -8,6 +8,7 @@ import { Drawer } from './Drawer';
 import { useBackToClose } from './useBackToClose';
 import s from './TopBar.module.css';
 
+import { t } from '@flow-see/core';
 export interface Crumb {
   label: string;
   /** 上级页面的地址；最后一级（当前页）不填 */
@@ -158,7 +159,7 @@ export function TopBar({
   const subj = showSubject ? content.subjects.find((x) => x.id === subject) : undefined;
 
   const gradeList = (current: number | undefined, onClick: (g: number) => void) => (
-    <div className={s.options} role="listbox" aria-label="年级">
+    <div className={s.options} role="listbox" aria-label={t('topBar.nian_ji')}>
       {content.grades.map((g) => (
         <button
           key={g.id}
@@ -173,7 +174,7 @@ export function TopBar({
     </div>
   );
   const subjectList = (current: string | undefined, onClick: (id: string) => void) => (
-    <div className={s.options} role="listbox" aria-label="学科">
+    <div className={s.options} role="listbox" aria-label={t('common.xue_ke')}>
       {content.subjects.map((x) => (
         <button
           key={x.id}
@@ -197,7 +198,7 @@ export function TopBar({
       <header className={`${s.bar} ${searchOpen && !searchPage ? s.searching : ''}`}>
         <button
           className={s.avatarBtn}
-          aria-label="打开菜单"
+          aria-label={t('topBar.da_kai_cai_dan')}
           data-overlay-toggle
           onClick={() => {
             setSearchOpen(!!searchPage);
@@ -207,7 +208,7 @@ export function TopBar({
           <Avatar color={avatar} />
         </button>
 
-        <nav className={s.where} aria-label="当前位置">
+        <nav className={s.where} aria-label={t('topBar.dang_qian_wei_zhi')}>
           {crumbs?.length ? (
             <>
               {/* 电脑 / iPad：一行路径 */}
@@ -260,14 +261,14 @@ export function TopBar({
               <>
                 <Icon name="search" size={18} />
                 <label className="sr-only" htmlFor="topbar-search">
-                  搜索知识点
+                  {t('topBar.sou_suo_zhi_shi')}
                 </label>
                 <input
                   id="topbar-search"
                   ref={searchRef}
                   type="search"
                   enterKeyHint="search"
-                  placeholder="搜索知识点"
+                  placeholder={t('topBar.sou_suo_zhi_shi')}
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   onBlur={onSearchBlur}
@@ -289,14 +290,14 @@ export function TopBar({
                   onPointerDown={(e) => e.preventDefault()}
                   onClick={cancelSearch}
                 >
-                  取消
+                  {t('common.qu_xiao')}
                 </button>
               </>
             ) : (
               <button
                 type="button"
                 className={s.iconBtn}
-                aria-label="搜索"
+                aria-label={t('common.sou_suo')}
                 data-overlay-toggle
                 onClick={openSearch}
               >
@@ -359,11 +360,11 @@ export function TopBar({
                 </button>
                 {overlay === 'combo' ? (
                   <div className={`${s.panel} ${s.comboPanel}`} data-panel>
-                    <div className={s.panelLabel}>年级</div>
+                    <div className={s.panelLabel}>{t('topBar.nian_ji')}</div>
                     {gradeList(pending?.grade ?? grade, (g) => pickInCombo({ grade: g }, 'g'))}
                     {showSubject ? (
                       <>
-                        <div className={s.panelLabel}>学科</div>
+                        <div className={s.panelLabel}>{t('common.xue_ke')}</div>
                         {subjectList(pending?.subject ?? subject, (id) =>
                           pickInCombo({ subject: id }, 's'),
                         )}

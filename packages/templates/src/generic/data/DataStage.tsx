@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import type { StageProps } from '@flow-see/runtime/template.ts';
 import type { DataFrame } from './algorithms';
 
+import { t } from '@flow-see/core';
 const SLOT = 92;
 const BAR_W = 70;
 const TOP = 80;
@@ -21,7 +22,10 @@ export function DataStage({ animation, index, theme }: StageProps) {
   const sorted = new Set(f.sorted);
   const active = new Set(f.active);
   const [base, hot, done] = theme.palette;
-  const markerText = animation.params?.order === 'desc' ? '目前最大' : '目前最小';
+  const markerText =
+    animation.params?.order === 'desc'
+      ? t('dataStage.mu_qian_zui_da')
+      : t('dataStage.mu_qian_zui_xiao');
 
   return (
     <svg
@@ -30,16 +34,19 @@ export function DataStage({ animation, index, theme }: StageProps) {
       height="100%"
       preserveAspectRatio="xMidYMid meet"
       role="img"
-      aria-label={`第 ${index + 1} 步：${f.order.map((id) => f.values[id]).join('、')}`}
+      aria-label={t('dataStage.aria', {
+        n: index + 1,
+        values: f.order.map((id) => f.values[id]).join('、'),
+      })}
       style={{ fontFamily: theme.font, display: 'block' }}
     >
       <text x={20} y={30} fontSize={15} fill={theme.ink} opacity={0.75}>
-        比较 {f.compares} 次 · 交换 {f.swaps} 次
+        {t('dataStage.counts', { compares: f.compares, swaps: f.swaps })}
       </text>
       <g fontSize={13} fill={theme.ink}>
         {[
-          [hot, '正在处理'],
-          [done, '已排好'],
+          [hot, t('dataStage.zheng_zai_chu_li')],
+          [done, t('dataStage.yi_pai_hao')],
         ].map(([c, label], i) => (
           <g key={label} transform={`translate(${W - 200 + i * 100}, 20)`}>
             <rect width={14} height={14} rx={3} fill={c} />

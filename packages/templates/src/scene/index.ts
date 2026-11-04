@@ -1,6 +1,6 @@
 // 场景模板 scene：在配置里摆好零件，再写每一步对零件做什么（需求设计 5.5）。不写代码。
 import { sceneStyle } from '@flow-see/blocks';
-import { createAnimation, createStep } from '@flow-see/core';
+import { createAnimation, createStep, t } from '@flow-see/core';
 import type { Template } from '@flow-see/runtime/template.ts';
 import { checkScene } from './check';
 import { stepMotionMs } from './evaluate';
@@ -14,9 +14,9 @@ export { sceneOf } from './scene';
 
 export const sceneTemplate: Template = {
   id: 'scene',
-  name: '场景',
-  tagline: '摆好零件，写每一步的动作',
-  elementNoun: '零件',
+  name: t('scene.chang_jing'),
+  tagline: t('scene.bai_hao_ling_jian'),
+  elementNoun: t('scene.ling_jian'),
   minElements: 0,
   maxElements: 0,
   stepFields: [],
@@ -24,7 +24,7 @@ export const sceneTemplate: Template = {
   createBlank() {
     return createAnimation({
       templateId: 'scene',
-      title: '未命名场景',
+      title: t('scene.wei_ming_ming_chang'),
       config: { stage: sceneStyle().stage, objects: [] },
       steps: [createStep({ title: '', desc: '', data: { do: [] } })],
     });
@@ -33,7 +33,7 @@ export const sceneTemplate: Template = {
   createDefault() {
     return createAnimation({
       templateId: 'scene',
-      title: '数一数',
+      title: t('scene.shu_yi_shu'),
       config: {
         stage: sceneStyle().stage,
         objects: [
@@ -42,8 +42,8 @@ export const sceneTemplate: Template = {
         ],
       },
       steps: [
-        createStep({ title: '', desc: '这里有几个圆片？', data: { do: [{ show: 'dots' }] } }),
-        createStep({ title: '', desc: '一共 3 个。', data: { do: [{ show: 'label' }] } }),
+        createStep({ title: '', desc: t('scene.zhe_li_you_ji'), data: { do: [{ show: 'dots' }] } }),
+        createStep({ title: '', desc: t('scene.yi_gong_ge'), data: { do: [{ show: 'label' }] } }),
       ],
     });
   },

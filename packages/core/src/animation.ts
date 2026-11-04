@@ -1,5 +1,6 @@
 import { SCHEMA_VERSION, type Animation, type FlowElement, type Step } from './types';
 
+import { t } from './texts';
 export function createId(prefix = ''): string {
   const rand =
     typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -39,7 +40,7 @@ export function duplicateAnimation(src: Animation, now = Date.now()): Animation 
   return {
     ...rest,
     id: createId('a_'),
-    title: src.title + '（副本）',
+    title: src.title + t('animation.fu_ben'),
     createdAt: now,
     updatedAt: now,
   };
@@ -57,7 +58,7 @@ export function migrate(raw: unknown): Animation | null {
   return {
     id: a.id,
     schemaVersion: SCHEMA_VERSION,
-    title: typeof a.title === 'string' ? a.title : '未命名动画',
+    title: typeof a.title === 'string' ? a.title : t('common.wei_ming_ming_dong'),
     author: a.author,
     ownerId: a.ownerId,
     templateId: a.templateId,

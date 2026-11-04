@@ -8,6 +8,7 @@ export const CONTENT_ROOT = fileURLToPath(new URL('..', import.meta.url));
 const TITLES: Record<keyof typeof SCHEMAS, string> = {
   site: '站点公共配置 site.yaml',
   help: '常见问题 help.yaml',
+  texts: '界面文案 texts.yaml',
   grades: '年级与学科 curriculum/grades.yaml',
   curriculum: '课程目录 curriculum/<学科>/grade<年级>.yaml',
   lesson: '知识点 lessons/<学科>/g<年级>/<id>.yaml',

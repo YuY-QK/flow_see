@@ -13,7 +13,7 @@ afterEach(() => roots.splice(0).forEach((r) => rmSync(r, { recursive: true, forc
 function sandbox(files: Record<string, string> = {}): string {
   const root = mkdtempSync(join(tmpdir(), 'flow-see-content-'));
   roots.push(root);
-  for (const d of ['site.yaml', 'help.yaml', 'curriculum', 'lessons', 'assets'])
+  for (const d of ['site.yaml', 'help.yaml', 'texts.yaml', 'curriculum', 'lessons', 'assets'])
     cpSync(join(CONTENT_ROOT, d), join(root, d), { recursive: true });
   for (const [f, text] of Object.entries(files)) {
     mkdirSync(dirname(join(root, f)), { recursive: true });
