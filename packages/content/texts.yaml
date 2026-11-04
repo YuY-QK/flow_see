@@ -495,3 +495,16 @@ fractionTemplate:
   sample_split: 把它平均分成 4 份，每一份都一样大。
   sample_take_one: 取其中的 1 份，就是 4 分之 1。
   sample_take_many: 取其中的 3 份，就是 4 分之 3。
+clockTemplate:
+  name: 钟表
+  tagline: 认识钟面、读时间、看时间怎么走
+  face: 钟面上有 12 个数
+  minute_hand: 分针：又细又长
+  hour_hand: 时针：又粗又短
+  oclock: "{h} 时"
+  hour_minute: "{h} 时 {m} 分"
+  run: 从 {from}到 {to}
+  sample_title: 认识钟表
+  sample_face: 这是钟面，上面有 1 到 12 这 12 个数。
+  sample_read: 分针指着 12，时针指着 3，就是 3 时。
+  sample_run: 分针走一圈，时针走一大格，过了 1 小时。

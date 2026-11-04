@@ -11,4 +11,4 @@ units:
   - id: clock
     title: 认识钟表
     lessons:
-      - { id: clock-basics, title: 认识钟表 }
+      - clock-basics

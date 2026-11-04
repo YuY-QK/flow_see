@@ -73,7 +73,8 @@ scene:
     counters: { count: 1, layout: row, shape: circle, size: 44, color: blue }
     tenframe: { count: 0, layout: tenframe, shape: circle, size: 44, color: blue }
     numberline: { from: 0, to: 10, step: 1, length: 600, color: ink, size: 22 }
-    clock: { time: 180, radius: 130, numbers: true, ticks: true, color: ink }
+    clock: { time: 180, radius: 130, numbers: true, ticks: true, color: ink, emphasis: none }
+    digital-clock: { time: 180, size: 48, color: ink }
     fraction-circle: { parts: 4, take: 0, radius: 120, color: orange }
     fraction-bar: { parts: 4, take: 0, width: 480, height: 64, color: orange }
     grid: { rows: 3, cols: 4, cell: 44, filled: 0, color: green }

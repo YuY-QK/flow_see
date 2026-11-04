@@ -1,6 +1,6 @@
 // 知识点参数：派生值、动手试一试的取值范围与收回。纯函数，浏览器和 Node 都能用。
 //
-// 配置里的算式只支持四则运算、括号、min/max/floor/ceil/round/abs，
+// 配置里的算式只支持四则运算、取余 %、括号、min/max/floor/ceil/round/abs，
 // 变量是参数名（写成 a 或 {a} 都行），例如 "10 - a"、"{b} - {gap}"。
 
 export type Scope = Record<string, unknown>;
@@ -18,7 +18,7 @@ type Tok = { t: 'num'; v: number } | { t: 'id'; v: string } | { t: 'op'; v: stri
 
 function tokenize(src: string): Tok[] | undefined {
   const out: Tok[] = [];
-  const re = /\s*(?:(\d+(?:\.\d+)?)|\{?([A-Za-z_]\w*)\}?|([-+*/(),]))/y;
+  const re = /\s*(?:(\d+(?:\.\d+)?)|\{?([A-Za-z_]\w*)\}?|([-+*/%(),]))/y;
   let i = 0;
   src = src.trim();
   while (i < src.length) {
@@ -61,7 +61,10 @@ function evalTokens(
     let v = unary();
     for (;;) {
       if (eat('*')) v *= unary();
-      else if (eat('/')) {
+      else if (eat('%')) {
+        const d = unary();
+        v = dry ? v : v % d;
+      } else if (eat('/')) {
         const d = unary();
         v = dry ? v : v / d;
       } else return v;

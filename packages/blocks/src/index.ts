@@ -6,6 +6,7 @@ import { sceneStyle } from './style';
 import { countersPart, tenframePart } from './parts/counters';
 import {
   clockPart,
+  digitalClockPart,
   fractionBarPart,
   fractionCirclePart,
   gridPart,
@@ -25,7 +26,14 @@ export {
   counterSlot,
   frameCount,
 } from './parts/counters';
-export { clockAngles, hopsOf, numberlineX, parseClockTime, type Hop } from './parts/math';
+export {
+  clockAngles,
+  formatClockTime,
+  hopsOf,
+  numberlineX,
+  parseClockTime,
+  type Hop,
+} from './parts/math';
 export { SHAPE_KINDS } from './parts/shapes';
 export { displayText } from './parts/text';
 
@@ -38,6 +46,7 @@ export const PARTS: readonly PartDef[] = [
   tenframePart,
   numberlinePart,
   clockPart,
+  digitalClockPart,
   fractionCirclePart,
   fractionBarPart,
   gridPart,

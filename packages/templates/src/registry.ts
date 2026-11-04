@@ -2,6 +2,7 @@ import { cycleTemplate } from './generic/cycle';
 import { dataTemplate } from './generic/data';
 import { flowTemplate } from './generic/flow';
 import { messageTemplate } from './generic/message';
+import { clockTemplate } from './math/clock';
 import { fractionTemplate } from './math/fraction';
 import { sceneTemplate } from './scene';
 import type { Template, TemplateCard } from '@flow-see/runtime/template.ts';
@@ -15,6 +16,7 @@ const TEMPLATES: Template[] = [
   // 知识点用的模板（不在创作的选模板页里出现）
   sceneTemplate,
   fractionTemplate,
+  clockTemplate,
 ];
 
 const byId = new Map(TEMPLATES.map((t) => [t.id, t]));

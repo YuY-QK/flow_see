@@ -785,10 +785,126 @@
             "fraction"
           ],
           "additionalProperties": false
+        },
+        "clock": {
+          "type": "object",
+          "properties": {
+            "stage": {
+              "type": "object",
+              "properties": {
+                "width": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "height": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "width",
+                "height"
+              ],
+              "additionalProperties": false
+            },
+            "at": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2,
+              "description": "钟面中心"
+            },
+            "radius": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "钟面半径"
+            },
+            "digital": {
+              "type": "object",
+              "properties": {
+                "at": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "size": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "at",
+                "size"
+              ],
+              "additionalProperties": false,
+              "description": "电子钟"
+            },
+            "caption": {
+              "type": "object",
+              "properties": {
+                "at": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "size": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "at",
+                "size"
+              ],
+              "additionalProperties": false,
+              "description": "说明文字"
+            },
+            "secondsPerHour": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "时间连续走动时，走 1 小时用几秒"
+            }
+          },
+          "required": [
+            "stage",
+            "at",
+            "radius",
+            "digital",
+            "caption",
+            "secondsPerHour"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
-        "fraction"
+        "fraction",
+        "clock"
       ],
       "additionalProperties": false,
       "description": "由参数生成画面的模板（fraction、clock）的版式"

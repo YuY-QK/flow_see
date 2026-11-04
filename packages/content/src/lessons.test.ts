@@ -119,6 +119,23 @@ describe('认识分数：fraction 模板，只用配置', () => {
   });
 });
 
+describe('认识钟表：clock 模板，只用配置', () => {
+  const lf = load().bundle!.lessons.find((l) => l.lesson.id === 'clock-basics')!;
+  const lesson = { ...lf.lesson, subject: lf.subject, grade: lf.grade };
+
+  it('已发布；每个整点都能讲：走 1 小时后读出下一个整点（12 时之后是 1 时）', () => {
+    expect(lesson).toMatchObject({ template: 'clock', status: 'published' });
+    for (let hour = 1; hour <= 12; hour++) {
+      const anim = lessonToAnimation(lesson, { params: { hour } });
+      const next = (hour % 12) + 1;
+      expect(anim.steps[5].desc).toContain(`时针指着 ${next}，现在是 ${next} 时`);
+      const tpl = getTemplate('clock')!;
+      const frame = tpl.motionMs!(anim, 4);
+      expect(frame).toBeGreaterThan(0);
+    }
+  });
+});
+
 describe('知识点 → 动画', () => {
   it('讲解和零件里的 {参数} 代入参数；动手试一试的参数覆盖标准取值', () => {
     const anim = lessonToAnimation(
