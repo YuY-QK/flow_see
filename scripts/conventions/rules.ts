@@ -5,7 +5,13 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
 import { parse } from 'yaml';
-import { ALLOW_CHINESE, ALLOW_COLOR_IN_CODE, ALLOW_CSS_LITERALS, type Allow } from './allow';
+import {
+  ALLOW_CHINESE,
+  ALLOW_COLOR_IN_CODE,
+  ALLOW_CSS_LITERALS,
+  ALLOW_TIMING,
+  type Allow,
+} from './allow';
 
 export const ROOT = join(import.meta.dirname, '..', '..');
 
@@ -261,6 +267,69 @@ export function styleRules(files = trackedFiles()): Problem[] {
             : `字号要用 global.css 里的 --fs-* 变量，不要写 ${p.text}`,
       })),
     );
+}
+
+/* ───────────── 规则 5：不在代码里写死时长 ───────────── */
+
+/** setTimeout / setInterval 的时长写了数字（0 除外）的地方：时长放 site.yaml，从配置读 */
+export function timingsIn(sf: ts.SourceFile): { line: number; text: string }[] {
+  const out: { line: number; text: string }[] = [];
+  const visit = (n: ts.Node) => {
+    if (ts.isCallExpression(n)) {
+      const name = ts.isPropertyAccessExpression(n.expression)
+        ? n.expression.name.text
+        : ts.isIdentifier(n.expression)
+          ? n.expression.text
+          : '';
+      const delay = n.arguments[1];
+      if ((name === 'setTimeout' || name === 'setInterval') && delay) {
+        const literal = ts.isNumericLiteral(delay) ? delay : undefined;
+        const arith = !literal && /^[\d_\s*/+.-]+$/.test(delay.getText(sf)) ? delay : undefined;
+        if ((literal && Number(literal.text.replaceAll('_', '')) > 0) || arith)
+          out.push({
+            line: sf.getLineAndCharacterOfPosition(n.getStart()).line + 1,
+            text: n.getText(sf).slice(0, 40),
+          });
+      }
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
+  return out;
+}
+
+export function noMagicTiming(files = sourceFiles()): Problem[] {
+  return files
+    .filter((file) => !allowed(file, ALLOW_TIMING))
+    .flatMap((file) =>
+      timingsIn(parseSource(file)).map(({ line, text }) => ({
+        rule: 'no-magic-timing',
+        file,
+        line,
+        message: `不要在代码里写死时长：${text}。时长放到 packages/content/site.yaml（player / ui / editor 等），代码从配置读取`,
+      })),
+    );
+}
+
+/* ───────────── 规则 6：配置和样式里的同一个数要一致 ───────────── */
+
+/** 头像颜色个数：site.yaml 的 profile.avatarCount 要和 global.css 里 --avatar-N 的个数一致 */
+export function avatarCountMatches(): Problem[] {
+  const site = parse(readFileSync(join(ROOT, 'packages/content/site.yaml'), 'utf8')) as {
+    profile?: { avatarCount?: number };
+  };
+  const css = readFileSync(join(ROOT, TOKEN_FILE), 'utf8');
+  const root = /:root\s*\{[^{}]*\}/.exec(css)?.[0] ?? '';
+  const count = new Set([...root.matchAll(/--avatar-(\d+)\s*:/g)].map((m) => m[1])).size;
+  return site.profile?.avatarCount === count
+    ? []
+    : [
+        {
+          rule: 'avatar-count',
+          file: 'packages/content/site.yaml',
+          message: `profile.avatarCount（${site.profile?.avatarCount}）要和 global.css 里 --avatar-N 的个数（${count}）一致`,
+        },
+      ];
 }
 
 export function runAll(): Problem[] {

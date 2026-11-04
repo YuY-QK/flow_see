@@ -439,11 +439,113 @@
         "maxFrameMs"
       ],
       "additionalProperties": false
+    },
+    "profile": {
+      "type": "object",
+      "properties": {
+        "avatarCount": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "description": "头像颜色的个数，须和 global.css 的 --avatar-N 个数一致"
+        },
+        "nicknameMax": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "description": "昵称最多几个字"
+        }
+      },
+      "required": [
+        "avatarCount",
+        "nicknameMax"
+      ],
+      "additionalProperties": false
+    },
+    "speech": {
+      "type": "object",
+      "properties": {
+        "rates": {
+          "type": "object",
+          "properties": {
+            "slow": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "normal": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "fast": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "slow",
+            "normal",
+            "fast"
+          ],
+          "additionalProperties": false,
+          "description": "朗读语速三档对应的倍率"
+        }
+      },
+      "required": [
+        "rates"
+      ],
+      "additionalProperties": false
+    },
+    "editor": {
+      "type": "object",
+      "properties": {
+        "autosaveMs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "改动后多久自动保存"
+        },
+        "stepDurations": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "description": "“停留时间”下拉里除“自动按朗读”外的可选秒数"
+        }
+      },
+      "required": [
+        "autosaveMs",
+        "stepDurations"
+      ],
+      "additionalProperties": false
+    },
+    "ui": {
+      "type": "object",
+      "properties": {
+        "focusDelayMs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "展开搜索框后，等多久再让输入框获得焦点"
+        },
+        "saveRevokeMs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "导出文件下载后，多久释放临时地址"
+        }
+      },
+      "required": [
+        "focusDelayMs",
+        "saveRevokeMs"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [
     "scene",
-    "player"
+    "player",
+    "profile",
+    "speech",
+    "editor",
+    "ui"
   ],
   "additionalProperties": false
 }

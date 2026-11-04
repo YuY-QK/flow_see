@@ -1,6 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { removeStep, updateStep, type Step, t } from '@flow-see/core';
+import { runtimeConfig } from '../config';
 import { useEditor } from '../store/editor';
 import type { Template } from '../template';
 import { Icon } from '../ui/Icon';
@@ -18,12 +19,13 @@ interface Props {
   canDelete: boolean;
 }
 
-const DURATIONS = [
+/** “停留时间”的选项：自动按朗读 + site.yaml 的 editor.stepDurations */
+const durations = () => [
   { value: '', label: t('stepCard.zi_dong_an_lang') },
-  { value: '1', label: t('stepCard.miao') },
-  { value: '2', label: t('stepCard.miao_2') },
-  { value: '3', label: t('stepCard.miao_3') },
-  { value: '5', label: t('stepCard.miao_4') },
+  ...runtimeConfig().editor.stepDurations.map((n) => ({
+    value: String(n),
+    label: t('stepCard.seconds', { n }),
+  })),
 ];
 
 export function StepCard({
@@ -175,7 +177,7 @@ export function StepCard({
                   patch({ duration: e.target.value ? Number(e.target.value) : undefined })
                 }
               >
-                {DURATIONS.map((d) => (
+                {durations().map((d) => (
                   <option key={d.value} value={d.value}>
                     {d.label}
                   </option>

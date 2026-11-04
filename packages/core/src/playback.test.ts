@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { initPlayback, playbackReducer as r, stepDurationMs, narrationText } from './playback';
 import { createStep } from './animation';
 
+/** 测试用的参数（与 site.yaml 的 player.dwell 无关，只验证公式） */
+const DWELL = { msPerChar: 220, minMs: 1800 };
+
 describe('playbackReducer', () => {
   it('从第一步开始，暂停状态', () => {
     expect(initPlayback(3)).toEqual({ index: 0, total: 3, playing: false, speed: 1 });
@@ -68,12 +71,12 @@ describe('步骤时长与朗读文本', () => {
   });
 
   it('设置了停留时长就用它，并按速度缩放', () => {
-    expect(stepDurationMs(createStep({ duration: 2 }), 1)).toBe(2000);
-    expect(stepDurationMs(createStep({ duration: 2 }), 2)).toBe(1000);
+    expect(stepDurationMs(createStep({ duration: 2 }), 1, DWELL)).toBe(2000);
+    expect(stepDurationMs(createStep({ duration: 2 }), 2, DWELL)).toBe(1000);
   });
 
   it('自动时长至少 1.8 秒，文字越长越久', () => {
-    expect(stepDurationMs(createStep({ desc: '短' }), 1)).toBe(1800);
-    expect(stepDurationMs(createStep({ desc: '字'.repeat(20) }), 1)).toBe(4400);
+    expect(stepDurationMs(createStep({ desc: '短' }), 1, DWELL)).toBe(1800);
+    expect(stepDurationMs(createStep({ desc: '字'.repeat(20) }), 1, DWELL)).toBe(4400);
   });
 });

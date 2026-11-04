@@ -7,6 +7,7 @@ import {
   type Speed,
   type Step,
 } from '@flow-see/core';
+import { runtimeConfig } from '../config';
 import { speak } from '../services/speech';
 
 export interface PlaybackOptions {
@@ -37,7 +38,7 @@ export function usePlayback(steps: Step[], opts: PlaybackOptions) {
 
   const step = steps[state.index];
   const text = step ? narrationText(step) : '';
-  const waitMs = step ? stepDurationMs(step, state.speed) : 0;
+  const waitMs = step ? stepDurationMs(step, state.speed, runtimeConfig().player.dwell) : 0;
 
   useEffect(() => {
     if (!state.playing || !step) return;
@@ -53,7 +54,8 @@ export function usePlayback(steps: Step[], opts: PlaybackOptions) {
       // 读完后稍作停顿；太短的句子也至少留够看清动画的时间
       handle.done.then(() => {
         if (cancelled) return;
-        advance(Math.max(500, 1200 / state.speed - (Date.now() - started)));
+        const { pauseMs, minMs } = runtimeConfig().player.afterSpeech;
+        advance(Math.max(minMs, pauseMs / state.speed - (Date.now() - started)));
       });
       return () => {
         cancelled = true;

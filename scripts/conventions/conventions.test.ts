@@ -7,6 +7,7 @@ import {
   parseSource,
   runAll,
   styleProblems,
+  timingsIn,
 } from './rules';
 
 // 这些检查是 CLAUDE.md“配置优先”的自动执行：失败时按提示改，不要放宽检查。
@@ -74,5 +75,17 @@ describe('检查本身是可靠的', () => {
     ]);
     // 不是变量文件时，变量块里的颜色也不允许
     expect(styleProblems(':root { --a: #fff; }', false)).toHaveLength(1);
+  });
+
+  it('能发现写死的时长，0 和从配置读的不算', () => {
+    const src = [
+      'setTimeout(fn, 600);',
+      'window.setTimeout(fn, 60_000);',
+      'setInterval(fn, 1000 * 2);',
+      'setTimeout(fn, 0);',
+      'setTimeout(fn);',
+      'setTimeout(fn, site.ui.focusDelayMs);',
+    ].join('\n');
+    expect(timingsIn(parseSource('apps/web/src/x.ts', src)).map((t) => t.line)).toEqual([1, 2, 3]);
   });
 });

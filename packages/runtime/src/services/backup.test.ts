@@ -5,7 +5,18 @@ import { importBackup, makeBackup } from './backup';
 import { createLocalRepository } from './storage';
 import { configureRuntime } from '../config';
 
-configureRuntime({ siteName: '测试站', shareApiBase: '/api', shareOrigin: 'https://example.com' });
+configureRuntime({
+  siteName: '测试站',
+  shareApiBase: '/api',
+  shareOrigin: 'https://example.com',
+  player: {
+    dwell: { msPerChar: 220, minMs: 1800 },
+    afterSpeech: { pauseMs: 1200, minMs: 500, blockedRatio: 0.6 },
+    maxFrameMs: 100,
+  },
+  editor: { autosaveMs: 600, stepDurations: [1, 2, 3, 5] },
+  saveRevokeMs: 60000,
+});
 
 describe('备份与导入', () => {
   it('新作品加入，较新的覆盖，较旧的和无法识别的跳过', async () => {
