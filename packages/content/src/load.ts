@@ -265,12 +265,19 @@ export function loadContent(
     for (const n of used)
       if (!known.has(n)) err(name, `配置里的 {${n}} 不是 params 或 derived 中的参数`);
     lesson.steps.forEach((st, i) => {
-      const len = st.say.replace(PLACEHOLDER, '00').length;
-      if (opts.sayWarnLength && len > opts.sayWarnLength)
-        warn(
-          name,
-          `第 ${i + 1} 步讲解有 ${len} 个字，自校清单建议一句不超过约 ${opts.sayWarnLength} 字`,
-        );
+      const lines: [string, string][] = [['讲解', st.say]];
+      if (st.try) {
+        lines.push(['任务提示', st.try.task]);
+        st.try.hints?.forEach((h, k) => lines.push([`第 ${k + 1} 条提示`, h]));
+      }
+      for (const [what, line] of lines) {
+        const len = line.replace(PLACEHOLDER, '00').length;
+        if (opts.sayWarnLength && len > opts.sayWarnLength)
+          warn(
+            name,
+            `第 ${i + 1} 步${what}有 ${len} 个字，自校清单建议一句不超过约 ${opts.sayWarnLength} 字`,
+          );
+      }
     });
 
     // 标准取值、点选的例子、滑块能取到的每一种组合，都要能正常画出来
@@ -330,6 +337,8 @@ export function loadContent(
           );
         }
     }
+    if (lesson.template !== 'scene' && lesson.steps.some((st) => st.try))
+      err(name, '动手做（try）目前只有场景模板（template: scene）支持');
     if (lesson.resultStep && lesson.resultStep > lesson.steps.length)
       err(name, `resultStep 超出了步骤数（共 ${lesson.steps.length} 步）`);
 

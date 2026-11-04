@@ -1,4 +1,5 @@
 import type { Animation } from '@flow-see/core';
+import type { TrySpec } from '@flow-see/runtime/template.ts';
 import { sceneStyle } from '@flow-see/blocks';
 import type { SceneDef } from './evaluate';
 
@@ -13,6 +14,9 @@ export function sceneOf(animation: Animation): SceneDef {
     stage: cfg.stage ?? sceneStyle().stage,
     objects: Array.isArray(cfg.objects) ? cfg.objects : [],
     steps: animation.steps.map((s) => (Array.isArray(s.data.do) ? s.data.do : [])),
+    tries: animation.steps.map((s) =>
+      s.data.try && typeof s.data.try === 'object' ? (s.data.try as TrySpec) : undefined,
+    ),
   };
   cache.set(animation, def);
   return def;

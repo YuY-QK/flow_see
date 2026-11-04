@@ -22,6 +22,7 @@ import {
   parseAction,
   parseDuration,
 } from './actions';
+import { coveredActions, dragFrame, type SceneDef } from './evaluate';
 
 const ID = /^[A-Za-z_][\w-]*$/;
 
@@ -106,7 +107,15 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
     if (typeof id === 'string') alive.set(id, part.type);
   });
 
+  const def: SceneDef = {
+    stage: lesson.stage ?? { width: 800, height: 450 },
+    objects,
+    steps: lesson.steps.map((st) => st.do ?? []),
+    tries: lesson.steps.map((st) => st.try),
+  };
+
   lesson.steps.forEach((step, si) => {
+    if (step.try) checkTry(def, si, alive, out);
     (step.do ?? []).forEach((raw, ai) => {
       const path = ['steps', si, 'do', ai];
       const keys = Object.keys(raw ?? {});
@@ -239,4 +248,56 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
     });
   });
   return out;
+}
+
+/** 动手做（try）：拖动的零件要在这一步开头存在，要拖的个数要对得上 do 里的标准做法 */
+function checkTry(def: SceneDef, si: number, alive: Map<string, string>, out: ConfigIssue[]) {
+  const spec = def.tries?.[si];
+  const drag = spec?.drag;
+  const path = ['steps', si, 'try'];
+  if (!drag) {
+    out.push({ path, message: 'try 要写一种动手方式，如 drag（拖动）' });
+    return;
+  }
+  const p = [...path, 'drag'];
+  const fromType = alive.get(drag.from);
+  if (!fromType) {
+    out.push({ path: [...p, 'from'], message: `零件 ${drag.from} 在这一步开头不存在` });
+    return;
+  }
+  if (!isCounters(fromType))
+    out.push({ path: [...p, 'from'], message: 'from 要写一组计数块（只有计数块可以一个一个拖）' });
+  if (!alive.has(drag.to))
+    out.push({ path: [...p, 'to'], message: `零件 ${drag.to} 在这一步开头不存在` });
+  const count = drag.count;
+  if (typeof count !== 'number' || !Number.isInteger(count) || count < 1) {
+    out.push({ path: [...p, 'count'], message: 'count 写要拖几个（正整数，可以写 "{参数}"）' });
+    return;
+  }
+  const have = dragFrame(def, si, []).items.length;
+  if (count > have)
+    out.push({
+      path: [...p, 'count'],
+      message: `要拖 ${count} 个，但 ${drag.from} 在这一步开头只有 ${have} 个`,
+    });
+  // do 是标准做法：演示和做对后的画面都由它给出，所以要有对应的拆分/移动，个数也要一样
+  const list = def.steps[si] ?? [];
+  const covered = coveredActions(list, spec);
+  const moves = [...covered]
+    .map((i) => parseAction(list[i]))
+    .filter((a) => a && (a.verb === 'move' || a.verb === 'merge'));
+  if (!moves.length) {
+    out.push({
+      path,
+      message: `do 里要有把 ${drag.from} 移动（move）或合并（merge）到 ${drag.to} 的动作，演示和做对后的画面都用它`,
+    });
+    return;
+  }
+  const split = [...covered].map((i) => parseAction(list[i])).find((a) => a?.verb === 'split');
+  const standard = split ? Math.round(Number(split.args.take ?? 1)) : have;
+  if (standard !== count)
+    out.push({
+      path: [...p, 'count'],
+      message: `要孩子拖 ${count} 个，但 do 里的标准做法移过去的是 ${standard} 个`,
+    });
 }

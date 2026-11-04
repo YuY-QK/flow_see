@@ -332,6 +332,33 @@
           "minimum": 0,
           "description": "十格框之间的间距（相对格子大小）"
         },
+        "tryIt": {
+          "type": "object",
+          "properties": {
+            "dropPadding": {
+              "type": "number",
+              "minimum": 0,
+              "description": "放到目标零件外面这么远以内也算放进去（舞台坐标）"
+            },
+            "hitScale": {
+              "type": "number",
+              "minimum": 1,
+              "description": "能拖的零件，按下的范围是它本身的几倍"
+            },
+            "liftScale": {
+              "type": "number",
+              "minimum": 1,
+              "description": "拖起来时放大的倍数"
+            }
+          },
+          "required": [
+            "dropPadding",
+            "hitScale",
+            "liftScale"
+          ],
+          "additionalProperties": false,
+          "description": "动手做时舞台上的拖动"
+        },
         "parts": {
           "type": "object",
           "propertyNames": {
@@ -354,6 +381,7 @@
         "actionSeconds",
         "splitLift",
         "tenframeGap",
+        "tryIt",
         "parts"
       ],
       "additionalProperties": false
@@ -428,6 +456,41 @@
           "type": "number",
           "exclusiveMinimum": 0,
           "description": "时钟单帧最多推进多久，切到后台再回来时不会一下跳过去"
+        },
+        "handsOn": {
+          "type": "object",
+          "properties": {
+            "targetAfterMisses": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "description": "做错几次后，高亮该放到哪里"
+            },
+            "demoAfterMisses": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "description": "做错几次后，自动“看我做一遍”"
+            },
+            "demoPauseMs": {
+              "type": "number",
+              "minimum": 0,
+              "description": "演示放完后停多久，再让孩子自己做"
+            },
+            "selfDwellMs": {
+              "type": "number",
+              "minimum": 0,
+              "description": "自己做：不用动手的步骤停留多久（不朗读讲解）"
+            }
+          },
+          "required": [
+            "targetAfterMisses",
+            "demoAfterMisses",
+            "demoPauseMs",
+            "selfDwellMs"
+          ],
+          "additionalProperties": false,
+          "description": "动手做：跟着做 / 自己做"
         }
       },
       "required": [
@@ -436,7 +499,8 @@
         "largeCaptionMaxGrade",
         "dwell",
         "afterSpeech",
-        "maxFrameMs"
+        "maxFrameMs",
+        "handsOn"
       ],
       "additionalProperties": false
     },

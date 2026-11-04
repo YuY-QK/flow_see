@@ -22,7 +22,7 @@ import ui from '@flow-see/runtime/ui/ui.module.css';
 import { getTemplate } from '@flow-see/templates';
 import { useDevice } from '../learn/device';
 import { ExplorePanel } from '../learn/ExplorePanel';
-import { LessonPlayer } from '../learn/LessonPlayer';
+import { LessonPlayer, type HandsMode } from '../learn/LessonPlayer';
 import { lessonPath } from '../learn/paths';
 import { assetUrl, content, findSubject, gradeName, loadLesson, site } from '../site';
 import { useLearning, type LessonKey } from '../store/learning';
@@ -32,6 +32,18 @@ import { ExportDialog } from '../ui/ExportDialog';
 import { TopBar } from '../ui/TopBar';
 import { NotFound } from './NotFound';
 import s from '../learn/Lesson.module.css';
+
+/** 学习方式的名称、放完后的提示（写成字面量，约定检查才能核对 texts.yaml 的键） */
+const MODE_NAMES: Record<HandsMode, () => string> = {
+  watch: () => t('handsOn.mode_watch'),
+  guided: () => t('handsOn.mode_guided'),
+  self: () => t('handsOn.mode_self'),
+};
+const MODE_DONE: Record<HandsMode, () => string> = {
+  watch: () => t('handsOn.watch_done'),
+  guided: () => t('handsOn.guided_done'),
+  self: () => t('handsOn.self_done'),
+};
 import p from './Pages.module.css';
 
 /** P3 知识点学习页 /learn/:grade/:subject/:lessonId */
@@ -162,22 +174,43 @@ function LessonReady({
   const explore = useMemo(() => (lesson.explore ?? []) as ExploreControl[], [lesson]);
   const presets = lesson.presets ?? [];
   const resultIndex = (lesson.resultStep ?? lesson.steps.length) - 1;
+  // 有动手做（try）的知识点：看一看 → 跟着做 → 自己做；换例子只在“自己做”里出现
+  const hasTry = lesson.steps.some((st) => st.try);
 
   // 动手试一试：调过的参数只在这次打开里有效（不保存）。
-  // 每次调整、换例子、回到标准讲解，播放器都重新开始（n 变了就换 key）。
+  // 每次调整、换例子、回到标准讲解、换学习方式，播放器都重新开始（n 变了就换 key）。
   const [session, setSession] = useState<{
     trial: Scope | null;
     n: number;
     startIndex: number;
     autoPlay: boolean;
+    mode: HandsMode;
   }>(() => {
     // 打开时：首次学习从第 1 步开始并自动播放；有记录则停在上次那一步、暂停；
     // 已学完的从第 1 步开始（规格 P3、3.3）。只在打开时决定一次。
     const r = useLearning.getState().records[lesson.id];
     if (!r)
-      return { trial: null, n: 0, startIndex: 0, autoPlay: site.defaults.autoplayOnFirstOpen };
-    return { trial: null, n: 0, startIndex: r.completed ? 0 : r.lastStep, autoPlay: false };
+      return {
+        trial: null,
+        n: 0,
+        startIndex: 0,
+        autoPlay: site.defaults.autoplayOnFirstOpen,
+        mode: 'watch',
+      };
+    return {
+      trial: null,
+      n: 0,
+      startIndex: r.completed ? 0 : r.lastStep,
+      autoPlay: false,
+      mode: 'watch',
+    };
   });
+  // 刚放完的是哪种学习方式：放完后提示下一种
+  const [finished, setFinished] = useState<HandsMode | null>(null);
+  const switchMode = (mode: HandsMode) => {
+    setFinished(null);
+    setSession((st) => ({ ...st, mode, n: st.n + 1, startIndex: 0, autoPlay: true }));
+  };
   const animation = useMemo(
     () => lessonToAnimation(lesson, { themeId: defaultTheme, params: session.trial ?? undefined }),
     [lesson, defaultTheme, session.trial],
@@ -190,11 +223,18 @@ function LessonReady({
       { ...lesson.params, ...(session.trial ?? {}), ...patch },
       lesson.derived,
     );
-    // 手动调整暂停播放，并跳到结果步骤（默认最后一步）
-    setSession((st) => ({ trial: next, n: st.n + 1, startIndex: resultIndex, autoPlay: false }));
+    setFinished(null);
+    // 自己做：换了题从头做起；没有动手做的知识点：暂停播放，跳到结果步骤（默认最后一步）
+    setSession((st) =>
+      hasTry
+        ? { ...st, trial: next, n: st.n + 1, startIndex: 0, autoPlay: true }
+        : { ...st, trial: next, n: st.n + 1, startIndex: resultIndex, autoPlay: false },
+    );
   };
-  const resetTrial = () =>
-    setSession((st) => ({ trial: null, n: st.n + 1, startIndex: 0, autoPlay: false }));
+  const resetTrial = () => {
+    setFinished(null);
+    setSession((st) => ({ ...st, trial: null, n: st.n + 1, startIndex: 0, autoPlay: hasTry }));
+  };
   // 要点里的 {参数名} 跟着当前参数变
   const keyPoints = fillParams(lesson.keyPoints, values);
   const record = useLearning((st) => st.records[lesson.id]);
@@ -222,6 +262,23 @@ function LessonReady({
   };
 
   const markDone = useCallback(() => setCompleted(lessonKey, true), [setCompleted, lessonKey]);
+  const mode = hasTry ? session.mode : 'watch';
+  const onFinish = useCallback(() => {
+    markDone();
+    setFinished(mode);
+  }, [markDone, mode]);
+  // 换一题：从例子里随机挑一个和现在不一样的
+  const clampedPresets = presets.map((pr) => ({
+    label: pr.label,
+    params: clampParams(explore, { ...lesson.params, ...pr.params }, lesson.derived),
+  }));
+  const others = clampedPresets.filter((pr) =>
+    Object.entries(pr.params).some(([k, v]) => values[k] !== v),
+  );
+  const newProblem = () => {
+    const pick = others[Math.floor(Math.random() * others.length)];
+    if (pick) tryParams(pick.params);
+  };
 
   if (!template)
     return (
@@ -261,24 +318,64 @@ function LessonReady({
           </div>
         </div>
 
+        {hasTry ? (
+          <div className={s.modes} role="group" aria-label={t('handsOn.modes_aria')}>
+            {(['watch', 'guided', 'self'] as const).map((m) => (
+              <button
+                key={m}
+                className={s.mode}
+                data-on={mode === m}
+                aria-pressed={mode === m}
+                onClick={() => switchMode(m)}
+              >
+                {MODE_NAMES[m]()}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
         <LessonPlayer
           key={session.n}
+          mode={mode}
           animation={animation}
           template={template}
           startIndex={session.startIndex}
           autoPlay={session.autoPlay}
           largeCaption={lessonKey.grade <= site.player.largeCaptionMaxGrade}
           onVisit={(i) => visit(lessonKey, i)}
-          onFinish={markDone}
+          onFinish={onFinish}
         />
 
-        {explore.length || presets.length ? (
+        {hasTry && finished ? (
+          <div className={s.nextMode} role="status">
+            <span>{MODE_DONE[finished]()}</span>
+            {finished === 'watch' ? (
+              <button className={`${ui.btn} ${ui.primary}`} onClick={() => switchMode('guided')}>
+                {t('handsOn.go_guided')}
+              </button>
+            ) : finished === 'guided' ? (
+              <button className={`${ui.btn} ${ui.primary}`} onClick={() => switchMode('self')}>
+                {t('handsOn.go_self')}
+              </button>
+            ) : (
+              <>
+                {others.length ? (
+                  <button className={`${ui.btn} ${ui.primary}`} onClick={newProblem}>
+                    {t('handsOn.new_problem')}
+                  </button>
+                ) : null}
+                <button className={ui.btn} onClick={() => switchMode('self')}>
+                  {t('handsOn.again')}
+                </button>
+              </>
+            )}
+          </div>
+        ) : null}
+
+        {(explore.length || presets.length) && (!hasTry || mode === 'self') ? (
           <ExplorePanel
             controls={explore}
-            presets={presets.map((p) => ({
-              label: p.label,
-              params: clampParams(explore, { ...lesson.params, ...p.params }, lesson.derived),
-            }))}
+            presets={clampedPresets}
             values={resolveParams(values, lesson.derived)}
             changed={!!session.trial}
             onChange={tryParams}

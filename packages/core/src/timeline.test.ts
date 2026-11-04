@@ -110,6 +110,41 @@ describe('连续时间模型', () => {
   });
 });
 
+describe('动手做：要等孩子做完的步骤', () => {
+  const gates = [false, true, false];
+  it('进入要动手的步骤时停在开头，讲解读完也不往下走', () => {
+    let s = initTimeline(3, { autoPlay: true, gates });
+    s = r(s, { type: 'frame', delta: 1 });
+    s = r(s, { type: 'spoken', epoch: s.epoch });
+    expect(s).toMatchObject({ index: 1, waiting: true, running: false, progress: 0 });
+    s = r(s, { type: 'frame', delta: 1 });
+    s = r(s, { type: 'spoken', epoch: s.epoch });
+    expect(s).toMatchObject({ index: 1, waiting: true, progress: 0 });
+  });
+
+  it('做对后放这一步并接着自动播放；再回到这一步不用重做', () => {
+    let s = initTimeline(3, { index: 1, gates });
+    expect(s).toMatchObject({ waiting: true, progress: 0, playing: false });
+    s = r(s, { type: 'solve' });
+    expect(s).toMatchObject({ waiting: false, running: true, playing: true, progress: 0 });
+    s = r(s, { type: 'frame', delta: 1 });
+    s = r(s, { type: 'spoken', epoch: s.epoch });
+    expect(s.index).toBe(2);
+    s = r(s, { type: 'prev' });
+    expect(s).toMatchObject({ index: 1, waiting: false, running: true });
+  });
+
+  it('不在等待时 solve 不起作用；拖进度到要动手的步骤也停在开头', () => {
+    const s = initTimeline(3, { gates });
+    expect(r(s, { type: 'solve' })).toBe(s);
+    expect(r(s, { type: 'scrub', position: 1.6 })).toMatchObject({
+      index: 1,
+      waiting: true,
+      progress: 0,
+    });
+  });
+});
+
 describe('参数代入', () => {
   it('讲解里的 {参数名} 换成参数值，未知参数保持原样', () => {
     expect(fillText('平均分成 {parts} 份，{x}', { parts: 6 })).toBe('平均分成 6 份，{x}');

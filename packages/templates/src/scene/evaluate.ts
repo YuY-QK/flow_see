@@ -14,13 +14,16 @@ import {
   type Point,
   type Props,
 } from '@flow-see/blocks';
-import { planStep, type SceneAction, type StepPlan } from './actions';
+import type { StageTry, TrySpec } from '@flow-see/runtime/template.ts';
+import { parseAction, planStep, type SceneAction, type StepPlan } from './actions';
 
 export interface SceneDef {
   stage: { width: number; height: number };
   objects: Props[];
   /** 每一步的动作列表（配置里的 do） */
   steps: (readonly unknown[] | undefined)[];
+  /** 每一步的动手做（配置里的 try），没有的为 undefined */
+  tries?: (TrySpec | undefined)[];
 }
 
 export interface SceneObject {
@@ -216,6 +219,7 @@ function apply(world: World, a: SceneAction, p: number, current: boolean) {
 }
 
 const planCache = new WeakMap<SceneDef, StepPlan[]>();
+const solvedCache = new WeakMap<SceneDef, StepPlan[]>();
 
 export function plans(def: SceneDef): StepPlan[] {
   let p = planCache.get(def);
@@ -226,21 +230,71 @@ export function plans(def: SceneDef): StepPlan[] {
   return p;
 }
 
-/** 第 index 步动画段的时长（毫秒） */
-export function stepMotionMs(def: SceneDef, index: number): number {
-  return plans(def)[index]?.total ?? 0;
+/**
+ * 动手做的拖动对应 do 里的哪些动作：从 from 拆出来（split）、把 from（或拆出来的那组）
+ * 移动或合并到 to。孩子做对以后，这些动作已经由孩子做掉了。
+ */
+export function coveredActions(list: readonly unknown[] | undefined, spec?: TrySpec): Set<number> {
+  const out = new Set<number>();
+  const drag = spec?.drag;
+  if (!drag) return out;
+  const ids = new Set([drag.from]);
+  (list ?? []).forEach((raw, i) => {
+    const a = parseAction(raw);
+    if (!a || !ids.has(a.targets[0] ?? '')) return;
+    if (a.verb === 'split' && typeof a.args.as === 'string') {
+      ids.add(a.args.as);
+      out.add(i);
+    } else if (
+      (a.verb === 'move' && a.args.to === drag.to) ||
+      (a.verb === 'merge' && a.args.into === drag.to)
+    )
+      out.add(i);
+  });
+  return out;
 }
 
-/** 求第 index 步、步内进度 progress（0–1）时的画面 */
-export function sceneFrame(def: SceneDef, index: number, progress = 1): SceneFrame {
+/** 孩子做对以后的各步计划：被孩子做掉的动作时长为 0（直接到位），其余照常 */
+function solvedPlans(def: SceneDef): StepPlan[] {
+  let p = solvedCache.get(def);
+  if (!p) {
+    p = def.steps.map((list, i) => {
+      const covered = coveredActions(list, def.tries?.[i]);
+      if (!covered.size) return plans(def)[i];
+      return planStep(
+        (list ?? []).map((raw, j) => {
+          const a = covered.has(j) ? parseAction(raw) : undefined;
+          return a ? { [a.verb]: { ...a.args, duration: 0, delay: 0 } } : raw;
+        }),
+      );
+    });
+    solvedCache.set(def, p);
+  }
+  return p;
+}
+
+/** 第 index 步动画段的时长（毫秒）；孩子做对以后（solved）去掉被孩子做掉的动作 */
+export function stepMotionMs(def: SceneDef, index: number, phase?: StageTry['phase']): number {
+  if (phase === 'doing') return 0;
+  return (phase === 'solved' ? solvedPlans(def) : plans(def))[index]?.total ?? 0;
+}
+
+function buildWorld(
+  def: SceneDef,
+  index: number,
+  progress: number,
+  phase?: StageTry['phase'],
+): World {
   const world: World = new Map();
   for (const raw of def.objects) {
     const o = initialObject(raw);
     if (o) world.set(o.id, o);
   }
-  const all = plans(def);
+  const all = phase === 'solved' ? solvedPlans(def) : plans(def);
   const last = Math.min(index, all.length - 1);
-  for (let s = 0; s <= last; s++) {
+  // 等孩子动手时：画面停在这一步开头（前面各步做完，这一步的动作一个都还没做）
+  const end = phase === 'doing' ? last - 1 : last;
+  for (let s = 0; s <= end; s++) {
     const plan = all[s];
     const current = s === last;
     const t = current ? Math.max(0, Math.min(1, progress)) * plan.total : plan.total;
@@ -250,6 +304,63 @@ export function sceneFrame(def: SceneDef, index: number, progress = 1): SceneFra
       apply(world, a, Math.max(0, Math.min(1, p)), current);
     }
   }
+  return world;
+}
+
+/** 求第 index 步、步内进度 progress（0–1）时的画面；phase 见 StageTry */
+export function sceneFrame(
+  def: SceneDef,
+  index: number,
+  progress = 1,
+  phase?: StageTry['phase'],
+): SceneFrame {
   // Map 保持插入顺序：配置里靠后的、拆分出来的零件画在上面
-  return { objects: [...world.values()] };
+  return { objects: [...buildWorld(def, index, progress, phase).values()] };
+}
+
+/** 动手做（拖动）时的画面：能拖的计数块和目标零件 */
+export interface DragFrame extends SceneFrame {
+  /** 还能拖的计数块：原来的序号、位置、颜色 */
+  items: { index: number; at: Point; color: string }[];
+  /** 被拖那一组原来每一块的颜色（按原来的序号） */
+  colors: string[];
+  /** 被拖的那一组（已去掉拖走的）、目标零件 */
+  from?: SceneObject;
+  to?: SceneObject;
+}
+
+/**
+ * 拖动中的画面：这一步开头的画面，再把孩子已经拖对的计数块（moved，原来的序号）
+ * 从 from 挪到 to 的空位；正在拖的那一个（lifted）先从 from 里拿掉，由舞台画在手指下。
+ */
+export function dragFrame(
+  def: SceneDef,
+  index: number,
+  moved: readonly number[],
+  lifted?: number,
+): DragFrame {
+  const world = buildWorld(def, index, 0, 'doing');
+  const drag = def.tries?.[index]?.drag;
+  const src = drag ? world.get(drag.from) : undefined;
+  const dest = drag ? world.get(drag.to) : undefined;
+  if (!drag || !src || !isCounters(src.type))
+    return { objects: [...world.values()], items: [], colors: [] };
+  const at = counterItems(src.props);
+  const colors = counterColors(src.props);
+  const gone = new Set(moved);
+  const keep = at.map((_, i) => i).filter((i) => !gone.has(i));
+  const items = keep
+    .filter((i) => i !== lifted)
+    .map((i) => ({ index: i, at: at[i], color: colors[i] }));
+  // 已经拖对的放进目标的空位（目标也是计数块时）
+  if (dest && isCounters(dest.type) && moved.length) {
+    const base = Math.round(num(dest.props.count, 0));
+    dest.props.colors = [...counterColors(dest.props), ...moved.map((i) => colors[i])];
+    dest.props.count = base + moved.length;
+    delete dest.props.items;
+  }
+  src.props.items = items.map((it) => it.at);
+  src.props.colors = items.map((it) => it.color);
+  src.props.count = items.length;
+  return { objects: [...world.values()], items, colors, from: src, to: dest };
 }

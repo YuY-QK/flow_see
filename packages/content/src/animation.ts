@@ -17,7 +17,8 @@ export interface LessonAnimationOptions {
 
 /**
  * 讲解、零件、动作里的 {参数名} 都会代入参数值。
- * 每一步：desc = 讲解（朗读）；data.show = 模板约定的画面状态；data.do = 场景模板的动作。
+ * 每一步：desc = 讲解（朗读）；data.show = 模板约定的画面状态；data.do = 场景模板的动作；
+ * data.try = 动手做（跟着做 / 自己做时由孩子来做）。
  */
 export function lessonToAnimation(
   lesson: LessonContent,
@@ -37,7 +38,7 @@ export function lessonToAnimation(
       id: `${lesson.id}-${i + 1}`,
       title: st.title ?? '',
       desc: st.say,
-      data: { show: st.show, do: st.do ?? [] },
+      data: { show: st.show, do: st.do ?? [], ...(st.try ? { try: st.try } : {}) },
     })),
     params,
     config: { stage: lesson.stage, objects: filled.objects },

@@ -24,6 +24,13 @@ export interface TimelineState {
   epoch: number;
   /** 在播放状态下自然播完最后一步的次数（规格 3.2：用于“已学完”的判定） */
   finishes: number;
+  /**
+   * 动手做（跟着做 / 自己做）：哪些步骤要等孩子做完才放。
+   * 进入这样的步骤时停在开头（waiting），孩子做对后（solve）再放这一步并接着往下。
+   */
+  gates: boolean[];
+  /** 正在等孩子动手：动画不走，讲解读完也不进入下一步 */
+  waiting: boolean;
 }
 
 export type TimelineAction =
@@ -41,13 +48,17 @@ export type TimelineAction =
   | { type: 'spoken'; epoch: number }
   | { type: 'setTotal'; total: number }
   | { type: 'setSpeed'; speed: Speed }
-  | { type: 'cycleSpeed' };
+  | { type: 'cycleSpeed' }
+  /** 孩子做对了：放这一步（动画 + 讲解），之后接着自动播放 */
+  | { type: 'solve' };
 
 export interface TimelineInit {
   index?: number;
   speed?: Speed;
   /** 打开即播放 */
   autoPlay?: boolean;
+  /** 要等孩子动手的步骤（动手做模式） */
+  gates?: boolean[];
 }
 
 const clampIndex = (i: number, total: number) =>
@@ -56,27 +67,35 @@ const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 
 export function initTimeline(total: number, init: TimelineInit = {}): TimelineState {
   const playing = !!init.autoPlay && total > 0;
+  const index = clampIndex(init.index ?? 0, total);
+  const gates = init.gates ?? [];
+  const waiting = !!gates[index];
   return {
-    index: clampIndex(init.index ?? 0, total),
+    index,
     total,
-    // 自动播放从这一步的开头放起；否则直接显示这一步的完整画面
-    progress: playing ? 0 : 1,
+    // 自动播放从这一步的开头放起；否则直接显示这一步的完整画面（要动手的步骤停在开头）
+    progress: playing || waiting ? 0 : 1,
     playing,
-    running: playing,
+    running: playing && !waiting,
     spoken: false,
     speed: init.speed ?? 1,
     epoch: 0,
     finishes: 0,
+    gates,
+    waiting,
   };
 }
 
 /** 进入某一步：动画段从头开始走 */
 function enter(s: TimelineState, index: number, playing: boolean): TimelineState {
+  const i = clampIndex(index, s.total);
+  const waiting = !!s.gates[i];
   return {
     ...s,
-    index: clampIndex(index, s.total),
+    index: i,
     progress: 0,
-    running: true,
+    running: !waiting,
+    waiting,
     spoken: false,
     playing,
     epoch: s.epoch + 1,
@@ -85,7 +104,7 @@ function enter(s: TimelineState, index: number, playing: boolean): TimelineState
 
 /** 播放中且动画段、讲解都结束 → 下一步；最后一步结束 → 停止并记一次“播完” */
 function maybeAdvance(s: TimelineState): TimelineState {
-  if (!s.playing || !s.spoken || s.progress < 1) return s;
+  if (!s.playing || !s.spoken || s.progress < 1 || s.waiting) return s;
   if (s.index < s.total - 1) return enter(s, s.index + 1, true);
   return { ...s, playing: false, running: false, finishes: s.finishes + 1 };
 }
@@ -98,7 +117,13 @@ export function timelineReducer(s: TimelineState, a: TimelineAction): TimelineSt
       // 已在最后一步且已放完时从头播放
       if (s.index >= last && s.progress >= 1) return enter(s, 0, true);
       // 从暂停处继续：动画接着走，这一步的讲解重新读
-      return { ...s, playing: true, running: s.progress < 1, spoken: false, epoch: s.epoch + 1 };
+      return {
+        ...s,
+        playing: true,
+        running: !s.waiting && s.progress < 1,
+        spoken: false,
+        epoch: s.epoch + 1,
+      };
     case 'pause':
       return s.playing || s.running ? { ...s, playing: false, running: false } : s;
     case 'toggle':
@@ -114,10 +139,12 @@ export function timelineReducer(s: TimelineState, a: TimelineAction): TimelineSt
       if (s.total === 0) return s;
       const pos = Math.max(0, Math.min(s.total, a.position));
       const index = clampIndex(pos, s.total);
+      const waiting = !!s.gates[index];
       return {
         ...s,
         index,
-        progress: clamp01(pos - index),
+        waiting,
+        progress: waiting ? 0 : clamp01(pos - index),
         playing: false,
         running: false,
         spoken: false,
@@ -144,6 +171,21 @@ export function timelineReducer(s: TimelineState, a: TimelineAction): TimelineSt
     }
     case 'setSpeed':
       return { ...s, speed: a.speed };
+    case 'solve': {
+      if (!s.waiting) return s;
+      const gates = s.gates.slice();
+      gates[s.index] = false;
+      return {
+        ...s,
+        gates,
+        waiting: false,
+        progress: 0,
+        running: true,
+        playing: true,
+        spoken: false,
+        epoch: s.epoch + 1,
+      };
+    }
     case 'cycleSpeed': {
       const i = SPEEDS.indexOf(s.speed);
       return { ...s, speed: SPEEDS[(i + 1) % SPEEDS.length] };

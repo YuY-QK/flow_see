@@ -307,6 +307,27 @@ lessonPage:
 lessonPlayer:
   tuo_dong_jin_du: 拖动进度
   tui_chu_quan_ping: 退出全屏
+handsOn:
+  modes_aria: 学习方式
+  mode_watch: 看一看
+  mode_guided: 跟着做
+  mode_self: 自己做
+  your_turn: 轮到你了
+  praise: 做对了！
+  miss: 没放对，再试一次。
+  target: 看，放到亮起来的地方。
+  watch_me: 看我做一遍。
+  you_try: 现在你来试试。
+  show_me: 看我做一遍
+  drag_item_aria: 拖动这一个，放到目标上
+  moved: 已经放好 {n} 个，还要 {left} 个
+  watch_done: 看完了！轮到你跟着做一做。
+  guided_done: 跟着做完了！试试自己做。
+  self_done: 全部做对了！换一题再试试吧。
+  go_guided: 跟着做
+  go_self: 自己做
+  new_problem: 换一题
+  again: 再做一遍
 mePage:
   ge_ren_zhong_xin: 个人中心
   zi_liao: 资料

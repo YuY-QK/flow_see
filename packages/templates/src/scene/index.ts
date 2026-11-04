@@ -9,7 +9,7 @@ import { SceneStage } from './stage';
 
 export { VERBS, parseDuration, planStep } from './actions';
 export { checkScene } from './check';
-export { sceneFrame, stepMotionMs, type SceneDef } from './evaluate';
+export { coveredActions, dragFrame, sceneFrame, stepMotionMs, type SceneDef } from './evaluate';
 export { sceneOf } from './scene';
 export { makeSceneStage } from './stage';
 
@@ -55,8 +55,8 @@ export const sceneTemplate: Template = {
 
   Stage: SceneStage,
 
-  motionMs(animation, index) {
-    return stepMotionMs(sceneOf(animation), index);
+  motionMs(animation, index, phase) {
+    return stepMotionMs(sceneOf(animation), index, phase);
   },
 
   checkConfig: checkScene,

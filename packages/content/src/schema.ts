@@ -44,6 +44,14 @@ const sceneStyleSchema = z
       .describe('各动作没写 duration 时的默认时长（秒），键是动作名'),
     splitLift: z.number().describe('拆分出来的计数块默认往上抬多少（相对格子大小）'),
     tenframeGap: nonNeg.describe('十格框之间的间距（相对格子大小）'),
+    tryIt: z
+      .object({
+        dropPadding: nonNeg.describe('放到目标零件外面这么远以内也算放进去（舞台坐标）'),
+        hitScale: z.number().min(1).describe('能拖的零件，按下的范围是它本身的几倍'),
+        liftScale: z.number().min(1).describe('拖起来时放大的倍数'),
+      })
+      .strict()
+      .describe('动手做时舞台上的拖动'),
     parts: z
       .record(z.string(), z.record(z.string(), z.unknown()))
       .describe('各零件的默认属性，键是零件 type'),
@@ -77,6 +85,15 @@ const playerSchema = z
       .number()
       .positive()
       .describe('时钟单帧最多推进多久，切到后台再回来时不会一下跳过去'),
+    handsOn: z
+      .object({
+        targetAfterMisses: z.int().min(1).describe('做错几次后，高亮该放到哪里'),
+        demoAfterMisses: z.int().min(1).describe('做错几次后，自动“看我做一遍”'),
+        demoPauseMs: nonNeg.describe('演示放完后停多久，再让孩子自己做'),
+        selfDwellMs: nonNeg.describe('自己做：不用动手的步骤停留多久（不朗读讲解）'),
+      })
+      .strict()
+      .describe('动手做：跟着做 / 自己做'),
   })
   .strict();
 
@@ -429,6 +446,26 @@ const exploreSchema = z
   })
   .strict();
 
+/** 动手做：这一步由孩子来做（跟着做 / 自己做时），do 是标准做法（演示、做对后吸附到的结果） */
+const trySchema = z
+  .object({
+    task: text.describe('任务提示：轮到孩子时显示并朗读，如“把 1 个圆片拖进十格框。”'),
+    drag: z
+      .object({
+        from: z.string().describe('从哪一组计数块里拖（零件 id）'),
+        to: z.string().describe('拖到哪个零件上（零件 id）'),
+        count: paramRef.describe('要拖几个，可以写参数，如 "{gap}"'),
+      })
+      .strict()
+      .describe('拖动：把计数块一个一个拖到目标零件上'),
+    hints: z
+      .array(text)
+      .max(3)
+      .optional()
+      .describe('做错时依次给出的提示（每句不超过约 30 字）；不写用通用提示'),
+  })
+  .strict();
+
 const stepSchema = z
   .object({
     say: text.describe('这一步的讲解，会朗读；可以用 {参数名} 代入参数'),
@@ -438,6 +475,7 @@ const stepSchema = z
       .array(z.record(z.string(), z.unknown()))
       .optional()
       .describe('场景模板：这一步对零件做的动作'),
+    try: trySchema.optional().describe('动手做：跟着做 / 自己做时，这一步由孩子来做'),
   })
   .strict();
 

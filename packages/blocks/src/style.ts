@@ -14,6 +14,8 @@ export interface SceneStyle {
   splitLift: number;
   /** 十格框之间的间距（相对格子大小） */
   tenframeGap: number;
+  /** 动手做时的拖动：放下的容差、按下范围、拖起来放大的倍数 */
+  tryIt: { dropPadding: number; hitScale: number; liftScale: number };
   /** 各零件的默认属性：零件 type → 属性 */
   parts: Record<string, Record<string, unknown>>;
 }
