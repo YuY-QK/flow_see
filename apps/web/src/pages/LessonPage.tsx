@@ -115,16 +115,18 @@ function useLessonContent(id: string) {
 function LessonBody({ lessonId, lessonKey }: { lessonId: string; lessonKey: LessonKey }) {
   const { state, slow, retry } = useLessonContent(lessonId);
   const meta = findLesson(content, lessonId)?.lesson.meta;
-  const header = (
+  // 标题在左；有动手做时，学习方式在同一行的最右侧
+  const header = (right?: React.ReactNode) => (
     <div className={s.head}>
       <h1 className={p.h1}>{meta?.title ?? lessonId}</h1>
+      {right}
     </div>
   );
 
   if (state.kind !== 'ready')
     return (
       <main className={`${p.content} ${s.lessonMain}`}>
-        {header}
+        {header()}
         {state.kind === 'error' ? (
           <div className={s.problem}>
             <div>{t('lessonPage.nei_rong_mei_jia')}</div>
@@ -147,7 +149,7 @@ function LessonReady({
   lessonKey,
 }: {
   lesson: LessonContent;
-  header: React.ReactNode;
+  header: (right?: React.ReactNode) => React.ReactNode;
   lessonKey: LessonKey;
 }) {
   const device = useDevice();
@@ -265,7 +267,7 @@ function LessonReady({
   if (!template)
     return (
       <main className={`${p.content} ${s.lessonMain}`}>
-        {header}
+        {header()}
         <div className={s.problem}>
           <div>{t('lessonPage.zhe_ge_dong_hua')}</div>
           <button className={`${ui.btn} ${ui.primary}`} onClick={() => location.reload()}>
@@ -286,10 +288,8 @@ function LessonReady({
   return (
     <AssetUrlContext.Provider value={assetUrl}>
       <main className={`${p.content} ${s.lessonMain}`}>
-        {header}
-
-        {hasTry ? (
-          <div className={s.toolbar}>
+        {header(
+          hasTry ? (
             <div className={s.modes} role="group" aria-label={t('handsOn.modes_aria')}>
               {(['watch', 'guided', 'self'] as const).map((m) => (
                 <button
@@ -303,8 +303,8 @@ function LessonReady({
                 </button>
               ))}
             </div>
-          </div>
-        ) : null}
+          ) : null,
+        )}
 
         <LessonPlayer
           key={session.n}
