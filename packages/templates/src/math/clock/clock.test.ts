@@ -45,6 +45,20 @@ describe('clock 模板', () => {
     expect(frame(a, 5).caption.text).toBe('4 时');
   });
 
+  it('run:30 / run:15：这一步走指定的分钟数，之后的步骤接着算；走半小时只要一半的时间', () => {
+    const b = anim({ hour: 3, minute: 0, runMinutes: 60 }, [
+      'run',
+      'run:30',
+      'read',
+      'run:15',
+      'read',
+    ]);
+    expect(frame(b, 1).clock.time).toBe(270);
+    expect(frame(b, 2).caption.text).toBe('4 时 30 分');
+    expect(frame(b, 4).caption.text).toBe('4 时 45 分');
+    expect(clockTemplate.motionMs!(b, 1)).toBeLessThan(clockTemplate.motionMs!(b, 0));
+  });
+
   it('走 1 小时的时长来自 style.yaml（secondsPerHour），读时间这类没有连续变化的步骤很短', () => {
     expect(clockTemplate.motionMs!(a, 4)).toBeGreaterThan(clockTemplate.motionMs!(a, 3));
   });
@@ -59,13 +73,20 @@ describe('clock 模板', () => {
   it('配置检查：参数范围和 show 写错时报错', () => {
     const issues = checkClock({
       params: { hour: 13, minute: 60, runMinutes: 0 },
-      steps: [{ say: 'x', show: 'tick' }],
+      steps: [
+        { say: 'x', show: 'tick' },
+        { say: 'x', show: 'run:30' },
+        { say: 'x', show: 'run:0' },
+        { say: 'x', show: 'run:abc' },
+      ],
     });
     expect(issues.map((i) => i.path.join('.'))).toEqual([
       'params.hour',
       'params.minute',
       'params.runMinutes',
       'steps.0.show',
+      'steps.2.show',
+      'steps.3.show',
     ]);
   });
 

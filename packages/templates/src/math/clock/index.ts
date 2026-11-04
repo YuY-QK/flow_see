@@ -6,7 +6,7 @@ import type { Template } from '@flow-see/runtime/template.ts';
 import { stepMotionMs, type SceneDef } from '../../scene/evaluate';
 import { makeSceneStage } from '../../scene/stage';
 import { checkClock } from './check';
-import type { ClockShow } from './shows';
+import { runMinutesOf, type ClockShow } from './shows';
 
 export { CLOCK_SHOWS, type ClockShow } from './shows';
 
@@ -61,7 +61,10 @@ export function clockScene(animation: Animation): SceneDef {
   ];
   const emphasis = (e: string) => ({ set: { target: 'clock', emphasis: e, duration: 0 } });
   const steps = animation.steps.map((s) => {
-    switch (s.data.show as ClockShow | undefined) {
+    const show = s.data.show as string | undefined;
+    // run:30 = 这一步走 30 分钟；只写 run 时走参数里的 runMinutes
+    const runMinutes = runMinutesOf(show) ?? p.runMinutes;
+    switch (runMinutesOf(show) === undefined ? (show as ClockShow | undefined) : 'run') {
       case 'face':
         return [
           emphasis('none'),
@@ -83,8 +86,8 @@ export function clockScene(animation: Animation): SceneDef {
         ];
       case 'run': {
         const from = time;
-        time += p.runMinutes;
-        const seconds = (p.runMinutes / 60) * L.secondsPerHour;
+        time += runMinutes;
+        const seconds = (runMinutes / 60) * L.secondsPerHour;
         return [
           emphasis('none'),
           ...caption(t('clockTemplate.run', { from: readTime(from), to: readTime(time) })),

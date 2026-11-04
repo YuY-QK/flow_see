@@ -125,13 +125,20 @@ describe('认识钟表：clock 模板，只用配置', () => {
 
   it('已发布；每个整点都能讲：走 1 小时后读出下一个整点（12 时之后是 1 时）', () => {
     expect(lesson).toMatchObject({ template: 'clock', status: 'published' });
+    const tpl = getTemplate('clock')!;
     for (let hour = 1; hour <= 12; hour++) {
       const anim = lessonToAnimation(lesson, { params: { hour } });
       const next = (hour % 12) + 1;
       expect(anim.steps[5].desc).toContain(`时针指着 ${next}，现在是 ${next} 时`);
-      const tpl = getTemplate('clock')!;
       const frame = tpl.motionMs!(anim, 4);
       expect(frame).toBeGreaterThan(0);
+      // 半点、几时几分：再走半小时读“N 时半”，再走 15 分钟读“N 时 45 分”
+      const next2 = (next % 12) + 1;
+      expect(anim.steps[7].desc).toBe(
+        `分针指着 6，时针在 ${next} 和 ${next2} 中间，是 ${next} 时半。`,
+      );
+      expect(anim.steps[9].desc).toBe(`分针指着 9，是 45 分，现在是 ${next} 时 45 分。`);
+      expect(tpl.motionMs!(anim, 6)).toBeLessThan(tpl.motionMs!(anim, 4));
     }
   });
 });
