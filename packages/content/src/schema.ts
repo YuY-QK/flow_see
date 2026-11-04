@@ -80,6 +80,106 @@ const playerSchema = z
   })
   .strict();
 
+/* ───────────── style.yaml ───────────── */
+
+const colorValue = z
+  .string()
+  .regex(
+    /^(#[0-9a-fA-F]{6}|transparent|rgba?\([\d\s.,]+\))$/,
+    '颜色写成 #RRGGBB、transparent，或 rgba 写法',
+  );
+const textStyle = z
+  .object({ weight: z.int().min(100).max(900), size: z.number().positive() })
+  .strict();
+
+const themeSchema = z
+  .object({
+    name: text.describe('主题名称（设置页和创作的外观面板里显示）'),
+    stageBg: colorValue,
+    stageBorder: colorValue,
+    ink: colorValue,
+    dim: colorValue,
+    accent: colorValue,
+    line: colorValue,
+    labelBg: colorValue,
+    palette: z.array(colorValue).min(1).describe('元素依次使用的颜色'),
+    elementInk: colorValue,
+    radius: z.number().min(0),
+    font: text.describe('字体；inherit = 跟随界面'),
+  })
+  .strict();
+
+/** 动画主题 + 导出视频/GIF 的画面样式 */
+export const styleSchema = z
+  .object({
+    themes: z
+      .object(
+        Object.fromEntries(ANIM_THEMES.map((id) => [id, themeSchema])) as Record<
+          (typeof ANIM_THEMES)[number],
+          typeof themeSchema
+        >,
+      )
+      .strict()
+      .describe('动画主题：只影响动画画面，不影响界面本身'),
+    export: z
+      .object({
+        font: text,
+        baseWidth: z
+          .number()
+          .positive()
+          .describe('下面的尺寸都以这个宽度为基准，按实际输出宽度等比缩放'),
+        darkThemes: z
+          .array(z.enum(ANIM_THEMES))
+          .describe('深色的动画主题：字幕直接用主题自己的文字色'),
+        hold: z.object({ minMs: nonNeg, maxMs: nonNeg }).strict(),
+        video: z
+          .object({
+            width: z.int().positive(),
+            height: z.int().positive(),
+            fps: z.int().positive(),
+            codec: text,
+            bitrate: z.int().positive(),
+          })
+          .strict(),
+        gif: z
+          .object({
+            width: z.int().positive(),
+            height: z.int().positive(),
+            colors: z.int().min(2).max(256),
+            fadeFrames: z.int().min(0),
+          })
+          .strict(),
+        fadeMs: nonNeg.describe('两步之间的叠化时长'),
+        layout: z
+          .object({
+            pad: nonNeg,
+            titleH: nonNeg,
+            captionH: nonNeg,
+            captionRadius: nonNeg,
+            captionInset: nonNeg,
+          })
+          .strict(),
+        title: textStyle,
+        signature: textStyle,
+        counter: textStyle.extend({ top: nonNeg }),
+        step: textStyle.extend({ top: nonNeg }),
+        desc: textStyle.extend({ top: nonNeg, lineHeight: nonNeg, maxLines: z.int().positive() }),
+        caption: z
+          .object({
+            bg: colorValue,
+            border: colorValue,
+            darkBg: colorValue,
+            darkBorder: colorValue,
+            counter: colorValue,
+            step: colorValue,
+            desc: colorValue,
+          })
+          .strict(),
+      })
+      .strict(),
+  })
+  .strict();
+
 export const siteSchema = z
   .object({
     site: z
@@ -153,6 +253,10 @@ export const siteSchema = z
       })
       .strict()
       .prefault({}),
+    style: z
+      .string()
+      .default('style.yaml')
+      .describe('动画主题和导出画面的样式文件，相对 packages/content'),
     texts: z
       .string()
       .default('texts.yaml')
@@ -342,6 +446,7 @@ export const SCHEMAS = {
   site: siteSchema,
   help: helpSchema,
   texts: textsSchema,
+  style: styleSchema,
   grades: gradesSchema,
   curriculum: curriculumSchema,
   lesson: lessonSchema,
@@ -353,6 +458,7 @@ export type SiteConfig = z.output<typeof siteSchema>;
 export type SceneStyleConfig = SiteConfig['scene'];
 export type HelpConfig = z.output<typeof helpSchema>;
 export type TextsConfig = z.output<typeof textsSchema>;
+export type StyleConfigData = z.output<typeof styleSchema>;
 export type GradesConfig = z.output<typeof gradesSchema>;
 export type CurriculumConfig = z.output<typeof curriculumSchema>;
 export type LessonConfig = z.output<typeof lessonSchema>;

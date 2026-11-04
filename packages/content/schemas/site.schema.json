@@ -239,6 +239,11 @@
       },
       "additionalProperties": false
     },
+    "style": {
+      "default": "style.yaml",
+      "description": "动画主题和导出画面的样式文件，相对 packages/content",
+      "type": "string"
+    },
     "texts": {
       "default": "texts.yaml",
       "description": "界面文案文件，相对 packages/content；代码里用 t(\"分组.键\") 读取",

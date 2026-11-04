@@ -3,9 +3,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from 'yaml';
 import { configureScene } from './packages/blocks/src/index';
+import { configureStyle } from './packages/core/src/style';
 import { configureTexts } from './packages/core/src/texts';
 import { CONTENT_ROOT } from './packages/content/src/json-schema';
-import { siteSchema, textsSchema } from './packages/content/src/schema';
+import { siteSchema, styleSchema, textsSchema } from './packages/content/src/schema';
 
 const site = siteSchema.parse(parse(readFileSync(join(CONTENT_ROOT, 'site.yaml'), 'utf8')));
 configureScene(site.scene);
@@ -14,3 +15,6 @@ configureScene(site.scene);
 configureTexts(textsSchema.parse(parse(readFileSync(join(CONTENT_ROOT, site.texts), 'utf8'))), {
   strict: true,
 });
+
+// 动画主题和导出样式来自 style.yaml
+configureStyle(styleSchema.parse(parse(readFileSync(join(CONTENT_ROOT, site.style), 'utf8'))));

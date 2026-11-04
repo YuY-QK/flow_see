@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { SPEEDS, THEME_LIST, type Speed, t } from '@flow-see/core';
+import { SPEEDS, themeList, type Speed, t } from '@flow-see/core';
 import { importBackup, makeBackup } from '@flow-see/runtime/services/backup.ts';
 import { saveFile } from '@flow-see/runtime/services/save.ts';
 import {
@@ -111,14 +111,14 @@ export function SettingsPage() {
                   <span>{t('settingsPage.xin_jian_dong_hua')}</span>
                 </div>
                 <div className={s.rowControls}>
-                  {THEME_LIST.map((t) => (
+                  {themeList().map((theme) => (
                     <button
-                      key={t.id}
+                      key={theme.id}
                       className={s.themeChip}
-                      aria-pressed={settings.defaultTheme === t.id}
-                      onClick={() => settings.set({ defaultTheme: t.id })}
+                      aria-pressed={settings.defaultTheme === theme.id}
+                      onClick={() => settings.set({ defaultTheme: theme.id })}
                     >
-                      {t.name}
+                      {theme.name}
                     </button>
                   ))}
                 </div>

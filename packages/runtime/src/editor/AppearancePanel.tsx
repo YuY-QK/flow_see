@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { THEME_LIST, updateAnimation, type Animation, t } from '@flow-see/core';
+import { themeList, updateAnimation, type Animation, t } from '@flow-see/core';
 import { useEditor } from '../store/editor';
 import ui from '../ui/ui.module.css';
 import s from './Editor.module.css';
@@ -30,19 +30,23 @@ export function AppearancePanel({ animation, onClose }: { animation: Animation; 
       <div className={s.popTitle}>{t('common.wai_guan')}</div>
       <div className={s.popLabel}>{t('appearancePanel.dong_hua_zhu_ti')}</div>
       <div className={s.themeGrid}>
-        {THEME_LIST.map((t) => (
+        {themeList().map((theme) => (
           <button
-            key={t.id}
+            key={theme.id}
             className={s.themeBtn}
-            aria-pressed={animation.themeId === t.id}
-            onClick={() => apply((a) => updateAnimation(a, { themeId: t.id }))}
+            aria-pressed={animation.themeId === theme.id}
+            onClick={() => apply((a) => updateAnimation(a, { themeId: theme.id }))}
           >
-            <span className={s.swatch} style={{ background: t.stageBg }}>
-              <span style={{ background: t.palette[0], borderRadius: Math.min(t.radius, 7) }} />
-              <i style={{ background: t.dim }} />
-              <span style={{ background: t.palette[1], borderRadius: Math.min(t.radius, 7) }} />
+            <span className={s.swatch} style={{ background: theme.stageBg }}>
+              <span
+                style={{ background: theme.palette[0], borderRadius: Math.min(theme.radius, 7) }}
+              />
+              <i style={{ background: theme.dim }} />
+              <span
+                style={{ background: theme.palette[1], borderRadius: Math.min(theme.radius, 7) }}
+              />
             </span>
-            {t.name}
+            {theme.name}
           </button>
         ))}
       </div>
