@@ -3,12 +3,11 @@
   width: 100%;
   max-width: 1000px;
   margin: 0 auto;
-}
-/* 学习方式：和标题、动画区域同宽，左对齐 */
-.toolbar {
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  flex-wrap: wrap;
 }
 /* 知识点页的间距比其他页面紧凑 */
 .lessonMain {

@@ -1,5 +1,6 @@
-// 舞台角上的工具扇形菜单：点主按钮，以它为圆心向外展开几个图标按钮；再点收起；按住可以拖到别处。
-// 展开的方向跟着位置走：在舞台右半边就向左展开，在下半边就向上展开，不会超出舞台。
+// 舞台角上的工具扇形菜单：点主按钮，以它为圆心向外展开几个图标按钮；再点收起。
+// 按住可以拖动，松手后吸附到最近的左边或右边（像苹果手机的辅助触控圆点），高度可以自己选。
+// 展开的方向跟着位置走：靠右就向左展开，在下半边就向上展开，不会超出舞台。
 import { useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react';
 import { t } from '@flow-see/core';
 import { Icon, type IconName } from '@flow-see/runtime/ui/Icon.tsx';
@@ -21,16 +22,19 @@ const EDGE = 26;
 
 export function ToolFan({ items }: { items: ToolItem[] }) {
   const [open, setOpen] = useState(false);
-  // 拖动后的位置（占舞台宽、高的比例）；null = 默认在右下角
-  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  // 停靠的位置：靠哪一边、高度（占舞台高度的比例，null = 默认在底部）
+  const [side, setSide] = useState<'left' | 'right'>('right');
+  const [rest, setRest] = useState<number | null>(null);
+  // 拖动过程中跟着手指的位置（占舞台宽、高的比例）；不拖动时为 null
+  const [live, setLive] = useState<{ x: number; y: number } | null>(null);
   const [dragging, setDragging] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const press = useRef<{ id: number; x: number; y: number; cx: number; cy: number } | null>(null);
   const moved = useRef(false);
 
   // 展开方向：向舞台里面展开
-  const sx = pos && pos.x < 0.5 ? 1 : -1;
-  const sy = pos && pos.y < 0.5 ? 1 : -1;
+  const sx = side === 'left' ? 1 : -1;
+  const sy = rest !== null && rest < 0.5 ? 1 : -1;
 
   const onDown = (e: PointerEvent<HTMLButtonElement>) => {
     const box = root.current?.parentElement?.getBoundingClientRect();
@@ -60,22 +64,38 @@ export function ToolFan({ items }: { items: ToolItem[] }) {
     }
     const x = Math.max(EDGE, Math.min(box.width - EDGE, p.cx + dx));
     const y = Math.max(EDGE, Math.min(box.height - EDGE, p.cy + dy));
-    setPos({ x: x / box.width, y: y / box.height });
+    setLive({ x: x / box.width, y: y / box.height });
   };
   const onUp = (e: PointerEvent<HTMLButtonElement>) => {
     if (press.current?.id !== e.pointerId) return;
     press.current = null;
     setDragging(false);
-    if (!moved.current) setOpen((v) => !v);
+    if (!moved.current) {
+      setOpen((v) => !v);
+      return;
+    }
+    // 松手：吸附到最近的一边，高度保持在松手的位置
+    setLive((l) => {
+      if (l) {
+        setSide(l.x < 0.5 ? 'left' : 'right');
+        setRest(l.y);
+      }
+      return null;
+    });
   };
   const onKey = (e: KeyboardEvent) => {
     if (e.key === 'Escape') setOpen(false);
   };
 
   const n = items.length;
-  const style: CSSProperties = pos
-    ? { left: `${pos.x * 100}%`, top: `${pos.y * 100}%` }
-    : { right: 'var(--fan-edge)', bottom: 'var(--fan-edge)' };
+  // 中心的位置：拖动时跟着手指，否则停靠在边上（默认右下角）
+  const half = 'calc(var(--fan-edge) + var(--main) / 2)';
+  const style: CSSProperties = live
+    ? { left: `${live.x * 100}%`, top: `${live.y * 100}%` }
+    : {
+        left: side === 'left' ? half : `calc(100% - ${half})`,
+        top: rest === null ? `calc(100% - ${half})` : `${rest * 100}%`,
+      };
 
   return (
     <div
@@ -83,7 +103,6 @@ export function ToolFan({ items }: { items: ToolItem[] }) {
       className={s.fan}
       data-open={open}
       data-dragging={dragging}
-      data-free={!!pos}
       style={style}
       onKeyDown={onKey}
     >
@@ -130,7 +149,7 @@ export function ToolFan({ items }: { items: ToolItem[] }) {
           }
         }}
       >
-        <Icon name={open ? 'close' : 'more'} size={22} />
+        <Icon name={open ? 'close' : 'menu'} size={22} />
       </button>
     </div>
   );

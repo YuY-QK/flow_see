@@ -8,9 +8,15 @@
   width: var(--main);
   height: var(--main);
 }
-/* 拖动过的位置：left/top 是主按钮的中心 */
-.fan[data-free='true'] {
+/* left/top 是主按钮的中心；松手后吸附到边上时滑过去 */
+.fan {
   transform: translate(-50%, -50%);
+  transition:
+    left 0.2s ease,
+    top 0.2s ease;
+}
+.fan[data-dragging='true'] {
+  transition: none;
 }
 .main,
 .item {
@@ -63,7 +69,8 @@
   transform: translate(var(--x), var(--y)) scale(1);
 }
 @media (prefers-reduced-motion: reduce) {
-  .item {
+  .item,
+  .fan {
     transition: none;
   }
 }
