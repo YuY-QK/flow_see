@@ -5,6 +5,7 @@ import { messageTemplate } from './generic/message';
 import { sceneTemplate } from './scene';
 import type { Template, TemplateCard } from '@flow-see/runtime/template.ts';
 
+import { t } from '@flow-see/core';
 const TEMPLATES: Template[] = [
   flowTemplate,
   messageTemplate,
@@ -24,30 +25,30 @@ export function getTemplate(id: string): Template | undefined {
 export const TEMPLATE_CARDS: TemplateCard[] = [
   {
     id: 'flow',
-    name: '流程图流转',
-    tagline: '一步接一步、可以有分支',
-    scenes: '工作流程、做饭步骤、审批',
+    name: t('common.liu_cheng_tu_liu'),
+    tagline: t('common.yi_bu_jie_yi'),
+    scenes: t('registry.gong_zuo_liu_cheng'),
     available: false,
   },
   {
     id: 'message',
-    name: '消息传递',
-    tagline: '几个角色之间来回传话',
-    scenes: '网络协议、对话、快递流转',
+    name: t('common.xiao_xi_chuan_di'),
+    tagline: t('common.ji_ge_jue_se'),
+    scenes: t('registry.wang_luo_xie_yi'),
     available: true,
   },
   {
     id: 'data',
-    name: '数据变化',
-    tagline: '一排数字或格子在变',
-    scenes: '排序、查找等算法',
+    name: t('common.shu_ju_bian_hua'),
+    tagline: t('registry.yi_pai_shu_zi'),
+    scenes: t('registry.pai_xu_cha_zhao'),
     available: false,
   },
   {
     id: 'cycle',
-    name: '循环 / 时间线',
-    tagline: '按时间或绕圈推进',
-    scenes: '水循环、生命周期、历史事件',
+    name: t('common.xun_huan_shi_jian'),
+    tagline: t('common.an_shi_jian_huo'),
+    scenes: t('registry.shui_xun_huan_sheng'),
     available: false,
   },
 ].map((c) => ({ ...c, available: byId.has(c.id) }));

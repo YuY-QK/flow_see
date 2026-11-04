@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "pnpm --filter @flow-see/web dev",
-    "build": "pnpm content:check && tsc -b && pnpm --filter @flow-see/web build",
+    "build": "pnpm content:check && pnpm check:conventions && tsc -b && pnpm --filter @flow-see/web build",
     "preview": "pnpm --filter @flow-see/web preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -24,7 +24,8 @@
     "cf:deploy": "pnpm build && wrangler pages deploy",
     "build:app": "tsc -b && pnpm --filter @flow-see/web build:app && cap sync",
     "cap:android": "cap open android",
-    "cap:ios": "cap open ios"
+    "cap:ios": "cap open ios",
+    "check:conventions": "tsx scripts/conventions/cli.ts"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",

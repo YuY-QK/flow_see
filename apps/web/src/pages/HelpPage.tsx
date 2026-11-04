@@ -5,10 +5,12 @@ import { TopBar } from '../ui/TopBar';
 import s from '../learn/Learn.module.css';
 import p from './Pages.module.css';
 
+import { t } from '@flow-see/core';
 function deviceInfo(): string {
-  return [`网站：${site.site.name} ${__APP_VERSION__}`, `浏览器：${navigator.userAgent}`].join(
-    '\n',
-  );
+  return [
+    t('helpPage.device_site', { name: site.site.name, version: __APP_VERSION__ }),
+    t('helpPage.device_browser', { ua: navigator.userAgent }),
+  ].join('\n');
 }
 
 async function copy(text: string): Promise<boolean> {
@@ -38,10 +40,10 @@ export function HelpPage() {
 
   return (
     <div className={p.page}>
-      <TopBar title="帮助与反馈" />
+      <TopBar title={t('common.bang_zhu_yu_fan')} />
       <main className={p.content}>
         <section className={p.section}>
-          <h2 className={p.h2}>常见问题</h2>
+          <h2 className={p.h2}>{t('helpPage.chang_jian_wen_ti')}</h2>
           <div className={s.faq}>
             {content.help.faq.map((f) => (
               <details key={f.q}>
@@ -54,32 +56,43 @@ export function HelpPage() {
 
         {email || wechat ? (
           <section className={p.section}>
-            <h2 className={p.h2}>反馈</h2>
+            <h2 className={p.h2}>{t('helpPage.fan_kui')}</h2>
             <div className={s.contact}>
               {email ? (
                 <div>
-                  邮箱：<b>{email}</b>{' '}
-                  <button className={ui.btn} onClick={() => onCopy('邮箱', email)}>
-                    复制
+                  {t('helpPage.you_xiang')}
+                  <b>{email}</b>{' '}
+                  <button
+                    className={ui.btn}
+                    onClick={() => onCopy(t('helpPage.you_xiang_2'), email)}
+                  >
+                    {t('helpPage.fu_zhi')}
                   </button>
                 </div>
               ) : null}
               {wechat ? (
                 <div>
-                  微信：<b>{wechat}</b>{' '}
-                  <button className={ui.btn} onClick={() => onCopy('微信', wechat)}>
-                    复制
+                  {t('helpPage.wei_xin')}
+                  <b>{wechat}</b>{' '}
+                  <button
+                    className={ui.btn}
+                    onClick={() => onCopy(t('helpPage.wei_xin_2'), wechat)}
+                  >
+                    {t('helpPage.fu_zhi')}
                   </button>
                 </div>
               ) : null}
               <div>
-                <button className={ui.btn} onClick={() => onCopy('设备信息', deviceInfo())}>
-                  复制设备信息
+                <button
+                  className={ui.btn}
+                  onClick={() => onCopy(t('helpPage.she_bei_xin_xi'), deviceInfo())}
+                >
+                  {t('helpPage.fu_zhi_she_bei')}
                 </button>
               </div>
               {copied ? (
                 <p className={p.note} role="status">
-                  已复制{copied}
+                  {t('helpPage.copied', { what: copied })}
                 </p>
               ) : null}
               {manual ? (
@@ -96,7 +109,7 @@ export function HelpPage() {
         ) : null}
 
         <p className={p.note}>
-          {site.site.name} · 版本 {__APP_VERSION__}
+          {t('helpPage.version', { name: site.site.name, version: __APP_VERSION__ })}
         </p>
       </main>
     </div>

@@ -7,6 +7,7 @@ import { Dialog } from './Dialog';
 import ui from '@flow-see/runtime/ui/ui.module.css';
 import s from './Panels.module.css';
 
+import { t } from '@flow-see/core';
 type Props =
   | {
       /** 自己的作品：上传到服务器生成短链接 */
@@ -55,7 +56,7 @@ export function ShareDialog(props: Props) {
       : navigator.share({ title, url: u }).catch(() => {});
 
   return (
-    <Dialog title="分享" onClose={props.onClose}>
+    <Dialog title={t('common.fen_xiang')} onClose={props.onClose}>
       {error ? (
         <div className={s.error} role="alert">
           <p>{error}</p>
@@ -66,22 +67,22 @@ export function ShareDialog(props: Props) {
               setAttempt((n) => n + 1);
             }}
           >
-            重试
+            {t('common.chong_shi')}
           </button>
         </div>
       ) : !url ? (
         <p className={s.muted} aria-live="polite">
-          正在生成分享链接…
+          {t('shareDialog.zheng_zai_sheng_cheng')}
         </p>
       ) : (
         <>
           <p className={s.muted}>
             {props.mode === 'publish'
-              ? '拿到链接的人打开就能观看和操作。之后修改作品，再点一次分享就会更新这个链接的内容。'
-              : '拿到链接的人打开就能观看。'}
+              ? t('shareDialog.na_dao_lian_jie')
+              : t('shareDialog.na_dao_lian_jie_2')}
           </p>
           <label className="sr-only" htmlFor="share-url">
-            分享链接
+            {t('common.fen_xiang_lian_jie')}
           </label>
           <input
             id="share-url"
@@ -90,20 +91,18 @@ export function ShareDialog(props: Props) {
             readOnly
             onFocus={(e) => e.target.select()}
           />
-          {copied === false ? (
-            <p className={s.muted}>浏览器不允许自动复制，请长按或选中上面的链接手动复制。</p>
-          ) : null}
+          {copied === false ? <p className={s.muted}>{t('shareDialog.liu_lan_qi_bu')}</p> : null}
           <div className={s.actions}>
             {canNativeShare ? (
               <button className={ui.btn} onClick={() => nativeShare(url)}>
-                用其他应用分享
+                {t('shareDialog.yong_qi_ta_ying')}
               </button>
             ) : null}
             <button
               className={`${ui.btn} ${ui.primary}`}
               onClick={async () => setCopied(await copyText(url))}
             >
-              {copied ? '已复制' : '复制链接'}
+              {copied ? t('shareDialog.yi_fu_zhi') : t('common.fu_zhi_lian_jie')}
             </button>
           </div>
         </>

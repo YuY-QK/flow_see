@@ -2,7 +2,7 @@
 import { runtimeConfig } from '../../config';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { getTheme, stepDurationMs, type Animation } from '@flow-see/core';
+import { getTheme, stepDurationMs, type Animation, t } from '@flow-see/core';
 import type { Template } from '../../template';
 
 const UI_FONT = '"PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif';
@@ -110,7 +110,7 @@ export async function planFrames(
     ctx.fillStyle = theme.ink;
     ctx.font = `700 ${24 * u}px ${UI_FONT}`;
     ctx.textBaseline = 'middle';
-    ctx.fillText(animation.title || '未命名动画', pad, pad + titleH / 2);
+    ctx.fillText(animation.title || t('common.wei_ming_ming_dong'), pad, pad + titleH / 2);
 
     // 舞台
     const img = await stageImage(
@@ -138,7 +138,7 @@ export async function planFrames(
     ctx.textBaseline = 'top';
     ctx.fillStyle = sub;
     ctx.font = `400 ${17 * u}px ${UI_FONT}`;
-    ctx.fillText(`第 ${i + 1} 步 / 共 ${total} 步`, tx, cy + 20 * u);
+    ctx.fillText(t('common.step_counter', { n: i + 1, total }), tx, cy + 20 * u);
     ctx.fillStyle = ink;
     ctx.font = `700 ${28 * u}px ${UI_FONT}`;
     ctx.fillText(wrapText(ctx, step.title || '', textW, 1)[0] ?? '', tx, cy + 48 * u);

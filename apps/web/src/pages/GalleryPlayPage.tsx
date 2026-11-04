@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { findOfficial } from '@flow-see/content/examples/official.ts';
-import { duplicateAnimation } from '@flow-see/core';
+import { duplicateAnimation, t } from '@flow-see/core';
 import { Player } from '@flow-see/runtime/player/Player.tsx';
 import { repository } from '@flow-see/runtime/services/storage.ts';
 import { getTemplate } from '@flow-see/templates';
@@ -20,10 +20,10 @@ export function GalleryPlayPage() {
   const item = findOfficial(id);
   const [dialog, setDialog] = useState<'share' | 'export' | null>(null);
 
-  if (!item) return <NotFound text="找不到这个动画。" />;
+  if (!item) return <NotFound text={t('galleryPlayPage.zhao_bu_dao_zhe')} />;
   const animation = item.animation;
   const template = getTemplate(animation.templateId);
-  if (!template) return <NotFound text="这个动画使用的模板暂不支持。" />;
+  if (!template) return <NotFound text={t('galleryPlayPage.zhe_ge_dong_hua')} />;
 
   const copyAndEdit = async () => {
     // 复制成自己的草稿：沿用原作的标题和主题，不再署官方的名字
@@ -34,12 +34,12 @@ export function GalleryPlayPage() {
 
   return (
     <div className={`${s.page} ${s.playPage}`}>
-      <TopBar title="创作" />
+      <TopBar title={t('common.chuang_zuo')} />
       <main className={s.playMain}>
         <div className={s.playHead}>
           <div className={s.playTitleBox}>
             <div className={s.crumb}>
-              <Link to="/gallery">动画广场</Link> ›{' '}
+              <Link to="/gallery">{t('common.dong_hua_guang_chang')}</Link> ›{' '}
               <Link to={`/gallery?cat=${encodeURIComponent(item.category)}`}>{item.category}</Link>
             </div>
             <h1 className={s.playTitle}>
@@ -54,20 +54,20 @@ export function GalleryPlayPage() {
                 {template.name}
               </span>
               <span className={ui.badge} style={{ background: 'var(--hover)' }}>
-                {item.featured ? '精选 · ' : ''}
+                {item.featured ? t('galleryPlayPage.jing_xuan') : ''}
                 {item.source}
               </span>
             </h1>
           </div>
           <div className={s.playActions}>
             <button className={ui.btn} onClick={() => setDialog('share')}>
-              <Icon name="share" size={18} /> 分享
+              <Icon name="share" size={18} /> {t('common.fen_xiang')}
             </button>
             <button className={ui.btn} onClick={() => setDialog('export')}>
-              <Icon name="download" size={18} /> 导出
+              <Icon name="download" size={18} /> {t('common.dao_chu')}
             </button>
             <button className={`${ui.btn} ${ui.primary}`} onClick={copyAndEdit}>
-              复制并修改
+              {t('galleryPlayPage.fu_zhi_bing_xiu')}
             </button>
           </div>
         </div>

@@ -1,6 +1,6 @@
 // 目录索引：首页、学科页、搜索只需要它；知识点的完整内容按需加载。
 // 这里只放纯数据和纯函数，浏览器和 Node 都能用。
-import type { GradesConfig, HelpConfig, LessonStatus, SiteConfig } from './schema';
+import type { GradesConfig, HelpConfig, LessonStatus, SiteConfig, TextsConfig } from './schema';
 
 export interface LessonMeta {
   id: string;
@@ -39,6 +39,8 @@ export interface CatalogEntry {
 export interface ContentIndex {
   site: SiteConfig;
   help: HelpConfig;
+  /** 界面文案（texts.yaml） */
+  texts: TextsConfig;
   grades: GradesConfig['grades'];
   subjects: GradesConfig['subjects'];
   catalog: CatalogEntry[];
@@ -49,6 +51,7 @@ export interface ContentIndex {
 export interface IndexSource {
   site: SiteConfig;
   help: HelpConfig;
+  texts: TextsConfig;
   grades: GradesConfig;
   curricula: {
     data: {
@@ -115,6 +118,7 @@ export function buildIndex(src: IndexSource, dev: boolean): ContentIndex {
   return {
     site: src.site,
     help: src.help,
+    texts: src.texts,
     grades: src.grades.grades,
     subjects: src.grades.subjects,
     catalog,

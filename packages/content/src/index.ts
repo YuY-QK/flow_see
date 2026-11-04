@@ -8,6 +8,7 @@ export type {
   LessonConfig,
   LessonStatus,
   SiteConfig,
+  TextsConfig,
 } from './schema';
 import type { LessonConfig } from './schema';
 

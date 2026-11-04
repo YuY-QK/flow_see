@@ -9,6 +9,7 @@ import { NotFound } from './NotFound';
 import s from '../learn/Learn.module.css';
 import p from './Pages.module.css';
 
+import { t } from '@flow-see/core';
 /** P2 年级·学科页 /learn/:grade/:subject */
 export function SubjectPage() {
   const params = useParams();
@@ -28,7 +29,7 @@ export function SubjectPage() {
     <div className={p.page}>
       <TopBar
         crumbs={[
-          { label: '学习', to: '/' },
+          { label: t('common.xue_xi'), to: '/' },
           { label: gName, to: '/', onClick: () => setGrade(grade) },
           { label: subj.name },
         ]}
@@ -52,7 +53,11 @@ export function SubjectPage() {
             </h1>
             {entry ? (
               <p className={p.sub}>
-                {entry.units.length} 个单元 · {lessons.length} 个知识点 · 已学完 {done} 个
+                {t('subjectPage.summary', {
+                  units: entry.units.length,
+                  lessons: lessons.length,
+                  done,
+                })}
               </p>
             ) : null}
           </div>
@@ -63,13 +68,15 @@ export function SubjectPage() {
             <section key={unit.id} className={p.section}>
               <div className={p.sectionHead}>
                 <h2 className={p.h2}>
-                  <span className={s.unitNo}>第 {i + 1} 单元</span>
+                  <span className={s.unitNo}>{t('subjectPage.unit_no', { n: i + 1 })}</span>
                   {unit.title}
                 </h2>
                 <span className={p.note}>
-                  已学完{' '}
-                  {unit.lessons.filter((l) => l.available && records[l.id]?.completed).length} /{' '}
-                  {unit.lessons.length}
+                  {t('subjectPage.unit_done', {
+                    done: unit.lessons.filter((l) => l.available && records[l.id]?.completed)
+                      .length,
+                    total: unit.lessons.length,
+                  })}
                 </span>
               </div>
               <div className={s.lessonGrid}>
@@ -89,9 +96,9 @@ export function SubjectPage() {
           <div className={p.empty}>
             <p>
               {gName}
-              {subj.name}的动画正在制作中，敬请期待。
+              {t('common.coming_soon', { name: subj.name })}
             </p>
-            <Link to="/">回到首页</Link>
+            <Link to="/">{t('common.hui_dao_shou_ye')}</Link>
           </div>
         )}
       </main>

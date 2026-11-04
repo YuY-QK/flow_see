@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { SPEEDS, THEME_LIST, type Speed } from '@flow-see/core';
+import { SPEEDS, THEME_LIST, type Speed, t } from '@flow-see/core';
 import { importBackup, makeBackup } from '@flow-see/runtime/services/backup.ts';
 import { saveFile } from '@flow-see/runtime/services/save.ts';
 import {
@@ -16,15 +16,15 @@ import ui from '@flow-see/runtime/ui/ui.module.css';
 import s from './Pages.module.css';
 
 const RATES = [
-  { value: 0.8, label: '慢一点' },
-  { value: 1, label: '正常' },
-  { value: 1.2, label: '快一点' },
+  { value: 0.8, label: t('settingsPage.man_yi_dian') },
+  { value: 1, label: t('settingsPage.zheng_chang') },
+  { value: 1.2, label: t('settingsPage.kuai_yi_dian') },
 ];
 
 const UI_THEMES = [
-  { id: 'light', name: '浅色' },
-  { id: 'dark', name: '深色' },
-  { id: 'auto', name: '跟随系统' },
+  { id: 'light', name: t('settingsPage.qian_se') },
+  { id: 'dark', name: t('settingsPage.shen_se') },
+  { id: 'auto', name: t('settingsPage.gen_sui_xi_tong') },
 ] as const;
 
 export function SettingsPage() {
@@ -46,8 +46,9 @@ export function SettingsPage() {
     const all = await repository.list();
     const blob = new Blob([JSON.stringify(makeBackup(all), null, 1)], { type: 'application/json' });
     const date = new Date().toISOString().slice(0, 10);
-    const r = await saveFile(blob, `${site.site.name}备份-${date}.json`);
-    if (r !== 'cancelled') setDataMsg({ ok: true, text: `已导出 ${all.length} 个作品。` });
+    const r = await saveFile(blob, t('settingsPage.backup_file', { name: site.site.name, date }));
+    if (r !== 'cancelled')
+      setDataMsg({ ok: true, text: t('settingsPage.exported', { n: all.length }) });
   };
 
   const onImport = async (file: File | undefined) => {
@@ -56,7 +57,11 @@ export function SettingsPage() {
       const r = await importBackup(await file.text(), repository);
       setDataMsg({
         ok: true,
-        text: `导入完成：新增 ${r.added} 个，更新 ${r.updated} 个，跳过 ${r.skipped} 个。`,
+        text: t('settingsPage.imported', {
+          added: r.added,
+          updated: r.updated,
+          skipped: r.skipped,
+        }),
       });
     } catch (e) {
       setDataMsg({ ok: false, text: (e as Error).message });
@@ -67,25 +72,25 @@ export function SettingsPage() {
 
   return (
     <div className={s.page}>
-      <TopBar title="设置" />
+      <TopBar title={t('common.she_zhi')} />
       <main className={s.content}>
         <div className={s.settingsLayout}>
-          <nav className={s.settingsNav} aria-label="设置分类">
-            <a href="#appearance">外观与语言</a>
-            <a href="#speech">朗读与播放</a>
-            <a href="#data">数据与备份</a>
-            <a href="#about">关于</a>
+          <nav className={s.settingsNav} aria-label={t('settingsPage.she_zhi_fen_lei')}>
+            <a href="#appearance">{t('settingsPage.wai_guan_yu_yu')}</a>
+            <a href="#speech">{t('settingsPage.lang_du_yu_bo')}</a>
+            <a href="#data">{t('settingsPage.shu_ju_yu_bei')}</a>
+            <a href="#about">{t('settingsPage.guan_yu')}</a>
           </nav>
 
           <div className={s.settingsBody}>
             <section className={s.panel} id="appearance" aria-labelledby="h-appearance">
               <h2 className={s.panelTitle} id="h-appearance">
-                外观与语言
+                {t('settingsPage.wai_guan_yu_yu')}
               </h2>
               <div className={s.row}>
                 <div className={s.rowLabel}>
-                  <b>界面主题</b>
-                  <span>浅色、深色，或跟随系统设置</span>
+                  <b>{t('settingsPage.jie_mian_zhu_ti')}</b>
+                  <span>{t('settingsPage.qian_se_shen_se')}</span>
                 </div>
                 <div className={s.rowControls}>
                   {UI_THEMES.map((t) => (
@@ -102,8 +107,8 @@ export function SettingsPage() {
               </div>
               <div className={s.row}>
                 <div className={s.rowLabel}>
-                  <b>默认动画主题</b>
-                  <span>新建动画时使用；作者设置过的作品以作者为准</span>
+                  <b>{t('settingsPage.mo_ren_dong_hua')}</b>
+                  <span>{t('settingsPage.xin_jian_dong_hua')}</span>
                 </div>
                 <div className={s.rowControls}>
                   {THEME_LIST.map((t) => (
@@ -120,17 +125,17 @@ export function SettingsPage() {
               </div>
               <div className={s.row}>
                 <div className={s.rowLabel}>
-                  <label htmlFor="set-lang">界面语言</label>
-                  <span>同时决定朗读的语言</span>
+                  <label htmlFor="set-lang">{t('settingsPage.jie_mian_yu_yan')}</label>
+                  <span>{t('settingsPage.tong_shi_jue_ding')}</span>
                 </div>
                 <select id="set-lang" className={s.select} value={settings.language} disabled>
-                  <option value="zh-CN">简体中文</option>
+                  <option value="zh-CN">{t('settingsPage.jian_ti_zhong_wen')}</option>
                 </select>
               </div>
               <div className={s.row}>
                 <div className={s.rowLabel}>
-                  <b id="lbl-large">大字号</b>
-                  <span>按钮和文字整体放大，适合小朋友或投影演示</span>
+                  <b id="lbl-large">{t('settingsPage.da_zi_hao')}</b>
+                  <span>{t('settingsPage.an_niu_he_wen')}</span>
                 </div>
                 <button
                   className={ui.toggle}
@@ -144,17 +149,17 @@ export function SettingsPage() {
 
             <section className={s.panel} id="speech" aria-labelledby="h-speech">
               <h2 className={s.panelTitle} id="h-speech">
-                朗读与播放
+                {t('settingsPage.lang_du_yu_bo')}
               </h2>
               {!speechOk ? (
                 <div className={s.row}>
-                  <span className={s.note}>这个浏览器不支持朗读，播放时只显示字幕。</span>
+                  <span className={s.note}>{t('settingsPage.zhe_ge_liu_lan')}</span>
                 </div>
               ) : null}
               <div className={s.row}>
                 <div className={s.rowLabel}>
-                  <b id="lbl-narrate">自动朗读每一步</b>
-                  <span>播放时自动读出每一步的说明</span>
+                  <b id="lbl-narrate">{t('common.zi_dong_lang_du')}</b>
+                  <span>{t('settingsPage.bo_fang_shi_zi')}</span>
                 </div>
                 <button
                   className={ui.toggle}
@@ -167,9 +172,11 @@ export function SettingsPage() {
               </div>
               <div className={s.row}>
                 <div className={s.rowLabel}>
-                  <label htmlFor="set-voice">朗读声音</label>
+                  <label htmlFor="set-voice">{t('settingsPage.lang_du_sheng_yin')}</label>
                   <span>
-                    {voices.length ? `找到 ${voices.length} 个中文声音` : '使用系统默认声音'}
+                    {voices.length
+                      ? t('settingsPage.voices_found', { n: voices.length })
+                      : t('settingsPage.shi_yong_xi_tong')}
                   </span>
                 </div>
                 <div className={s.rowControls}>
@@ -180,7 +187,7 @@ export function SettingsPage() {
                     disabled={!speechOk}
                     onChange={(e) => settings.set({ voiceURI: e.target.value })}
                   >
-                    <option value="">系统默认</option>
+                    <option value="">{t('settingsPage.xi_tong_mo_ren')}</option>
                     {voices.map((v) => (
                       <option key={v.voiceURI} value={v.voiceURI}>
                         {v.name}
@@ -191,19 +198,19 @@ export function SettingsPage() {
                     className={ui.btn}
                     disabled={!speechOk}
                     onClick={() =>
-                      speak(`你好，我是${site.site.name}的讲解员。`, {
+                      speak(t('settingsPage.voice_sample', { name: site.site.name }), {
                         voiceURI: settings.voiceURI,
                         rate: settings.speechRate,
                       })
                     }
                   >
-                    试听
+                    {t('settingsPage.shi_ting')}
                   </button>
                 </div>
               </div>
               <div className={s.row}>
                 <div className={s.rowLabel}>
-                  <label htmlFor="set-rate">朗读语速</label>
+                  <label htmlFor="set-rate">{t('settingsPage.lang_du_yu_su')}</label>
                 </div>
                 <select
                   id="set-rate"
@@ -221,7 +228,7 @@ export function SettingsPage() {
               </div>
               <div className={s.row}>
                 <div className={s.rowLabel}>
-                  <label htmlFor="set-speed">默认播放速度</label>
+                  <label htmlFor="set-speed">{t('settingsPage.mo_ren_bo_fang')}</label>
                 </div>
                 <select
                   id="set-speed"
@@ -240,19 +247,19 @@ export function SettingsPage() {
 
             <section className={s.panel} id="data" aria-labelledby="h-data">
               <h2 className={s.panelTitle} id="h-data">
-                数据与备份
+                {t('settingsPage.shu_ju_yu_bei')}
               </h2>
               <div className={s.row}>
                 <div className={s.rowLabel}>
-                  <b>我的作品保存在这台设备上</b>
-                  <span>可以导出成一个备份文件，在别的设备上导入</span>
+                  <b>{t('settingsPage.wo_de_zuo_pin')}</b>
+                  <span>{t('settingsPage.ke_yi_dao_chu')}</span>
                 </div>
                 <div className={s.rowControls}>
                   <button className={ui.btn} onClick={exportBackup}>
-                    导出备份
+                    {t('settingsPage.dao_chu_bei_fen')}
                   </button>
                   <button className={ui.btn} onClick={() => fileRef.current?.click()}>
-                    导入
+                    {t('settingsPage.dao_ru')}
                   </button>
                   <input
                     ref={fileRef}
@@ -278,14 +285,16 @@ export function SettingsPage() {
 
             <section className={s.panel} id="about" aria-labelledby="h-about">
               <h2 className={s.panelTitle} id="h-about">
-                关于
+                {t('settingsPage.guan_yu')}
               </h2>
               <div className={s.row}>
                 <div className={s.rowLabel}>
                   <b>{site.site.name}</b>
                   <span>{site.site.slogan}</span>
                 </div>
-                <span className={s.note}>版本 {__APP_VERSION__}</span>
+                <span className={s.note}>
+                  {t('settingsPage.version', { version: __APP_VERSION__ })}
+                </span>
               </div>
             </section>
           </div>

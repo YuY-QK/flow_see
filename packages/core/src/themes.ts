@@ -1,5 +1,6 @@
 import type { ThemeId } from './types';
 
+import { t } from './texts';
 /** 动画主题：只影响动画画面，不影响界面本身。 */
 export interface Theme {
   id: ThemeId;
@@ -21,7 +22,7 @@ export interface Theme {
 export const THEMES: Record<ThemeId, Theme> = {
   pro: {
     id: 'pro',
-    name: '专业风',
+    name: t('themes.zhuan_ye_feng'),
     stageBg: '#FFFFFF',
     stageBorder: '#E6E8EF',
     ink: '#1F2433',
@@ -36,7 +37,7 @@ export const THEMES: Record<ThemeId, Theme> = {
   },
   flat: {
     id: 'flat',
-    name: '简洁扁平',
+    name: t('themes.jian_jie_bian_ping'),
     stageBg: '#F4F7FF',
     stageBorder: '#DCE5FF',
     ink: '#1F2433',
@@ -51,7 +52,7 @@ export const THEMES: Record<ThemeId, Theme> = {
   },
   cute: {
     id: 'cute',
-    name: '卡通可爱',
+    name: t('themes.ka_tong_ke_ai'),
     stageBg: '#FFF6EC',
     stageBorder: '#FFE0C2',
     ink: '#5A3A22',
@@ -66,7 +67,7 @@ export const THEMES: Record<ThemeId, Theme> = {
   },
   chalk: {
     id: 'chalk',
-    name: '手绘黑板',
+    name: t('themes.shou_hui_hei_ban'),
     stageBg: '#24443A',
     stageBorder: '#24443A',
     ink: '#F2F0E6',

@@ -2,11 +2,18 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { configureScene } from '@flow-see/blocks';
-import { TEMPLATE_IDS, getTemplate } from '@flow-see/templates';
+import { configureTexts } from '@flow-see/core/texts.ts';
 import { CONTENT_ROOT, generateSchemas } from '../json-schema';
-import { formatIssue, loadContent, type Issue } from '../load';
+import { formatIssue, loadContent, readYaml, type Issue } from '../load';
 
 const root = process.argv[2] ?? CONTENT_ROOT;
+
+// 模板模块加载时就会读文案，所以先注入文案，再加载模板（读不出来的错误由下面的 loadContent 统一报告）
+const early = readYaml(root, join(root, 'site.yaml'), 'site', []);
+const texts = early && readYaml(root, join(root, early.texts), 'texts', []);
+if (texts) configureTexts(texts, { strict: true });
+const { TEMPLATE_IDS, getTemplate } = await import('@flow-see/templates');
+
 const { bundle, issues } = loadContent(root, {
   templateIds: TEMPLATE_IDS,
   sayWarnLength: 30,

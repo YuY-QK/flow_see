@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { getTheme, type Animation } from '@flow-see/core';
+import { getTheme, type Animation, t } from '@flow-see/core';
 import { ParamsForm } from '../editor/ParamsForm';
 import { isSpeechSupported } from '../services/speech';
 import { useSettings } from '../store/settings';
@@ -118,7 +118,7 @@ export function Player({
           {total > 0 ? (
             <Stage animation={animation} index={state.index} theme={theme} />
           ) : (
-            <div className={s.empty}>还没有步骤，先在左边添加一步吧</div>
+            <div className={s.empty}>{t('player.hai_mei_you_bu')}</div>
           )}
         </div>
 
@@ -128,10 +128,10 @@ export function Player({
           </span>
           <div className={s.captionText}>
             <div className={s.counter}>
-              第 {total ? state.index + 1 : 0} 步 / 共 {total} 步
-              {narrate && state.playing ? ' · 朗读中' : ''}
+              {t('common.step_counter', { n: total ? state.index + 1 : 0, total })}
+              {narrate && state.playing ? t('player.lang_du_zhong') : ''}
             </div>
-            <div className={s.stepTitle}>{step?.title || '（未填写这一步发生了什么）'}</div>
+            <div className={s.stepTitle}>{step?.title || t('player.wei_tian_xie_zhe')}</div>
             {step?.desc ? <div className={s.stepDesc}>{step.desc}</div> : null}
           </div>
         </div>
@@ -139,7 +139,7 @@ export function Player({
         <div className={s.controls}>
           <button
             className={`${ui.btn} ${ui.icon}`}
-            aria-label="上一步"
+            aria-label={t('common.shang_yi_bu')}
             onClick={() => dispatch({ type: 'prev' })}
             disabled={state.index === 0}
           >
@@ -147,7 +147,7 @@ export function Player({
           </button>
           <button
             className={s.playBtn}
-            aria-label={state.playing ? '暂停' : '播放'}
+            aria-label={state.playing ? t('common.zan_ting') : t('common.bo_fang')}
             onClick={() => dispatch({ type: 'toggle' })}
             disabled={total === 0}
           >
@@ -155,14 +155,14 @@ export function Player({
           </button>
           <button
             className={`${ui.btn} ${ui.icon}`}
-            aria-label="下一步"
+            aria-label={t('common.xia_yi_bu')}
             onClick={() => dispatch({ type: 'next' })}
             disabled={state.index >= total - 1}
           >
             <Icon name="next" />
           </button>
           <label className={s.seek}>
-            <span className="sr-only">进度</span>
+            <span className="sr-only">{t('player.jin_du')}</span>
             <input
               type="range"
               min={0}
@@ -174,7 +174,7 @@ export function Player({
           </label>
           <button
             className={`${ui.btn} ${s.speed}`}
-            aria-label={`播放速度 ${state.speed} 倍，点击切换`}
+            aria-label={t('common.speed_aria', { speed: state.speed })}
             onClick={() => dispatch({ type: 'cycleSpeed' })}
           >
             {state.speed}×
@@ -182,14 +182,18 @@ export function Player({
           {speechOk ? (
             <button
               className={`${ui.btn} ${ui.icon} ${narrate ? ui.active : ''}`}
-              aria-label={narrate ? '关闭朗读' : '打开朗读'}
+              aria-label={narrate ? t('common.guan_bi_lang_du') : t('common.da_kai_lang_du')}
               aria-pressed={narrate}
               onClick={() => setNarrate((v) => !v)}
             >
               <Icon name={narrate ? 'sound' : 'mute'} />
             </button>
           ) : null}
-          <button className={`${ui.btn} ${ui.icon}`} aria-label="全屏" onClick={fullscreen}>
+          <button
+            className={`${ui.btn} ${ui.icon}`}
+            aria-label={t('common.quan_ping')}
+            onClick={fullscreen}
+          >
             <Icon name="fullscreen" />
           </button>
         </div>
@@ -200,14 +204,14 @@ export function Player({
           {canTry ? (
             <div className={s.tabs} role="tablist">
               <button role="tab" aria-selected={tab === 'steps'} onClick={() => setTab('steps')}>
-                步骤目录
+                {t('player.bu_zhou_mu_lu')}
               </button>
               <button role="tab" aria-selected={tab === 'params'} onClick={() => setTab('params')}>
-                试试改参数
+                {t('player.shi_shi_gai_can')}
               </button>
             </div>
           ) : (
-            <div className={s.sideTitle}>步骤目录</div>
+            <div className={s.sideTitle}>{t('player.bu_zhou_mu_lu')}</div>
           )}
           {tab === 'params' && canTry ? (
             <div className={s.trial}>
@@ -223,7 +227,7 @@ export function Player({
                   className={ui.btn}
                   onClick={() => applyTrial(randomParams(template, animation.params ?? {}))}
                 >
-                  随机一组
+                  {t('player.sui_ji_yi_zu')}
                 </button>
                 <button
                   className={`${ui.btn} ${ui.primary}`}
@@ -232,15 +236,15 @@ export function Player({
                     dispatch({ type: 'play' });
                   }}
                 >
-                  从头播放
+                  {t('player.cong_tou_bo_fang')}
                 </button>
               </div>
               {trial ? (
                 <button className={s.reset} onClick={() => applyTrial(null)}>
-                  恢复作者的设置
+                  {t('player.hui_fu_zuo_zhe')}
                 </button>
               ) : null}
-              <p className={s.trialNote}>这里的修改只影响你现在看到的动画，不会改动作品本身。</p>
+              <p className={s.trialNote}>{t('player.zhe_li_de_xiu')}</p>
             </div>
           ) : (
             <ol className={s.stepList}>
@@ -252,7 +256,7 @@ export function Player({
                     onClick={() => dispatch({ type: 'seek', index: i })}
                   >
                     <span className={s.stepNum}>{i + 1}</span>
-                    <span>{st.title || '（未填写）'}</span>
+                    <span>{st.title || t('common.wei_tian_xie')}</span>
                   </button>
                 </li>
               ))}

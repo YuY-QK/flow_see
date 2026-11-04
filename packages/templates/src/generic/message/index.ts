@@ -1,4 +1,4 @@
-import { createAnimation, createElement, createStep } from '@flow-see/core';
+import { createAnimation, createElement, createStep, t } from '@flow-see/core';
 import type { Template } from '@flow-see/runtime/template.ts';
 import { MessageStage } from './MessageStage';
 
@@ -10,55 +10,55 @@ export interface MessageStepData {
 
 export const messageTemplate: Template = {
   id: 'message',
-  name: '消息传递',
-  tagline: '几个角色之间来回传话',
-  elementNoun: '角色',
+  name: t('common.xiao_xi_chuan_di'),
+  tagline: t('common.ji_ge_jue_se'),
+  elementNoun: t('message.jue_se'),
   minElements: 1,
   maxElements: 6,
   stepFields: [
-    { key: 'from', label: '谁发出', kind: 'element', advanced: true },
-    { key: 'to', label: '发给谁', kind: 'element', advanced: true },
+    { key: 'from', label: t('message.shui_fa_chu'), kind: 'element', advanced: true },
+    { key: 'to', label: t('message.fa_gei_shui'), kind: 'element', advanced: true },
     {
       key: 'label',
-      label: '箭头上的标签',
+      label: t('message.jian_tou_shang_de'),
       kind: 'text',
-      placeholder: '留空则显示步骤标题',
+      placeholder: t('message.liu_kong_ze_xian'),
       advanced: true,
     },
   ],
 
   createBlank() {
-    const a = createElement('角色 1');
-    const b = createElement('角色 2');
+    const a = createElement(t('message.jue_se_2'));
+    const b = createElement(t('message.jue_se_3'));
     return createAnimation({
       templateId: 'message',
-      title: '未命名动画',
+      title: t('common.wei_ming_ming_dong'),
       elements: [a, b],
       steps: [createStep({ title: '', desc: '', data: { from: a.id, to: b.id, label: '' } })],
     });
   },
 
   createDefault() {
-    const client = createElement('客户端');
-    const server = createElement('服务器');
+    const client = createElement(t('message.ke_hu_duan'));
+    const server = createElement(t('message.fu_wu_qi'));
     return createAnimation({
       templateId: 'message',
-      title: 'TCP 三次握手',
+      title: t('common.san_ci_wo_shou'),
       elements: [client, server],
       steps: [
         createStep({
-          title: '客户端发送 SYN',
-          desc: '“你好，我想和你建立连接。”',
+          title: t('message.ke_hu_duan_fa'),
+          desc: t('message.ni_hao_wo_xiang'),
           data: { from: client.id, to: server.id, label: 'SYN' },
         }),
         createStep({
-          title: '服务器回复 SYN + ACK',
-          desc: '“收到！我也准备好了，你能听到我吗？”',
+          title: t('message.fu_wu_qi_hui'),
+          desc: t('message.shou_dao_wo_ye'),
           data: { from: server.id, to: client.id, label: 'SYN + ACK' },
         }),
         createStep({
-          title: '客户端发送 ACK',
-          desc: '“能听到！那我们开始吧。”连接建立。',
+          title: t('message.ke_hu_duan_fa_2'),
+          desc: t('message.neng_ting_dao_na'),
           data: { from: client.id, to: server.id, label: 'ACK' },
         }),
       ],
@@ -71,7 +71,7 @@ export const messageTemplate: Template = {
     // 默认“回话”：上一步的接收方发回给发送方
     const from = p.to ?? first?.id;
     const to = p.from ?? second?.id ?? first?.id;
-    return { title: '新的一步', desc: '', data: { from, to, label: '' } };
+    return { title: t('common.xin_de_yi_bu'), desc: '', data: { from, to, label: '' } };
   },
 
   Stage: MessageStage,

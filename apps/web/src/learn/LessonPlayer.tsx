@@ -1,7 +1,7 @@
 // P3 知识点学习页的播放区：舞台、字幕、控制条（规格 P3）。
 // 画面 = Stage(动画, 第几步, 步内进度)，时钟和朗读由 useTimeline 驱动。
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { getTheme, narrationText, type Animation } from '@flow-see/core';
+import { getTheme, narrationText, type Animation, t } from '@flow-see/core';
 import { useTimeline } from '@flow-see/runtime/player/useTimeline.ts';
 import { isSpeechSupported } from '@flow-see/runtime/services/speech.ts';
 import { useSettings } from '@flow-see/runtime/store/settings.ts';
@@ -163,7 +163,9 @@ export function LessonPlayer({
         </span>
         <div className={s.captionText}>
           <div className={s.counter}>
-            第 {state.index + 1} 步 / 共 {total} 步{step?.title ? ` · ${step.title}` : ''}
+            {step?.title
+              ? t('common.step_counter_title', { n: state.index + 1, total, title: step.title })
+              : t('common.step_counter', { n: state.index + 1, total })}
           </div>
           <div className={s.say}>{step?.desc}</div>
         </div>
@@ -172,7 +174,7 @@ export function LessonPlayer({
       <div className={s.controls}>
         <button
           className={s.ctrl}
-          aria-label="上一步"
+          aria-label={t('common.shang_yi_bu')}
           onClick={() => act({ type: 'prev' })}
           disabled={state.index === 0}
         >
@@ -180,14 +182,14 @@ export function LessonPlayer({
         </button>
         <button
           className={s.play}
-          aria-label={state.playing ? '暂停' : '播放'}
+          aria-label={state.playing ? t('common.zan_ting') : t('common.bo_fang')}
           onClick={() => act({ type: 'toggle' })}
         >
           <Icon name={state.playing ? 'pause' : 'play'} size={24} />
         </button>
         <button
           className={s.ctrl}
-          aria-label="下一步"
+          aria-label={t('common.xia_yi_bu')}
           onClick={() => act({ type: 'next' })}
           disabled={state.index >= total - 1}
         >
@@ -196,14 +198,14 @@ export function LessonPlayer({
 
         <div className={s.track}>
           <label className={s.seek}>
-            <span className="sr-only">拖动进度</span>
+            <span className="sr-only">{t('lessonPlayer.tuo_dong_jin_du')}</span>
             <input
               type="range"
               min={0}
               max={total}
               step={0.01}
               value={position}
-              aria-valuetext={`第 ${state.index + 1} 步`}
+              aria-valuetext={t('common.step_n', { n: state.index + 1 })}
               onChange={(e) => act({ type: 'scrub', position: Number(e.target.value) })}
             />
           </label>
@@ -214,7 +216,11 @@ export function LessonPlayer({
                 className={s.dot}
                 data-current={i === state.index}
                 data-done={i < state.index}
-                aria-label={`第 ${i + 1} 步${st.title ? `：${st.title}` : ''}`}
+                aria-label={
+                  st.title
+                    ? t('common.step_n_title', { n: i + 1, title: st.title })
+                    : t('common.step_n', { n: i + 1 })
+                }
                 aria-current={i === state.index ? 'step' : undefined}
                 onClick={() => act({ type: 'seek', index: i })}
               >
@@ -227,7 +233,7 @@ export function LessonPlayer({
         {device !== 'phone' ? (
           <button
             className={`${s.ctrl} ${s.speed}`}
-            aria-label={`播放速度 ${state.speed} 倍，点击切换`}
+            aria-label={t('common.speed_aria', { speed: state.speed })}
             onClick={() => act({ type: 'cycleSpeed' })}
           >
             {state.speed}×
@@ -237,7 +243,7 @@ export function LessonPlayer({
           <button
             className={s.ctrl}
             data-active={narrate}
-            aria-label={narrate ? '关闭朗读' : '打开朗读'}
+            aria-label={narrate ? t('common.guan_bi_lang_du') : t('common.da_kai_lang_du')}
             aria-pressed={narrate}
             onClick={() => settings.set({ autoNarrate: !narrate })}
           >
@@ -247,7 +253,7 @@ export function LessonPlayer({
         {canFullscreen ? (
           <button
             className={s.ctrl}
-            aria-label={isFull ? '退出全屏' : '全屏'}
+            aria-label={isFull ? t('lessonPlayer.tui_chu_quan_ping') : t('common.quan_ping')}
             onClick={toggleFullscreen}
           >
             <Icon name="fullscreen" />

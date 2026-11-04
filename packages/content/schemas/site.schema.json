@@ -239,6 +239,11 @@
       },
       "additionalProperties": false
     },
+    "texts": {
+      "default": "texts.yaml",
+      "description": "界面文案文件，相对 packages/content；代码里用 t(\"分组.键\") 读取",
+      "type": "string"
+    },
     "scene": {
       "type": "object",
       "properties": {
@@ -429,57 +434,11 @@
         "maxFrameMs"
       ],
       "additionalProperties": false
-    },
-    "explore": {
-      "type": "object",
-      "properties": {
-        "texts": {
-          "type": "object",
-          "properties": {
-            "title": {
-              "type": "string",
-              "minLength": 1
-            },
-            "presets": {
-              "type": "string",
-              "minLength": 1,
-              "description": "“换个例子”区标题"
-            },
-            "controls": {
-              "type": "string",
-              "minLength": 1,
-              "description": "“自己调一调”区标题"
-            },
-            "reset": {
-              "type": "string",
-              "minLength": 1,
-              "description": "回到标准讲解按钮"
-            },
-            "hint": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          "required": [
-            "title",
-            "presets",
-            "controls",
-            "reset",
-            "hint"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "required": [
-        "texts"
-      ],
-      "additionalProperties": false
     }
   },
   "required": [
     "scene",
-    "player",
-    "explore"
+    "player"
   ],
   "additionalProperties": false
 }

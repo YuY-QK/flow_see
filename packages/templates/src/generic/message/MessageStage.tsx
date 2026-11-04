@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import type { StageProps } from '@flow-see/runtime/template.ts';
 import type { MessageStepData } from './index';
 
+import { t } from '@flow-see/core';
 const MARGIN = 90;
 const GAP = 240;
 const BOX_W = 132;
@@ -30,7 +31,7 @@ export function MessageStage({ animation, index, theme, still }: StageProps) {
       height="100%"
       preserveAspectRatio="xMidYMid meet"
       role="img"
-      aria-label={`${animation.title}：第 ${index + 1} 步`}
+      aria-label={t('common.stage_aria', { title: animation.title, n: index + 1 })}
       style={{ fontFamily: theme.font, display: 'block' }}
     >
       <defs>
@@ -89,7 +90,7 @@ export function MessageStage({ animation, index, theme, still }: StageProps) {
         const shown = i <= index;
         const active = i === index;
         const color = active ? theme.accent : theme.dim;
-        const label = d.label?.trim() || s.title || `第 ${i + 1} 步`;
+        const label = d.label?.trim() || s.title || t('common.step_n', { n: i + 1 });
         const labelX = x1 !== null && x2 !== null ? (x1 + x2) / 2 : W / 2;
 
         let path: string | null = null;
@@ -140,7 +141,7 @@ export function MessageStage({ animation, index, theme, still }: StageProps) {
               fontWeight={active ? 700 : 500}
               fill={theme.ink}
             >
-              {path ? label : `${label}（未指定发送方或接收方）`}
+              {path ? label : t('messageStage.no_path', { label })}
             </text>
           </motion.g>
         );

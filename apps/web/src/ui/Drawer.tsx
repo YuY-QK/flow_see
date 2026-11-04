@@ -7,12 +7,13 @@ import { Avatar, Brand } from './Brand';
 import { moduleOf, type Module } from '../learn/paths';
 import s from './TopBar.module.css';
 
+import { t } from '@flow-see/core';
 const MENU: { id: Module; label: string; note?: string; to: string }[] = [
-  { id: 'learn', label: '学习', to: '/' },
-  { id: 'create', label: '创作', to: '/create' },
-  { id: 'records', label: '学习记录', to: '/me#records' },
-  { id: 'settings', label: '设置', note: '主题、语言、朗读', to: '/settings' },
-  { id: 'help', label: '帮助与反馈', to: '/help' },
+  { id: 'learn', label: t('common.xue_xi'), to: '/' },
+  { id: 'create', label: t('common.chuang_zuo'), to: '/create' },
+  { id: 'records', label: t('common.xue_xi_ji_lu'), to: '/me#records' },
+  { id: 'settings', label: t('common.she_zhi'), note: t('drawer.zhu_ti_yu_yan'), to: '/settings' },
+  { id: 'help', label: t('common.bang_zhu_yu_fan'), to: '/help' },
 ];
 
 interface Props {
@@ -44,11 +45,16 @@ export function Drawer({ pathname, onClose, onGo }: Props) {
 
   return (
     <div className={s.drawerWrap}>
-      <button className={s.scrim} aria-label="关闭菜单" tabIndex={-1} onClick={onClose} />
-      <aside className={s.drawer} role="dialog" aria-modal="true" aria-label="菜单">
+      <button
+        className={s.scrim}
+        aria-label={t('drawer.guan_bi_cai_dan')}
+        tabIndex={-1}
+        onClick={onClose}
+      />
+      <aside className={s.drawer} role="dialog" aria-modal="true" aria-label={t('drawer.cai_dan')}>
         <div className={s.drawerHead}>
           <Brand onClick={go('/')} />
-          <button className={s.iconBtn} aria-label="关闭菜单" onClick={onClose}>
+          <button className={s.iconBtn} aria-label={t('drawer.guan_bi_cai_dan')} onClick={onClose}>
             <Icon name="close" size={18} />
           </button>
         </div>
@@ -56,14 +62,14 @@ export function Drawer({ pathname, onClose, onGo }: Props) {
         <a href="/me" className={s.profileCard} onClick={go('/me')}>
           <Avatar color={avatar} size={44} />
           <span>
-            <strong>{nickname || '小朋友'}</strong>
+            <strong>{nickname || t('drawer.xiao_peng_you')}</strong>
             <small>
-              {gradeName(readingGrade)} · 已学完 {completed} 个
+              {t('drawer.grade_done', { grade: gradeName(readingGrade), n: completed })}
             </small>
           </span>
         </a>
 
-        <nav className={s.menu} aria-label="主菜单">
+        <nav className={s.menu} aria-label={t('drawer.zhu_cai_dan')}>
           {MENU.map((m) => (
             <a
               key={m.id}
@@ -78,7 +84,7 @@ export function Drawer({ pathname, onClose, onGo }: Props) {
           ))}
         </nav>
 
-        <p className={s.drawerNote}>学习记录和作品保存在这台设备上</p>
+        <p className={s.drawerNote}>{t('drawer.xue_xi_ji_lu')}</p>
       </aside>
     </div>
   );

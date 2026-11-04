@@ -1,0 +1,495 @@
+# yaml-language-server: $schema=./schemas/texts.schema.json
+# 界面文案：分组 → 键 → 文字。代码里用 t('分组.键') 读取，不要在代码里写中文（pnpm test 会检查）。
+# - 文字里的 {名字} 由代码代入，如 t('common.step_n', { n: 3 })。
+# - common 是多处共用的文案；其余分组按页面或组件命名。
+# - 键是文字拼音的前几个音节（自动生成），要改文字直接改这里的值即可，不用改键。
+# - 新增文案：在对应分组里加一行，再在代码里 t('分组.键')；没用到的键、缺少的键都会被检查出来。
+common:
+  cao_gao: 草稿
+  yi_xue_wan: 已学完
+  shang_yi_bu: 上一步
+  zan_ting: 暂停
+  bo_fang: 播放
+  xia_yi_bu: 下一步
+  guan_bi_lang_du: 关闭朗读
+  da_kai_lang_du: 打开朗读
+  quan_ping: 全屏
+  san_ci_wo_shou: TCP 三次握手
+  mao_pao_pai_xu: 冒泡排序
+  shui_de_xun_huan: 水的循环
+  qing_jia_shen_pi: 请假审批流程
+  chuang_zuo: 创作
+  zhao_bu_dao_zhe: 找不到这个作品，它可能已被删除。
+  zhe_ge_zuo_pin: 这个作品使用的模板暂不支持。
+  wo_de_zuo_pin: 我的作品
+  wai_guan: 外观
+  dao_chu: 导出
+  fen_xiang: 分享
+  bian_ji: 编辑
+  dong_hua_guang_chang: 动画广场
+  quan_bu: 全部
+  bang_zhu_yu_fan: 帮助与反馈
+  xue_xi: 学习
+  xue_ke: 学科
+  chong_shi: 重试
+  fu_zhi_lian_jie: 复制链接
+  xue_xi_ji_lu: 学习记录
+  wei_ming_ming_dong: 未命名动画
+  fen_xiang_lian_jie: 分享链接
+  hui_dao_shou_ye: 回到首页
+  sou_suo: 搜索
+  she_zhi: 设置
+  zi_dong_lang_du: 自动朗读每一步
+  qu_xiao: 取消
+  wan_cheng: 完成
+  wei_tian_xie: （未填写）
+  xun_huan_shi_jian: 循环 / 时间线
+  an_shi_jian_huo: 按时间或绕圈推进
+  xin_de_yi_bu: 新的一步
+  kai_shi: 开始
+  shu_ju_bian_hua: 数据变化
+  liu_cheng_tu_liu: 流程图流转
+  yi_bu_jie_yi: 一步接一步、可以有分支
+  xiao_xi_chuan_di: 消息传递
+  ji_ge_jue_se: 几个角色之间来回传话
+  step_counter: 第 {n} 步 / 共 {total} 步
+  step_counter_title: 第 {n} 步 / 共 {total} 步 · {title}
+  step_n: 第 {n} 步
+  step_n_title: 第 {n} 步：{title}
+  stage_aria: "{title}：第 {n} 步"
+  speed_aria: 播放速度 {speed} 倍，点击切换
+  steps_total: 共 {n} 步
+  coming_soon: "{name}的动画正在制作中，敬请期待。"
+algorithms:
+  xuan_ze_pai_xu: 选择排序
+  cha_ru_pai_xu: 插入排序
+  da: 大
+  xiao: 小
+  shun_xu_mei_wen: 顺序没问题，不用动。
+  liang_ge_shu_huan: 两个数换了位置。
+  yi_ci_jiao_huan: 一次交换都没有，说明已经全部排好，可以提前结束。
+  cha_ru_pai_xu_2: 插入排序像整理扑克牌：每次拿起一张，插到前面已排好的牌里合适的位置。
+  zhi_you_yi_ge: 只有一个数
+  yi_ge_shu_ben: 一个数本身就是排好的。
+  pai_hao_le: 排好了！
+  bubble_intro: 冒泡排序会反复比较相邻的两个数，把较{big}的往后“冒”。
+  compare: 比较 {a} 和 {b}
+  bubble_swap: "{a} 比 {b} {big}，位置不对，要交换。"
+  swap_title: 交换 {a} 和 {b}
+  pass_no_swap: 第 {n} 轮没有交换
+  pass_done: 第 {n} 轮结束
+  pass_done_desc: "{v} 已经到了它最终的位置。"
+  selection_intro: 选择排序每一轮从没排好的数里挑出最{small}的，放到前面。
+  assume: 先假设 {v} 是剩下的数里最{small}的。
+  pass_n: 第 {n} 轮
+  remember: "{v} 更{small}，记住它。"
+  still: "{v} 仍然是最{small}的。"
+  place: 把最{small}的 {b} 放到第 {n} 个位置。
+  stay_title: "{v} 不用动"
+  stay_desc: 它已经在第 {n} 个位置上了。
+  pick: 拿起 {v}
+  insert_into: 把 {v} 插到前面已经排好的部分里。
+  found: "{b} 找到了位置，停在这里。"
+  move_forward: "{b} 往前移"
+  should_after: "{a} 应该排在 {b} 后面，两者交换。"
+  summary: 一共比较了 {compares} 次，交换了 {swaps} 次。
+animation:
+  fu_ben: （副本）
+appearancePanel:
+  dong_hua_zhu_ti: 动画主题
+  guan_zhong_ke_yi: 观众可以改参数
+  zhi_chi_can_shu: （支持参数的模板生效）
+backup:
+  not_backup: 这不是{name}的备份文件。
+createPage:
+  xin_jian_dong_hua: 新建动画 · 第 1 步
+  ni_xiang_jiang_qing: 你想讲清楚什么？
+  xuan_yi_ge_zui: 选一个最像的样子，之后随时能改内容。
+  wo_de_zuo_pin: 我的作品 →
+  bu_que_ding_cong: 不确定？从一个示例改起
+  kan_kan_geng_duo: 看看更多示例 →
+  tagline_scenes: "{tagline}。适合：{scenes}"
+cycle:
+  jie_duan: 阶段
+  zhe_yi_bu_dao: 这一步到了哪个阶段
+  bu_ju: 布局
+  jie_duan_zen_me: 阶段怎么排
+  rao_cheng_yi_quan: 绕成一圈（循环）
+  pai_cheng_yi_hang: 排成一行（时间线）
+  jie_duan_2: 阶段 1
+  jie_duan_3: 阶段 2
+  jie_duan_4: 阶段 3
+  zheng_fa: 蒸发
+  ning_jie: 凝结
+  jiang_shui: 降水
+  hui_ji: 汇集
+  tai_yang_jia_re: 太阳加热，海洋和湖泊里的水变成水蒸气升上天空。
+  shui_zheng_qi_yu: 水蒸气遇冷，凝结成小水滴，聚在一起形成云。
+  xiao_shui_di_yue: 小水滴越聚越大，落下来变成雨或雪。
+  yu_shui_liu_jin: 雨水流进江河湖海，或者渗入地下。
+  zai_ci_zheng_fa: 再次蒸发
+  shui_you_bei_tai: 水又被太阳加热，开始新的一轮循环。
+cycleStage:
+  stage: 阶段 {n}
+  lap: 第 {n} 圈
+data:
+  yi_pai_shu_zi: 一排数字在变，步骤由算法自动生成
+  shu_ju: 数据
+  yao_pai_xu_de: 要排序的数据
+  shu_zi: 数字
+  yong_dou_hao_ge: 用逗号隔开，2 到 10 个整数（-99 到 99）
+  suan_fa: 算法
+  pai_xu_fang_xiang: 排序方向
+  cong_xiao_dao_da: 从小到大
+  cong_da_dao_xiao: 从大到小
+dataStage:
+  mu_qian_zui_da: 目前最大
+  mu_qian_zui_xiao: 目前最小
+  zheng_zai_chu_li: 正在处理
+  yi_pai_hao: 已排好
+  aria: 第 {n} 步：{values}
+  counts: 比较 {compares} 次 · 交换 {swaps} 次
+dialog:
+  guan_bi: 关闭
+drawer:
+  zhu_ti_yu_yan: 主题、语言、朗读
+  guan_bi_cai_dan: 关闭菜单
+  cai_dan: 菜单
+  xiao_peng_you: 小朋友
+  zhu_cai_dan: 主菜单
+  xue_xi_ji_lu: 学习记录和作品保存在这台设备上
+  grade_done: "{grade} · 已学完 {n} 个"
+editorPage:
+  yi_zi_dong_bao: 已自动保存
+  bao_cun_zhong: 保存中…
+  bao_cun_shi_bai: 保存失败
+  dong_hua_ming_cheng: 动画名称
+  can_shu: 参数
+  shi_shi_yu_lan: 实时预览
+  an_kong_ge_bo: 按空格播放 / 暂停，← → 切换步骤
+  bian_ji_huo_yu: 编辑或预览
+  yu_lan: 预览
+elementsEditor:
+  name_aria: "{noun} {n} 的名字"
+  remove_aria: 删除{noun}「{name}」
+  add: + 添加{noun}
+encode:
+  dong_hua: 动画
+  yi_qu_xiao: 已取消
+  hai_mei_you_bu: 还没有步骤，无法导出。
+  hui_zhi_hua_mian: 绘制画面
+  sheng_cheng: 生成 GIF
+  sheng_cheng_shi_pin: 生成视频
+  zhe_ge_liu_lan: 这个浏览器不支持导出视频，可以改为导出 GIF。
+  lu_zhi_shi_pin: 录制视频
+explorePanel:
+  title: 动手试一试
+  presets: 换个例子
+  controls: 自己调一调
+  reset: 回到标准讲解
+  hint: 你改的只在这里看，不会保存；刷新后回到标准讲解。
+exportDialog:
+  shi_pin: 视频
+  shi_he_fang_jin: 1280×720，适合放进 PPT、发给朋友
+  dong_tu: GIF 动图
+  shi_he_liao_tian: 640×360，适合聊天和网页，文件较大时画质会降低
+  zhun_bei_zhong: 准备中
+  yi_jiao_gei_xi: 已交给系统分享。
+  yi_qu_xiao_bao: 已取消保存。
+  dao_chu_shi_bai: 导出失败，请重试。
+  dao_chu_ge_shi: 导出格式
+  kai_shi_dao_chu: 开始导出
+  qu_xiao_dao_chu: 取消导出
+  zai_dao_chu_yi: 再导出一个
+  fan_hui: 返回
+  downloaded: 已下载：{filename}
+  note: 每一步会按朗读长度停留，画面下方带字幕。共 {n} 步。
+fieldInput:
+  wei_ming_ming: （未命名）
+  wei_zhi_ding: （未指定）
+flow:
+  jie_dian: 节点
+  ming_zi_yi_jie: 名字以“？”结尾的节点会画成菱形，表示需要判断。
+  zhe_yi_bu_zou: 这一步走到哪个节点
+  cong_shang_yi_bu: 从上一步过来的箭头上写什么
+  li_ru_tong_yi: 例如：同意、不同意（可留空）
+  chu_li: 处理
+  jie_shu: 结束
+  ti_jiao_shen_qing: 提交申请
+  zhu_guan_shen_pi: 主管审批？
+  tui_hui_xiu_gai: 退回修改
+  ren_shi_bei_an: 人事备案
+  ti_jiao_qing_jia: 提交请假申请
+  yuan_gong_tian_xie: 员工填写请假单并提交。
+  zhu_guan_shen_pi_2: 主管审批
+  zhu_guan_cha_kan: 主管查看申请，决定是否同意。
+  bu_tong_yi_tui: 不同意，退回修改
+  li_you_bu_chong: 理由不充分，申请被退回。
+  bu_tong_yi: 不同意
+  xiu_gai_hou_chong: 修改后重新提交
+  yuan_gong_bu_chong: 员工补充说明后再次提交。
+  chong_xin_ti_jiao: 重新提交
+  zhu_guan_zai_ci: 主管再次审批
+  zhe_ci_li_you: 这次理由充分了。
+  tong_yi_jiao_ren: 同意，交人事备案
+  zhu_guan_tong_yi: 主管同意，人事部门登记备案。
+  tong_yi: 同意
+  qing_jia_liu_cheng: 请假流程结束，可以安心休假了。
+flowStage:
+  node: 节点 {n}
+format:
+  gang_gang: 刚刚
+  minutes_ago: "{n} 分钟前"
+  hours_ago: "{n} 小时前"
+  days_ago: "{n} 天前"
+  locale: zh-CN
+galleryPage:
+  guan_fang_zhi_zuo: 官方制作和精选作品。看到喜欢的，可以一键复制再改成自己的。
+  sou_suo_dong_hua: 搜索动画
+  an_zhu_ti_shai: 按主题筛选
+  dong_hua_lei_xing: 动画类型：
+  mei_you_zhao_dao: 没有找到相关的动画。换个关键词，或者自己做一个吧。
+galleryPlayPage:
+  zhao_bu_dao_zhe: 找不到这个动画。
+  zhe_ge_dong_hua: 这个动画使用的模板暂不支持。
+  jing_xuan: "精选 · "
+  fu_zhi_bing_xiu: 复制并修改
+generatedSteps:
+  you_shang_mian_de: 由上面的参数自动生成，点一步可预览
+  title: 步骤（共 {n} 步）
+helpPage:
+  chang_jian_wen_ti: 常见问题
+  fan_kui: 反馈
+  you_xiang: 邮箱：
+  you_xiang_2: 邮箱
+  fu_zhi: 复制
+  wei_xin: 微信：
+  wei_xin_2: 微信
+  she_bei_xin_xi: 设备信息
+  fu_zhi_she_bei: 复制设备信息
+  device_site: 网站：{name} {version}
+  device_browser: 浏览器：{ua}
+  copied: 已复制{what}
+  version: "{name} · 版本 {version}"
+homePage:
+  ni_hao_jin_tian: 你好！今天学点什么？
+  ji_xu_xue_xi: 继续学习
+  cha_kan_quan_bu: 查看全部 →
+  greeting_named: "{name}，你好！今天学点什么？"
+  viewing: 正在看{grade}的内容，可以在右上角换年级
+  subject_count: "{grade} · {n} 个知识点"
+  subject_soon: "{grade} · 即将上线"
+  progress_aria: 已学完 {done} / {total}
+  done_count: 已学完 {n} 个
+  recommended: "{grade}推荐"
+lessonCard:
+  dai_fa_bu: 待发布
+  ji_jiang_shang_xian: 即将上线
+  wei_xue: 未学
+  progress: 第 {n} / {total} 步
+lessonPage:
+  nei_rong_mei_jia: 内容没加载出来
+  jia_zai_zhong: 加载中
+  lian_jie_yi_fu: 链接已复制，打开后从第 1 步开始
+  zhe_ge_dong_hua: 这个动画需要更新网站才能播放
+  shua_xin: 刷新
+  yao_dian: 要点
+  wo_xue_hui_le: 我学会了
+  shang_yi_ge_he: 上一个和下一个知识点
+  shang_yi_ge: 上一个
+  xia_yi_ge: 下一个
+  qu_xiao_yi_xue: 取消已学完？
+  qu_xiao_hou_zhe: 取消后，这个知识点会显示为“学习中”。
+  bu_qu_xiao: 不取消
+  qu_xiao_yi_xue_2: 取消已学完
+  back_to: 回到{where}
+  all_done: "{where}都学完了，回到目录"
+lessonPlayer:
+  tuo_dong_jin_du: 拖动进度
+  tui_chu_quan_ping: 退出全屏
+mePage:
+  ge_ren_zhong_xin: 个人中心
+  zi_liao: 资料
+  tou_xiang: 头像
+  tou_xiang_yan_se: 头像颜色
+  ni_cheng: 昵称
+  zai_du_nian_ji: 在读年级
+  zhe_xie_zi_liao: 这些资料和学习记录只保存在这台设备上，不会上传。
+  dang_qian_liu_lan: 当前浏览模式下无法保存学习记录和资料。
+  xue_xi_tong_ji: 学习统计
+  xue_guo_de_zhi: 学过的知识点
+  xue_xi_tian_shu: 学习天数
+  hai_mei_you_xue: 还没有学习记录，去首页看看吧
+  qu_shou_ye: 去首页
+  avatar_aria: 头像 {n}
+  nickname_hint: 最多 {n} 个字
+message:
+  jue_se: 角色
+  shui_fa_chu: 谁发出
+  fa_gei_shui: 发给谁
+  jian_tou_shang_de: 箭头上的标签
+  liu_kong_ze_xian: 留空则显示步骤标题
+  jue_se_2: 角色 1
+  jue_se_3: 角色 2
+  ke_hu_duan: 客户端
+  fu_wu_qi: 服务器
+  ke_hu_duan_fa: 客户端发送 SYN
+  ni_hao_wo_xiang: “你好，我想和你建立连接。”
+  fu_wu_qi_hui: 服务器回复 SYN + ACK
+  shou_dao_wo_ye: “收到！我也准备好了，你能听到我吗？”
+  ke_hu_duan_fa_2: 客户端发送 ACK
+  neng_ting_dao_na: “能听到！那我们开始吧。”连接建立。
+messageStage:
+  no_path: "{label}（未指定发送方或接收方）"
+minePage:
+  yi_fen_xiang: 已分享
+  zuo_pin_bao_cun: 作品保存在这台设备上。分享过的作品会存一份到云端，换设备也能通过链接打开。
+  bei_fen_dao_ru: 备份 / 导入
+  shai_xuan: 筛选
+  xin_jian_dong_hua: 新建动画
+  dao_chu_shi_pin: 导出视频 / GIF
+  fu_zhi_yi_fen: 复制一份
+  zai_dian_yi_ci: 再点一次确认删除
+  shan_chu: 删除
+  hai_mei_you_fen: 还没有分享过作品。在作品的“⋯”菜单里选“分享链接”试试。
+  edit_aria: 编辑「{title}」
+  more_aria: 「{title}」的更多操作
+  card_meta: "{template} · {steps} 步 · {time}"
+notFound:
+  zhe_ge_ye_mian: 这个页面不存在，可能是链接写错了，或者内容还没上线。
+  zhao_bu_dao_ye: 找不到页面
+officialCard:
+  jing_xuan: 精选
+  watch_aria: 观看「{title}」
+parseNumbers:
+  zhi_neng_tian_zheng: 只能填整数，用逗号隔开
+  range: 每个数要在 {min} 到 {max} 之间
+  count: 需要 {min} 到 {max} 个数，现在是 {now} 个
+player:
+  hai_mei_you_bu: 还没有步骤，先在左边添加一步吧
+  lang_du_zhong: " · 朗读中"
+  wei_tian_xie_zhe: （未填写这一步发生了什么）
+  jin_du: 进度
+  bu_zhou_mu_lu: 步骤目录
+  shi_shi_gai_can: 试试改参数
+  sui_ji_yi_zu: 随机一组
+  cong_tou_bo_fang: 从头播放
+  hui_fu_zuo_zhe: 恢复作者的设置
+  zhe_li_de_xiu: 这里的修改只影响你现在看到的动画，不会改动作品本身。
+registry:
+  gong_zuo_liu_cheng: 工作流程、做饭步骤、审批
+  wang_luo_xie_yi: 网络协议、对话、快递流转
+  yi_pai_shu_zi: 一排数字或格子在变
+  pai_xu_cha_zhao: 排序、查找等算法
+  shui_xun_huan_sheng: 水循环、生命周期、历史事件
+runtimeConfig:
+  hai_mei_you_pei: runtime 还没有配置：应用启动时要先调用 configureRuntime()
+scene:
+  chang_jing: 场景
+  bai_hao_ling_jian: 摆好零件，写每一步的动作
+  ling_jian: 零件
+  wei_ming_ming_chang: 未命名场景
+  shu_yi_shu: 数一数
+  zhe_li_you_ji: 这里有几个圆片？
+  yi_gong_ge: 一共 3 个。
+searchPage:
+  shu_ru_guan_jian: 输入关键词找知识点
+  huan_ge_ci_shi: 换个词试试，比如少写几个字，或者点下面的常用词：
+  found: 找到 {n} 个和“{q}”有关的知识点
+  none: 没有找到和“{q}”有关的知识点。
+settingsPage:
+  man_yi_dian: 慢一点
+  zheng_chang: 正常
+  kuai_yi_dian: 快一点
+  qian_se: 浅色
+  shen_se: 深色
+  gen_sui_xi_tong: 跟随系统
+  she_zhi_fen_lei: 设置分类
+  wai_guan_yu_yu: 外观与语言
+  lang_du_yu_bo: 朗读与播放
+  shu_ju_yu_bei: 数据与备份
+  guan_yu: 关于
+  jie_mian_zhu_ti: 界面主题
+  qian_se_shen_se: 浅色、深色，或跟随系统设置
+  mo_ren_dong_hua: 默认动画主题
+  xin_jian_dong_hua: 新建动画时使用；作者设置过的作品以作者为准
+  jie_mian_yu_yan: 界面语言
+  tong_shi_jue_ding: 同时决定朗读的语言
+  jian_ti_zhong_wen: 简体中文
+  da_zi_hao: 大字号
+  an_niu_he_wen: 按钮和文字整体放大，适合小朋友或投影演示
+  zhe_ge_liu_lan: 这个浏览器不支持朗读，播放时只显示字幕。
+  bo_fang_shi_zi: 播放时自动读出每一步的说明
+  lang_du_sheng_yin: 朗读声音
+  shi_yong_xi_tong: 使用系统默认声音
+  xi_tong_mo_ren: 系统默认
+  shi_ting: 试听
+  lang_du_yu_su: 朗读语速
+  mo_ren_bo_fang: 默认播放速度
+  wo_de_zuo_pin: 我的作品保存在这台设备上
+  ke_yi_dao_chu: 可以导出成一个备份文件，在别的设备上导入
+  dao_chu_bei_fen: 导出备份
+  dao_ru: 导入
+  backup_file: "{name}备份-{date}.json"
+  exported: 已导出 {n} 个作品。
+  imported: 导入完成：新增 {added} 个，更新 {updated} 个，跳过 {skipped} 个。
+  voices_found: 找到 {n} 个中文声音
+  voice_sample: 你好，我是{name}的讲解员。
+  version: 版本 {version}
+share:
+  lian_bu_shang_fen: 连不上分享服务，请检查网络后重试。
+  fen_xiang_fu_wu: 分享服务暂时不可用。
+  geng_xin_fen_xiang: 更新分享失败，请稍后重试。
+  zuo_pin_tai_da: 作品太大，暂时无法分享。
+  fen_xiang_shi_bai: 分享失败，请稍后重试。
+  du_qu_fen_xiang: 读取分享内容失败，请稍后重试。
+shareDialog:
+  zheng_zai_sheng_cheng: 正在生成分享链接…
+  na_dao_lian_jie: 拿到链接的人打开就能观看和操作。之后修改作品，再点一次分享就会更新这个链接的内容。
+  na_dao_lian_jie_2: 拿到链接的人打开就能观看。
+  liu_lan_qi_bu: 浏览器不允许自动复制，请长按或选中上面的链接手动复制。
+  yong_qi_ta_ying: 用其他应用分享
+  yi_fu_zhi: 已复制
+sharedPage:
+  wo_ye_yao_zuo: 我也要做一个
+  zheng_zai_da_kai: 正在打开…
+  zhe_ge_fen_xiang: 这个分享链接不存在，或者已经失效了。
+  zhe_ge_dong_hua: 这个动画使用的模板在当前版本里还不支持。
+  shared_with_you: 有人用{name}做了这个动画，分享给你
+  go_see: 去{name}看看
+  author: 作者：{author}
+stepCard:
+  zi_dong_an_lang: 自动（按朗读长度）
+  miao: 1 秒
+  miao_2: 2 秒
+  miao_3: 3 秒
+  miao_4: 5 秒
+  shan_chu_zhe_yi: 删除这一步
+  zhe_yi_bu_fa: 这一步发生了什么
+  li_ru_ke_hu: 例如：客户端发送 SYN
+  yi_ju_hua_jie: 一句话解释（会显示并朗读）
+  yong_da_bai_hua: 用大白话说说为什么
+  shou_qi_geng_duo: 收起更多设置 ▴
+  geng_duo_she_zhi: 更多设置 ▾
+  zhe_yi_bu_ting: 这一步停留
+  lang_du_nei_rong: 朗读内容（留空则读上面的解释）
+  ke_yi_xie_de: 可以写得更口语一点
+  drag_aria: 拖动排序：第 {n} 步
+stepList:
+  bu_zhou: 步骤
+  dian_yi_bu_lai: 点一步来编辑，按住左侧把手拖动排序
+  tian_jia_yi_bu: + 添加一步
+subjectPage:
+  summary: "{units} 个单元 · {lessons} 个知识点 · 已学完 {done} 个"
+  unit_no: 第 {n} 单元
+  unit_done: 已学完 {done} / {total}
+themes:
+  zhuan_ye_feng: 专业风
+  jian_jie_bian_ping: 简洁扁平
+  ka_tong_ke_ai: 卡通可爱
+  shou_hui_hei_ban: 手绘黑板
+topBar:
+  nian_ji: 年级
+  da_kai_cai_dan: 打开菜单
+  dang_qian_wei_zhi: 当前位置
+  sou_suo_zhi_shi: 搜索知识点

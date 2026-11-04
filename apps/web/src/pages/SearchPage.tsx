@@ -8,6 +8,7 @@ import { TopBar } from '../ui/TopBar';
 import s from '../learn/Learn.module.css';
 import p from './Pages.module.css';
 
+import { t } from '@flow-see/core';
 /** P4 搜索结果页 /search?q= */
 export function SearchPage() {
   const [params] = useSearchParams();
@@ -32,7 +33,7 @@ export function SearchPage() {
     <div className={p.page}>
       {/* 切换年级只改变排序，不过滤 */}
       <TopBar
-        title="搜索"
+        title={t('common.sou_suo')}
         grade={grade}
         onPick={({ grade: g }) => setGrade(g)}
         query={q}
@@ -41,14 +42,12 @@ export function SearchPage() {
       <main className={p.content}>
         {!q ? (
           <section className={p.section}>
-            <h1 className={p.h2}>输入关键词找知识点</h1>
+            <h1 className={p.h2}>{t('searchPage.shu_ru_guan_jian')}</h1>
             {hints}
           </section>
         ) : results.length ? (
           <section className={p.section}>
-            <h1 className={p.h2}>
-              找到 {results.length} 个和“{q}”有关的知识点
-            </h1>
+            <h1 className={p.h2}>{t('searchPage.found', { n: results.length, q })}</h1>
             <div className={s.lessonGrid}>
               {results.map(({ lesson, entry, unit }) => (
                 <LessonCard
@@ -66,8 +65,8 @@ export function SearchPage() {
           </section>
         ) : (
           <section className={p.section}>
-            <h1 className={p.h2}>没有找到和“{q}”有关的知识点。</h1>
-            <p className={p.sub}>换个词试试，比如少写几个字，或者点下面的常用词：</p>
+            <h1 className={p.h2}>{t('searchPage.none', { q })}</h1>
+            <p className={p.sub}>{t('searchPage.huan_ge_ci_shi')}</p>
             {hints}
           </section>
         )}

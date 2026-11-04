@@ -12,6 +12,7 @@ import { TopBar } from '../ui/TopBar';
 import s from '../learn/Learn.module.css';
 import p from './Pages.module.css';
 
+import { t } from '@flow-see/core';
 /** P5 个人中心 /me：本机资料、学习统计、学习记录 */
 export function MePage() {
   const profile = useProfile();
@@ -28,20 +29,24 @@ export function MePage() {
 
   return (
     <div className={p.page}>
-      <TopBar title="个人中心" />
+      <TopBar title={t('mePage.ge_ren_zhong_xin')} />
       <main className={p.content}>
-        <section className={s.profile} aria-label="资料">
+        <section className={s.profile} aria-label={t('mePage.zi_liao')}>
           <Avatar color={profile.avatar} size={72} />
           <div className={s.profileFields}>
             <div className={s.field}>
-              <span>头像</span>
-              <div className={s.avatars} role="radiogroup" aria-label="头像颜色">
+              <span>{t('mePage.tou_xiang')}</span>
+              <div
+                className={s.avatars}
+                role="radiogroup"
+                aria-label={t('mePage.tou_xiang_yan_se')}
+              >
                 {Array.from({ length: AVATAR_COUNT }, (_, i) => (
                   <button
                     key={i}
                     role="radio"
                     aria-checked={profile.avatar === i}
-                    aria-label={`头像 ${i + 1}`}
+                    aria-label={t('mePage.avatar_aria', { n: i + 1 })}
                     className={s.avatarPick}
                     onClick={() => profile.set({ avatar: i })}
                   >
@@ -51,17 +56,17 @@ export function MePage() {
               </div>
             </div>
             <label className={s.field}>
-              <span>昵称</span>
+              <span>{t('mePage.ni_cheng')}</span>
               <input
                 className={ui.field}
                 value={profile.nickname}
                 maxLength={NICKNAME_MAX}
-                placeholder={`最多 ${NICKNAME_MAX} 个字`}
+                placeholder={t('mePage.nickname_hint', { n: NICKNAME_MAX })}
                 onChange={(e) => profile.set({ nickname: e.target.value.slice(0, NICKNAME_MAX) })}
               />
             </label>
             <label className={s.field}>
-              <span>在读年级</span>
+              <span>{t('mePage.zai_du_nian_ji')}</span>
               <select
                 className={ui.field}
                 value={profile.readingGrade}
@@ -77,26 +82,27 @@ export function MePage() {
           </div>
         </section>
         <p className={p.note}>
-          {canSave
-            ? '这些资料和学习记录只保存在这台设备上，不会上传。'
-            : '当前浏览模式下无法保存学习记录和资料。'}
+          {canSave ? t('mePage.zhe_xie_zi_liao') : t('mePage.dang_qian_liu_lan')}
         </p>
 
-        <section className={s.stats} aria-label="学习统计">
+        <section className={s.stats} aria-label={t('mePage.xue_xi_tong_ji')}>
           <div>
-            <strong>{completed}</strong>已学完
+            <strong>{completed}</strong>
+            {t('common.yi_xue_wan')}
           </div>
           <div>
-            <strong>{list.length}</strong>学过的知识点
+            <strong>{list.length}</strong>
+            {t('mePage.xue_guo_de_zhi')}
           </div>
           <div>
-            <strong>{days.length}</strong>学习天数
+            <strong>{days.length}</strong>
+            {t('mePage.xue_xi_tian_shu')}
           </div>
         </section>
 
         <section className={p.section} id="records">
           <div className={p.sectionHead}>
-            <h2 className={p.h2}>学习记录</h2>
+            <h2 className={p.h2}>{t('common.xue_xi_ji_lu')}</h2>
           </div>
           {list.length ? (
             <div className={s.lessonGrid}>
@@ -116,9 +122,9 @@ export function MePage() {
             </div>
           ) : (
             <div className={p.empty}>
-              <p>还没有学习记录，去首页看看吧</p>
+              <p>{t('mePage.hai_mei_you_xue')}</p>
               <Link to="/" className={`${ui.btn} ${ui.primary}`}>
-                去首页
+                {t('mePage.qu_shou_ye')}
               </Link>
             </div>
           )}
