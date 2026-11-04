@@ -194,7 +194,10 @@ describe('目录索引与搜索', () => {
     });
 
   it('线上只显示已发布的；目录里没有文件的显示即将上线', () => {
-    const { bundle } = loadContent(root());
+    const r = root();
+    // 去掉认识钟表的文件：目录里列了、文件不存在 → 即将上线
+    rmSync(join(r, 'lessons/math/g1/clock-basics.yaml'));
+    const { bundle } = loadContent(r);
     const index = buildIndex(bundle!, false);
     const g1 = index.catalog.find((c) => c.grade === 1 && c.subject === 'math')!;
     // 草稿在线上隐藏；认识钟表没有文件 → 即将上线

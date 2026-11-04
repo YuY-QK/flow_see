@@ -15,6 +15,7 @@ describe('算式', () => {
     expect(evalExpr('(1 + 2) * 3 - -1')).toBe(10);
     expect(evalExpr('max(a, 3) + min(1, 2)', { a: 5 })).toBe(6);
     expect(evalExpr(7)).toBe(7);
+    expect(evalExpr('a % 12 + 1', { a: 12 })).toBe(1);
   });
 
   it('写错、变量不存在、除以 0 时返回 undefined', () => {

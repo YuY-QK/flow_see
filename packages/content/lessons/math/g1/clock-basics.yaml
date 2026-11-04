@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 认识钟表：用 clock 模板，只写参数和讲解，不写代码。
+# clock 模板每一步的 show：face（钟面）、minute-hand（突出分针）、hour-hand（突出时针）、
+# read（读出现在的时间）、run（时间连续走 runMinutes 分钟，之后的步骤从新时间算）。
+# 钟面的位置、大小，走 1 小时用几秒，在 style.yaml 的 templates.clock。
+id: clock-basics
+title: 认识钟表
+summary: 认识时针和分针，会读整点；看分针走一圈、时针走一大格
+status: published
+reviewedAt: 2026-11-04
+duration: 2分钟
+tags: [钟表, 时针, 分针, 整点, 时间]
+recommended: true
+
+template: clock
+params:
+  hour: 3 # 从几时开始
+  minute: 0 # 这一课只讲整点
+  runMinutes: 60 # 走一走：分针走一圈
+derived:
+  next: hour % 12 + 1 # 走了 1 小时以后是几时
+
+explore: # 动手试一试：换一个整点
+  - { param: hour, control: slider, label: 几时, min: 1, max: 12 }
+presets:
+  - { label: 3 时, params: { hour: 3 } }
+  - { label: 7 时, params: { hour: 7 } }
+  - { label: 9 时, params: { hour: 9 } }
+  - { label: 12 时, params: { hour: 12 } }
+
+steps:
+  - title: 钟面
+    say: 这是钟面，上面有 1 到 12 这 12 个数。
+    show: face
+  - title: 分针
+    say: 又细又长的是分针。
+    show: minute-hand
+  - title: 时针
+    say: 又粗又短的是时针。
+    show: hour-hand
+  - title: 读整点
+    say: 分针指着 12，时针指着 {hour}，就是 {hour} 时。
+    show: read
+  - title: 走一走
+    say: 分针走一圈，时针走一大格，过了 1 小时。
+    show: run
+  - title: 再读一读
+    say: 分针又指着 12，时针指着 {next}，现在是 {next} 时。
+    show: read
+
+keyPoints:
+  - 分针又细又长，时针又粗又短
+  - 分针指着 12，时针指着几，就是几时
+  - 分针走一圈，时针走一大格，就是 1 小时

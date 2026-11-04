@@ -165,6 +165,18 @@ const fractionLayoutSchema = z
   })
   .strict();
 
+/** clock 模板的版式 */
+const clockLayoutSchema = z
+  .object({
+    stage: z.object({ width: z.number().positive(), height: z.number().positive() }).strict(),
+    at: point.describe('钟面中心'),
+    radius: z.number().positive().describe('钟面半径'),
+    digital: labelLayout.describe('电子钟'),
+    caption: labelLayout.describe('说明文字'),
+    secondsPerHour: z.number().positive().describe('时间连续走动时，走 1 小时用几秒'),
+  })
+  .strict();
+
 /** 动画主题 + 导出视频/GIF 的画面样式 */
 export const styleSchema = z
   .object({
@@ -234,7 +246,7 @@ export const styleSchema = z
       })
       .strict(),
     templates: z
-      .object({ fraction: fractionLayoutSchema })
+      .object({ fraction: fractionLayoutSchema, clock: clockLayoutSchema })
       .strict()
       .describe('由参数生成画面的模板（fraction、clock）的版式'),
   })

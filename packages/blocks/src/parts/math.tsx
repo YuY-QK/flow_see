@@ -142,7 +142,7 @@ export const clockPart: PartDef = {
   type: 'clock',
   name: '钟面',
   anchor: 'center',
-  props: ['time', 'radius', 'numbers', 'ticks', 'hands'],
+  props: ['time', 'radius', 'numbers', 'ticks', 'hands', 'emphasis'],
   normalize(p) {
     if (p.time === undefined) return p;
     const t = parseClockTime(p.time);
@@ -160,6 +160,7 @@ export const clockPart: PartDef = {
     const minutes = num(parseClockTime(p.time), 0);
     const { hour, minute } = clockAngles(minutes);
     const hands = str(p.hands, 'both');
+    const emphasis = str(p.emphasis, 'none');
     const polar = (deg: number, len: number): [number, number] => [
       x + Math.sin((deg * Math.PI) / 180) * len,
       y - Math.cos((deg * Math.PI) / 180) * len,
@@ -211,9 +212,69 @@ export const clockPart: PartDef = {
               );
             })
           : null}
-        {hands !== 'minute' ? hand(hour, r * 0.5, 9, c) : null}
-        {hands !== 'hour' ? hand(minute, r * 0.78, 5, ctx.theme.accent) : null}
+        {/* emphasis：突出一根指针（另一根变淡），讲“哪根是时针、哪根是分针”时用 */}
+        <g opacity={emphasis === 'minute' ? 0.3 : 1}>
+          {hands !== 'minute' ? hand(hour, r * 0.5, emphasis === 'hour' ? 14 : 9, c) : null}
+        </g>
+        <g opacity={emphasis === 'hour' ? 0.3 : 1}>
+          {hands !== 'hour'
+            ? hand(minute, r * 0.78, emphasis === 'minute' ? 9 : 5, ctx.theme.accent)
+            : null}
+        </g>
         <circle cx={x} cy={y} r={8} fill={c} />
+      </g>
+    );
+  },
+};
+
+/** 分钟数 → “3:05”这样的时间（12 小时制，0 点显示为 12） */
+export function formatClockTime(minutes: number): string {
+  const m = Math.floor(((minutes % 1440) + 1440) % 1440);
+  const h = Math.floor(m / 60) % 12 || 12;
+  return `${h}:${String(m % 60).padStart(2, '0')}`;
+}
+
+/** 电子钟：方框里的数字时间；time 和钟面一样写，可以连续变化 */
+export const digitalClockPart: PartDef = {
+  type: 'digital-clock',
+  name: '电子钟',
+  anchor: 'center',
+  props: ['time', 'size'],
+  normalize: clockPart.normalize,
+  bbox(p) {
+    const [x, y] = pt(p.at);
+    const size = num(p.size, 0);
+    return boxAround(x, y, size * 3.4, size * 1.6);
+  },
+  Render({ p, ctx }) {
+    const b = digitalClockPart.bbox(p);
+    const [x, y] = pt(p.at);
+    const size = num(p.size, 0);
+    const c = color(p.color, ctx.theme);
+    return (
+      <g>
+        <rect
+          x={b.x}
+          y={b.y}
+          width={b.w}
+          height={b.h}
+          rx={size * 0.3}
+          fill={ctx.theme.stageBg}
+          stroke={c}
+          strokeWidth={4}
+        />
+        <text
+          x={x}
+          y={y}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={size}
+          fontWeight="bold"
+          fill={c}
+          style={{ fontVariantNumeric: 'tabular-nums' }}
+        >
+          {formatClockTime(num(parseClockTime(p.time), 0))}
+        </text>
       </g>
     );
   },
