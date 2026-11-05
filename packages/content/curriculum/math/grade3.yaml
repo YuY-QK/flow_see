@@ -6,3 +6,7 @@ units:
     title: 分数的初步认识
     lessons:
       - fraction-intro
+  - id: multiplication-2
+    title: 两位数乘两位数
+    lessons:
+      - mult-column

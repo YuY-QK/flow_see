@@ -1,0 +1,127 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 两位数乘两位数的竖式：先用乘数的个位乘，再用十位乘，最后把两行相加。只用场景模板（scene）的配置，竖式用 column-calc 零件。
+# 被乘数、乘数都由“十位、个位”四个参数组成；范围里个位相乘一定要进位（个位都至少是 5，乘数十位至少是 2），讲解才不会说“进 0”。
+# column-calc 的 show 是已经写出多少步：前 4 步是 4 次相乘，后面是相加（共 rd 步，rd 是得数的位数）。
+id: mult-column
+title: 两位数乘两位数的竖式
+summary: 竖式一步一步算：先用个位乘，再用十位乘，进位怎么来，最后相加
+status: published
+reviewedAt: 2026-11-05
+duration: 3分钟
+tags: [乘法, 竖式, 两位数乘两位数, 进位, 笔算乘法]
+cover: { step: 9, text: 38 × 27 }
+
+template: scene
+stage: { width: 600, height: 400 }
+
+params:
+  a1: 3 # 被乘数的十位
+  a0: 8 # 被乘数的个位
+  b1: 2 # 乘数的十位
+  b0: 7 # 乘数的个位
+derived:
+  a: a1 * 10 + a0
+  b: b1 * 10 + b0
+  m1: a0 * b0 # 个位乘个位
+  w1: m1 % 10
+  c1: floor(m1 / 10)
+  t2: a1 * b0
+  m2: t2 + c1 # 十位乘个位，加进位
+  m3: a0 * b1 # 个位乘十位
+  w3: m3 % 10
+  c3: floor(m3 / 10)
+  t4: a1 * b1
+  m4: t4 + c3
+  p1: a * b0 # 第一行：被乘数乘乘数的个位
+  p2: a * b1 # 第二行：被乘数乘乘数的十位（实际是 p2 个十）
+  res: a * b
+  rd: 3 + floor(res / 1000) # 得数是几位数（这里是三位或四位）
+  tot: 4 + rd # 竖式一共多少步：4 次相乘，加 rd 步相加
+
+explore: # 自己做时舞台右侧的出题控件：只开放两个个位数（手机上控件多了会被裁掉），十位用例子换
+  - { param: a0, control: slider, label: 被乘数个位, min: 5, max: 9 }
+  - { param: b0, control: slider, label: 乘数个位, min: 5, max: 9 }
+presets:
+  - { label: 38 × 27, params: { a1: 3, a0: 8, b1: 2, b0: 7 } }
+  - { label: 25 × 36, params: { a1: 2, a0: 5, b1: 3, b0: 6 } }
+  - { label: 46 × 28, params: { a1: 4, a0: 6, b1: 2, b0: 8 } }
+  - { label: 17 × 25, params: { a1: 1, a0: 7, b1: 2, b0: 5 } }
+
+objects:
+  - { id: calc, type: column-calc, a: '{a}', b: '{b}', op: ×, show: 0, size: 48, at: [280, 205] }
+
+steps:
+  - title: 提出问题
+    say: '{a} × {b} 用竖式怎么算？先把两个数个位对齐。'
+    do:
+      - highlight: calc
+  - title: 分两步乘
+    say: 先用 {b} 的个位 {b0} 去乘，再用十位 {b1} 去乘。
+    do:
+      - highlight: calc
+  - title: 个位乘个位
+    say: '{a0} × {b0} = {m1}，个位写 {w1}，向十位进 {c1}。'
+    do:
+      - set: { target: calc, show: 1, duration: 1s }
+    try:
+      task: '{a0} × {b0} 等于几？'
+      choose: { answer: '{m1}', min: 1, show: [calc] }
+      hints:
+        - 想一想乘法口诀。
+  - title: 十位乘个位
+    say: '{a1} × {b0} = {t2}，再加进位 {c1}，得 {m2}。'
+    do:
+      - set: { target: calc, show: 2, duration: 1s }
+    try:
+      task: '{a1} × {b0} 再加进位 {c1}，等于几？'
+      choose: { answer: '{m2}', min: 1, show: [calc] }
+      hints:
+        - 先算 {a1} × {b0}，再加上写在上面的进位。
+  - title: 第一行
+    say: 第一行的 {p1}，是 {a} × {b0} 的积。
+    do:
+      - highlight: calc
+      - set: { target: calc, focus: false, duration: 0.3s, together: true }
+  - title: 十位乘个位上的数
+    say: 再用十位的 {b1} 乘。{a0} × {b1} = {m3}，写在十位下面。
+    do:
+      - set: { target: calc, focus: true, show: 3, duration: 1s }
+    try:
+      task: '{a0} × {b1} 等于几？'
+      choose: { answer: '{m3}', min: 1, show: [calc] }
+      hints:
+        - 想一想乘法口诀。
+  - title: 十位乘十位
+    say: '{a1} × {b1} = {t4}，加上进位 {c3}，得 {m4}。'
+    do:
+      - set: { target: calc, show: 4, duration: 1s }
+    try:
+      task: '{a1} × {b1} 再加进位 {c3}，等于几？'
+      choose: { answer: '{m4}', min: 1, show: [calc] }
+      hints:
+        - 先算 {a1} × {b1}，再加上写在上面的进位。
+  - title: 第二行
+    say: 第二行的积是 {p2}0，末位的 0 不写，所以空一位。
+    do:
+      - highlight: calc
+      - set: { target: calc, focus: false, duration: 0.3s, together: true }
+  - title: 两行相加
+    say: 把两行从个位起一位一位加：{p1} + {p2}0 = {res}。
+    do:
+      - set: { target: calc, focus: true, show: '{tot}', duration: 3s, ease: linear }
+    try:
+      task: '{p1} + {p2}0 等于几？'
+      choose: { answer: '{res}', min: 1, show: [calc] }
+      hints:
+        - 个位对个位、十位对十位，满十向前进 1。
+  - title: 得出结果
+    say: 所以 {a} × {b} = {res}。
+    do:
+      - set: { target: calc, focus: false, duration: 0.3s }
+      - highlight: calc
+
+keyPoints:
+  - 竖式：先用乘数的个位乘，再用十位乘，最后把几行相加
+  - 满十向前一位进，进位要加到下一位的积上
+  - 用十位乘出来的积，末位对着十位写
+  - '{a} × {b} = {p1} + {p2}0 = {res}'
