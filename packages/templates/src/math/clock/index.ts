@@ -78,8 +78,12 @@ export function clockScene(animation: Animation): SceneDef {
       case 'hour-hand':
         return [emphasis('hour'), ...caption(t('clockTemplate.hour_hand'))];
       case 'read':
+        // 有动手做时：钟面先摆好，隐藏上一步留下的数字和文字，提问（ask）后才写出时间，不提前给出答案
         return [
           emphasis('none'),
+          ...(s.data.try
+            ? [{ hide: { target: ['digital', 'caption'], duration: 0 } }, { ask: null }]
+            : []),
           { set: { target: 'digital', time, duration: 0, together: true } },
           { show: { target: 'digital', together: true } },
           ...caption(readTime(time)),

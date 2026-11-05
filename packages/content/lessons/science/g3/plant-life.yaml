@@ -46,6 +46,14 @@ steps:
     do:
       - show: [cond1, cond2, cond3]
       - highlight: [cond1, cond2, cond3]
+    try: # 多选：要把三个条件都选出来；条件的标签在选对以后才出现
+      task: 种子发芽需要哪几个条件？把它们都选出来。
+      choose:
+        answer: [水分, 空气, 适宜的温度]
+        options: [水分, 阳光, 空气, 土壤, 适宜的温度]
+      hints:
+        - 想一想，一粒种子放在哪里，才会发芽？
+        - 种子要喝水，要呼吸，还怕太冷。
   - title: 想一想
     say: 阳光和土壤，多数种子发芽时不一定需要。
     do:
@@ -56,22 +64,24 @@ steps:
       choose: { answer: 阳光, options: [阳光, 水分, 空气], show: [cond1, cond2] }
       hints:
         - 看看上面写着的三个条件。
-  - title: 长出根
+  - title: 种子发芽
     say: 种子吸足水，先长出根，向下扎进土里。
     do:
       - hide: [cond1, cond2, cond3, no]
-      - show: [i2, t2, a1]
+      - show: [i2, a1]
       - highlight: i2
+      - ask: true
+      - show: { target: t2, duration: 0.3s }
+    try:
+      task: 种子吸足水发芽，最先长出来的是什么？
+      choose: { answer: 根, options: [根, 叶, 花], show: [i2] }
+      hints:
+        - 看看发芽那张图，土里先长出了什么。
   - title: 长出茎和叶
     say: 接着茎向上长，长出叶子，成了幼苗。
     do:
       - show: [i3, t3, a2]
       - highlight: i3
-    try:
-      task: 种子刚发芽时，最先长出来的是什么？
-      choose: { answer: 根, options: [根, 叶, 花], show: [i2] }
-      hints:
-        - 看看发芽那张图，土里先长出了什么。
   - title: 开花
     say: 幼苗长大了，会开出花来。
     do:

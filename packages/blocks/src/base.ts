@@ -118,7 +118,9 @@ export function mixColor(a: string, b: string, t: number): string {
 
 export function textWidth(text: string, size: number): number {
   let w = 0;
-  for (const ch of text) w += ch.charCodeAt(0) < 0x100 ? (/[0-9]/.test(ch) ? 0.6 : 0.55) : 1;
+  // 数字 0.58、空格 0.3、其他半角字符 0.55、汉字 1（粗体无衬线字体的实际宽度，颜色标记的底块靠它对齐）
+  for (const ch of text)
+    w += ch.charCodeAt(0) < 0x100 ? (/[0-9]/.test(ch) ? 0.58 : ch === ' ' ? 0.3 : 0.55) : 1;
   return w * size;
 }
 

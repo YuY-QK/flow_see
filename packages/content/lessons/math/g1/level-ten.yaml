@@ -45,6 +45,7 @@ objects:
     first: { join: [a, p], op: −, value: 10 }
     second: { join: [m, q], op: −, value: '{res}' }
     size: 42
+    colors: { a: '@all' } # 算式里的数和图形里的圆片同色，讲到哪一堆，对应的数一起亮
 
 steps:
   - title: 提出问题

@@ -28,14 +28,14 @@ presets:
   - { label: 9 时, params: { h0: 9 } }
 
 objects:
-  - { id: sun, type: sun-shadow, time: '{h0}:00', at: [400, 150] }
+  - { id: sun, type: sun-shadow, time: '{h0}:00', objectAsset: tree, pole: 64, at: [400, 150] }
   - { id: clock, type: digital-clock, time: '{h0}:00', size: 34, at: [650, 60] }
   - { id: cap1, type: label, text: 从上往下看, size: 22, at: [190, 350] }
   - { id: cap2, type: label, text: 对着太阳看, size: 22, at: [570, 350] }
 
 steps:
   - title: 阳光下的影子
-    say: 旗杆在阳光下有影子。影子会一直不变吗？
+    say: 小树在阳光下有影子。影子会一直不变吗？
     do:
       - highlight: sun
   - title: 上午的影子

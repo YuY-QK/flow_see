@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=../../../schemas/lesson.schema.json
 # 认识分数：用 fraction 模板（需求设计 5.4），只写参数和讲解，不写代码。
 # fraction 模板每一步的 show：whole（完整的）、split（平均分）、take-one（取 1 份）、take-many（取 take 份）。
+# try 的步骤，模板会先把图形画好、等孩子答完再出文字和分数（不会提前写出答案）。
 # 图形的位置、大小、颜色在 style.yaml 的 templates.fraction。
 id: fraction-intro
 title: 认识分数
@@ -40,14 +41,14 @@ steps:
   - title: 平均分
     say: 把它平均分成 {parts} 份，每一份都一样大。
     show: split
-  - title: 取 1 份
-    say: 取其中的 1 份，就是 {parts} 分之 1，写作 1/{parts}。
-    show: take-one
     try:
       task: 图形平均分成了几份？
       choose: { answer: '{parts}', min: 2, max: 12, show: [shape] }
       hints:
         - 数一数一共有几份一样大的。
+  - title: 取 1 份
+    say: 取其中的 1 份，就是 {parts} 分之 1，写作 1/{parts}。
+    show: take-one
   - title: 取几份
     say: 取其中 {take} 份，就是 {parts} 分之 {take}，写作 {take}/{parts}。
     show: take-many

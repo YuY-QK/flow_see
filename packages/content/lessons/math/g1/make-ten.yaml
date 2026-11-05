@@ -67,6 +67,7 @@ objects:
     first: { join: [a, p], op: +, value: 10 }
     second: { join: [m, q], op: +, value: '{sum}' }
     size: 42
+    colors: { a: '@left', b: '@right', p: orange, q: orange } # 算式里的数和圆片同色，讲到哪一堆，对应的数一起亮
 
 steps:
   - title: 提出问题

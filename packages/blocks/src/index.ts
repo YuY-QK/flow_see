@@ -18,6 +18,7 @@ import { columnCalcPart } from './parts/columncalc';
 import { batteryPart, bulbPart, switchPart, wirePart } from './parts/circuit';
 import { sunShadowPart } from './parts/sunshadow';
 import { particlesPart } from './parts/particles';
+import { thermometerPart } from './parts/thermometer';
 import { splitCalcPart } from './parts/splitcalc';
 import { fractionPart, labelPart, textPart } from './parts/text';
 
@@ -55,6 +56,7 @@ export { sunShadowLayout, sunShadowState, type SunShadowState } from './parts/su
 export { particleLayout, particlePosition, type ParticleLayout } from './parts/particles';
 export { COLUMN_CALC_OPS, columnCalcPlan, type ColumnCalcPlan } from './parts/columncalc';
 export { splitCalcLayout } from './parts/splitcalc';
+export { thermometerFill, thermometerLayout, thermometerMix } from './parts/thermometer';
 
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
@@ -82,6 +84,7 @@ export const PARTS: readonly PartDef[] = [
   bulbPart,
   switchPart,
   wirePart,
+  thermometerPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */

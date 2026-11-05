@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../../../schemas/lesson.schema.json
 # 长方形的面积：用 1 平方厘米的小方格铺满，数一数 = 每行个数 × 行数 = 长 × 宽。只用场景模板（scene）的配置。
-# 长 len、宽 wid 是参数，小方格用方格零件（grid）；每个小方格 50 个单位大小，位置按长宽算出来，让图形居中、上下不留大片空白。
+# 长 len、宽 wid 是参数，小方格用方格零件（grid）；每个小方格 44 个单位大小，位置按长宽算出来，让图形居中、上下不留大片空白。
 id: rect-area
 title: 长方形的面积
 summary: 用小方格铺满长方形，数一数，发现面积等于长乘宽
@@ -11,25 +11,23 @@ tags: [面积, 长方形, 长方形的面积, 平方厘米, 方格, 乘法]
 cover: { step: 6, text: 长 × 宽 }
 
 template: scene
-stage: { width: 720, height: 380 }
+stage: { width: 840, height: 340 } # 左边 0–500 是长方形，右边 520–830 是算式
 
 params:
   len: 6 # 长（厘米）
   wid: 4 # 宽（厘米）
 derived:
   area: len * wid
-  rw: len * 50 # 长方形的宽度（每个小方格 50）
-  rh: wid * 50
-  m: (380 - rh - 100) / 2 # 上下留白，让整体居中
-  x0: 350 - rw / 2 # 长方形左上角
-  y0: m + 40
+  rw: len * 44 # 长方形的宽度（每个小方格 44）
+  rh: wid * 44
+  x0: 240 - rw / 2 # 长方形左上角（在左半边居中）
+  y0: (340 - rh) / 2 + 12
   cx: x0 + rw / 2
   cy: y0 + rh / 2
-  lx: x0 - 84 # 宽的标注
-  ty: y0 - 34 # 长的标注
-  ey: y0 + rh + 46 # 算式
-  y1: y0 + 25 # 第一行的中心
-  x1: x0 + 25 # 第一列的中心
+  lx: x0 - 36 # 宽的标注（竖着写在长方形左边）
+  ty: y0 - 26 # 长的标注
+  y1: y0 + 22 # 第一行的中心
+  x1: x0 + 22 # 第一列的中心
 
 explore: # 动手试一试：长 3–8 厘米，宽 2–5 厘米
   - { param: len, control: slider, label: 长（厘米）, min: 3, max: 8 }
@@ -42,12 +40,14 @@ presets:
 
 objects:
   - { id: rect, type: shape, shape: rect, width: '{rw}', height: '{rh}', at: ['{cx}', '{cy}'], color: blue }
-  - { id: grid, type: grid, rows: '{wid}', cols: '{len}', cell: 50, filled: 0, at: ['{x0}', '{y0}'], color: green, hidden: true }
-  - { id: rowbox, type: shape, shape: rect, width: '{rw}', height: 50, at: ['{cx}', '{y1}'], color: red, fill: false, hidden: true }
-  - { id: colbox, type: shape, shape: rect, width: 50, height: '{rh}', at: ['{x1}', '{cy}'], color: red, fill: false, hidden: true }
-  - { id: lenl, type: label, text: '长 {len} 厘米', size: 22, at: ['{cx}', '{ty}'] }
-  - { id: widl, type: label, text: '宽 {wid} 厘米', size: 22, at: ['{lx}', '{cy}'] }
-  - { id: eq, type: text, text: '{len} × {wid} = {area}', at: ['{cx}', '{ey}'], size: 44, hidden: true }
+  - { id: grid, type: grid, rows: '{wid}', cols: '{len}', cell: 44, filled: 0, at: ['{x0}', '{y0}'], color: green, hidden: true }
+  # 每行的框是蓝色、每列的框是红色：算式里的长（每行几个）是蓝色、宽（几行）是红色
+  - { id: rowbox, type: shape, shape: rect, width: '{rw}', height: 44, at: ['{cx}', '{y1}'], color: blue, fill: false, hidden: true }
+  - { id: colbox, type: shape, shape: rect, width: 44, height: '{rh}', at: ['{x1}', '{cy}'], color: red, fill: false, hidden: true }
+  - { id: lenl, type: label, text: '长 {len} 厘米', size: 22, at: ['{cx}', '{ty}'], color: blue }
+  - { id: widl, type: label, text: '宽 {wid} 厘米', size: 22, at: ['{lx}', '{cy}'], color: red, rotate: -90 }
+  - { id: eq, type: text, text: '[{len}](blue @rowbox) × [{wid}](red @colbox) = {area}', at: [675, 130], size: 44, hidden: true }
+  - { id: res, type: text, text: '面积 = {area} 平方厘米', at: [675, 200], size: 28, hidden: true }
 
 steps:
   - title: 提出问题
@@ -95,13 +95,14 @@ steps:
   - title: 面积是多少
     say: 每个小方格是 1 平方厘米，面积是 {area} 平方厘米。
     do:
-      - set: { target: eq, text: '面积 = {area} 平方厘米', color: green, duration: 0.5s }
-      - highlight: eq
+      - show: res
+      - color: { target: res, to: green, together: true }
+      - highlight: res
   - title: 面积公式
     say: 长方形的面积等于长乘宽。
     do:
-      - set: { target: eq, text: '面积 = 长 × 宽', duration: 0.5s }
-      - highlight: [lenl, widl, eq]
+      - set: { target: res, text: '面积 = [长](blue) × [宽](red)', color: ink, duration: 0.5s }
+      - highlight: [lenl, widl, res]
 
 keyPoints:
   - 面积是图形所占平面的大小，常用平方厘米做单位
