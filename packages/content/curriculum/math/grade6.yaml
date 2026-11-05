@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=../../schemas/curriculum.schema.json
+# 六年级数学。单元和知识点的顺序就是页面上的顺序。
+subject: math
+grade: 6
+units:
+  - id: circle
+    title: 圆
+    lessons:
+      - circle-area
