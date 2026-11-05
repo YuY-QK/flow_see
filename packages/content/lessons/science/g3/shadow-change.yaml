@@ -1,0 +1,86 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 影子的变化：一天中，太阳的位置变了，杆的影子长短和方向也跟着变（上午长、朝西，中午最短、朝北，下午又变长、朝东）。
+# 用 sun-shadow 零件：左边俯视图（北在上），右边侧视图（对着太阳看），时间 time 是连续变化的（set + ease: linear）。
+# 按北半球中纬度、春秋分算（教科版三年级下册“太阳、地球和月球”里阳光下物体的影子）。
+# 上午几时 h0 是参数（7–9 时），下午对称的时刻 h2 = 24 - h0（春秋分上下午对称）。
+id: shadow-change
+title: 影子的变化
+summary: 一天中太阳的位置变了，影子的长短和方向也跟着变
+status: published
+reviewedAt: 2026-11-05
+duration: 3分钟
+tags: [影子, 太阳, 光, 方向, 一天, 时间, 阳光下的影子]
+cover: { step: 2, text: 影子 }
+
+template: scene
+stage: { width: 800, height: 380 }
+
+params:
+  h0: 8 # 上午几时
+derived:
+  h2: 24 - h0 # 下午几时（上下午对称）
+
+explore: # 动手试一试：上午 7–9 时（影子够长，下午对称也是 15–17 时）
+  - { param: h0, control: slider, label: 上午几时, min: 7, max: 9 }
+presets:
+  - { label: 8 时, params: { h0: 8 } }
+  - { label: 7 时, params: { h0: 7 } }
+  - { label: 9 时, params: { h0: 9 } }
+
+objects:
+  - { id: sun, type: sun-shadow, time: '{h0}:00', at: [400, 150] }
+  - { id: clock, type: digital-clock, time: '{h0}:00', size: 34, at: [650, 60] }
+  - { id: cap1, type: label, text: 从上往下看, size: 22, at: [190, 350] }
+  - { id: cap2, type: label, text: 对着太阳看, size: 22, at: [570, 350] }
+
+steps:
+  - title: 阳光下的影子
+    say: 旗杆在阳光下有影子。影子会一直不变吗？
+    do:
+      - highlight: sun
+  - title: 上午的影子
+    say: 上午 {h0} 时，太阳在东边，位置低，影子又长又朝西。
+    do:
+      - highlight: sun
+    try:
+      task: 上午的影子，朝哪个方向？
+      choose: { answer: 西, options: [西, 东, 南], show: [sun] }
+      hints:
+        - 看看左图，影子指着哪个字。
+  - title: 太阳升高
+    say: 太阳慢慢升高，影子越来越短。
+    do:
+      - set: { target: sun, time: '12:00', duration: 5s, ease: linear }
+      - set: { target: clock, time: '12:00', duration: 5s, ease: linear, together: true }
+  - title: 中午的影子
+    say: 中午 12 时，太阳最高，影子最短，朝北。
+    do:
+      - highlight: sun
+    try:
+      task: 中午的影子，比上午的怎样？
+      choose: { answer: 更短, options: [更短, 更长, 一样长], show: [sun] }
+      hints:
+        - 比一比现在影子的长短，和上午的。
+  - title: 太阳西移
+    say: 下午太阳向西移，影子又慢慢变长。
+    do:
+      - set: { target: sun, time: '{h2}:00', duration: 5s, ease: linear }
+      - set: { target: clock, time: '{h2}:00', duration: 5s, ease: linear, together: true }
+  - title: 下午的影子
+    say: 下午 {h2} 时，太阳在西边，影子又长又朝东。
+    do:
+      - highlight: sun
+    try:
+      task: 下午的影子，朝哪个方向？
+      choose: { answer: 东, options: [东, 西, 北], show: [sun] }
+      hints:
+        - 看看左图，影子指着哪个字。
+  - title: 影子在变
+    say: 一天中，影子的长短和方向，跟着太阳的位置变。
+    do:
+      - highlight: [sun, clock]
+
+keyPoints:
+  - 一天中，太阳的位置在变，影子的长短和方向也在变
+  - 上午太阳在东边，影子朝西；中午太阳最高，影子最短，朝北；下午太阳在西边，影子朝东
+  - 太阳越高，影子越短；太阳越低，影子越长

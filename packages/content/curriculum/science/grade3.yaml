@@ -10,3 +10,7 @@ units:
     title: 植物的生长变化
     lessons:
       - plant-life
+  - id: sun-earth-moon
+    title: 太阳、地球和月球
+    lessons:
+      - shadow-change
