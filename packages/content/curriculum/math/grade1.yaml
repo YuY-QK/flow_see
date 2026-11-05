@@ -8,6 +8,11 @@ units:
     title: 20 以内的进位加法
     lessons:
       - make-ten
+  - id: subtract-within-20
+    title: 20 以内的退位减法
+    lessons:
+      - borrow-ten
+      - { id: level-ten, title: 平十法 }
   - id: clock
     title: 认识钟表
     lessons:
