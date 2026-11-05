@@ -44,6 +44,13 @@ const sceneStyleSchema = z
       .describe('各动作没写 duration 时的默认时长（秒），键是动作名'),
     splitLift: z.number().describe('拆分出来的计数块默认往上抬多少（相对格子大小）'),
     tenframeGap: nonNeg.describe('十格框之间的间距（相对格子大小）'),
+    counterPlate: z
+      .object({
+        pad: nonNeg.describe('盘子比格子外扩多少（舞台坐标）'),
+        radius: nonNeg.describe('盘子的圆角（舞台坐标）'),
+      })
+      .strict()
+      .describe('点阵计数块写了 capacity 时画的盘子（平均分用）'),
     counterBorder: z
       .object({
         width: nonNeg.describe('边框粗细（舞台坐标）'),

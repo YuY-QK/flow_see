@@ -14,6 +14,8 @@ export interface SceneStyle {
   splitLift: number;
   /** 十格框之间的间距（相对格子大小） */
   tenframeGap: number;
+  /** 点阵计数块写了 capacity 时画的“盘子”：比格子外扩多少、圆角（舞台坐标） */
+  counterPlate: { pad: number; radius: number };
   /** 计数块的边框：粗细（舞台坐标）、比填充色深多少（0–1）；边框让靠在一起、叠在一起的块也分得清 */
   counterBorder: { width: number; darken: number };
   /** 计数块的阴影：偏移（舞台坐标）和深浅（0–1），用一个错开的深色块画出，导出视频里也有 */

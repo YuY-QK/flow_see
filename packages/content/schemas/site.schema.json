@@ -332,6 +332,27 @@
           "minimum": 0,
           "description": "十格框之间的间距（相对格子大小）"
         },
+        "counterPlate": {
+          "type": "object",
+          "properties": {
+            "pad": {
+              "type": "number",
+              "minimum": 0,
+              "description": "盘子比格子外扩多少（舞台坐标）"
+            },
+            "radius": {
+              "type": "number",
+              "minimum": 0,
+              "description": "盘子的圆角（舞台坐标）"
+            }
+          },
+          "required": [
+            "pad",
+            "radius"
+          ],
+          "additionalProperties": false,
+          "description": "点阵计数块写了 capacity 时画的盘子（平均分用）"
+        },
         "counterBorder": {
           "type": "object",
           "properties": {
@@ -429,6 +450,7 @@
         "actionSeconds",
         "splitLift",
         "tenframeGap",
+        "counterPlate",
         "counterBorder",
         "counterShadow",
         "tryIt",

@@ -66,6 +66,7 @@ scene:
     wait: 0.5
   splitLift: 0.9                       # 拆分出来的计数块默认往上抬多少（相对格子大小）
   tenframeGap: 0.4                     # 十格框之间的间距（相对格子大小）
+  counterPlate: { pad: 8, radius: 14 }         # 点阵计数块写了 capacity 时画的盘子：比格子外扩多少、圆角
   counterBorder: { width: 3, darken: 0.45 }    # 计数块的边框：粗细、比填充色深多少
   counterShadow: { dx: 1.5, dy: 3.5, opacity: 0.3 }   # 计数块的阴影：向右、向下偏多少，深浅
   tryIt:                               # 动手做（跟着做 / 自己做）时舞台上的拖动

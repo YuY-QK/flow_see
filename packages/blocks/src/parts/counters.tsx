@@ -68,7 +68,26 @@ export function counterColors(p: Props): string[] {
   return Array.from({ length: n }, (_, i) => (typeof list[i] === 'string' ? list[i] : base));
 }
 
+/** 点阵的“盘子”：点阵排列并写了 capacity 时，画一个能放下 capacity 个的盘子（平均分用） */
+export function plateBox(p: Props): Box | undefined {
+  const cap = Math.round(num(p.capacity, 0));
+  if (layoutOf(p) !== 'grid' || cap <= 0) return undefined;
+  const [x, y] = pt(p.at);
+  const s = num(p.size, 0);
+  const cols = Math.max(1, Math.round(num(p.cols, 0)));
+  const pad = sceneStyle().counterPlate.pad;
+  const rows = Math.max(1, Math.ceil(Math.max(cap, num(p.count, 0)) / cols));
+  return {
+    x: x - pad,
+    y: y - pad,
+    w: Math.min(cols, Math.max(cap, num(p.count, 0))) * s + pad * 2,
+    h: rows * s + pad * 2,
+  };
+}
+
 function frameBoxes(p: Props): Box[] {
+  const plate = plateBox(p);
+  if (plate) return [plate];
   if (layoutOf(p) !== 'tenframe') return [];
   const [x, y] = pt(p.at);
   const s = num(p.size, 0);
@@ -111,10 +130,23 @@ export const countersPart: PartDef = {
     const { width: bw, darken } = sceneStyle().counterBorder;
     const sh = sceneStyle().counterShadow;
     const darkest = color('black', ctx.theme);
+    const plate = plateBox(p);
     const edge = (c: string) => mixColor(c, darkest, darken);
     return (
       <g>
-        {frameBoxes(p).map((b, k) => (
+        {plate ? (
+          <rect
+            x={plate.x}
+            y={plate.y}
+            width={plate.w}
+            height={plate.h}
+            rx={sceneStyle().counterPlate.radius}
+            fill={ctx.theme.stageBg}
+            stroke={ctx.theme.line}
+            strokeWidth={2.5}
+          />
+        ) : null}
+        {(plate ? [] : frameBoxes(p)).map((b, k) => (
           <g key={k} stroke={ctx.theme.line} strokeWidth={2.5} fill="none">
             <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={6} fill={ctx.theme.stageBg} />
             {[1, 2, 3, 4].map((c) => (
