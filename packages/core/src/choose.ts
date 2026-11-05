@@ -60,3 +60,8 @@ export function shuffled<T>(list: readonly T[], random: () => number = Math.rand
   }
   return a;
 }
+
+/** 随机取一个；列表为空时返回 undefined */
+export function pickOne<T>(list: readonly T[], random: () => number = Math.random): T | undefined {
+  return list.length ? list[Math.floor(random() * list.length)] : undefined;
+}

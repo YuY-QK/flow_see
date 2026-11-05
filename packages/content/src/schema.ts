@@ -51,6 +51,14 @@ const sceneStyleSchema = z
       })
       .strict()
       .describe('计数块的边框：让靠在一起、叠在一起的块也分得清'),
+    counterShadow: z
+      .object({
+        dx: z.number().describe('阴影向右偏多少（舞台坐标）'),
+        dy: z.number().describe('阴影向下偏多少（舞台坐标）'),
+        opacity: z.number().min(0).max(1).describe('阴影深浅，0 = 没有'),
+      })
+      .strict()
+      .describe('计数块的阴影：让块看起来浮在上面，叠在一起也分得清'),
     tryIt: z
       .object({
         dropPadding: nonNeg.describe('放到目标零件外面这么远以内也算放进去（舞台坐标）'),
@@ -546,7 +554,6 @@ export const lessonSchema = z
       .describe('动手试一试：点选的例子（只写要改的参数）'),
     objects: z.array(z.object({ id: z.string(), type: z.string() }).loose()).optional(),
     explore: z.array(exploreSchema).optional(),
-    resultStep: z.int().min(1).optional().describe('调整“动手试一试”后跳到第几步，默认最后一步'),
     steps: z.array(stepSchema).min(1),
     keyPoints: z.array(text).min(2).max(4),
   })

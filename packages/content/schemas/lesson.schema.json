@@ -223,12 +223,6 @@
         "additionalProperties": false
       }
     },
-    "resultStep": {
-      "description": "调整“动手试一试”后跳到第几步，默认最后一步",
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 9007199254740991
-    },
     "steps": {
       "minItems": 1,
       "type": "array",

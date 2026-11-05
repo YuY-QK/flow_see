@@ -379,8 +379,6 @@ export function loadContent(
         name,
         '拖动（try.drag）目前只有场景模板（template: scene）支持；其他模板用点选（try.choose）',
       );
-    if (lesson.resultStep && lesson.resultStep > lesson.steps.length)
-      err(name, `resultStep 超出了步骤数（共 ${lesson.steps.length} 步）`);
 
     const lf = { file: name, subject, grade, lesson };
     lessons.push(lf);
