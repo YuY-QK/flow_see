@@ -1,0 +1,96 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 种子的萌发与植物的一生：种子 → 发芽（根先长出）→ 幼苗 → 开花 → 结果（果实里有种子）→ 新的种子。
+# 以菜豆/绿豆一类双子叶植物为例（教科版三年级下册“植物的生长变化”）；图片是自绘的 SVG（assets/science/plant-*.svg，登记在 manifest.yaml）。
+# 发芽条件：水分、空气、适宜的温度；多数种子发芽时不需要阳光和土壤（讲法留有余地，不说“所有”）。
+id: plant-life
+title: 种子的萌发与植物的一生
+summary: 种子发芽需要什么，一粒种子怎样长成开花结果的植物
+status: published
+reviewedAt: 2026-11-05
+duration: 3分钟
+tags: [种子, 发芽, 萌发, 植物的一生, 幼苗, 开花, 结果, 植物]
+cover: { step: 7, text: 植物的一生 }
+
+template: scene
+stage: { width: 800, height: 395 }
+
+objects:
+  - { id: cond1, type: label, text: 水分, at: [230, 40], hidden: true }
+  - { id: cond2, type: label, text: 空气, at: [400, 40], hidden: true }
+  - { id: cond3, type: label, text: 适宜的温度, at: [590, 40], hidden: true }
+  - { id: no, type: label, text: 阳光、土壤：多数种子不一定需要, color: gray, at: [400, 116], hidden: true }
+  - { id: i1, type: image, asset: plant-seed, width: 130, height: 130, at: [100, 200] }
+  - { id: i2, type: image, asset: plant-sprout, width: 130, height: 130, at: [250, 200], hidden: true }
+  - { id: i3, type: image, asset: plant-seedling, width: 130, height: 130, at: [400, 200], hidden: true }
+  - { id: i4, type: image, asset: plant-flower, width: 130, height: 130, at: [550, 200], hidden: true }
+  - { id: i5, type: image, asset: plant-fruit, width: 130, height: 130, at: [700, 200], hidden: true }
+  - { id: a1, type: arrow, from: [172, 200], to: [192, 200], width: 4, hidden: true }
+  - { id: a2, type: arrow, from: [322, 200], to: [342, 200], width: 4, hidden: true }
+  - { id: a3, type: arrow, from: [472, 200], to: [492, 200], width: 4, hidden: true }
+  - { id: a4, type: arrow, from: [622, 200], to: [642, 200], width: 4, hidden: true }
+  - { id: t1, type: text, text: 种子, size: 30, at: [100, 308] }
+  - { id: t2, type: text, text: 发芽, size: 30, at: [250, 308], hidden: true }
+  - { id: t3, type: text, text: 幼苗, size: 30, at: [400, 308], hidden: true }
+  - { id: t4, type: text, text: 开花, size: 30, at: [550, 308], hidden: true }
+  - { id: t5, type: text, text: 结果, size: 30, at: [700, 308], hidden: true }
+  - { id: back, type: arrow, from: [700, 358], to: [110, 358], width: 4, color: green, draw: 0, hidden: true }
+  - { id: backl, type: label, text: 种子又能长成新的植物, color: green, at: [400, 358], hidden: true }
+
+steps:
+  - title: 一粒种子
+    say: 这是一粒种子，里面有胚和养料。
+    do:
+      - highlight: i1
+  - title: 发芽的条件
+    say: 种子发芽，需要水分、空气和适宜的温度。
+    do:
+      - show: [cond1, cond2, cond3]
+      - highlight: [cond1, cond2, cond3]
+  - title: 想一想
+    say: 阳光和土壤，多数种子发芽时不一定需要。
+    do:
+      - show: no
+      - highlight: no
+    try:
+      task: 种子发芽，不一定需要下面哪一个？
+      choose: { answer: 阳光, options: [阳光, 水分, 空气], show: [cond1, cond2] }
+      hints:
+        - 看看上面写着的三个条件。
+  - title: 长出根
+    say: 种子吸足水，先长出根，向下扎进土里。
+    do:
+      - hide: [cond1, cond2, cond3, no]
+      - show: [i2, t2, a1]
+      - highlight: i2
+  - title: 长出茎和叶
+    say: 接着茎向上长，长出叶子，成了幼苗。
+    do:
+      - show: [i3, t3, a2]
+      - highlight: i3
+    try:
+      task: 种子刚发芽时，最先长出来的是什么？
+      choose: { answer: 根, options: [根, 叶, 花], show: [i2] }
+      hints:
+        - 看看发芽那张图，土里先长出了什么。
+  - title: 开花
+    say: 幼苗长大了，会开出花来。
+    do:
+      - show: [i4, t4, a3]
+      - highlight: i4
+  - title: 结出果实
+    say: 花谢了，结出果实，果实里有种子。
+    do:
+      - show: [i5, t5, a4]
+      - highlight: i5
+  - title: 植物的一生
+    say: 新种子又能长成新植物，这就是植物的一生。
+    do:
+      - show: [back, backl]
+      - set: { target: back, draw: 1, duration: 1.2s }
+      - highlight: backl
+
+keyPoints:
+  - 种子发芽需要水分、空气和适宜的温度
+  - 种子发芽时，先长出根，再长出茎和叶
+  - 植物的一生：种子 → 发芽 → 幼苗 → 开花 → 结果
+  - 果实里有种子，种子又能长成新的植物
