@@ -13,6 +13,7 @@ import {
   numberlinePart,
 } from './parts/math';
 import { arrowPart, imagePart, linePart, shapePart } from './parts/shapes';
+import { circleCutPart } from './parts/circlecut';
 import { columnCalcPart } from './parts/columncalc';
 import { splitCalcPart } from './parts/splitcalc';
 import { fractionPart, labelPart, textPart } from './parts/text';
@@ -38,6 +39,7 @@ export {
 } from './parts/math';
 export { SHAPE_KINDS } from './parts/shapes';
 export { displayText } from './parts/text';
+export { circleCutLayout, type CircleCutLayout } from './parts/circlecut';
 export { COLUMN_CALC_OPS, columnCalcPlan, type ColumnCalcPlan } from './parts/columncalc';
 export { splitCalcLayout } from './parts/splitcalc';
 
@@ -60,6 +62,7 @@ export const PARTS: readonly PartDef[] = [
   imagePart,
   splitCalcPart,
   columnCalcPart,
+  circleCutPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */
