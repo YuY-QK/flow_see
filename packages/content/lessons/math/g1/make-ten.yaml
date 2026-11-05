@@ -100,6 +100,7 @@ steps:
       - move: { target: one, to: left, duration: 1.2s }
       - hide: { target: hint, together: true }
       - set: { target: calc, show: 2, duration: 0.8s }
+      - set: { target: calc, show: 3, duration: 0.8s } # 10 和剩下的数的连线也出来，等着孩子算
       - highlight: { target: [left, calc] }
     try: # 跟着做 / 自己做：孩子把拆出来的圆片拖进十格框；上面的 do 是标准做法（演示、做对后的结果）
       task: 把 {gap} 个橙色圆片拖进十格框。
@@ -110,7 +111,6 @@ steps:
   - title: 再加剩下的
     say: 10 加 {rest} 等于 {sum}。
     do:
-      - set: { target: calc, show: 4, duration: 1.4s }
       - highlight: calc
     try:
       task: 10 + {rest} 等于几？
@@ -120,6 +120,7 @@ steps:
   - title: 得出结果
     say: 所以 {a} 加 {b} 等于 {sum}。
     do:
+      - set: { target: calc, show: 4, duration: 1.2s } # 得数的连线出来，写出得数
       - highlight: calc
 
 keyPoints:

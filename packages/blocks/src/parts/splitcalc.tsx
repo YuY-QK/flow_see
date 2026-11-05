@@ -52,6 +52,8 @@ interface Layout {
   second: Join & { y: number; x1: number; x2: number };
   /** 得数的位置（箭头指向这里） */
   result: { x: number; y: number };
+  /** 得数连线的折线：从第二条横线中点往下，横着走到得数正下方，再向上 */
+  bend: { x: number; y: number };
   box: Box;
 }
 
@@ -118,7 +120,7 @@ export function splitCalcLayout(p: Props): Layout {
     x: minX,
     y: y0 - size * 0.65,
     w: maxX - minX,
-    h: yb2 + size * 0.3 - (y0 - size * 0.65),
+    h: yb2 + size * 0.75 - (y0 - size * 0.65),
   };
 
   return {
@@ -132,9 +134,10 @@ export function splitCalcLayout(p: Props): Layout {
       ...second,
       y: yb2,
       x1: Math.min(s1.x, s2.x),
-      x2: Math.max(s1.x, s2.x, rx),
+      x2: Math.max(s1.x, s2.x),
     },
     result: { x: rx, y: y0 },
+    bend: { x: (Math.min(s1.x, s2.x) + Math.max(s1.x, s2.x)) / 2, y: yb2 + size * 0.5 },
     box,
   };
 }
@@ -173,7 +176,9 @@ export const splitCalcPart: PartDef = {
           ? L.nodes.p.y + s * 0.65
           : show <= 2
             ? L.nodes.m.y + s * 0.65
-            : L.box.y + L.box.h;
+            : show <= 3
+              ? L.second.y + s * 0.3
+              : L.box.y + L.box.h;
     return { ...L.box, h: bottom - L.box.y };
   },
   Render({ p, ctx }) {
@@ -200,19 +205,8 @@ export const splitCalcPart: PartDef = {
       </text>
     );
     // 运算符：横线正中一个小圆圈
-    const opMark = (op: string, x: number, y: number) => (
-      <g>
-        <circle
-          cx={x}
-          cy={y}
-          r={s * 0.3}
-          fill={ctx.theme.stageBg}
-          stroke={accent}
-          strokeWidth={sw * 0.8}
-        />
-        {num$(op, x, y, accent, s * 0.45)}
-      </g>
-    );
+    // 运算符：就一个符号，放在横线上面（不压在线上，也不加圆圈）
+    const opMark = (op: string, x: number, y: number) => num$(op, x, y - s * 0.32, accent, s * 0.5);
     // 两个数下面的括线：从各自的底部竖下来，在 y 处连成横线
     const bracket = (xs: { x: number; y: number }[], y: number, x1: number, x2: number) => (
       <g stroke={line} strokeWidth={sw} fill="none" strokeLinecap="round" strokeLinejoin="round">
@@ -254,22 +248,27 @@ export const splitCalcPart: PartDef = {
           {num$(N.m.text, N.m.x, N.m.y, ink)}
         </g>
 
-        {/* 3 第二次合并：横线连到得数正下方，向上的箭头指向得数 */}
+        {/* 3 第二次合并：10 和剩下的数用括线连起来（只到两个数之间） */}
         <g opacity={k3}>
           {bracket([N[S2.join[0]], N[S2.join[1]]], S2.y, S2.x1, S2.x2)}
-          <g
-            stroke={accent}
-            strokeWidth={sw}
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1={L.result.x} x2={L.result.x} y1={S2.y} y2={L.result.y + s * 0.6} />
-            <path
-              d={`M${L.result.x - s * 0.18} ${L.result.y + s * 0.82} L${L.result.x} ${L.result.y + s * 0.6} L${L.result.x + s * 0.18} ${L.result.y + s * 0.82}`}
-            />
-          </g>
-          {opMark(S2.op, (S2.x1 + Math.max(N[S2.join[0]].x, N[S2.join[1]].x)) / 2, S2.y)}
+          {opMark(S2.op, (S2.x1 + S2.x2) / 2, S2.y)}
+        </g>
+
+        {/* 4 得数的连线：从横线中点往下折一下，横着走到得数下面，再向上指向得数 */}
+        <g
+          opacity={k4}
+          stroke={accent}
+          strokeWidth={sw}
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path
+            d={`M${L.bend.x} ${S2.y} L${L.bend.x} ${L.bend.y} L${L.result.x} ${L.bend.y} L${L.result.x} ${L.result.y + s * 0.6}`}
+          />
+          <path
+            d={`M${L.result.x - s * 0.18} ${L.result.y + s * 0.82} L${L.result.x} ${L.result.y + s * 0.6} L${L.result.x + s * 0.18} ${L.result.y + s * 0.82}`}
+          />
         </g>
       </g>
     );
