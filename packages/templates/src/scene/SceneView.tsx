@@ -1,6 +1,7 @@
 import { useContext, useMemo, useRef, useState, type PointerEvent } from 'react';
 import {
   AssetUrlContext,
+  color,
   getPart,
   num,
   sceneStyle,
@@ -9,7 +10,13 @@ import {
 } from '@flow-see/blocks';
 import type { StageProps } from '@flow-see/runtime/template.ts';
 import { t } from '@flow-see/core';
-import { dragFrame, sceneFrame, type SceneDef, type SceneObject } from './evaluate';
+import {
+  dragFrame,
+  dragTargets,
+  sceneFrame,
+  type SceneDef,
+  type SceneObject,
+} from './evaluate';
 
 /**
  * 场景画面：纯函数，画面只由 (场景, 第几步, 步内进度) 决定。
@@ -35,13 +42,16 @@ export function SceneView({
   const [lift, setLift] = useState<{ index: number; at: Point; pointer: number } | undefined>();
 
   const moved = tryIt?.moved;
+  const placed = tryIt?.placed;
   const drag = useMemo(
-    () => (dragging ? dragFrame(def, index, moved ?? [], lift?.index) : undefined),
-    [dragging, def, index, moved, lift?.index],
+    () => (dragging ? dragFrame(def, index, moved ?? [], lift?.index, placed) : undefined),
+    [dragging, def, index, moved, lift?.index, placed],
   );
+  // 等孩子动手时：提问前那一段动作按 tryIt.progress 放
+  const shown = tryIt?.phase === 'doing' ? (tryIt.progress ?? 1) : progress;
   const frame = useMemo(
-    () => drag ?? sceneFrame(def, index, progress, tryIt?.phase),
-    [drag, def, index, progress, tryIt?.phase],
+    () => drag ?? sceneFrame(def, index, shown, tryIt?.phase),
+    [drag, def, index, shown, tryIt?.phase],
   );
 
   const toStage = (e: PointerEvent): Point | undefined => {
@@ -50,19 +60,25 @@ export function SceneView({
     const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
     return [p.x, p.y];
   };
-  /** 放下的位置是否在目标零件上（外面 dropPadding 以内也算） */
-  const onTarget = (at: Point): boolean => {
-    const to = drag?.to;
-    const part = to ? getPart(to.type) : undefined;
-    if (!to || !part) return false;
-    const b = part.bbox(to.props);
+  /** 放下的位置在哪个目标零件上（外面 dropPadding 以内也算）；都不在时为 undefined */
+  const onTarget = (at: Point): string | undefined => {
     const pad = sceneStyle().tryIt.dropPadding;
-    return (
-      at[0] >= b.x - pad &&
-      at[0] <= b.x + b.w + pad &&
-      at[1] >= b.y - pad &&
-      at[1] <= b.y + b.h + pad
-    );
+    return drag?.to.find((to) => {
+      const part = getPart(to.type);
+      if (!part) return false;
+      const b = part.bbox(to.props);
+      return (
+        at[0] >= b.x - pad &&
+        at[0] <= b.x + b.w + pad &&
+        at[1] >= b.y - pad &&
+        at[1] <= b.y + b.h + pad
+      );
+    })?.id;
+  };
+  /** 键盘放下：按顺序放进下一个目标（一个一个分时轮流放） */
+  const nextTarget = (): string | undefined => {
+    const ids = spec?.drag ? dragTargets(spec.drag) : [];
+    return ids[(moved?.length ?? 0) % Math.max(1, ids.length)];
   };
 
   const onDown = (e: PointerEvent, i: number) => {
@@ -85,7 +101,7 @@ export function SceneView({
   };
 
   // 做错几次后：拖动高亮目标零件；点选高亮配置里指定的零件
-  const hint = new Set(spec?.drag ? [spec.drag.to] : (spec?.choose?.show ?? []));
+  const hint = new Set(spec?.drag ? dragTargets(spec.drag) : (spec?.choose?.show ?? []));
   const objects = frame.objects.map((o) =>
     doing && tryIt?.showTarget && hint.has(o.id)
       ? { ...o, props: { ...o.props, highlight: 1 } }
@@ -138,7 +154,7 @@ export function SceneView({
                 // 键盘：回车或空格直接放进目标
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  tryIt?.onDrop?.(it.index, true);
+                  tryIt?.onDrop?.(it.index, nextTarget());
                 }
               }}
             />
@@ -194,6 +210,8 @@ function PartView({
       ? `translate(${cx} ${cy}) rotate(${rotate}) scale(${scale}) translate(${-cx} ${-cy})`
       : undefined;
   const { padding: pad, strokeWidth, fillOpacity, dash } = sceneStyle().highlight;
+  // 高亮框的颜色：highlight 动作写了 color 就用它，否则用动画主题的强调色
+  const frame = color(o.props.hlColor, theme, 'accent');
   return (
     <g opacity={opacity} transform={transform} data-part={o.id}>
       {hl > 0 ? (
@@ -203,9 +221,9 @@ function PartView({
           width={b.w + pad * 2}
           height={b.h + pad * 2}
           rx={Math.min(theme.radius, 18)}
-          fill={theme.accent}
+          fill={frame}
           fillOpacity={fillOpacity * hl}
-          stroke={theme.accent}
+          stroke={frame}
           strokeWidth={strokeWidth}
           strokeOpacity={hl}
           strokeDasharray={dash}

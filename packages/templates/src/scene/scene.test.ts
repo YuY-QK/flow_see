@@ -173,10 +173,10 @@ describe('动手做：拖动', () => {
     const f0 = dragFrame(def, 1, []);
     expect(f0.items).toHaveLength(4);
     expect(f0.from?.props.count).toBe(4);
-    expect(f0.to?.props.count).toBe(9);
+    expect(f0.to[0]?.props.count).toBe(9);
     const f1 = dragFrame(def, 1, [2]);
     expect(f1.items.map((i) => i.index)).toEqual([0, 1, 3]);
-    expect(f1.to?.props.count).toBe(10);
+    expect(f1.to[0]?.props.count).toBe(10);
     // 正在拖的那一个先拿掉
     expect(dragFrame(def, 1, [], 0).items.map((i) => i.index)).toEqual([1, 2, 3]);
     expect(stepMotionMs(def, 1, 'doing')).toBe(0);

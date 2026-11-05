@@ -64,6 +64,8 @@ scene:
     count: 1
     hop: 0.8
     wait: 0.5
+    deal: 0.45                         # 一个一个分：每分一个的时长
+    ask: 0
   splitLift: 0.9                       # 拆分出来的计数块默认往上抬多少（相对格子大小）
   tenframeGap: 0.4                     # 十格框之间的间距（相对格子大小）
   counterPlate: { pad: 8, radius: 14 }         # 点阵计数块写了 capacity 时画的盘子：比格子外扩多少、圆角
@@ -91,7 +93,7 @@ scene:
     image: { width: 160, height: 160 }
     circle-cut: { radius: 100, parts: 1, t: 0, color: blue, color2: orange }
     particles: { width: 300, height: 260, radius: 9, count: 36, phase: 0, t: 0, color: blue }
-    sun-shadow: { time: 720, latitude: 35, declination: 0, radius: 120, pole: 56, unit: 26, sideWidth: 380, labels: [北, 东, 南, 西], color: ink, shadowColor: gray }
+    sun-shadow: { time: 720, latitude: 35, declination: 0, radius: 120, pole: 56, unit: 26, sideWidth: 380, labels: [北, 东, 南, 西], color: ink, shadowColor: gray, sunAsset: sun }   # sunAsset：太阳的图片；objectAsset：把杆换成图片（如小树、小兔子），不写画杆
     battery: { width: 90, height: 44, color: green }
     bulb: { radius: 26, lead: 18, lit: 0, color: yellow }
     switch: { width: 90, on: 0, color: ink }
@@ -111,6 +113,7 @@ player:
     targetAfterMisses: 2               # 做错几次后，高亮该放到哪里
     demoAfterMisses: 3                 # 做错几次后，自动“看我做一遍”
     demoPauseMs: 800                   # 演示放完后停多久，再让孩子自己做
+    remindMs: 8000                     # 多选、一个一个分时：停下来这么久还没做完，提示还差几个
     selfDwellMs: 1500                  # 自己做：最后一步（结果）显示多久后算做完
 
 # ───────── 个人中心 ─────────

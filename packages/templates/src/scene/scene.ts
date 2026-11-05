@@ -2,6 +2,7 @@ import type { Animation } from '@flow-see/core';
 import type { TrySpec } from '@flow-see/runtime/template.ts';
 import { sceneStyle } from '@flow-see/blocks';
 import type { SceneDef } from './evaluate';
+import { expandActions, expandObjects } from './repeat';
 
 /** 每一步的动手做（step.data.try）；没有的为 undefined。由参数生成场景的模板（分数、钟表）也用它 */
 export function triesOf(animation: Animation): (TrySpec | undefined)[] {
@@ -16,11 +17,12 @@ const cache = new WeakMap<Animation, SceneDef>();
 export function sceneOf(animation: Animation): SceneDef {
   let def = cache.get(animation);
   if (def) return def;
+  const scope = animation.params ?? {};
   const cfg = (animation.config ?? {}) as { stage?: SceneDef['stage']; objects?: unknown };
   def = {
     stage: cfg.stage ?? sceneStyle().stage,
-    objects: Array.isArray(cfg.objects) ? cfg.objects : [],
-    steps: animation.steps.map((s) => (Array.isArray(s.data.do) ? s.data.do : [])),
+    objects: expandObjects(Array.isArray(cfg.objects) ? cfg.objects : [], scope),
+    steps: animation.steps.map((s) => expandActions(Array.isArray(s.data.do) ? s.data.do : [], scope)),
     tries: triesOf(animation),
   };
   cache.set(animation, def);

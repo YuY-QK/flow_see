@@ -606,6 +606,11 @@
   background: var(--danger-soft);
   animation: shake 0.4s;
 }
+.option[data-picked='true'] {
+  border-color: var(--success);
+  background: var(--success-soft);
+  color: var(--success);
+}
 .option[data-reveal='true'] {
   border-color: var(--success);
   background: var(--success-soft);

@@ -5,6 +5,8 @@ export interface SpeakHandle {
   /** 读完（或被取消、出错）时完成 */
   done: Promise<void>;
   cancel(): void;
+  /** 已经读到第几个字（浏览器报告的词边界；不支持时一直是 0） */
+  spokenChars(): number;
 }
 
 export function isSpeechSupported(): boolean {
@@ -32,7 +34,7 @@ export function speak(
   opts: { rate?: number; lang?: string; voiceURI?: string } = {},
 ): SpeakHandle {
   if (!isSpeechSupported() || !text.trim()) {
-    return { done: Promise.resolve(), cancel() {} };
+    return { done: Promise.resolve(), cancel() {}, spokenChars: () => 0 };
   }
   if (isNative()) return speakWithNative(text, opts);
   const synth = window.speechSynthesis;
@@ -49,14 +51,20 @@ export function speak(
   const done = new Promise<void>((resolve) => (finish = resolve));
   // 部分浏览器偶尔不触发 onend，用按字数估算的超时兜底
   const fallback = window.setTimeout(finish, (text.length * 350) / u.rate + 3000);
+  let spoken = 0;
+  u.onboundary = (e) => {
+    spoken = Math.max(spoken, e.charIndex);
+  };
   u.onend = u.onerror = () => {
     window.clearTimeout(fallback);
+    spoken = text.length;
     finish();
   };
   synth.speak(u);
 
   return {
     done,
+    spokenChars: () => spoken,
     cancel() {
       window.clearTimeout(fallback);
       u.onend = u.onerror = null;
@@ -78,6 +86,7 @@ function speakWithNative(text: string, opts: { rate?: number; lang?: string }): 
     });
   return {
     done,
+    spokenChars: () => 0,
     cancel() {
       window.clearTimeout(fallback);
       void stopSpeakingNative().catch(() => {});

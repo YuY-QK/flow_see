@@ -9,7 +9,7 @@ import {
   resolveParams,
   type ExploreControl,
 } from '@flow-see/core/params.ts';
-import { chooseOptions, type ChooseSpec } from '@flow-see/core/choose.ts';
+import { chooseAnswers, chooseOptions, type ChooseSpec } from '@flow-see/core/choose.ts';
 import { fillParams } from '@flow-see/core/fill.ts';
 import type { z } from 'zod';
 import {
@@ -68,7 +68,8 @@ function checkChooseTries(
     if (!raw) return;
     const spec = fillParams(raw, scope);
     const path = ['steps', i, 'try', 'choose'];
-    if (spec.answer === undefined || String(spec.answer) === '' || /\{/.test(String(spec.answer)))
+    const answers = chooseAnswers(spec);
+    if (!answers.length || answers.some((a) => a === undefined || String(a) === '' || /\{/.test(String(a))))
       return void out.push({
         path: [...path, 'answer'],
         message: 'answer 算不出来（参数没写全？）',
@@ -79,11 +80,14 @@ function checkChooseTries(
         path,
         message: `选项不够：只有 ${opts.length} 个（${opts.map(String).join('、')}）；数字答案自动生成选项时，检查 min / max；文字答案要写 options，且各项不能重复`,
       });
-    if (spec.options && !spec.options.some((o) => String(o) === String(spec.answer)))
-      out.push({
-        path: [...path, 'options'],
-        message: `选项里要包含正确答案 ${String(spec.answer)}`,
-      });
+    for (const a of answers)
+      if (spec.options && !spec.options.some((o) => String(o) === String(a)))
+        out.push({
+          path: [...path, 'options'],
+          message: `选项里要包含正确答案 ${String(a)}`,
+        });
+    if (Array.isArray(spec.answer) && opts.length <= answers.length)
+      out.push({ path: [...path, 'options'], message: '多选时选项要比答案多（至少有一个不对的）' });
   });
   return out;
 }
@@ -253,11 +257,11 @@ export function loadContent(
       err(name, `模板不存在：${lesson.template}（已有：${opts.templateIds.join('、')}）`);
     if (lesson.thumbnail && !assetIds.has(lesson.thumbnail))
       err(name, `缩略图素材不存在：${lesson.thumbnail}`);
-    for (const o of lesson.objects ?? []) {
-      const asset = (o as { asset?: unknown }).asset;
-      if (typeof asset === 'string' && !assetIds.has(asset))
-        err(name, `零件 ${o.id} 引用的素材不存在：${asset}`);
-    }
+    // 素材：asset，以及各零件里以 Asset 结尾的属性（如光与影的 sunAsset）
+    for (const o of lesson.objects ?? [])
+      for (const [k, asset] of Object.entries(o))
+        if ((k === 'asset' || k.endsWith('Asset')) && typeof asset === 'string' && !assetIds.has(asset))
+          err(name, `零件 ${o.id} 引用的素材不存在：${asset}`);
 
     // 参数、派生值、动手试一试
     const known = new Set(Object.keys(lesson.params));
@@ -296,8 +300,10 @@ export function loadContent(
       if (typeof v === 'string') for (const [, n] of v.matchAll(PLACEHOLDER)) used.add(n);
       return v;
     });
+    // {i} 是重复（repeat）里的第几份，由场景模板展开时代入
     for (const n of used)
-      if (!known.has(n)) err(name, `配置里的 {${n}} 不是 params 或 derived 中的参数`);
+      if (!known.has(n) && n !== 'i')
+        err(name, `配置里的 {${n}} 不是 params 或 derived 中的参数`);
     lesson.steps.forEach((st, i) => {
       const lines: [string, string][] = [['讲解', st.say]];
       if (st.try) {

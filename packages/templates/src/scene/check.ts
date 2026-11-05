@@ -18,11 +18,20 @@ import {
   TIMING_KEYS,
   VERBS,
   VERB_KEYS,
+  dealCount,
   isVerb,
   parseAction,
   parseDuration,
 } from './actions';
-import { coveredActions, dragFrame, type SceneDef } from './evaluate';
+import { coveredActions, dragFrame, dragTargets, type SceneDef } from './evaluate';
+import { expandActions, expandObjects } from './repeat';
+
+/** 颜色：颜色名、#RRGGBB，或 "@零件id"（跟着那个零件的颜色） */
+const colorOk = (v: unknown, alive: Map<string, string>) =>
+  isColor(v) || (typeof v === 'string' && v.startsWith('@') && alive.has(v.slice(1)));
+
+/** 文字里的颜色标记 [文字](颜色)、[文字](颜色 @零件id)、[文字](@零件id) */
+const RICH = /\[([^\]]*)\]\(([^)]*)\)/g;
 
 const ID = /^[A-Za-z_][\w-]*$/;
 
@@ -32,6 +41,7 @@ function checkProps(
   props: Record<string, unknown>,
   path: (string | number)[],
   out: ConfigIssue[],
+  alive: Map<string, string> = new Map(),
 ) {
   const part = getPart(type);
   if (!part) return;
@@ -48,11 +58,25 @@ function checkProps(
       out.push({ path: [...path, k], message: 'at 要写成 [x, y]，如 [400, 225]' });
     if ((k === 'from' || k === 'to') && (type === 'line' || type === 'arrow') && !isPoint(v))
       out.push({ path: [...path, k], message: `${k} 要写成 [x, y]` });
-    if (k === 'color' && !isColor(v))
+    if (k === 'color' && !colorOk(v, alive))
       out.push({
         path: [...path, k],
-        message: `颜色写颜色名（blue、orange、red、green、purple、yellow、pink、gray、ink、accent）或 #RRGGBB`,
+        message: `颜色写颜色名（blue、orange、red、green、purple、yellow、pink、gray、ink、accent）、#RRGGBB，或 "@零件id"`,
       });
+    if (k === 'colors' && v && typeof v === 'object' && !Array.isArray(v))
+      for (const [n, c] of Object.entries(v))
+        if (!colorOk(c, alive))
+          out.push({ path: [...path, k, n], message: `${n} 的颜色写颜色名、#RRGGBB 或 "@零件id"` });
+    if (k === 'text' && typeof v === 'string')
+      for (const m of v.matchAll(RICH)) {
+        const words = m[2].trim().split(/\s+/).filter(Boolean);
+        const bad = words.find((w) => !colorOk(w, alive));
+        if (!words.length || bad)
+          out.push({
+            path: [...path, k],
+            message: `文字里的 [${m[1]}](${m[2]})：括号里写颜色名、#RRGGBB、"@零件id"，或“颜色 @零件id”${bad ? `（${bad} 不认识）` : ''}`,
+          });
+      }
     if (k === 'layout' && !(COUNTER_LAYOUTS as readonly unknown[]).includes(v))
       out.push({ path: [...path, k], message: `layout 只能是 ${COUNTER_LAYOUTS.join('、')}` });
     if (
@@ -74,12 +98,13 @@ function checkProps(
 export function checkScene(raw: LessonLike): ConfigIssue[] {
   const out: ConfigIssue[] = [];
   // 参数和派生值先代入，再检查（配置里的 count: "{a}" 要按代入后的数字检查）
+  const scope = resolveParams(raw.params, raw.derived);
+  const filled = fillParams({ objects: raw.objects ?? [], steps: raw.steps }, scope);
+  // 重复（repeat）先展开，再按展开后的零件和动作检查
   const lesson = {
     ...raw,
-    ...fillParams(
-      { objects: raw.objects ?? [], steps: raw.steps },
-      resolveParams(raw.params, raw.derived),
-    ),
+    objects: expandObjects(filled.objects, scope),
+    steps: filled.steps.map((st) => ({ ...st, do: expandActions(st.do, scope) as Record<string, unknown>[] })),
   };
   const objects = lesson.objects ?? [];
   if (!objects.length) out.push({ path: ['objects'], message: '场景模板要在 objects 里摆好零件' });
@@ -103,8 +128,11 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
     }
     for (const r of part.required ?? [])
       if (o[r] === undefined) out.push({ path: ['objects', i], message: `${part.name}要写 ${r}` });
-    checkProps(type, o, ['objects', i], out);
     if (typeof id === 'string') alive.set(id, part.type);
+  });
+  // 颜色可以引用别的零件（"@id"），所以等所有零件登记完再查属性
+  objects.forEach((o, i) => {
+    if (getPart(String(o.type))) checkProps(String(o.type), o, ['objects', i], out, alive);
   });
 
   const def: SceneDef = {
@@ -153,7 +181,7 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
         );
 
       // 目标零件
-      if (verb === 'wait') return;
+      if (verb === 'wait' || verb === 'ask') return;
       if (!targets.length) {
         need('target', false, '要写 target（零件 id）');
         return;
@@ -219,7 +247,7 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
           );
           for (const t of targets) {
             const tt = alive.get(t);
-            if (tt) checkProps(tt, patch, [...path, verb], out);
+            if (tt) checkProps(tt, patch, [...path, verb], out, alive);
           }
           break;
         }
@@ -234,8 +262,31 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
           need('to', typeof args.to === 'number' && args.to >= 0, 'to 写放大倍数，如 1.5');
           break;
         case 'color':
-          need('to', isColor(args.to), 'to 写颜色名或 #RRGGBB');
+          need('to', colorOk(args.to, alive), 'to 写颜色名、#RRGGBB 或 "@零件id"');
           break;
+        case 'highlight':
+          need(
+            'color',
+            args.color === undefined || colorOk(args.color, alive),
+            'color 写高亮框的颜色（颜色名或 #RRGGBB）',
+          );
+          break;
+        case 'deal': {
+          const into = Array.isArray(args.into) ? args.into : [args.into];
+          need('target', !type || isCounters(type), '只能从一组计数块里分');
+          need(
+            'into',
+            into.length > 0 &&
+              into.every((x) => typeof x === 'string' && isCounters(alive.get(x) ?? '')),
+            'into 写分到哪几组计数块里（零件 id 列表，如 [pl1, pl2, pl3]）',
+          );
+          need(
+            'count',
+            args.count === undefined || (Number.isInteger(args.count) && Number(args.count) > 0),
+            'count 写一共分几个（正整数）；不写时每组分 1 个',
+          );
+          break;
+        }
         case 'count':
           need('to', typeof args.to === 'number', 'to 写数到多少');
           break;
@@ -267,8 +318,8 @@ function checkTry(def: SceneDef, si: number, alive: Map<string, string>, out: Co
   }
   if (!isCounters(fromType))
     out.push({ path: [...p, 'from'], message: 'from 要写一组计数块（只有计数块可以一个一个拖）' });
-  if (!alive.has(drag.to))
-    out.push({ path: [...p, 'to'], message: `零件 ${drag.to} 在这一步开头不存在` });
+  for (const to of dragTargets(drag))
+    if (!alive.has(to)) out.push({ path: [...p, 'to'], message: `零件 ${to} 在这一步开头不存在` });
   const count = drag.count;
   if (typeof count !== 'number' || !Number.isInteger(count) || count < 1) {
     out.push({ path: [...p, 'count'], message: 'count 写要拖几个（正整数，可以写 "{参数}"）' });
@@ -285,16 +336,22 @@ function checkTry(def: SceneDef, si: number, alive: Map<string, string>, out: Co
   const covered = coveredActions(list, spec);
   const moves = [...covered]
     .map((i) => parseAction(list[i]))
-    .filter((a) => a && (a.verb === 'move' || a.verb === 'merge'));
+    .filter((a) => a && (a.verb === 'move' || a.verb === 'merge' || a.verb === 'deal'));
+  const to = dragTargets(drag).join('、');
   if (!moves.length) {
     out.push({
       path,
-      message: `do 里要有把 ${drag.from} 移动（move）或合并（merge）到 ${drag.to} 的动作，演示和做对后的画面都用它`,
+      message: `do 里要有把 ${drag.from} 移动（move）、合并（merge）或一个一个分（deal）到 ${to} 的动作，演示和做对后的画面都用它`,
     });
     return;
   }
   const split = [...covered].map((i) => parseAction(list[i])).find((a) => a?.verb === 'split');
-  const standard = split ? Math.round(Number(split.args.take ?? 1)) : have;
+  const deals = moves.filter((a) => a?.verb === 'deal');
+  const standard = deals.length
+    ? deals.reduce((n, a) => n + dealCount(a!.args), 0)
+    : split
+      ? Math.round(Number(split.args.take ?? 1))
+      : have;
   if (standard !== count)
     out.push({
       path: [...p, 'count'],

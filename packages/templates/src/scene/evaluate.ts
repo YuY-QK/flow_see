@@ -15,7 +15,7 @@ import {
   type Props,
 } from '@flow-see/blocks';
 import type { StageTry, TrySpec } from '@flow-see/runtime/template.ts';
-import { parseAction, planStep, type SceneAction, type StepPlan } from './actions';
+import { dealCount, parseAction, planStep, type SceneAction, type StepPlan } from './actions';
 
 export interface SceneDef {
   stage: { width: number; height: number };
@@ -115,7 +115,12 @@ function apply(world: World, a: SceneAction, p: number, current: boolean) {
     case 'highlight':
       // 高亮只在这一步有效；keep: true 时一直保留
       if (!current && args.keep !== true) return;
-      for (const o of objs) o.props.highlight = Math.max(num(o.props.highlight, 0), e);
+      for (const o of objs) {
+        o.props.highlight = Math.max(num(o.props.highlight, 0), e);
+        // color：这一次高亮框的颜色（不写用动画主题的强调色）
+        if (typeof args.color === 'string') o.props.hlColor = args.color;
+        else delete o.props.hlColor;
+      }
       return;
     case 'unhighlight':
       for (const o of objs) o.props.highlight = num(o.props.highlight, 0) * (1 - e);
@@ -213,8 +218,74 @@ function apply(world: World, a: SceneAction, p: number, current: boolean) {
       if (typeof one.props.pointer === 'number') one.props.pointer = lerp(args.from, args.to, e);
       return;
     }
+    case 'deal':
+      return deal(world, a, p);
     case 'wait':
+    case 'ask':
       return;
+  }
+}
+
+/**
+ * 一个一个分：从 target（一组计数块）的末尾一次拿一个，依次放进 into 里的各组
+ * （第 1 个放进第 1 组，第 2 个放进第 2 组……一轮放完再从第 1 组放起），每一个都飞一小段弧线。
+ */
+function deal(world: World, a: SceneAction, p: number) {
+  const src = world.get(a.targets[0] ?? '');
+  const into = (Array.isArray(a.args.into) ? a.args.into : [a.args.into])
+    .map((id) => (typeof id === 'string' ? world.get(id) : undefined))
+    .filter((o): o is SceneObject => !!o && isCounters(o.type));
+  if (!src || !isCounters(src.type) || !into.length) return;
+  const n = Math.min(dealCount(a.args), Math.round(num(src.props.count, 0)));
+  if (n <= 0) return;
+  const size = num(src.props.size, 44);
+  // 每一个占 1/n 的时间；每一个自己先快后慢
+  const pos = p * n;
+  for (let k = 0; k < n; k++) {
+    const q = Math.max(0, Math.min(1, pos - k));
+    if (q <= 0) break;
+    const items = counterItems(src.props);
+    const colors = counterColors(src.props);
+    const last = items.length - 1;
+    if (last < 0) return;
+    const dest = into[k % into.length];
+    const from = items[last];
+    const c = colors[last];
+    const base = Math.round(num(dest.props.count, 0));
+    // 拿走这一个
+    src.props.count = last;
+    src.props.colors = colors.slice(0, last);
+    if (Array.isArray(src.props.items)) src.props.items = items.slice(0, last);
+    if (q >= 1) {
+      dest.props.colors = [...counterColors(dest.props), c];
+      dest.props.count = base + 1;
+      delete dest.props.items;
+      continue;
+    }
+    // 正在飞的这一个：画在最上面
+    const e = smooth(q);
+    const to = counterSlot(dest.props, base);
+    const at: Point = [
+      lerp(from[0], to[0], e),
+      lerp(from[1], to[1], e) - Math.sin(Math.PI * e) * size * 0.8,
+    ];
+    const id = `${src.id}~deal`;
+    world.delete(id);
+    world.set(id, {
+      id,
+      type: 'counters',
+      props: {
+        ...src.props,
+        layout: 'row',
+        count: 1,
+        capacity: 0,
+        items: [at],
+        colors: [c],
+        at: [at[0] - size / 2, at[1] - size / 2],
+        highlight: 0,
+      },
+    });
+    return;
   }
 }
 
@@ -239,6 +310,11 @@ export function coveredActions(list: readonly unknown[] | undefined, spec?: TryS
   const drag = spec?.drag;
   if (!drag) return out;
   const ids = new Set([drag.from]);
+  const targets = dragTargets(drag);
+  const sameTargets = (v: unknown) => {
+    const list = Array.isArray(v) ? v : [v];
+    return list.length === targets.length && list.every((x, k) => x === targets[k]);
+  };
   (list ?? []).forEach((raw, i) => {
     const a = parseAction(raw);
     if (!a || !ids.has(a.targets[0] ?? '')) return;
@@ -246,12 +322,26 @@ export function coveredActions(list: readonly unknown[] | undefined, spec?: TryS
       ids.add(a.args.as);
       out.add(i);
     } else if (
-      (a.verb === 'move' && a.args.to === drag.to) ||
-      (a.verb === 'merge' && a.args.into === drag.to)
+      (a.verb === 'move' && sameTargets(a.args.to)) ||
+      (a.verb === 'merge' && sameTargets(a.args.into)) ||
+      (a.verb === 'deal' && sameTargets(a.args.into))
     )
       out.add(i);
   });
   return out;
+}
+
+/** 拖动的目标（一个或几个零件 id） */
+export function dragTargets(drag: NonNullable<TrySpec['drag']>): string[] {
+  return Array.isArray(drag.to) ? drag.to : [drag.to];
+}
+
+/** 拖到多个目标时，每个目标最多放几个（不写时平均分） */
+export function dragEach(drag: NonNullable<TrySpec['drag']>): number {
+  const n = dragTargets(drag).length;
+  const each = Number(drag.each);
+  if (Number.isFinite(each) && each > 0) return Math.round(each);
+  return Math.max(1, Math.ceil(Number(drag.count) / n));
 }
 
 /** 孩子做对以后的各步计划：被孩子做掉的动作时长为 0（直接到位），其余照常 */
@@ -260,6 +350,9 @@ function solvedPlans(def: SceneDef): StepPlan[] {
   if (!p) {
     p = def.steps.map((list, i) => {
       const covered = coveredActions(list, def.tries?.[i]);
+      // 提问之前的动作在孩子做之前已经放过了
+      const ask = (list ?? []).findIndex((raw) => parseAction(raw)?.verb === 'ask');
+      if (def.tries?.[i]) for (let j = 0; j < ask; j++) covered.add(j);
       if (!covered.size) return plans(def)[i];
       return planStep(
         (list ?? []).map((raw, j) => {
@@ -275,7 +368,10 @@ function solvedPlans(def: SceneDef): StepPlan[] {
 
 /** 第 index 步动画段的时长（毫秒）；孩子做对以后（solved）去掉被孩子做掉的动作 */
 export function stepMotionMs(def: SceneDef, index: number, phase?: StageTry['phase']): number {
-  if (phase === 'doing') return 0;
+  if (phase === 'doing') {
+    const plan = plans(def)[index];
+    return plan ? preludeMs(plan) : 0;
+  }
   return (phase === 'solved' ? solvedPlans(def) : plans(def))[index]?.total ?? 0;
 }
 
@@ -292,19 +388,56 @@ function buildWorld(
   }
   const all = phase === 'solved' ? solvedPlans(def) : plans(def);
   const last = Math.min(index, all.length - 1);
-  // 等孩子动手时：画面停在这一步开头（前面各步做完，这一步的动作一个都还没做）
-  const end = phase === 'doing' ? last - 1 : last;
-  for (let s = 0; s <= end; s++) {
+  for (let s = 0; s <= last; s++) {
     const plan = all[s];
     const current = s === last;
-    const t = current ? Math.max(0, Math.min(1, progress)) * plan.total : plan.total;
-    for (const a of plan.actions) {
+    // 等孩子动手时：前面各步做完；这一步只放提问（ask）之前的动作，progress 是这一段的进度
+    const doing = current && phase === 'doing';
+    const actions = doing ? plan.actions.slice(0, plan.askAt) : plan.actions;
+    const total = doing ? preludeMs(plan) : plan.total;
+    const t = current ? Math.max(0, Math.min(1, progress)) * total : total;
+    for (const a of actions) {
       let p = 1;
-      if (current && plan.total > 0) p = a.dur > 0 ? (t - a.start) / a.dur : t >= a.start ? 1 : 0;
+      if (current && total > 0) p = a.dur > 0 ? (t - a.start) / a.dur : t >= a.start ? 1 : 0;
       apply(world, a, Math.max(0, Math.min(1, p)), current);
     }
   }
+  linkRefs(world);
   return world;
+}
+
+/** 提问（ask）之前那一段动作的时长 */
+function preludeMs(plan: StepPlan): number {
+  return plan.actions.slice(0, plan.askAt).reduce((m, a) => Math.max(m, a.start + a.dur), 0);
+}
+
+/**
+ * 颜色对应（强对应）：属性里写 "@零件id" 的颜色跟着那个零件走；
+ * 文字里 [4](@r1) 这样标出来的字，颜色是 r1 的颜色，r1 高亮时这几个字也一起亮起来。
+ * 这里把用到的零件的颜色、高亮程度记进 props.refs，零件画的时候查它。
+ */
+function linkRefs(world: World) {
+  const colorOf = (id: string, depth = 0): unknown => {
+    const c = world.get(id)?.props.color;
+    return typeof c === 'string' && c.startsWith('@') && depth < 4
+      ? colorOf(c.slice(1), depth + 1)
+      : c;
+  };
+  for (const o of world.values()) {
+    const ids = new Set<string>();
+    JSON.stringify(o.props, (k, v) => {
+      if (k === 'refs') return undefined;
+      if (typeof v === 'string') for (const m of v.matchAll(/@([A-Za-z_][\w-]*)/g)) ids.add(m[1]);
+      return v;
+    });
+    if (!ids.size) continue;
+    const refs: Record<string, { color: unknown; highlight: number }> = {};
+    for (const id of ids)
+      refs[id] = { color: colorOf(id), highlight: num(world.get(id)?.props.highlight, 0) };
+    o.props = { ...o.props, refs };
+    if (typeof o.props.color === 'string' && o.props.color.startsWith('@'))
+      o.props.color = colorOf(o.props.color.slice(1));
+  }
 }
 
 /** 求第 index 步、步内进度 progress（0–1）时的画面；phase 见 StageTry */
@@ -324,27 +457,30 @@ export interface DragFrame extends SceneFrame {
   items: { index: number; at: Point; color: string }[];
   /** 被拖那一组原来每一块的颜色（按原来的序号） */
   colors: string[];
-  /** 被拖的那一组（已去掉拖走的）、目标零件 */
+  /** 被拖的那一组（已去掉拖走的）、目标零件（一个或几个） */
   from?: SceneObject;
-  to?: SceneObject;
+  to: SceneObject[];
 }
 
 /**
- * 拖动中的画面：这一步开头的画面，再把孩子已经拖对的计数块（moved，原来的序号）
- * 从 from 挪到 to 的空位；正在拖的那一个（lifted）先从 from 里拿掉，由舞台画在手指下。
+ * 拖动中的画面：这一步提问时的画面，再把孩子已经拖对的计数块（moved，原来的序号；
+ * placed 是各自放进的目标）从 from 挪到目标的空位；正在拖的那一个（lifted）先从 from 里拿掉，
+ * 由舞台画在手指下。
  */
 export function dragFrame(
   def: SceneDef,
   index: number,
   moved: readonly number[],
   lifted?: number,
+  placed?: readonly string[],
 ): DragFrame {
-  const world = buildWorld(def, index, 0, 'doing');
+  const world = buildWorld(def, index, 1, 'doing');
   const drag = def.tries?.[index]?.drag;
   const src = drag ? world.get(drag.from) : undefined;
-  const dest = drag ? world.get(drag.to) : undefined;
+  const ids = drag ? dragTargets(drag) : [];
+  const dests = ids.map((id) => world.get(id)).filter((o): o is SceneObject => !!o);
   if (!drag || !src || !isCounters(src.type))
-    return { objects: [...world.values()], items: [], colors: [] };
+    return { objects: [...world.values()], items: [], colors: [], to: dests };
   const at = counterItems(src.props);
   const colors = counterColors(src.props);
   const gone = new Set(moved);
@@ -353,14 +489,15 @@ export function dragFrame(
     .filter((i) => i !== lifted)
     .map((i) => ({ index: i, at: at[i], color: colors[i] }));
   // 已经拖对的放进目标的空位（目标也是计数块时）
-  if (dest && isCounters(dest.type) && moved.length) {
-    const base = Math.round(num(dest.props.count, 0));
-    dest.props.colors = [...counterColors(dest.props), ...moved.map((i) => colors[i])];
-    dest.props.count = base + moved.length;
+  moved.forEach((i, k) => {
+    const dest = world.get(placed?.[k] ?? ids[0]);
+    if (!dest || !isCounters(dest.type)) return;
+    dest.props.colors = [...counterColors(dest.props), colors[i]];
+    dest.props.count = Math.round(num(dest.props.count, 0)) + 1;
     delete dest.props.items;
-  }
+  });
   src.props.items = items.map((it) => it.at);
   src.props.colors = items.map((it) => it.color);
   src.props.count = items.length;
-  return { objects: [...world.values()], items, colors, from: src, to: dest };
+  return { objects: [...world.values()], items, colors, from: src, to: dests };
 }

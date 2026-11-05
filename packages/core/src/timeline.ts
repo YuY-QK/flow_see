@@ -26,7 +26,8 @@ export interface TimelineState {
   finishes: number;
   /**
    * 动手做（跟着做 / 自己做）：哪些步骤要等孩子做完才放。
-   * 进入这样的步骤时停在开头（waiting），孩子做对后（solve）再放这一步并接着往下。
+   * 进入这样的步骤时停在开头（waiting；progress 是提问前那一段动作的进度），
+   * 孩子做对后（solve）再放这一步并接着往下。
    */
   gates: boolean[];
   /** 正在等孩子动手：动画不走，讲解读完也不进入下一步 */
@@ -83,7 +84,8 @@ export function initTimeline(total: number, init: TimelineInit = {}): TimelineSt
     // 自动播放从这一步的开头放起；否则直接显示这一步的完整画面（要动手的步骤停在开头）
     progress: playing || waiting ? 0 : 1,
     playing,
-    running: playing && !waiting,
+    // 要动手的步骤：提问前的那一段动作（场景模板 do 里 ask 之前的）照样放出来
+    running: playing || waiting,
     spoken: false,
     speed: init.speed ?? 1,
     epoch: 0,
@@ -108,7 +110,8 @@ function enter(s: TimelineState, index: number, playing: boolean): TimelineState
     ...s,
     index: i,
     progress: 0,
-    running: !waiting,
+    // 要动手的步骤也走时钟：先放提问前的那一段，放完停在那里等孩子
+    running: true,
     waiting,
     spoken: false,
     playing,
@@ -135,7 +138,7 @@ export function timelineReducer(s: TimelineState, a: TimelineAction): TimelineSt
       return {
         ...s,
         playing: true,
-        running: !s.waiting && s.progress < 1,
+        running: s.progress < 1,
         spoken: false,
         epoch: s.epoch + 1,
       };
@@ -165,7 +168,7 @@ export function timelineReducer(s: TimelineState, a: TimelineAction): TimelineSt
         waiting,
         progress: waiting ? 0 : clamp01(pos - index),
         playing: false,
-        running: false,
+        running: waiting,
         spoken: false,
         epoch: s.epoch + 1,
       };

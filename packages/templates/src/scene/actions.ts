@@ -22,13 +22,24 @@ export const VERBS = {
   count: { name: '数字递增' },
   hop: { name: '数轴上跳一跳' },
   wait: { name: '停一会儿' },
+  deal: { name: '一个一个分' },
+  ask: { name: '在这里提问' },
 } as const;
 
 export type Verb = keyof typeof VERBS;
 
 /** 动作没写 duration 时的默认时长（毫秒）：site.yaml 的 scene.actionSeconds */
-export function defaultMs(verb: Verb): number {
-  return (sceneStyle().actionSeconds[verb] ?? 0) * 1000;
+export function defaultMs(verb: Verb, args: Record<string, unknown> = {}): number {
+  const ms = (sceneStyle().actionSeconds[verb] ?? 0) * 1000;
+  // 一个一个分：默认时长是每一个的时长 × 个数
+  return verb === 'deal' ? ms * dealCount(args) : ms;
+}
+
+/** 一个一个分（deal）分几个：count，不写时每个目标分 1 个（分一轮） */
+export function dealCount(args: Record<string, unknown>): number {
+  const into = Array.isArray(args.into) ? args.into.length : 1;
+  const n = typeof args.count === 'number' ? args.count : into;
+  return Math.max(0, Math.round(n));
 }
 
 /** 每个动作都能写的选项 */
@@ -38,7 +49,7 @@ export const TIMING_KEYS = ['duration', 'delay', 'together', 'ease'] as const;
 export const VERB_KEYS: Record<Verb, readonly string[]> = {
   show: ['target'],
   hide: ['target'],
-  highlight: ['target', 'keep'],
+  highlight: ['target', 'keep', 'color'],
   unhighlight: ['target'],
   move: ['target', 'to', 'by'],
   split: ['target', 'take', 'as', 'offset'],
@@ -50,6 +61,8 @@ export const VERB_KEYS: Record<Verb, readonly string[]> = {
   count: ['target', 'from', 'to'],
   hop: ['target', 'from', 'to', 'label'],
   wait: [],
+  deal: ['target', 'into', 'count'],
+  ask: [],
 };
 
 /** 一个动作可以同时作用于多个零件（列表写法） */
@@ -77,6 +90,11 @@ export interface StepPlan {
   actions: SceneAction[];
   /** 动画段总时长（毫秒） */
   total: number;
+  /**
+   * 动手做时在哪里提问（do 里 ask 的位置）：它前面的动作先放，再等孩子做，做对后放后面的。
+   * 是 actions 里的序号；没有 ask 时为 0（一开头就提问）。
+   */
+  askAt: number;
 }
 
 /** "1s" / "500ms" / "1.5秒" / 0.8（秒）→ 毫秒；写错时返回 undefined */
@@ -105,13 +123,15 @@ export function parseAction(
   let args: Record<string, unknown>;
   if (typeof value === 'string' || Array.isArray(value)) {
     // wait: 1s 的简写是时长
-    args = verb === 'wait' ? { duration: value } : { target: value };
+    args = verb === 'wait' ? { duration: value } : verb === 'ask' ? {} : { target: value };
   } else if (value && typeof value === 'object') {
     args = value as Record<string, unknown>;
   } else if (value === null || value === undefined) {
     args = {};
   } else if (verb === 'wait') {
     args = { duration: value };
+  } else if (verb === 'ask') {
+    args = {};
   } else return undefined;
   const t = args.target;
   const targets =
@@ -124,15 +144,20 @@ export function planStep(list: readonly unknown[] | undefined): StepPlan {
   const actions: SceneAction[] = [];
   let cursor = 0;
   let prevStart = 0;
+  let askAt = 0;
   for (const raw of list ?? []) {
     const a = parseAction(raw);
     if (!a) continue;
-    const dur = parseDuration(a.args.duration) ?? defaultMs(a.verb);
+    if (a.verb === 'ask') {
+      askAt = actions.length;
+      continue;
+    }
+    const dur = parseDuration(a.args.duration) ?? defaultMs(a.verb, a.args);
     const delay = parseDuration(a.args.delay) ?? 0;
     const start = (a.args.together === true ? prevStart : cursor) + delay;
     actions.push({ ...a, start, dur, linear: a.args.ease === 'linear' });
     cursor = Math.max(cursor, start + dur);
     prevStart = start;
   }
-  return { actions, total: cursor };
+  return { actions, total: cursor, askAt };
 }

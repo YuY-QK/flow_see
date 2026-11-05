@@ -42,8 +42,16 @@ export function fractionParams(raw: Record<string, unknown> | undefined): Fracti
   return { shape, parts, take };
 }
 
-/** 一种画面状态对应的动作（每个状态都把所有零件设到位，所以步骤顺序可以随意） */
-function actionsFor(show: string | undefined, p: FractionParams): Record<string, unknown>[] {
+/**
+ * 一种画面状态对应的动作（每个状态都把所有零件设到位，所以步骤顺序可以随意）。
+ * 有动手做（asking）时，图形先变好再提问（ask），文字和分数等孩子答完再出来，不提前给出答案。
+ */
+function actionsFor(
+  show: string | undefined,
+  p: FractionParams,
+  asking = false,
+): Record<string, unknown>[] {
+  const ask = asking ? [{ ask: null }] : [];
   const caption = (text: string) => [
     { set: { target: 'caption', text, together: true } },
     { show: { target: 'caption', together: true } },
@@ -59,6 +67,8 @@ function actionsFor(show: string | undefined, p: FractionParams): Record<string,
       return [
         { set: { target: 'shape', take: 0 } },
         { set: { target: 'shape', parts: p.parts, duration: 0 } },
+        ...(asking ? [{ hide: { target: ['caption', 'fraction'], duration: 0 } }, { wait: 0.6 }] : []),
+        ...ask,
         ...caption(t('fractionTemplate.split', { parts: p.parts })),
         { hide: { target: 'fraction', together: true } },
         { highlight: 'shape' },
@@ -68,7 +78,9 @@ function actionsFor(show: string | undefined, p: FractionParams): Record<string,
       const n = show === 'take-one' ? 1 : p.take;
       return [
         { set: { target: 'shape', parts: p.parts, duration: 0 } },
-        { set: { target: 'shape', take: n } },
+        ...(asking ? [{ hide: { target: ['caption', 'fraction'], duration: 0.3 } }] : []),
+        { set: { target: 'shape', take: n, together: asking } },
+        ...ask,
         ...caption(t('fractionTemplate.take', { take: n })),
         { set: { target: 'fraction', num: n, den: p.parts, duration: 0 } },
         { show: 'fraction' },
@@ -111,7 +123,9 @@ export function fractionScene(animation: Animation): SceneDef {
         hidden: true,
       },
     ],
-    steps: animation.steps.map((s) => actionsFor(s.data.show as string | undefined, p)),
+    steps: animation.steps.map((s) =>
+      actionsFor(s.data.show as string | undefined, p, !!s.data.try),
+    ),
     tries: triesOf(animation),
   };
 }

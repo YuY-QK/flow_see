@@ -549,6 +549,11 @@
               "minimum": 0,
               "description": "演示放完后停多久，再让孩子自己做"
             },
+            "remindMs": {
+              "type": "number",
+              "minimum": 0,
+              "description": "多选、拖到几个目标时：孩子停下来这么久还没做完，提示还差几个"
+            },
             "selfDwellMs": {
               "type": "number",
               "minimum": 0,
@@ -559,6 +564,7 @@
             "targetAfterMisses",
             "demoAfterMisses",
             "demoPauseMs",
+            "remindMs",
             "selfDwellMs"
           ],
           "additionalProperties": false,

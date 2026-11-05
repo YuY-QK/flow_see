@@ -112,14 +112,16 @@ describe('连续时间模型', () => {
 
 describe('动手做：要等孩子做完的步骤', () => {
   const gates = [false, true, false];
-  it('进入要动手的步骤时停在开头，讲解读完也不往下走', () => {
+  it('进入要动手的步骤时先放提问前的一段，放完停住，讲解读完也不往下走', () => {
     let s = initTimeline(3, { autoPlay: true, gates });
     s = r(s, { type: 'frame', delta: 1 });
     s = r(s, { type: 'spoken', epoch: s.epoch });
-    expect(s).toMatchObject({ index: 1, waiting: true, running: false, progress: 0 });
+    expect(s).toMatchObject({ index: 1, waiting: true, running: true, progress: 0 });
     s = r(s, { type: 'frame', delta: 1 });
+    expect(s).toMatchObject({ index: 1, waiting: true, running: false, progress: 1 });
     s = r(s, { type: 'spoken', epoch: s.epoch });
-    expect(s).toMatchObject({ index: 1, waiting: true, progress: 0 });
+    s = r(s, { type: 'frame', delta: 1 });
+    expect(s).toMatchObject({ index: 1, waiting: true });
   });
 
   it('做对后放这一步并接着自动播放；再回到这一步不用重做', () => {

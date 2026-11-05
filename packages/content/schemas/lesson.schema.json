@@ -296,8 +296,19 @@
                     "description": "从哪一组计数块里拖（零件 id）"
                   },
                   "to": {
-                    "type": "string",
-                    "description": "拖到哪个零件上（零件 id）"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "minItems": 2,
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ],
+                    "description": "拖到哪个零件上（零件 id）；写成列表是“一个一个分”，每个目标放 each 个"
                   },
                   "count": {
                     "anyOf": [
@@ -310,6 +321,18 @@
                       }
                     ],
                     "description": "要拖几个，可以写参数，如 \"{gap}\""
+                  },
+                  "each": {
+                    "description": "拖到多个目标时，每个目标放几个；不写时平均分",
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    ]
                   }
                 },
                 "required": [
@@ -326,19 +349,38 @@
                   "answer": {
                     "anyOf": [
                       {
-                        "type": "number"
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        ]
                       },
                       {
-                        "type": "string",
-                        "minLength": 1
+                        "minItems": 2,
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "string",
+                              "minLength": 1
+                            }
+                          ]
+                        }
                       }
                     ],
-                    "description": "正确答案：数字或文字，可以写参数，如 \"{gap}\"、\"{take}/{parts}\""
+                    "description": "正确答案：数字或文字，可以写参数，如 \"{gap}\"、\"{take}/{parts}\"；写成列表是多选，要全部选出来才算做对"
                   },
                   "options": {
                     "description": "选项；不写时答案是数字就自动生成（答案和离它最近的两个数）",
                     "minItems": 2,
-                    "maxItems": 4,
+                    "maxItems": 6,
                     "type": "array",
                     "items": {
                       "anyOf": [

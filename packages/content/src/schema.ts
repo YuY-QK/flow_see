@@ -112,6 +112,7 @@ const playerSchema = z
         targetAfterMisses: z.int().min(1).describe('做错几次后，高亮该放到哪里'),
         demoAfterMisses: z.int().min(1).describe('做错几次后，自动“看我做一遍”'),
         demoPauseMs: nonNeg.describe('演示放完后停多久，再让孩子自己做'),
+        remindMs: nonNeg.describe('多选、拖到几个目标时：孩子停下来这么久还没做完，提示还差几个'),
         selfDwellMs: nonNeg.describe('自己做：最后一步（结果）显示多久后算做完'),
       })
       .strict()
@@ -477,19 +478,26 @@ const trySchema = z
     drag: z
       .object({
         from: z.string().describe('从哪一组计数块里拖（零件 id）'),
-        to: z.string().describe('拖到哪个零件上（零件 id）'),
+        to: z
+          .union([z.string(), z.array(z.string()).min(2)])
+          .describe('拖到哪个零件上（零件 id）；写成列表是“一个一个分”，每个目标放 each 个'),
         count: paramRef.describe('要拖几个，可以写参数，如 "{gap}"'),
+        each: paramRef.optional().describe('拖到多个目标时，每个目标放几个；不写时平均分'),
       })
       .strict()
       .optional()
       .describe('拖动：把计数块一个一个拖到目标零件上（只有场景模板支持）'),
     choose: z
       .object({
-        answer: paramRef.describe('正确答案：数字或文字，可以写参数，如 "{gap}"、"{take}/{parts}"'),
+        answer: z
+          .union([paramRef, z.array(paramRef).min(2)])
+          .describe(
+            '正确答案：数字或文字，可以写参数，如 "{gap}"、"{take}/{parts}"；写成列表是多选，要全部选出来才算做对',
+          ),
         options: z
           .array(paramRef)
           .min(2)
-          .max(4)
+          .max(6)
           .optional()
           .describe('选项；不写时答案是数字就自动生成（答案和离它最近的两个数）'),
         min: z.number().optional().describe('自动生成选项时数字的下限'),

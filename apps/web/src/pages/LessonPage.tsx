@@ -20,7 +20,6 @@ import {
 import { useSettings } from '@flow-see/runtime/store/settings.ts';
 import ui from '@flow-see/runtime/ui/ui.module.css';
 import { getTemplate } from '@flow-see/templates';
-import { useDevice } from '../learn/device';
 import { StageControls } from '../learn/StageControls';
 import { LessonPlayer, type HandsMode } from '../learn/LessonPlayer';
 import { lessonPath } from '../learn/paths';
@@ -157,7 +156,6 @@ function LessonReady({
   header: (right?: React.ReactNode, afterTitle?: React.ReactNode) => React.ReactNode;
   lessonKey: LessonKey;
 }) {
-  const device = useDevice();
   const defaultTheme = useSettings((st) => st.defaultTheme);
   const template = getTemplate(lesson.template);
   const explore = useMemo(() => (lesson.explore ?? []) as ExploreControl[], [lesson]);
@@ -366,16 +364,12 @@ function LessonReady({
           onProgress={(r) => setStar(key, mode, r)}
           tools={[
             { id: 'share', icon: 'share', label: t('common.fen_xiang'), onClick: share },
-            ...(device !== 'phone'
-              ? [
-                  {
-                    id: 'export',
-                    icon: 'download' as const,
-                    label: t('common.dao_chu'),
-                    onClick: () => setDialog('export'),
-                  },
-                ]
-              : []),
+            {
+              id: 'export',
+              icon: 'download' as const,
+              label: t('common.dao_chu'),
+              onClick: () => setDialog('export'),
+            },
           ]}
         />
 

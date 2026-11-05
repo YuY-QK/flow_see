@@ -2,13 +2,14 @@
 //
 // 配置（知识点步骤的 try.choose）：
 //   answer：正确答案（数字，或文字如 "3/4"）；可以写成 "{参数}" 由参数代入。
+//           写成列表时是多选：要把列表里的都选出来才算做对（选对的留着，选错的弹回）。
 //   options：选项列表。不写时，答案是数字就自动生成：答案和离它最近的两个数（在 min–max 之内）。
 //   min / max：自动生成选项时数字的范围。
 
 export type ChooseValue = number | string;
 
 export interface ChooseSpec {
-  answer: ChooseValue;
+  answer: ChooseValue | ChooseValue[];
   options?: ChooseValue[];
   min?: number;
   max?: number;
@@ -19,9 +20,16 @@ export interface ChooseSpec {
 /** 一个选项的显示文字 */
 export const chooseLabel = (v: ChooseValue): string => String(v);
 
-/** 选对了吗（数字 3 和文字 "3" 算一样） */
+/** 所有正确答案（单选时只有一个） */
+export const chooseAnswers = (spec: ChooseSpec): ChooseValue[] =>
+  Array.isArray(spec.answer) ? spec.answer : [spec.answer];
+
+/** 是不是多选（答案写成了列表） */
+export const isMultiChoose = (spec: ChooseSpec): boolean => Array.isArray(spec.answer);
+
+/** 选对了吗（数字 3 和文字 "3" 算一样）；多选时是“这一项是不是答案之一” */
 export const isAnswer = (spec: ChooseSpec, v: ChooseValue): boolean =>
-  String(v) === String(spec.answer);
+  chooseAnswers(spec).some((a) => String(a) === String(v));
 
 /**
  * 选项（已去重，答案一定在里面；没有打乱，由界面打乱）。
@@ -36,11 +44,12 @@ export function chooseOptions(spec: ChooseSpec): ChooseValue[] {
       out.push(v);
     }
   };
-  add(spec.answer);
+  chooseAnswers(spec).forEach(add);
   if (spec.options) {
     spec.options.forEach(add);
     return out;
   }
+  if (Array.isArray(spec.answer)) return out;
   const a = Number(spec.answer);
   if (!Number.isFinite(a)) return out;
   const lo = spec.min ?? 0;

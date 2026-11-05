@@ -162,6 +162,7 @@ export const splitCalcPart: PartDef = {
     'size',
     'partColor',
     'accent',
+    'colors',
   ],
   bbox(p) {
     // 只包住已经显示出来的部分（高亮框跟着竖式一步步变大）
@@ -190,6 +191,44 @@ export const splitCalcPart: PartDef = {
     const accent = color(p.accent, ctx.theme, 'red');
     const line = ink; // 线和数字同色（参考常见的凑十法板书：黑色线条）
     const sw = Math.max(2, s / 16);
+    // 各节点的颜色（强对应）：colors: { a: blue, b: "@right", p: …, q: …, m: …, r: … }（r 是得数）。
+    // 写 "@零件id" 时颜色跟着那个零件，那个零件高亮时这个数也衬一块同色的底。
+    const colors = (p.colors && typeof p.colors === 'object' ? p.colors : {}) as Record<
+      string,
+      unknown
+    >;
+    const refs = (p.refs ?? {}) as Record<string, { color?: unknown; highlight?: number }>;
+    const nodeColor = (name: string, fallback: string): { c: string; hl: number } => {
+      const v = colors[name];
+      if (typeof v === 'string' && v.startsWith('@')) {
+        const r = refs[v.slice(1)];
+        return { c: r?.color ? color(r.color, ctx.theme) : fallback, hl: r?.highlight ?? 0 };
+      }
+      return { c: v ? color(v, ctx.theme) : fallback, hl: 0 };
+    };
+    const node$ = (name: string, t: string, x: number, y: number, fallback: string) => {
+      const { c, hl } = nodeColor(name, fallback);
+      const w = Math.max(textWidth(t, s), s * 0.6) + s * 0.3;
+      return (
+        <g>
+          {hl > 0 ? (
+            <rect
+              x={x - w / 2}
+              y={y - s * 0.62}
+              width={w}
+              height={s * 1.24}
+              rx={s * 0.22}
+              fill={c}
+              fillOpacity={0.16 * hl}
+              stroke={c}
+              strokeOpacity={hl}
+              strokeWidth={sw}
+            />
+          ) : null}
+          {num$(t, x, y, c)}
+        </g>
+      );
+    };
     const num$ = (t: string, x: number, y: number, fill: string, size = s) => (
       <text
         x={x}
@@ -226,10 +265,16 @@ export const splitCalcPart: PartDef = {
       <g>
         {/* 原题 */}
         {L.tokens.slice(0, 4).map((t, i) => (
-          <g key={i}>{num$(t.text, t.x, L.y0, ink)}</g>
+          <g key={i}>
+            {i === 0
+              ? node$('a', t.text, t.x, L.y0, ink)
+              : i === 2
+                ? node$('b', t.text, t.x, L.y0, ink)
+                : num$(t.text, t.x, L.y0, ink)}
+          </g>
         ))}
         <g opacity={1 - k4}>{num$('?', L.tokens[4].x, L.y0, ink)}</g>
-        <g opacity={k4}>{num$(L.tokens[4].text, L.tokens[4].x, L.y0, accent)}</g>
+        <g opacity={k4}>{node$('r', L.tokens[4].text, L.tokens[4].x, L.y0, accent)}</g>
 
         {/* 1 拆开 */}
         <g opacity={k1}>
@@ -237,15 +282,15 @@ export const splitCalcPart: PartDef = {
             <line x1={fx} y1={fy} x2={N.p.x} y2={N.p.y - s * 0.55} />
             <line x1={fx} y1={fy} x2={N.q.x} y2={N.q.y - s * 0.55} />
           </g>
-          {num$(N.p.text, N.p.x, N.p.y, partC)}
-          {num$(N.q.text, N.q.x, N.q.y, partC)}
+          {node$('p', N.p.text, N.p.x, N.p.y, partC)}
+          {node$('q', N.q.text, N.q.x, N.q.y, partC)}
         </g>
 
         {/* 2 第一次合并 */}
         <g opacity={k2}>
           {bracket([N[F.join[0]], N[F.join[1]]], F.y, F.x1, F.x2)}
           {opMark(F.op, (F.x1 + F.x2) / 2, F.y)}
-          {num$(N.m.text, N.m.x, N.m.y, ink)}
+          {node$('m', N.m.text, N.m.x, N.m.y, ink)}
         </g>
 
         {/* 3 第二次合并：10 和剩下的数用括线连起来（只到两个数之间） */}

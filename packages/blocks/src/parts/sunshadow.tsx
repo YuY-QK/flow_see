@@ -7,7 +7,8 @@
 //       太阳高度 sin h = sinφ·sinδ + cosφ·cosδ·cosH，方位角 tan A = sinH / (sinφ·cosH − cosφ·tanδ)（H 是时角，每小时 15°）。
 //       影长 = 杆高 / tan(太阳高度)；影子的方向和太阳相反。
 // 太阳高度很低时影子会无限长，所以高度最小取 minAltitude 度，画出来的影子也不超出画面。
-import { color, num, pt, type Box, type PartDef, type Props } from '../base';
+import { useState } from 'react';
+import { color, num, pt, str, type Box, type PartDef, type Props } from '../base';
 import { clockPart, parseClockTime } from './math';
 
 const rad = (d: number) => (d * Math.PI) / 180;
@@ -105,6 +106,8 @@ export const sunShadowPart: PartDef = {
     'sideWidth',
     'labels',
     'shadowColor',
+    'sunAsset',
+    'objectAsset',
   ],
   normalize: clockPart.normalize,
   bbox(p) {
@@ -116,6 +119,9 @@ export const sunShadowPart: PartDef = {
     const ink = color(p.color, ctx.theme);
     const shadow = color(p.shadowColor, ctx.theme, 'gray');
     const sunC = color('yellow', ctx.theme);
+    // 太阳、物体的图片：site.yaml 的 scene.parts.sun-shadow 里配默认的，知识点里可以换
+    const sunUrl = p.sunAsset ? ctx.assetUrl?.(str(p.sunAsset)) : undefined;
+    const objUrl = p.objectAsset ? ctx.assetUrl?.(str(p.objectAsset)) : undefined;
     const labels = Array.isArray(p.labels) ? p.labels.map(String) : ['N', 'E', 'S', 'W'];
     const [tx, ty] = L.topAt;
     const R = L.radius;
@@ -187,7 +193,7 @@ export const sunShadowPart: PartDef = {
           strokeDasharray="8 6"
           opacity={0.9}
         />
-        <circle cx={sx} cy={sy} r={13} fill={sunC} stroke={ink} strokeWidth={2} />
+        <Sun url={sunUrl} x={sx} y={sy} r={13} fill={sunC} stroke={ink} />
 
         {/* 侧视图 */}
         <line
@@ -208,15 +214,27 @@ export const sunShadowPart: PartDef = {
           strokeWidth={3}
           strokeDasharray="8 6"
         />
-        <line
-          x1={poleX}
-          y1={groundY}
-          x2={poleX}
-          y2={topY}
-          stroke={ink}
-          strokeWidth={8}
-          strokeLinecap="round"
-        />
+        {objUrl ? (
+          // 物体换成图片（小树、小兔子……）：底边中点站在杆脚，高度就是杆高
+          <image
+            href={objUrl}
+            x={poleX - pole * 0.4}
+            y={topY}
+            width={pole * 0.8}
+            height={pole}
+            preserveAspectRatio="xMidYMax meet"
+          />
+        ) : (
+          <line
+            x1={poleX}
+            y1={groundY}
+            x2={poleX}
+            y2={topY}
+            stroke={ink}
+            strokeWidth={8}
+            strokeLinecap="round"
+          />
+        )}
         <line
           x1={poleX}
           y1={groundY}
@@ -227,8 +245,40 @@ export const sunShadowPart: PartDef = {
           strokeLinecap="round"
           opacity={0.75}
         />
-        <circle cx={sunX} cy={sunY} r={15} fill={sunC} stroke={ink} strokeWidth={2} />
+        <Sun url={sunUrl} x={sunX} y={sunY} r={15} fill={sunC} stroke={ink} />
       </g>
     );
   },
 };
+
+/** 太阳：有素材（sunAsset）时画图片（比圆片大一些，带光芒），没有或加载不出来时画一个圆片 */
+function Sun({
+  url,
+  x,
+  y,
+  r,
+  fill,
+  stroke,
+}: {
+  url?: string;
+  x: number;
+  y: number;
+  r: number;
+  fill: string;
+  stroke: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (!url || failed)
+    return <circle cx={x} cy={y} r={r} fill={fill} stroke={stroke} strokeWidth={2} />;
+  const size = r * 3.4;
+  return (
+    <image
+      href={url}
+      x={x - size / 2}
+      y={y - size / 2}
+      width={size}
+      height={size}
+      onError={() => setFailed(true)}
+    />
+  );
+}

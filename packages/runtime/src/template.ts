@@ -42,7 +42,11 @@ export interface StageProps {
 /** 动手做的配置（知识点步骤里的 try，已代入参数） */
 export interface TrySpec {
   task: string;
-  drag?: { from: string; to: string; count: number | string };
+  /**
+   * 拖动：把 from 这组计数块拖 count 个到 to 上。to 写成列表时是“一个一个分”：
+   * 每个目标最多放 each 个（不写时平均：count ÷ 目标个数）。
+   */
+  drag?: { from: string; to: string | string[]; count: number | string; each?: number | string };
   choose?: ChooseSpec;
   hints?: string[];
 }
@@ -55,10 +59,14 @@ export interface TrySpec {
 export interface StageTry {
   phase: 'doing' | 'solved';
   moved?: number[];
+  /** 拖动到多个目标时：moved 里每一个放进了哪个目标（和 moved 一一对应） */
+  placed?: string[];
+  /** doing 时，提问前那一段动作（do 里 ask 之前的）放到哪了，0–1 */
+  progress?: number;
   /** 高亮该放到哪里 / 该看哪里（做错几次后） */
   showTarget?: boolean;
-  /** 孩子放下一个计数块：ok = 放进了目标（拖动） */
-  onDrop?(index: number, ok: boolean): void;
+  /** 孩子放下一个计数块：target = 放进了哪个目标（零件 id），放在外面时为 undefined */
+  onDrop?(index: number, target: string | undefined): void;
 }
 
 /** 知识点配置里与模板有关的部分（结构与 packages/content 的 lesson 一致，这里不依赖 content） */

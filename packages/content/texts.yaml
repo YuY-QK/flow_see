@@ -336,6 +336,11 @@ handsOn:
   go_guided: 跟着做
   go_self: 自己做
   new_problem: 换一题
+  multi_hint: 可以选好几个，都选出来才算完成
+  multi_got: 选对了！还有 {left} 个，接着找。
+  multi_remind: 还有 {left} 个没选出来，再看看。
+  full: 这里已经放好了，放到别的地方去。
+  deal_remind: 还有 {left} 个没放，接着一个一个放。
 mePage:
   ge_ren_zhong_xin: 个人中心
   zi_liao: 资料

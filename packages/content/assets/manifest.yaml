@@ -25,3 +25,27 @@
   file: science/plant-fruit.svg
   source: 自绘
   createdAt: 2026-11-05
+- id: sun
+  file: science/sun.svg
+  source: 自绘
+  createdAt: 2026-11-05
+- id: snowflake
+  file: science/snowflake.svg
+  source: 自绘
+  createdAt: 2026-11-05
+- id: fire
+  file: science/fire.svg
+  source: 自绘
+  createdAt: 2026-11-05
+- id: ice-cube
+  file: science/ice-cube.svg
+  source: 自绘
+  createdAt: 2026-11-05
+- id: steam
+  file: science/steam.svg
+  source: 自绘
+  createdAt: 2026-11-05
+- id: tree
+  file: science/tree.svg
+  source: 自绘
+  createdAt: 2026-11-05

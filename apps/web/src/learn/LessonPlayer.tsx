@@ -2,8 +2,10 @@
 // 画面 = Stage(动画, 第几步, 步内进度)，时钟和朗读由 useTimeline 驱动。
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import {
+  chooseAnswers,
   chooseLabel,
   chooseOptions,
+  isMultiChoose,
   getTheme,
   isAnswer,
   narrationText,
@@ -21,7 +23,6 @@ import { Icon } from '@flow-see/runtime/ui/Icon.tsx';
 import type { TimelineAction } from '@flow-see/core';
 import { site } from '../site';
 import { ToolFan, type ToolItem } from './ToolFan';
-import { useDevice } from './device';
 import ui from '@flow-see/runtime/ui/ui.module.css';
 import s from './Lesson.module.css';
 
@@ -32,6 +33,10 @@ export type HandsMode = 'watch' | 'guided' | 'self';
 interface TryProgress {
   /** 已经拖对的计数块（原来的序号） */
   moved: number[];
+  /** 拖到几个目标时：每一个放进了哪个目标（和 moved 一一对应） */
+  placed: string[];
+  /** 多选：已经选对的选项 */
+  picked: string[];
   misses: number;
   /** 字幕下方的反馈：提示、“看我做一遍”等 */
   note: string;
@@ -46,6 +51,8 @@ interface TryProgress {
 }
 const freshTry = (key: string): TryProgress => ({
   moved: [],
+  placed: [],
+  picked: [],
   misses: 0,
   note: '',
   demo: null,
@@ -115,7 +122,6 @@ export function LessonPlayer({
   onVisit,
   onFinish,
 }: Props) {
-  const device = useDevice();
   const speechOk = isSpeechSupported();
   const settings = useSettings();
   const narrate = speechOk && settings.autoNarrate;
@@ -136,8 +142,9 @@ export function LessonPlayer({
     [self, tries],
   );
   const firstStep = skips ? Math.max(0, skips.indexOf(false)) : startIndex;
-  const phaseOf = (i: number): StageTry['phase'] | undefined =>
-    hands && tries[i] ? 'solved' : undefined;
+  // 等孩子动手时（doing）只放提问之前的那一段；做对以后按 solved 放
+  const phaseOf = (i: number, waiting: boolean): StageTry['phase'] | undefined =>
+    hands && tries[i] ? (waiting ? 'doing' : 'solved') : undefined;
   const narrationFor = (i: number, waiting: boolean): string => {
     const st = steps[i];
     const tr = tries[i];
@@ -152,7 +159,7 @@ export function LessonPlayer({
     total,
     gates,
     skips,
-    motionMs: (i) => template.motionMs?.(animation, i, phaseOf(i)) ?? 0,
+    motionMs: (i, waiting) => template.motionMs?.(animation, i, phaseOf(i, waiting)) ?? 0,
     narration: narrationFor,
     // 不朗读时按字数估算停留时间（site.yaml 的 player.dwell）；自己做时不用动手的步骤快速带过
     dwellMs: (i, speed) =>
@@ -162,6 +169,7 @@ export function LessonPlayer({
           ? stepDurationMs(steps[i], speed, site.player.dwell)
           : 0,
     maxFrameMs: site.player.maxFrameMs,
+    msPerChar: site.player.dwell.msPerChar,
     afterSpeech: site.player.afterSpeech,
     narrate,
     startIndex: self ? firstStep : startIndex,
@@ -189,6 +197,14 @@ export function LessonPlayer({
   };
   const spec = hands ? tries[state.index] : undefined;
   const need = Math.max(1, Math.round(Number(spec?.drag?.count ?? 1)));
+  // 拖到几个目标（一个一个分）时，每个目标最多放几个
+  const targets = spec?.drag ? (Array.isArray(spec.drag.to) ? spec.drag.to : [spec.drag.to]) : [];
+  const each =
+    targets.length > 1
+      ? Number(spec?.drag?.each) > 0
+        ? Math.round(Number(spec?.drag?.each))
+        : Math.ceil(need / targets.length)
+      : need;
   const startDemo = (misses: number) => {
     setTp({ ...freshTry(tryKey), misses, note: t('handsOn.watch_me'), demo: 0 });
     say(`${t('handsOn.watch_me')} ${steps[state.index] ? narrationText(steps[state.index]) : ''}`);
@@ -201,25 +217,48 @@ export function LessonPlayer({
       onStart?.();
     }
   };
-  const onDrop = (i: number, ok: boolean) => {
+  /** 做错一次：逐级引导（提示 → 高亮目标 → 看我做一遍）；full 是“这里已经放满了” */
+  const miss = (extra: Partial<TryProgress>, note?: string) => {
+    if (!spec) return;
+    const misses = tp.misses + 1;
+    if (misses >= handsOn.demoAfterMisses) return startDemo(misses);
+    const choosing = !!spec.choose;
+    const text =
+      note ??
+      spec.hints?.[misses - 1] ??
+      (misses >= handsOn.targetAfterMisses
+        ? choosing
+          ? t('handsOn.choose_target')
+          : t('handsOn.target')
+        : choosing
+          ? t('handsOn.choose_miss')
+          : t('handsOn.miss'));
+    setTp({ ...tp, ...extra, misses, note: text });
+    say(text);
+  };
+  const onDrop = (i: number, target: string | undefined) => {
     if (!spec) return;
     begin();
-    if (ok) {
+    const room = target !== undefined && tp.placed.filter((x) => x === target).length < each;
+    if (target !== undefined && room) {
       const moved = [...tp.moved, i];
-      setTp({ ...tp, moved, note: '' });
+      const placed = [...tp.placed, target];
+      setTp({ ...tp, moved, placed, note: '' });
       if (moved.length >= need) dispatch({ type: 'solve' });
       return;
     }
-    const misses = tp.misses + 1;
-    if (misses >= handsOn.demoAfterMisses) return startDemo(misses);
-    const note =
-      spec.hints?.[misses - 1] ??
-      (misses >= handsOn.targetAfterMisses ? t('handsOn.target') : t('handsOn.miss'));
-    setTp({ ...tp, misses, note });
-    say(note);
+    // 放到了已经放满的目标上：不算大错，只提醒放到别处
+    if (target !== undefined) {
+      setTp({ ...tp, note: t('handsOn.full') });
+      say(t('handsOn.full'));
+      return;
+    }
+    miss({});
   };
   // 点选：选项打乱顺序（每次进入这一步重新打乱）；选对 → 做对了，选错 → 逐级引导
   const choose = spec?.choose;
+  const multi = !!choose && isMultiChoose(choose);
+  const answerCount = choose ? chooseAnswers(choose).length : 0;
   const options = useMemo(
     () => (choose ? shuffled(chooseOptions(choose)) : []),
     // 每次进入这一步重新打乱：tryKey 变了就换
@@ -230,18 +269,40 @@ export function LessonPlayer({
     if (!spec || !choose) return;
     begin();
     if (isAnswer(choose, v)) {
-      setTp({ ...tp, note: '' });
-      dispatch({ type: 'solve' });
+      // 多选：选对的留着，全部选出来才算做对
+      const picked = tp.picked.includes(String(v)) ? tp.picked : [...tp.picked, String(v)];
+      if (!multi || picked.length >= answerCount) {
+        setTp({ ...tp, picked, note: '' });
+        dispatch({ type: 'solve' });
+        return;
+      }
+      const note = t('handsOn.multi_got', { left: answerCount - picked.length });
+      setTp({ ...tp, picked, note, wrong: undefined });
       return;
     }
-    const misses = tp.misses + 1;
-    if (misses >= handsOn.demoAfterMisses) return startDemo(misses);
-    const note =
-      spec.hints?.[misses - 1] ??
-      (misses >= handsOn.targetAfterMisses ? t('handsOn.choose_target') : t('handsOn.choose_miss'));
-    setTp({ ...tp, misses, note, wrong: String(v) });
-    say(note);
+    miss({ wrong: String(v) });
   };
+  // 多选、一个一个分：孩子停下来太久还没做完，提示还差几个（每次操作后重新计时）
+  const doingNow = !!spec && state.waiting && tp.demo === null;
+  const left = multi
+    ? answerCount - tp.picked.length
+    : targets.length > 1
+      ? need - tp.moved.length
+      : 0;
+  const remindKey = `${tryKey}:${tp.picked.length}:${tp.moved.length}:${tp.misses}`;
+  useEffect(() => {
+    if (!doingNow || left <= 0 || (!multi && targets.length < 2)) return;
+    const timer = window.setTimeout(() => {
+      const note = multi
+        ? t('handsOn.multi_remind', { left })
+        : t('handsOn.deal_remind', { left });
+      setTp((x) => (x.key === tryKey ? { ...x, note } : x));
+      say(note);
+    }, handsOn.remindMs);
+    return () => window.clearTimeout(timer);
+    // 只在做了一下（或进入这一步）后重新计时
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remindKey, doingNow]);
   // 看我做一遍：按标准做法（do）放一遍这一步，停一会儿再让孩子自己做
   const demoing = tp.demo !== null;
   useEffect(() => {
@@ -284,6 +345,8 @@ export function LessonPlayer({
         ? {
             phase: 'doing',
             moved: tp.moved,
+            placed: tp.placed,
+            progress: state.progress,
             showTarget: tp.misses >= handsOn.targetAfterMisses,
             onDrop,
           }
@@ -293,7 +356,7 @@ export function LessonPlayer({
   const noteText =
     doing || demoing
       ? tp.note ||
-        (tp.moved.length
+        (tp.moved.length && !choose
           ? t('handsOn.moved', { n: tp.moved.length, left: need - tp.moved.length })
           : '')
       : '';
@@ -489,12 +552,17 @@ export function LessonPlayer({
                   style={{ '--i': i } as CSSProperties}
                   data-reveal={tp.reveal && isAnswer(choose, o)}
                   data-wrong={tp.wrong === String(o)}
+                  data-picked={tp.picked.includes(String(o))}
+                  aria-pressed={multi ? tp.picked.includes(String(o)) : undefined}
                   onClick={() => onChoose(o)}
                 >
                   {chooseLabel(o)}
                 </button>
               ))}
             </div>
+          ) : null}
+          {doing && multi && !demoing && !noteText ? (
+            <div className={s.tryNote}>{t('handsOn.multi_hint')}</div>
           ) : null}
           {selfDone ? <div className={s.tryNote}>{t('handsOn.self_done')}</div> : null}
           {noteText ? (
@@ -576,15 +644,13 @@ export function LessonPlayer({
             </div>
           </div>
 
-          {device !== 'phone' ? (
-            <button
-              className={`${s.ctrl} ${s.speed}`}
-              aria-label={t('common.speed_aria', { speed: state.speed })}
-              onClick={() => act({ type: 'cycleSpeed' })}
-            >
-              {state.speed}×
-            </button>
-          ) : null}
+          <button
+            className={`${s.ctrl} ${s.speed}`}
+            aria-label={t('common.speed_aria', { speed: state.speed })}
+            onClick={() => act({ type: 'cycleSpeed' })}
+          >
+            {state.speed}×
+          </button>
         </div>
       ) : null}
     </div>
