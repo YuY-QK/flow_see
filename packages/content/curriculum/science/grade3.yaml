@@ -5,7 +5,7 @@ units:
   - id: water
     title: 水
     lessons:
-      - { id: water-states, title: 水的三态变化 }
+      - water-states
   - id: plant-growth
     title: 植物的生长变化
     lessons:
