@@ -453,10 +453,12 @@ const exploreSchema = z
   })
   .strict();
 
-/** 动手做：这一步由孩子来做（跟着做 / 自己做时），do 是标准做法（演示、做对后吸附到的结果） */
+/** 动手做：这一步由孩子来做（跟着做 / 自己做时），do 是标准做法（演示、做对后的结果） */
 const trySchema = z
   .object({
-    task: text.describe('任务提示：轮到孩子时显示并朗读，如“把 1 个圆片拖进十格框。”'),
+    task: text.describe(
+      '任务提示：轮到孩子时显示并朗读，如“把 1 个圆片拖进十格框。”“十格框还空着几格？”',
+    ),
     drag: z
       .object({
         from: z.string().describe('从哪一组计数块里拖（零件 id）'),
@@ -464,14 +466,35 @@ const trySchema = z
         count: paramRef.describe('要拖几个，可以写参数，如 "{gap}"'),
       })
       .strict()
-      .describe('拖动：把计数块一个一个拖到目标零件上'),
+      .optional()
+      .describe('拖动：把计数块一个一个拖到目标零件上（只有场景模板支持）'),
+    choose: z
+      .object({
+        answer: paramRef.describe('正确答案：数字或文字，可以写参数，如 "{gap}"、"{take}/{parts}"'),
+        options: z
+          .array(paramRef)
+          .min(2)
+          .max(4)
+          .optional()
+          .describe('选项；不写时答案是数字就自动生成（答案和离它最近的两个数）'),
+        min: z.number().optional().describe('自动生成选项时数字的下限'),
+        max: z.number().optional().describe('自动生成选项时数字的上限'),
+        show: z
+          .array(z.string())
+          .optional()
+          .describe('做错几次后高亮这些零件（零件 id）；不写就不高亮'),
+      })
+      .strict()
+      .optional()
+      .describe('点选：从几个选项里选出答案（所有模板都支持）'),
     hints: z
       .array(text)
       .max(3)
       .optional()
       .describe('做错时依次给出的提示（每句不超过约 30 字）；不写用通用提示'),
   })
-  .strict();
+  .strict()
+  .refine((v) => !!v.drag !== !!v.choose, '动手方式 drag 和 choose 写一个就行');
 
 const stepSchema = z
   .object({

@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import type { Animation, Step, Theme } from '@flow-see/core';
+import type { Animation, ChooseSpec, Step, Theme } from '@flow-see/core';
 
 /**
  * 表单字段定义：编辑器按它自动生成表单。
@@ -43,6 +43,7 @@ export interface StageProps {
 export interface TrySpec {
   task: string;
   drag?: { from: string; to: string; count: number | string };
+  choose?: ChooseSpec;
   hints?: string[];
 }
 
@@ -54,9 +55,9 @@ export interface TrySpec {
 export interface StageTry {
   phase: 'doing' | 'solved';
   moved?: number[];
-  /** 高亮该放到哪里（做错几次后） */
+  /** 高亮该放到哪里 / 该看哪里（做错几次后） */
   showTarget?: boolean;
-  /** 孩子放下一个计数块：ok = 放进了目标 */
+  /** 孩子放下一个计数块：ok = 放进了目标（拖动） */
   onDrop?(index: number, ok: boolean): void;
 }
 

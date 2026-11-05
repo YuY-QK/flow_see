@@ -1,7 +1,18 @@
 // P3 知识点学习页的播放区：舞台、字幕、控制条（规格 P3）。
 // 画面 = Stage(动画, 第几步, 步内进度)，时钟和朗读由 useTimeline 驱动。
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { getTheme, narrationText, stepDurationMs, type Animation, t } from '@flow-see/core';
+import {
+  chooseLabel,
+  chooseOptions,
+  getTheme,
+  isAnswer,
+  narrationText,
+  shuffled,
+  stepDurationMs,
+  type Animation,
+  type ChooseValue,
+  t,
+} from '@flow-see/core';
 import { useTimeline } from '@flow-see/runtime/player/useTimeline.ts';
 import { isSpeechSupported, speak } from '@flow-see/runtime/services/speech.ts';
 import { useSettings } from '@flow-see/runtime/store/settings.ts';
@@ -28,6 +39,8 @@ interface TryProgress {
   demo: number | null;
   /** 属于哪一步的等待；换了步骤就从头开始 */
   key: string;
+  /** 点选：看过演示后，标出正确选项 */
+  reveal: boolean;
 }
 const freshTry = (key: string): TryProgress => ({
   moved: [],
@@ -35,6 +48,7 @@ const freshTry = (key: string): TryProgress => ({
   note: '',
   demo: null,
   key,
+  reveal: false,
 });
 
 interface Props {
@@ -176,6 +190,30 @@ export function LessonPlayer({
     setTp({ ...tp, misses, note });
     say(note);
   };
+  // 点选：选项打乱顺序（每次进入这一步重新打乱）；选对 → 做对了，选错 → 逐级引导
+  const choose = spec?.choose;
+  const options = useMemo(
+    () => (choose ? shuffled(chooseOptions(choose)) : []),
+    // 每次进入这一步重新打乱：tryKey 变了就换
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [tryKey, animation],
+  );
+  const onChoose = (v: ChooseValue) => {
+    if (!spec || !choose) return;
+    setTouched(true);
+    if (isAnswer(choose, v)) {
+      setTp({ ...tp, note: '' });
+      dispatch({ type: 'solve' });
+      return;
+    }
+    const misses = tp.misses + 1;
+    if (misses >= handsOn.demoAfterMisses) return startDemo(misses);
+    const note =
+      spec.hints?.[misses - 1] ??
+      (misses >= handsOn.targetAfterMisses ? t('handsOn.choose_target') : t('handsOn.choose_miss'));
+    setTp({ ...tp, misses, note });
+    say(note);
+  };
   // 看我做一遍：按标准做法（do）放一遍这一步，停一会儿再让孩子自己做
   const demoing = tp.demo !== null;
   useEffect(() => {
@@ -190,7 +228,11 @@ export function LessonPlayer({
       if (p < 1) raf = requestAnimationFrame(loop);
       else
         timer = window.setTimeout(() => {
-          setTp({ ...freshTry(tryKey), note: t('handsOn.you_try') });
+          setTp({
+            ...freshTry(tryKey),
+            note: t('handsOn.you_try'),
+            reveal: !!tries[state.index]?.choose,
+          });
           const task = tries[state.index]?.task ?? '';
           if (narrate)
             speak(`${t('handsOn.you_try')} ${task}`, {
@@ -357,6 +399,20 @@ export function LessonPlayer({
               </button>
             ) : null}
           </div>
+          {doing && choose && !demoing ? (
+            <div className={s.options} role="group" aria-label={t('handsOn.choose_aria')}>
+              {options.map((o) => (
+                <button
+                  key={String(o)}
+                  className={s.option}
+                  data-reveal={tp.reveal && isAnswer(choose, o)}
+                  onClick={() => onChoose(o)}
+                >
+                  {chooseLabel(o)}
+                </button>
+              ))}
+            </div>
+          ) : null}
           {doing || demoing ? (
             <div className={s.tryNote} data-miss={tp.misses > 0 && !demoing} key={tp.misses}>
               {tp.note ||

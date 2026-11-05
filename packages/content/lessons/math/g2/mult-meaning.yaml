@@ -12,6 +12,7 @@ tags: [乘法, 乘法的意义, 相同加数, 点阵, 表内乘法]
 recommended: false
 
 template: scene
+stage: { width: 800, height: 380 } # 比默认的矮一些，上下不留多余空白
 
 params:
   n: 4 # 每行几个
@@ -29,17 +30,22 @@ presets:
   - { label: 9 × 3, params: { n: 9 } }
 
 objects:
-  - { id: r1, type: counters, count: '{n}', layout: row, size: 48, at: ['{x0}', 40], color: blue }
-  - { id: r2, type: counters, count: '{n}', layout: row, size: 48, at: ['{x0}', 120], color: blue, hidden: true }
-  - { id: r3, type: counters, count: '{n}', layout: row, size: 48, at: ['{x0}', 200], color: blue, hidden: true }
-  - { id: add, type: text, text: '{n} + {n} + {n} = {total}', at: [400, 320], size: 44, hidden: true }
-  - { id: mul, type: text, text: '{n} × 3 = {total}', at: [400, 400], size: 52, hidden: true }
+  - { id: r1, type: counters, count: '{n}', layout: row, size: 48, at: ['{x0}', 30], color: blue }
+  - { id: r2, type: counters, count: '{n}', layout: row, size: 48, at: ['{x0}', 100], color: blue, hidden: true }
+  - { id: r3, type: counters, count: '{n}', layout: row, size: 48, at: ['{x0}', 170], color: blue, hidden: true }
+  - { id: add, type: text, text: '{n} + {n} + {n} = {total}', at: [400, 272], size: 44, hidden: true }
+  - { id: mul, type: text, text: '{n} × 3 = {total}', at: [400, 336], size: 52, hidden: true }
 
 steps:
   - title: 数一数
     say: 这一行有 {n} 个圆点。
     do:
       - highlight: r1
+    try:
+      task: 这一行有几个圆点？
+      choose: { answer: '{n}', min: 1, show: [r1] }
+      hints:
+        - 一个一个数一数。
   - title: 再摆两行
     say: 再摆两行，每行也是 {n} 个，一共 3 行。
     do:
@@ -54,6 +60,11 @@ steps:
     do:
       - show: add
       - highlight: add
+    try:
+      task: '{n} + {n} + {n} 等于几？'
+      choose: { answer: '{total}', min: 1, show: [r1, r2, r3] }
+      hints:
+        - 三行一共有几个圆点？
   - title: 写成乘法
     say: 相同的数相加，可以写成乘法：{n} × 3 = {total}。
     do:

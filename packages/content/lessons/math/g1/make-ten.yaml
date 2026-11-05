@@ -85,12 +85,22 @@ steps:
     do:
       - highlight: left
       - show: { target: hint, together: true }
+    try:
+      task: 十格框里还空着几格？
+      choose: { answer: '{gap}', min: 1, show: [left] }
+      hints:
+        - 数一数十格框里空着的格子。
   - title: 把小数拆开
     say: 把 {b} 拆成 {gap} 和 {rest}，先拿出 {gap} 个。
     do:
       - highlight: right
       - split: { target: right, take: '{gap}', as: one }
       - set: { target: right-num, text: '{b} = {gap} + {rest}', together: true }
+    try:
+      task: 把 {b} 拆成 {gap} 和几？
+      choose: { answer: '{rest}', min: 1, show: [right] }
+      hints:
+        - '{b} 里先拿走 {gap} 个，还剩几个？'
   - title: 凑成 10
     say: 把这 {gap} 个放进十格框，{a} 和 {gap} 凑成 10。
     do:
@@ -110,6 +120,11 @@ steps:
     do:
       - set: { target: formula, text: '10 + {rest} = {sum}' }
       - highlight: formula
+    try:
+      task: 10 + {rest} 等于几？
+      choose: { answer: '{sum}', min: 10, show: [left] }
+      hints:
+        - '十格框已经满 10 了，再加 {rest}。'
   - title: 得出结果
     say: 所以 {a} 加 {b} 等于 {sum}。
     do:

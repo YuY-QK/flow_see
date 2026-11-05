@@ -27,15 +27,17 @@ export function SceneView({
   const assetUrl = useContext(AssetUrlContext);
   const ctx: PartContext = useMemo(() => ({ theme, assetUrl }), [theme, assetUrl]);
   const { width: W, height: H } = def.stage;
-  const doing = tryIt?.phase === 'doing' && !!def.tries?.[index]?.drag;
+  const spec = def.tries?.[index];
+  const doing = tryIt?.phase === 'doing' && !!spec;
+  const dragging = doing && !!spec?.drag;
   const svgRef = useRef<SVGSVGElement>(null);
   // 正在拖的计数块：原来的序号、手指位置
   const [lift, setLift] = useState<{ index: number; at: Point; pointer: number } | undefined>();
 
   const moved = tryIt?.moved;
   const drag = useMemo(
-    () => (doing ? dragFrame(def, index, moved ?? [], lift?.index) : undefined),
-    [doing, def, index, moved, lift?.index],
+    () => (dragging ? dragFrame(def, index, moved ?? [], lift?.index) : undefined),
+    [dragging, def, index, moved, lift?.index],
   );
   const frame = useMemo(
     () => drag ?? sceneFrame(def, index, progress, tryIt?.phase),
@@ -82,8 +84,10 @@ export function SceneView({
     tryIt?.onDrop?.(lift.index, onTarget(at));
   };
 
+  // 做错几次后：拖动高亮目标零件；点选高亮配置里指定的零件
+  const hint = new Set(spec?.drag ? [spec.drag.to] : (spec?.choose?.show ?? []));
   const objects = frame.objects.map((o) =>
-    doing && tryIt?.showTarget && o === drag?.to
+    doing && tryIt?.showTarget && hint.has(o.id)
       ? { ...o, props: { ...o.props, highlight: 1 } }
       : o,
   );
@@ -104,13 +108,13 @@ export function SceneView({
       style={{
         fontFamily: theme.font,
         display: 'block', // 拖动时不滚动页面、不选中文字
-        touchAction: doing ? 'none' : undefined,
-        userSelect: doing ? 'none' : undefined,
-        WebkitUserSelect: doing ? 'none' : undefined,
+        touchAction: dragging ? 'none' : undefined,
+        userSelect: dragging ? 'none' : undefined,
+        WebkitUserSelect: dragging ? 'none' : undefined,
       }}
-      onPointerMove={doing ? onMove : undefined}
-      onPointerUp={doing ? onUp : undefined}
-      onPointerCancel={doing ? () => setLift(undefined) : undefined}
+      onPointerMove={dragging ? onMove : undefined}
+      onPointerUp={dragging ? onUp : undefined}
+      onPointerCancel={dragging ? () => setLift(undefined) : undefined}
     >
       {objects.map((o) => (
         <PartView key={o.id} o={o} ctx={ctx} theme={theme} />

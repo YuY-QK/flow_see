@@ -115,7 +115,7 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
   };
 
   lesson.steps.forEach((step, si) => {
-    if (step.try) checkTry(def, si, alive, out);
+    if (step.try?.drag) checkTry(def, si, alive, out);
     (step.do ?? []).forEach((raw, ai) => {
       const path = ['steps', si, 'do', ai];
       const keys = Object.keys(raw ?? {});

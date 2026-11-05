@@ -9,6 +9,8 @@ import {
   resolveParams,
   type ExploreControl,
 } from '@flow-see/core/params.ts';
+import { chooseOptions, type ChooseSpec } from '@flow-see/core/choose.ts';
+import { fillParams } from '@flow-see/core/fill.ts';
 import type { z } from 'zod';
 import {
   SCHEMAS,
@@ -52,6 +54,38 @@ export interface ContentBundle {
   curricula: { file: string; data: CurriculumConfig }[];
   lessons: LessonFile[];
   assets: AssetEntry[];
+}
+
+/** 点选（try.choose）：答案不能是空的，选项不能少于 2 个，答案要在选项里；每种参数组合都查 */
+function checkChooseTries(
+  lesson: { derived?: Record<string, number | string>; steps: { try?: unknown }[] },
+  params: Record<string, unknown>,
+): { path: (string | number)[]; message: string }[] {
+  const out: { path: (string | number)[]; message: string }[] = [];
+  const scope = resolveParams(params, lesson.derived);
+  lesson.steps.forEach((st, i) => {
+    const raw = (st.try as { choose?: ChooseSpec } | undefined)?.choose;
+    if (!raw) return;
+    const spec = fillParams(raw, scope);
+    const path = ['steps', i, 'try', 'choose'];
+    if (spec.answer === undefined || String(spec.answer) === '' || /\{/.test(String(spec.answer)))
+      return void out.push({
+        path: [...path, 'answer'],
+        message: 'answer 算不出来（参数没写全？）',
+      });
+    const opts = chooseOptions(spec);
+    if (opts.length < 2)
+      out.push({
+        path,
+        message: `选项不够：只有 ${opts.length} 个（${opts.map(String).join('、')}）；数字答案自动生成选项时，检查 min / max；文字答案要写 options，且各项不能重复`,
+      });
+    if (spec.options && !spec.options.some((o) => String(o) === String(spec.answer)))
+      out.push({
+        path: [...path, 'options'],
+        message: `选项里要包含正确答案 ${String(spec.answer)}`,
+      });
+  });
+  return out;
 }
 
 export interface LoadOptions {
@@ -313,7 +347,10 @@ export function loadContent(
     if (!opts.templateIds || opts.templateIds.includes(lesson.template)) {
       const seen = new Set<string>();
       for (const v of variants)
-        for (const i of opts.checkLesson?.({ ...lesson, params: v.params }) ?? []) {
+        for (const i of [
+          ...(opts.checkLesson?.({ ...lesson, params: v.params }) ?? []),
+          ...checkChooseTries(lesson, v.params),
+        ]) {
           const key = formatPath(i.path) + i.message;
           if (seen.has(key)) continue;
           seen.add(key);
@@ -337,8 +374,11 @@ export function loadContent(
           );
         }
     }
-    if (lesson.template !== 'scene' && lesson.steps.some((st) => st.try))
-      err(name, '动手做（try）目前只有场景模板（template: scene）支持');
+    if (lesson.template !== 'scene' && lesson.steps.some((st) => st.try?.drag))
+      err(
+        name,
+        '拖动（try.drag）目前只有场景模板（template: scene）支持；其他模板用点选（try.choose）',
+      );
     if (lesson.resultStep && lesson.resultStep > lesson.steps.length)
       err(name, `resultStep 超出了步骤数（共 ${lesson.steps.length} 步）`);
 

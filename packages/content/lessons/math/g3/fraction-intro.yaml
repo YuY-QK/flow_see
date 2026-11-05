@@ -25,7 +25,7 @@ explore: # 动手试一试
       - { value: circle, label: 圆 }
       - { value: bar, label: 长条 }
   - { param: parts, control: slider, label: 平均分成几份, min: 2, max: 12 }
-  - { param: take, control: slider, label: 取其中几份, min: 1, max: '{parts}' }
+  - { param: take, control: slider, label: 取其中几份, min: 1, max: '{parts} - 1' }
 presets: # 点选换例子
   - { label: 1/2, params: { parts: 2, take: 1 } }
   - { label: 3/4, params: { parts: 4, take: 3 } }
@@ -42,9 +42,22 @@ steps:
   - title: 取 1 份
     say: 取其中的 1 份，就是 {parts} 分之 1，写作 1/{parts}。
     show: take-one
+    try:
+      task: 图形平均分成了几份？
+      choose: { answer: '{parts}', min: 2, max: 12, show: [shape] }
+      hints:
+        - 数一数一共有几份一样大的。
   - title: 取几份
     say: 取其中 {take} 份，就是 {parts} 分之 {take}，写作 {take}/{parts}。
     show: take-many
+    try:
+      task: 取其中 {take} 份，用分数表示是？
+      choose:
+        answer: '{take}/{parts}'
+        options: ['{take}/{parts}', '{parts}/{take}', '{parts}/{parts}']
+        show: [shape]
+      hints:
+        - 分母是平均分成的份数，分子是取的份数。
 
 keyPoints:
   - 一定要“平均分”，每一份同样大，才能用分数表示

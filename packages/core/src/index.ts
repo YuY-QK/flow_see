@@ -7,3 +7,4 @@ export * from './themes';
 export * from './timeline';
 export * from './params';
 export * from './texts';
+export * from './choose';

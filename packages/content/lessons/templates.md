@@ -41,3 +41,7 @@
 | `run`         | 时间连续走 `runMinutes` 分钟，钟面和电子钟同步；之后各步从新时间算 |
 
 走 1 小时用几秒在 `style.yaml` 的 `templates.clock.secondsPerHour`。讲解里要用“下一个整点”这类算出来的数，写在 `derived` 里，如 `next: hour % 12 + 1`。
+
+## 动手做
+
+fraction、clock 模板的步骤也可以写 `try`，用点选答案（`choose`，写法见 [scene.md](./scene.md)）；拖动（`drag`）只有场景模板支持。示例：[math/g3/fraction-intro.yaml](./math/g3/fraction-intro.yaml)、[math/g1/clock-basics.yaml](./math/g1/clock-basics.yaml)。问的内容要能从这一步开头的画面看出来（比如问“平均分成了几份”，要放在已经分好的下一步）。
