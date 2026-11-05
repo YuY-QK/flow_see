@@ -66,7 +66,8 @@ scene:
     wait: 0.5
   splitLift: 0.9                       # 拆分出来的计数块默认往上抬多少（相对格子大小）
   tenframeGap: 0.4                     # 十格框之间的间距（相对格子大小）
-  counterBorder: { width: 2.5, darken: 0.3 }   # 计数块的边框：粗细、比填充色深多少
+  counterBorder: { width: 3, darken: 0.45 }    # 计数块的边框：粗细、比填充色深多少
+  counterShadow: { dx: 1.5, dy: 3.5, opacity: 0.3 }   # 计数块的阴影：向右、向下偏多少，深浅
   tryIt:                               # 动手做（跟着做 / 自己做）时舞台上的拖动
     dropPadding: 30                    # 放到目标零件外面这么远以内也算放进去（舞台坐标）
     hitScale: 1.6                      # 能拖的零件，按下的范围是它本身的几倍（手指好按；手机上零件会缩小）

@@ -3,8 +3,9 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { AssetUrlContext } from '@flow-see/blocks';
 import {
   clampParams,
+  exploreCombos,
   fillParams,
-  resolveParams,
+  pickOne,
   type ExploreControl,
   type Scope,
   t,
@@ -20,7 +21,7 @@ import { useSettings } from '@flow-see/runtime/store/settings.ts';
 import ui from '@flow-see/runtime/ui/ui.module.css';
 import { getTemplate } from '@flow-see/templates';
 import { useDevice } from '../learn/device';
-import { ExplorePanel } from '../learn/ExplorePanel';
+import { StageControls } from '../learn/StageControls';
 import { LessonPlayer, type HandsMode } from '../learn/LessonPlayer';
 import { lessonPath } from '../learn/paths';
 import { assetUrl, content, findSubject, gradeName, loadLesson, site } from '../site';
@@ -156,13 +157,11 @@ function LessonReady({
   const defaultTheme = useSettings((st) => st.defaultTheme);
   const template = getTemplate(lesson.template);
   const explore = useMemo(() => (lesson.explore ?? []) as ExploreControl[], [lesson]);
-  const presets = lesson.presets ?? [];
-  const resultIndex = (lesson.resultStep ?? lesson.steps.length) - 1;
-  // 有动手做（try）的知识点：看一看 → 跟着做 → 自己做；换例子只在“自己做”里出现
+  // 有动手做（try）的知识点：看一看 → 跟着做 → 自己做
   const hasTry = lesson.steps.some((st) => st.try);
 
-  // 动手试一试：调过的参数只在这次打开里有效（不保存）。
-  // 每次调整、换例子、回到标准讲解、换学习方式，播放器都重新开始（n 变了就换 key）。
+  // 当前这道题的参数（自己做时每次换一道）；null = 标准例子。只在这次打开里有效（不保存）。
+  // 换题、换学习方式，播放器都重新开始（n 变了就换 key）。
   const [session, setSession] = useState<{
     trial: Scope | null;
     n: number;
@@ -189,17 +188,47 @@ function LessonReady({
       mode: 'watch',
     };
   });
-  // 刚放完的是哪种学习方式：放完后提示下一种
+  // 刚放完的是哪种学习方式：放完后提示下一种（自己做放完后由“换一题”接着）
   const [finished, setFinished] = useState<HandsMode | null>(null);
-  const switchMode = (mode: HandsMode) => {
-    setFinished(null);
-    setSession((st) => ({ ...st, mode, n: st.n + 1, startIndex: 0, autoPlay: true }));
-  };
   const animation = useMemo(
     () => lessonToAnimation(lesson, { themeId: defaultTheme, params: session.trial ?? undefined }),
     [lesson, defaultTheme, session.trial],
   );
   const values = animation.params ?? {};
+
+  // 出题：控件能取到的每一种组合（没有控件就用例子）里，随机挑一道和现在不同的
+  const pool = useMemo(() => {
+    if (explore.length) return exploreCombos(explore, lesson.params, lesson.derived) as Scope[];
+    return (lesson.presets ?? []).map((pr) => ({ ...lesson.params, ...pr.params }) as Scope);
+  }, [explore, lesson]);
+  const poolKeys = useMemo(
+    () =>
+      explore.length
+        ? explore.map((c) => c.param)
+        : [...new Set((lesson.presets ?? []).flatMap((pr) => Object.keys(pr.params)))],
+    [explore, lesson],
+  );
+  const pickProblem = (current: Scope): Scope | null => {
+    const others = pool.filter((p) => poolKeys.some((k) => p[k] !== current[k]));
+    return pickOne(others) ?? null;
+  };
+
+  /** 切换学习方式；keepProblem = 带着现在这道题的数字（“演示”）；进入自己做时自动换一道题 */
+  const switchMode = (mode: HandsMode, keepProblem = false) => {
+    setFinished(null);
+    const picked = mode === 'self' ? pickProblem(values) : null;
+    setSession((st) => {
+      const trial = mode === 'self' ? (picked ?? st.trial) : keepProblem ? st.trial : null;
+      return { ...st, mode, trial, n: st.n + 1, startIndex: 0, autoPlay: mode !== 'self' };
+    });
+  };
+  const newProblem = () => {
+    const next = pickProblem(values);
+    if (!next) return;
+    setFinished(null);
+    setSession((st) => ({ ...st, trial: next, n: st.n + 1, startIndex: 0, autoPlay: false }));
+  };
+  // 舞台右侧的控件：自己调题目的数字，调完从头做
   const tryParams = (patch: Scope) => {
     // 取值超出范围时自动收回（例如“小数”不能小于“11 - 大数”）
     const next = clampParams(
@@ -208,16 +237,7 @@ function LessonReady({
       lesson.derived,
     );
     setFinished(null);
-    // 自己做：换了题从头做起；没有动手做的知识点：暂停播放，跳到结果步骤（默认最后一步）
-    setSession((st) =>
-      hasTry
-        ? { ...st, trial: next, n: st.n + 1, startIndex: 0, autoPlay: true }
-        : { ...st, trial: next, n: st.n + 1, startIndex: resultIndex, autoPlay: false },
-    );
-  };
-  const resetTrial = () => {
-    setFinished(null);
-    setSession((st) => ({ ...st, trial: null, n: st.n + 1, startIndex: 0, autoPlay: hasTry }));
+    setSession((st) => ({ ...st, trial: next, n: st.n + 1, startIndex: 0, autoPlay: false }));
   };
   // 要点里的 {参数名} 跟着当前参数变
   const keyPoints = fillParams(lesson.keyPoints, values);
@@ -251,19 +271,6 @@ function LessonReady({
     markDone();
     setFinished(mode);
   }, [markDone, mode]);
-  // 换一题：从例子里随机挑一个和现在不一样的
-  const clampedPresets = presets.map((pr) => ({
-    label: pr.label,
-    params: clampParams(explore, { ...lesson.params, ...pr.params }, lesson.derived),
-  }));
-  const others = clampedPresets.filter((pr) =>
-    Object.entries(pr.params).some(([k, v]) => values[k] !== v),
-  );
-  const newProblem = () => {
-    const pick = others[Math.floor(Math.random() * others.length)];
-    if (pick) tryParams(pick.params);
-  };
-
   if (!template)
     return (
       <main className={`${p.content} ${s.lessonMain}`}>
@@ -316,6 +323,13 @@ function LessonReady({
           largeCaption={lessonKey.grade <= site.player.largeCaptionMaxGrade}
           onVisit={(i) => visit(lessonKey, i)}
           onFinish={onFinish}
+          side={
+            mode === 'self' && explore.length ? (
+              <StageControls controls={explore} values={values} onChange={tryParams} />
+            ) : undefined
+          }
+          onDemo={mode === 'self' ? () => switchMode('watch', true) : undefined}
+          onNewProblem={mode === 'self' && pool.length > 1 ? newProblem : undefined}
           corner={
             <span className={s.stageMeta}>
               {[lesson.duration, t('common.steps_total', { n: lesson.steps.length })]
@@ -343,42 +357,16 @@ function LessonReady({
           ]}
         />
 
-        {hasTry && finished ? (
+        {hasTry && finished && finished !== 'self' ? (
           <div className={s.nextMode} role="status">
             <span>{MODE_DONE[finished]()}</span>
-            {finished === 'watch' ? (
-              <button className={`${ui.btn} ${ui.primary}`} onClick={() => switchMode('guided')}>
-                {t('handsOn.go_guided')}
-              </button>
-            ) : finished === 'guided' ? (
-              <button className={`${ui.btn} ${ui.primary}`} onClick={() => switchMode('self')}>
-                {t('handsOn.go_self')}
-              </button>
-            ) : (
-              <>
-                {others.length ? (
-                  <button className={`${ui.btn} ${ui.primary}`} onClick={newProblem}>
-                    {t('handsOn.new_problem')}
-                  </button>
-                ) : null}
-                <button className={ui.btn} onClick={() => switchMode('self')}>
-                  {t('handsOn.again')}
-                </button>
-              </>
-            )}
+            <button
+              className={`${ui.btn} ${ui.primary}`}
+              onClick={() => switchMode(finished === 'watch' ? 'guided' : 'self')}
+            >
+              {finished === 'watch' ? t('handsOn.go_guided') : t('handsOn.go_self')}
+            </button>
           </div>
-        ) : null}
-
-        {(explore.length || presets.length) && (!hasTry || mode === 'self') ? (
-          <ExplorePanel
-            controls={explore}
-            presets={clampedPresets}
-            values={resolveParams(values, lesson.derived)}
-            changed={!!session.trial}
-            onChange={tryParams}
-            onPreset={(params) => tryParams(params)}
-            onReset={resetTrial}
-          />
         ) : null}
 
         <section className={s.points}>

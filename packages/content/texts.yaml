@@ -182,12 +182,6 @@ encode:
   sheng_cheng_shi_pin: 生成视频
   zhe_ge_liu_lan: 这个浏览器不支持导出视频，可以改为导出 GIF。
   lu_zhi_shi_pin: 录制视频
-explorePanel:
-  title: 动手试一试
-  presets: 换个例子
-  controls: 自己调一调
-  reset: 回到标准讲解
-  hint: 你改的只在这里看，不会保存；刷新后回到标准讲解。
 exportDialog:
   shi_pin: 视频
   shi_he_fang_jin: "{width}×{height}，适合放进 PPT、发给朋友"
@@ -311,6 +305,10 @@ lessonTools:
   open: 工具
   close: 收起
 handsOn:
+  demo: 演示
+  controls_aria: 调整题目
+  minus: 减小{name}
+  plus: 增大{name}
   modes_aria: 学习方式
   mode_watch: 看一看
   mode_guided: 跟着做
@@ -333,7 +331,6 @@ handsOn:
   go_guided: 跟着做
   go_self: 自己做
   new_problem: 换一题
-  again: 再做一遍
 mePage:
   ge_ren_zhong_xin: 个人中心
   zi_liao: 资料

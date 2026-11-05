@@ -354,6 +354,32 @@
           "additionalProperties": false,
           "description": "计数块的边框：让靠在一起、叠在一起的块也分得清"
         },
+        "counterShadow": {
+          "type": "object",
+          "properties": {
+            "dx": {
+              "type": "number",
+              "description": "阴影向右偏多少（舞台坐标）"
+            },
+            "dy": {
+              "type": "number",
+              "description": "阴影向下偏多少（舞台坐标）"
+            },
+            "opacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "阴影深浅，0 = 没有"
+            }
+          },
+          "required": [
+            "dx",
+            "dy",
+            "opacity"
+          ],
+          "additionalProperties": false,
+          "description": "计数块的阴影：让块看起来浮在上面，叠在一起也分得清"
+        },
         "tryIt": {
           "type": "object",
           "properties": {
@@ -404,6 +430,7 @@
         "splitLift",
         "tenframeGap",
         "counterBorder",
+        "counterShadow",
         "tryIt",
         "parts"
       ],

@@ -109,6 +109,7 @@ export const countersPart: PartDef = {
     const r = s * 0.38;
     // 边框：比填充色深一些，靠在一起、叠在一起的块也分得清
     const { width: bw, darken } = sceneStyle().counterBorder;
+    const sh = sceneStyle().counterShadow;
     const darkest = color('black', ctx.theme);
     const edge = (c: string) => mixColor(c, darkest, darken);
     return (
@@ -122,6 +123,32 @@ export const countersPart: PartDef = {
             <line x1={b.x} x2={b.x + b.w} y1={b.y + s} y2={b.y + s} />
           </g>
         ))}
+        {/* 阴影：先画一层错开的深色块，再画块本身 */}
+        {sh.opacity > 0
+          ? counterItems(p).map(([cx, cy], i) =>
+              shape === 'square' ? (
+                <rect
+                  key={`sh${i}`}
+                  x={cx - r + sh.dx}
+                  y={cy - r + sh.dy}
+                  width={r * 2}
+                  height={r * 2}
+                  rx={r * 0.25}
+                  fill={darkest}
+                  opacity={sh.opacity}
+                />
+              ) : shape === 'stick' ? null : (
+                <circle
+                  key={`sh${i}`}
+                  cx={cx + sh.dx}
+                  cy={cy + sh.dy}
+                  r={r + bw / 2}
+                  fill={darkest}
+                  opacity={sh.opacity}
+                />
+              ),
+            )
+          : null}
         {counterItems(p).map(([cx, cy], i) =>
           shape === 'square' ? (
             <rect

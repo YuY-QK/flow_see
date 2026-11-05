@@ -61,6 +61,12 @@ interface Props {
   learned?: { done: boolean; onMark(): void; onUndo(): void };
   /** 舞台右下角扇形菜单里的工具（分享、导出……）；全屏由播放器自己加 */
   tools?: ToolItem[];
+  /** 自己做：舞台右侧竖排的出题控件 */
+  side?: React.ReactNode;
+  /** 自己做：舞台左上角的“演示”（用这道题的数字切到看一看） */
+  onDemo?(): void;
+  /** 自己做：字幕框右侧的“换一题”；没有可换的题就不传 */
+  onNewProblem?(): void;
   template: Template;
   startIndex: number;
   autoPlay: boolean;
@@ -88,6 +94,9 @@ export function LessonPlayer({
   corner,
   learned,
   tools = [],
+  side,
+  onDemo,
+  onNewProblem,
   template,
   startIndex,
   autoPlay,
@@ -277,14 +286,16 @@ export function LessonPlayer({
   // 键盘：空格播放/暂停，左右方向键上一步/下一步（输入框获得焦点时不响应）
   const actRef = useRef(act);
   const waitingRef = useRef(false);
+  const selfRef = useRef(false);
   useEffect(() => {
     actRef.current = act;
     waitingRef.current = state.waiting;
+    selfRef.current = self;
   });
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.altKey || e.ctrlKey || e.metaKey || isTyping(e.target)) return;
-      if (document.querySelector('[role="dialog"]')) return;
+      if (document.querySelector('[role="dialog"]') || selfRef.current) return;
       if (e.key === ' ') {
         e.preventDefault();
         if (e.type === 'keydown' && !e.repeat) actRef.current({ type: 'toggle' });
@@ -325,12 +336,15 @@ export function LessonPlayer({
     height: 450,
   };
   const position = state.index + state.progress;
+  // 自己做：做完整道题（最后一步放完）
+  const selfDone = self && state.finishes > 0;
 
   return (
     <div ref={rootRef} className={s.player} data-full={isFull}>
       <div className={s.stageBox}>
         <div
           className={s.stage}
+          data-side={!!side}
           style={
             {
               background: theme.stageBg,
@@ -339,14 +353,22 @@ export function LessonPlayer({
             } as CSSProperties
           }
         >
-          <Stage
-            animation={animation}
-            index={state.index}
-            progress={demoing ? (tp.demo ?? 0) : state.progress}
-            theme={theme}
-            tryIt={tryIt}
-          />
+          <div className={s.stageSvg}>
+            <Stage
+              animation={animation}
+              index={state.index}
+              progress={demoing ? (tp.demo ?? 0) : state.progress}
+              theme={theme}
+              tryIt={tryIt}
+            />
+          </div>
+          {side}
         </div>
+        {self && onDemo ? (
+          <button className={`${s.cornerLeft} ${s.demoBtn}`} onClick={onDemo}>
+            {t('handsOn.demo')}
+          </button>
+        ) : null}
         {corner ? <div className={s.cornerTop}>{corner}</div> : null}
         <ToolFan
           items={[
@@ -393,11 +415,21 @@ export function LessonPlayer({
           {/* “看我做一遍”和讲解文字顶部对齐，在右侧 */}
           <div className={s.sayRow}>
             <div className={s.say}>{doing || demoing ? spec?.task : step?.desc}</div>
-            {doing && !demoing ? (
-              <button className={`${ui.btn} ${s.showMe}`} onClick={() => startDemo(tp.misses)}>
-                {t('handsOn.show_me')}
-              </button>
-            ) : null}
+            <div className={s.sayActions}>
+              {doing && !demoing ? (
+                <button className={`${ui.btn} ${s.showMe}`} onClick={() => startDemo(tp.misses)}>
+                  {t('handsOn.show_me')}
+                </button>
+              ) : null}
+              {self && onNewProblem ? (
+                <button
+                  className={`${ui.btn} ${selfDone ? ui.primary : ''} ${s.showMe}`}
+                  onClick={onNewProblem}
+                >
+                  {t('handsOn.new_problem')}
+                </button>
+              ) : null}
+            </div>
           </div>
           {doing && choose && !demoing ? (
             <div className={s.options} role="group" aria-label={t('handsOn.choose_aria')}>
@@ -413,6 +445,7 @@ export function LessonPlayer({
               ))}
             </div>
           ) : null}
+          {selfDone ? <div className={s.tryNote}>{t('handsOn.self_done')}</div> : null}
           {doing || demoing ? (
             <div className={s.tryNote} data-miss={tp.misses > 0 && !demoing} key={tp.misses}>
               {tp.note ||
@@ -425,86 +458,88 @@ export function LessonPlayer({
         {learned ? <LearnedBadge learned={learned} ratio={position / Math.max(total, 1)} /> : null}
       </div>
 
-      <div className={s.controls}>
-        <button
-          className={s.ctrl}
-          aria-label={t('common.shang_yi_bu')}
-          onClick={() => act({ type: 'prev' })}
-          disabled={!steps.some((_, i) => i < state.index && !skips?.[i])}
-        >
-          <Icon name="prev" />
-        </button>
-        {/* 自己做：没有播放，每一步都由孩子自己点或拖 */}
-        {!self ? (
+      {!self ? (
+        <div className={s.controls}>
           <button
-            className={s.play}
-            aria-label={state.playing ? t('common.zan_ting') : t('common.bo_fang')}
-            onClick={() => act({ type: 'toggle' })}
+            className={s.ctrl}
+            aria-label={t('common.shang_yi_bu')}
+            onClick={() => act({ type: 'prev' })}
+            disabled={!steps.some((_, i) => i < state.index && !skips?.[i])}
           >
-            <Icon name={state.playing ? 'pause' : 'play'} size={24} />
+            <Icon name="prev" />
           </button>
-        ) : null}
-        <button
-          className={s.ctrl}
-          aria-label={t('common.xia_yi_bu')}
-          onClick={() => act({ type: 'next' })}
-          disabled={!steps.some((_, i) => i > state.index && !skips?.[i]) || doing}
-        >
-          <Icon name="next" />
-        </button>
+          {/* 自己做：没有播放，每一步都由孩子自己点或拖 */}
+          {!self ? (
+            <button
+              className={s.play}
+              aria-label={state.playing ? t('common.zan_ting') : t('common.bo_fang')}
+              onClick={() => act({ type: 'toggle' })}
+            >
+              <Icon name={state.playing ? 'pause' : 'play'} size={24} />
+            </button>
+          ) : null}
+          <button
+            className={s.ctrl}
+            aria-label={t('common.xia_yi_bu')}
+            onClick={() => act({ type: 'next' })}
+            disabled={!steps.some((_, i) => i > state.index && !skips?.[i]) || doing}
+          >
+            <Icon name="next" />
+          </button>
 
-        <div className={s.track}>
-          {/* 进度点就在进度条上：点一个点回到那一步的开头；动手做时不能拖进度跳过 */}
-          <label className={s.seekWrap}>
-            <span className="sr-only">{t('lessonPlayer.tuo_dong_jin_du')}</span>
-            <input
-              className={s.seek}
-              type="range"
-              min={0}
-              max={total}
-              step={0.01}
-              value={position}
-              data-locked={hands}
-              tabIndex={hands ? -1 : undefined}
-              style={{ '--fill': `${(position / Math.max(total, 1)) * 100}%` } as CSSProperties}
-              aria-valuetext={t('common.step_n', { n: state.index + 1 })}
-              onChange={(e) => act({ type: 'scrub', position: Number(e.target.value) })}
-            />
-          </label>
-          <div className={s.marks}>
-            {steps.map((st, i) => (
-              <button
-                key={st.id}
-                className={s.dot}
-                style={{ '--at': i / Math.max(total, 1) } as CSSProperties}
-                data-current={i === state.index && state.progress === 0}
-                data-done={i < state.index || (i === state.index && state.progress > 0)}
-                aria-label={
-                  st.title
-                    ? t('common.step_n_title', { n: i + 1, title: st.title })
-                    : t('common.step_n', { n: i + 1 })
-                }
-                aria-current={i === state.index ? 'step' : undefined}
-                disabled={!!skips?.[i]}
-                data-skip={!!skips?.[i]}
-                onClick={() => act({ type: 'seek', index: i })}
-              >
-                <span />
-              </button>
-            ))}
+          <div className={s.track}>
+            {/* 进度点就在进度条上：点一个点回到那一步的开头；动手做时不能拖进度跳过 */}
+            <label className={s.seekWrap}>
+              <span className="sr-only">{t('lessonPlayer.tuo_dong_jin_du')}</span>
+              <input
+                className={s.seek}
+                type="range"
+                min={0}
+                max={total}
+                step={0.01}
+                value={position}
+                data-locked={hands}
+                tabIndex={hands ? -1 : undefined}
+                style={{ '--fill': `${(position / Math.max(total, 1)) * 100}%` } as CSSProperties}
+                aria-valuetext={t('common.step_n', { n: state.index + 1 })}
+                onChange={(e) => act({ type: 'scrub', position: Number(e.target.value) })}
+              />
+            </label>
+            <div className={s.marks}>
+              {steps.map((st, i) => (
+                <button
+                  key={st.id}
+                  className={s.dot}
+                  style={{ '--at': i / Math.max(total, 1) } as CSSProperties}
+                  data-current={i === state.index && state.progress === 0}
+                  data-done={i < state.index || (i === state.index && state.progress > 0)}
+                  aria-label={
+                    st.title
+                      ? t('common.step_n_title', { n: i + 1, title: st.title })
+                      : t('common.step_n', { n: i + 1 })
+                  }
+                  aria-current={i === state.index ? 'step' : undefined}
+                  disabled={!!skips?.[i]}
+                  data-skip={!!skips?.[i]}
+                  onClick={() => act({ type: 'seek', index: i })}
+                >
+                  <span />
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {device !== 'phone' ? (
-          <button
-            className={`${s.ctrl} ${s.speed}`}
-            aria-label={t('common.speed_aria', { speed: state.speed })}
-            onClick={() => act({ type: 'cycleSpeed' })}
-          >
-            {state.speed}×
-          </button>
-        ) : null}
-      </div>
+          {device !== 'phone' ? (
+            <button
+              className={`${s.ctrl} ${s.speed}`}
+              aria-label={t('common.speed_aria', { speed: state.speed })}
+              onClick={() => act({ type: 'cycleSpeed' })}
+            >
+              {state.speed}×
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

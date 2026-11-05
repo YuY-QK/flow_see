@@ -34,6 +34,46 @@
 .stageBox {
   position: relative;
 }
+.stageSvg {
+  width: 100%;
+  height: 100%;
+}
+/* 自己做：右边是出题控件，画面在它左边 */
+.stage[data-side='true'] {
+  display: flex;
+  gap: 8px;
+}
+.stage[data-side='true'] .stageSvg {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.cornerLeft {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1;
+}
+.demoBtn {
+  min-height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--primary);
+  background: var(--surface);
+  color: var(--primary);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.demoBtn:hover {
+  background: var(--primary-soft);
+}
+.sayActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+  max-width: 50%;
+}
 /* 动画区域右上角：时长、步数；右下角的工具扇形菜单见 ToolFan */
 .cornerTop {
   position: absolute;
@@ -451,116 +491,6 @@
   }
 }
 
-/* 动手试一试 */
-.explore {
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.exploreHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.exploreTitle {
-  margin: 0;
-  font-size: var(--fs-2xl);
-  font-weight: 700;
-}
-.reset {
-  min-height: var(--touch, 44px);
-}
-.group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.groupLabel {
-  font-size: var(--fs-md);
-  color: var(--ink-3);
-}
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.chip {
-  min-width: var(--touch, 44px);
-  min-height: var(--touch, 44px);
-  padding: 0 16px;
-  border-radius: 999px;
-  border: 1px solid var(--border-strong);
-  background: var(--surface);
-  color: var(--ink);
-  font-size: var(--fs-xl);
-  font-weight: 600;
-}
-.chip:hover {
-  background: var(--hover);
-}
-.chip[data-on='true'] {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: var(--on-color);
-}
-.controlList {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px 28px;
-}
-.control {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.controlLabel {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: var(--fs-lg);
-  font-weight: 600;
-}
-.controlValue {
-  font-size: var(--fs-5xl);
-  color: var(--primary);
-}
-.control input[type='range'] {
-  width: 100%;
-  min-height: var(--touch, 44px);
-  accent-color: var(--primary);
-}
-.controlRange {
-  display: flex;
-  justify-content: space-between;
-  font-size: var(--fs-sm);
-  color: var(--ink-3);
-}
-.switchRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  min-height: var(--touch, 44px);
-}
-.switchRow input {
-  width: 44px;
-  height: 24px;
-  accent-color: var(--primary);
-}
-.exploreHint {
-  margin: 0;
-  font-size: var(--fs-sm);
-  color: var(--ink-3);
-}
-
 /* ───── 动手做：学习方式、轮到你了、做错的提示 ───── */
 .modes {
   display: inline-flex;
@@ -683,5 +613,30 @@
   .mode {
     padding: 0 12px;
     font-size: var(--fs-md);
+  }
+}
+
+@media (max-width: 767px) {
+  /* 自己做：右侧控件要放得下，舞台在手机上比平时高一些，画面在里面垂直居中 */
+  .stage[data-side='true'] {
+    aspect-ratio: auto;
+    height: 214px;
+  }
+  .cornerLeft {
+    top: 6px;
+    left: 6px;
+  }
+  .demoBtn {
+    min-height: 24px;
+    padding: 0 10px;
+    font-size: var(--fs-xs);
+  }
+  .sayRow {
+    flex-wrap: wrap;
+  }
+  .sayActions {
+    max-width: none;
+    width: 100%;
+    justify-content: flex-end;
   }
 }
