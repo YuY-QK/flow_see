@@ -22,6 +22,8 @@ export interface LessonMeta {
   thumbnail?: string;
   template: string;
   steps: number;
+  /** 有没有动手做（步骤里有 try）：有 = 三颗星，没有 = 只有“看一看”一颗 */
+  hands: boolean;
 }
 
 export interface CatalogLesson {
@@ -85,7 +87,7 @@ export interface IndexSource {
       status: LessonStatus;
       thumbnail?: string;
       template: string;
-      steps: unknown[];
+      steps: { try?: unknown }[];
     };
   }[];
 }
@@ -110,6 +112,7 @@ export function buildIndex(src: IndexSource, dev: boolean): ContentIndex {
         thumbnail: l.thumbnail,
         template: l.template,
         steps: l.steps.length,
+        hands: l.steps.some((st) => !!st.try),
       },
     ]),
   );

@@ -5,7 +5,7 @@ import { storageAvailable } from '@flow-see/runtime/store/safeStorage.ts';
 import ui from '@flow-see/runtime/ui/ui.module.css';
 import { LessonCard } from '../learn/LessonCard';
 import { content } from '../site';
-import { useLearning } from '../store/learning';
+import { starTotals, useLearning } from '../store/learning';
 import { site } from '../site';
 import { useProfile } from '../store/profile';
 import { Avatar } from '../ui/Brand';
@@ -22,6 +22,15 @@ export function MePage() {
   const list = Object.values(records).sort((a, b) => b.lastOpenedAt - a.lastOpenedAt);
   const completed = list.filter((r) => r.completed).length;
   const canSave = storageAvailable();
+  // 星星：所有已发布的知识点，每个有 3 颗（没有动手做的只有 1 颗）
+  const lessons = content.catalog.flatMap((e) =>
+    e.units.flatMap((u) =>
+      u.lessons.flatMap((l) =>
+        l.available && l.meta ? [{ id: l.id, hands: l.meta.hands, subject: e.subject }] : [],
+      ),
+    ),
+  );
+  const starAll = starTotals(records, lessons);
 
   // 侧边栏“学习记录”进来时定位到记录区
   useEffect(() => {
@@ -90,6 +99,10 @@ export function MePage() {
 
         <section className={s.stats} aria-label={t('mePage.xue_xi_tong_ji')}>
           <div>
+            <strong>{t('stars.of', { n: `★ ${starAll.full}`, total: starAll.total })}</strong>
+            {t('stars.total')}
+          </div>
+          <div>
             <strong>{completed}</strong>
             {t('common.yi_xue_wan')}
           </div>
@@ -100,6 +113,26 @@ export function MePage() {
           <div>
             <strong>{days.length}</strong>
             {t('mePage.xue_xi_tian_shu')}
+          </div>
+        </section>
+
+        <section className={s.starBox} aria-label={t('stars.total')}>
+          <div className={s.starBar} role="presentation">
+            <i style={{ width: `${starAll.total ? (starAll.sum / starAll.total) * 100 : 0}%` }} />
+          </div>
+          <div className={s.starSubjects}>
+            {content.subjects.map((subj) => {
+              const x = starTotals(
+                records,
+                lessons.filter((l) => l.subject === subj.id),
+              );
+              return x.total ? (
+                <span key={subj.id}>
+                  <b>{subj.name}</b>
+                  {t('stars.of', { n: `★ ${x.full}`, total: x.total })}
+                </span>
+              ) : null;
+            })}
           </div>
         </section>
 

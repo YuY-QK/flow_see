@@ -53,12 +53,11 @@ common:
   xiao_xi_chuan_di: 消息传递
   ji_ge_jue_se: 几个角色之间来回传话
   step_counter: 第 {n} 步 / 共 {total} 步
-  step_counter_title: 第 {n} 步 / 共 {total} 步 · {title}
   step_n: 第 {n} 步
   step_n_title: 第 {n} 步：{title}
   stage_aria: "{title}：第 {n} 步"
   speed_aria: 播放速度 {speed} 倍，点击切换
-  steps_total: 共 {n} 步
+  step_progress: '{n}/{total} 步'
   coming_soon: "{name}的动画正在制作中，敬请期待。"
 algorithms:
   xuan_ze_pai_xu: 选择排序
@@ -301,6 +300,11 @@ lessonPage:
 lessonPlayer:
   tuo_dong_jin_du: 拖动进度
   tui_chu_quan_ping: 退出全屏
+stars:
+  label: 已得 {n} 颗星，共 {total} 颗
+  total: 星星
+  title: '{mode}：{pct}%'
+  of: '{n} / {total}'
 lessonTools:
   open: 工具
   close: 收起

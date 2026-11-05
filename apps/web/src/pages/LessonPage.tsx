@@ -25,7 +25,8 @@ import { StageControls } from '../learn/StageControls';
 import { LessonPlayer, type HandsMode } from '../learn/LessonPlayer';
 import { lessonPath } from '../learn/paths';
 import { assetUrl, content, findSubject, gradeName, loadLesson, site } from '../site';
-import { useLearning, type LessonKey } from '../store/learning';
+import { noStars, starModes, useLearning, type LessonKey, type StarMode } from '../store/learning';
+import { Stars } from '../ui/Stars';
 import { useBrowse } from '../store/profile';
 import { Dialog } from '../ui/Dialog';
 import { ExportDialog } from '../ui/ExportDialog';
@@ -117,9 +118,12 @@ function LessonBody({ lessonId, lessonKey }: { lessonId: string; lessonKey: Less
   const { state, slow, retry } = useLessonContent(lessonId);
   const meta = findLesson(content, lessonId)?.lesson.meta;
   // 标题在左；有动手做时，学习方式在同一行的最右侧
-  const header = (right?: React.ReactNode) => (
+  const header = (right?: React.ReactNode, afterTitle?: React.ReactNode) => (
     <div className={s.head}>
-      <h1 className={p.h1}>{meta?.title ?? lessonId}</h1>
+      <div className={s.titleRow}>
+        <h1 className={p.h1}>{meta?.title ?? lessonId}</h1>
+        {afterTitle}
+      </div>
       {right}
     </div>
   );
@@ -150,7 +154,7 @@ function LessonReady({
   lessonKey,
 }: {
   lesson: LessonContent;
-  header: (right?: React.ReactNode) => React.ReactNode;
+  header: (right?: React.ReactNode, afterTitle?: React.ReactNode) => React.ReactNode;
   lessonKey: LessonKey;
 }) {
   const device = useDevice();
@@ -243,7 +247,11 @@ function LessonReady({
   const keyPoints = fillParams(lesson.keyPoints, values);
   const record = useLearning((st) => st.records[lesson.id]);
   const visit = useLearning((st) => st.visit);
-  const setCompleted = useLearning((st) => st.setCompleted);
+  const setStar = useLearning((st) => st.setStar);
+  // 记录里带上“有没有动手做”（决定有几颗星）
+  const key = useMemo(() => ({ ...lessonKey, hands: hasTry }), [lessonKey, hasTry]);
+  const stars = record?.stars ?? noStars();
+  const slots = starModes(hasTry);
 
   const [toast, setToast] = useState('');
   const [dialog, setDialog] = useState<'none' | 'undo' | 'export' | 'link'>('none');
@@ -265,12 +273,9 @@ function LessonReady({
     }
   };
 
-  const markDone = useCallback(() => setCompleted(lessonKey, true), [setCompleted, lessonKey]);
   const mode = hasTry ? session.mode : 'watch';
-  const onFinish = useCallback(() => {
-    markDone();
-    setFinished(mode);
-  }, [markDone, mode]);
+  // 放完最后一步：星星由播放器报的完成度（= 1）更新，这里只记下放完的是哪种方式
+  const onFinish = useCallback(() => setFinished(mode), [mode]);
   if (!template)
     return (
       <main className={`${p.content} ${s.lessonMain}`}>
@@ -311,6 +316,16 @@ function LessonReady({
               ))}
             </div>
           ) : null,
+          <Stars
+            values={slots.map((m) => stars[m])}
+            size={22}
+            titles={slots.map((m) =>
+              t('stars.title', {
+                mode: MODE_NAMES[m as StarMode](),
+                pct: Math.round(stars[m] * 100),
+              }),
+            )}
+          />,
         )}
 
         <LessonPlayer
@@ -321,7 +336,7 @@ function LessonReady({
           startIndex={session.startIndex}
           autoPlay={session.autoPlay}
           largeCaption={lessonKey.grade <= site.player.largeCaptionMaxGrade}
-          onVisit={(i) => visit(lessonKey, i)}
+          onVisit={(i) => visit(key, i)}
           onFinish={onFinish}
           side={
             mode === 'self' && explore.length ? (
@@ -330,18 +345,15 @@ function LessonReady({
           }
           onDemo={mode === 'self' ? () => switchMode('watch', true) : undefined}
           onNewProblem={mode === 'self' && pool.length > 1 ? newProblem : undefined}
-          corner={
-            <span className={s.stageMeta}>
-              {[lesson.duration, t('common.steps_total', { n: lesson.steps.length })]
-                .filter(Boolean)
-                .join(' · ')}
-            </span>
-          }
-          learned={{
-            done: !!record?.completed,
-            onMark: markDone,
-            onUndo: () => setDialog('undo'),
+          duration={lesson.duration}
+          badge={{
+            saved: stars[mode],
+            // 只有“看一看”可以手动标为学会 / 取消；跟着做、自己做只显示
+            ...(mode === 'watch'
+              ? { onMark: () => setStar(key, 'watch', 1), onUndo: () => setDialog('undo') }
+              : {}),
           }}
+          onProgress={(r) => setStar(key, mode, r)}
           tools={[
             { id: 'share', icon: 'share', label: t('common.fen_xiang'), onClick: share },
             ...(device !== 'phone'
@@ -415,7 +427,7 @@ function LessonReady({
               <button
                 className={`${ui.btn} ${ui.primary}`}
                 onClick={() => {
-                  setCompleted(lessonKey, false);
+                  setStar(key, 'watch', 0, { replace: true });
                   setDialog('none');
                 }}
               >

@@ -4,7 +4,7 @@
 # 算式写成“每份个数 × 份数”（n × 3 表示 3 个 n 相加）。
 id: mult-meaning
 title: 乘法的意义
-summary: 几个相同的数相加，可以写成乘法；还能自己换例子试试
+summary: 几个相同的数相加，可以写成乘法
 status: published
 reviewedAt: 2026-11-04
 duration: 1分钟

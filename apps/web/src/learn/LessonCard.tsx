@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import type { CatalogLesson } from '@flow-see/content';
 import { findSubject, gradeName } from '../site';
-import type { LessonRecord } from '../store/learning';
+import { starModes, type LessonRecord } from '../store/learning';
+import { Stars } from '../ui/Stars';
 import { Highlight } from './Highlight';
 import { lessonPath } from './paths';
 import s from './Learn.module.css';
@@ -44,10 +45,16 @@ export function LessonCard({
       : record
         ? t('lessonCard.progress', { n: record.lastStep + 1, total: meta?.steps ?? '?' })
         : t('lessonCard.wei_xue');
+  const slots = starModes(meta?.hands ?? true);
   const body = (
     <>
-      <div className={s.thumb} style={{ ['--subject' as string]: subj?.color }} aria-hidden>
-        <span>{lesson.title.slice(0, 1)}</span>
+      <div className={s.thumb} style={{ ['--subject' as string]: subj?.color }}>
+        <span aria-hidden>{lesson.title.slice(0, 1)}</span>
+        {lesson.available ? (
+          <span className={s.thumbStars}>
+            <Stars values={slots.map((m) => record?.stars?.[m] ?? 0)} size={14} />
+          </span>
+        ) : null}
       </div>
       <div className={s.cardBody}>
         <div className={s.cardTitle}>
