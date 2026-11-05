@@ -83,7 +83,7 @@ steps:
       - highlight: calc
       - set: { target: calc, focus: false, duration: 0.3s, together: true }
   - title: 十位乘个位上的数
-    say: 再用十位的 {b1} 乘。{a0} × {b1} = {m3}，写在十位下面。
+    say: 再用十位的 {b1} 乘：{a0} × {b1} = {m3}，写十位下面。
     do:
       - set: { target: calc, focus: true, show: 3, duration: 1s }
     try:
