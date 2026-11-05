@@ -5,7 +5,7 @@
 # at 是零件位置：计数块、方格、数轴是左上角（数轴是最左端），其他零件是中心。
 id: make-ten
 title: 凑十法
-summary: 把小数拆开，先和大数凑成 10，再加剩下的；还能自己换例子试试
+summary: 把小数拆开，先和大数凑成 10，再加剩下的
 status: published
 reviewedAt: 2026-11-03
 duration: 1分钟

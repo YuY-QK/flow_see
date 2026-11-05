@@ -16,6 +16,9 @@
   --danger: #b42318;
   --success: #1e7f4f;
   --success-soft: #e6f6ee;
+  --star: #f2b705;
+  --star-edge: #c98f00;
+  --star-empty: #d9dce5;
 
   /* 模板识别色 */
   --tpl-flow-bg: #eaf0ff;
@@ -98,6 +101,9 @@ html[data-theme='dark'] {
   --danger: #ff8a7a;
   --success: #5fd39a;
   --success-soft: #173326;
+  --star: #ffc53d;
+  --star-edge: #ffd666;
+  --star-empty: #3a4155;
 
   --tpl-flow-bg: #1f2a4d;
   --tpl-flow-ink: #a3bbff;

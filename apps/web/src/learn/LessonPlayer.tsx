@@ -55,10 +55,15 @@ interface Props {
   animation: Animation;
   /** 学习方式，默认看一看 */
   mode?: HandsMode;
-  /** 放在舞台右上角的内容（时长、步数） */
-  corner?: React.ReactNode;
-  /** 学完状态：已学完显示成功图标，没学完显示进度环；点它标为已学完 / 取消 */
-  learned?: { done: boolean; onMark(): void; onUndo(): void };
+  /** 舞台右上角“{时长} · {第几步}/{总步数} 步” */
+  duration?: string;
+  /**
+   * 舞台右上角当前学习方式的完成状态：没做完是进度环，做完是绿色对勾。
+   * saved = 已记下的完成度；onMark / onUndo 只有“看一看”才有（点一下标为学会 / 取消）。
+   */
+  badge?: { saved: number; onMark?(): void; onUndo?(): void };
+  /** 当前学习方式的完成度有变化时调用（0–1，做完整个流程 = 1）；只在孩子操作过之后调用 */
+  onProgress?(ratio: number): void;
   /** 舞台右下角扇形菜单里的工具（分享、导出……）；全屏由播放器自己加 */
   tools?: ToolItem[];
   /** 自己做：舞台右侧竖排的出题控件 */
@@ -91,8 +96,9 @@ function isTyping(el: EventTarget | null): boolean {
 export function LessonPlayer({
   animation,
   mode = 'watch',
-  corner,
-  learned,
+  duration,
+  badge,
+  onProgress,
   tools = [],
   side,
   onDemo,
@@ -338,6 +344,20 @@ export function LessonPlayer({
   const position = state.index + state.progress;
   // 自己做：做完整道题（最后一步放完）
   const selfDone = self && state.finishes > 0;
+  // 当前学习方式的完成度：学到第几步占总步数的比例（自己做只算要做的步骤）；做完整个流程才算 1
+  const effective = steps.map((_, i) => !skips?.[i]);
+  const effCount = Math.max(1, effective.filter(Boolean).length);
+  const passed = effective.reduce((n, e, i) => (e && i < state.index ? n + 1 : n), 0);
+  const here = effective[state.index] && !state.waiting ? 1 : 0;
+  const ratio = state.finishes > 0 ? 1 : Math.min((passed + here) / effCount, 0.99);
+  const shownRatio = Math.max(badge?.saved ?? 0, engaged ? ratio : 0);
+  const progress = useRef(onProgress);
+  useEffect(() => {
+    progress.current = onProgress;
+  });
+  useEffect(() => {
+    if (engaged) progress.current?.(ratio);
+  }, [engaged, ratio]);
 
   return (
     <div ref={rootRef} className={s.player} data-full={isFull}>
@@ -369,7 +389,14 @@ export function LessonPlayer({
             {t('handsOn.demo')}
           </button>
         ) : null}
-        {corner ? <div className={s.cornerTop}>{corner}</div> : null}
+        <div className={s.cornerTop}>
+          <span className={s.stageMeta}>
+            {[duration, t('common.step_progress', { n: state.index + 1, total })]
+              .filter(Boolean)
+              .join(' · ')}
+          </span>
+          {badge ? <LearnedBadge badge={badge} ratio={shownRatio} /> : null}
+        </div>
         <ToolFan
           items={[
             ...tools,
@@ -404,14 +431,14 @@ export function LessonPlayer({
           </span>
         )}
         <div className={s.captionText}>
-          <div className={s.counterRow}>
-            <div className={s.counter}>
-              {doing ? <span className={s.yourTurn}>{t('handsOn.your_turn')}</span> : null}
-              {step?.title
-                ? t('common.step_counter_title', { n: state.index + 1, total, title: step.title })
-                : t('common.step_counter', { n: state.index + 1, total })}
+          {doing || step?.title ? (
+            <div className={s.counterRow}>
+              <div className={s.counter}>
+                {doing ? <span className={s.yourTurn}>{t('handsOn.your_turn')}</span> : null}
+                {step?.title}
+              </div>
             </div>
-          </div>
+          ) : null}
           {/* “看我做一遍”和讲解文字顶部对齐，在右侧 */}
           <div className={s.sayRow}>
             <div className={s.say}>{doing || demoing ? spec?.task : step?.desc}</div>
@@ -455,7 +482,6 @@ export function LessonPlayer({
             </div>
           ) : null}
         </div>
-        {learned ? <LearnedBadge learned={learned} ratio={position / Math.max(total, 1)} /> : null}
       </div>
 
       {!self ? (
@@ -544,26 +570,29 @@ export function LessonPlayer({
   );
 }
 
-/** 学完状态：已学完 = 成功的圆形图标；没学完 = 进度环（学到哪了），点一下标为已学完 */
+/** 当前学习方式的完成状态：做完 = 绿色圆形对勾；没做完 = 进度环；只有“看一看”可以点 */
 function LearnedBadge({
-  learned,
+  badge,
   ratio,
 }: {
-  learned: { done: boolean; onMark(): void; onUndo(): void };
+  badge: { saved: number; onMark?(): void; onUndo?(): void };
   ratio: number;
 }) {
+  const done = ratio >= 1;
   const r = 11;
   const c = 2 * Math.PI * r;
-  const label = learned.done ? t('common.yi_xue_wan') : t('lessonPage.wo_xue_hui_le');
+  const label = done ? t('common.yi_xue_wan') : t('lessonPage.wo_xue_hui_le');
+  const click = done ? badge.onUndo : badge.onMark;
   return (
     <button
       className={s.badge}
-      data-done={learned.done}
+      data-done={done}
+      disabled={!click}
       aria-label={label}
       title={label}
-      onClick={learned.done ? learned.onUndo : learned.onMark}
+      onClick={click}
     >
-      {learned.done ? (
+      {done ? (
         <Icon name="check" size={13} />
       ) : (
         <svg viewBox="0 0 28 28" width="20" height="20" aria-hidden>

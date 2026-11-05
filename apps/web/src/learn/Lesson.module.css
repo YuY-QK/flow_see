@@ -1,4 +1,10 @@
 /* P3 知识点学习页 */
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
 .head {
   width: 100%;
   max-width: 1000px;
@@ -80,6 +86,11 @@
   top: 12px;
   right: 12px;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.stageMeta {
   pointer-events: none;
 }
 .stageMeta {
@@ -149,8 +160,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  /* 右边给右上角的学完状态留位置 */
-  padding-right: 28px;
 }
 .counter {
   font-size: var(--fs-sm);
@@ -158,11 +167,10 @@
 }
 /* 学完状态：已学完 = 成功的圆形图标；没学完 = 进度环 */
 .badge {
-  position: absolute;
-  top: 9px;
-  right: 12px;
-  width: 20px;
-  height: 20px;
+  position: relative;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   border: 0;
   padding: 0;
