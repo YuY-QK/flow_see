@@ -2,7 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { counterSlot } from '@flow-see/blocks';
 import { parseDuration, planStep } from './actions';
 import { checkScene } from './check';
-import { coveredActions, dragFrame, sceneFrame, stepMotionMs, type SceneDef } from './evaluate';
+import {
+  coveredActions,
+  dragEach,
+  dragFrame,
+  dragTargets,
+  sceneFrame,
+  stepMotionMs,
+  type SceneDef,
+} from './evaluate';
+import { expandActions, expandObjects } from './repeat';
 
 const makeTen: SceneDef = {
   stage: { width: 800, height: 450 },
@@ -212,5 +221,180 @@ describe('动手做：拖动', () => {
         { highlight: 'left' },
       ])[0],
     ).toMatch(/do 里要有/);
+  });
+});
+
+describe('一个一个分（deal）', () => {
+  const def: SceneDef = {
+    stage: { width: 800, height: 400 },
+    objects: [
+      { id: 'pool', type: 'counters', count: 7, layout: 'grid', cols: 7, at: [20, 20] },
+      { id: 'a', type: 'counters', count: 0, layout: 'grid', cols: 2, capacity: 3, at: [20, 200] },
+      { id: 'b', type: 'counters', count: 0, layout: 'grid', cols: 2, capacity: 3, at: [200, 200] },
+      { id: 'c', type: 'counters', count: 0, layout: 'grid', cols: 2, capacity: 3, at: [380, 200] },
+    ],
+    steps: [
+      [{ deal: { target: 'pool', into: ['a', 'b', 'c'] } }],
+      [{ deal: { target: 'pool', into: ['a', 'b', 'c'], count: 4 } }],
+    ],
+  };
+  const count = (i: number, t: number, id: string) => obj(def, i, t, id)?.props.count;
+
+  it('不写 count 时分一轮：每组 1 个；默认时长是每个 0.45 秒', () => {
+    expect(stepMotionMs(def, 0)).toBeCloseTo(1350, 0);
+    expect([count(0, 1, 'a'), count(0, 1, 'b'), count(0, 1, 'c'), count(0, 1, 'pool')]).toEqual([
+      1, 1, 1, 4,
+    ]);
+  });
+
+  it('一个接一个：进度到 1/3 时只放进了第 1 组，正在飞的那一个单独画出来', () => {
+    const f = sceneFrame(def, 0, 0.5).objects;
+    const done = (id: string) => f.find((o) => o.id === id)?.props.count;
+    expect([done('a'), done('b'), done('c')]).toEqual([1, 0, 0]);
+    expect(f.some((o) => o.id === 'pool~deal')).toBe(true);
+    // 刚分完时没有飞着的
+    expect(sceneFrame(def, 0, 1).objects.some((o) => o.id === 'pool~deal')).toBe(false);
+  });
+
+  it('数量不是整份时最后一轮分不满（余数），依次轮流放', () => {
+    expect([count(1, 1, 'a'), count(1, 1, 'b'), count(1, 1, 'c')]).toEqual([3, 2, 2]);
+    // 第 1 步分了 3 个，剩 4 个，第 2 步 count: 4 正好分完
+    expect(count(1, 1, 'pool')).toBe(0);
+  });
+});
+
+describe('重复（repeat）', () => {
+  it('零件按次数展开，{i} 从 1 开始，可以写算式', () => {
+    const list = expandObjects(
+      [
+        { id: 'p' },
+        { repeat: '{per}', id: 'sub{i}', text: '{total - 3 * i + 3} − 3 = {total - 3 * i}' },
+      ],
+      { per: 3, total: 9 },
+    );
+    expect(list.map((o) => o.id)).toEqual(['p', 'sub1', 'sub2', 'sub3']);
+    expect(list[1].text).toBe('9 − 3 = 6');
+    expect(list[3].text).toBe('3 − 3 = 0');
+  });
+
+  it('动作按次数展开，show: "sub{i + 1}" 能代入算式', () => {
+    const acts = expandActions(
+      [{ repeat: 2, do: [{ deal: { target: 'pool', into: ['a'] } }, { show: 'sub{i + 1}' }] }],
+      {},
+    );
+    expect(acts).toEqual([
+      { deal: { target: 'pool', into: ['a'] } },
+      { show: 'sub2' },
+      { deal: { target: 'pool', into: ['a'] } },
+      { show: 'sub3' },
+    ]);
+  });
+
+  it('次数为 0 或有上限，不会卡死', () => {
+    expect(expandObjects([{ repeat: 0, id: 'x{i}' }], {})).toEqual([]);
+    expect(expandObjects([{ repeat: 9999, id: 'x{i}' }], {}).length).toBeLessThanOrEqual(50);
+  });
+});
+
+describe('提问点（ask）', () => {
+  const def: SceneDef = {
+    stage: { width: 800, height: 400 },
+    objects: [
+      { id: 'fire', type: 'text', text: 'A', at: [10, 10], hidden: true },
+      { id: 'th', type: 'text', value: -10, at: [10, 60] },
+    ],
+    steps: [
+      [
+        { show: { target: 'fire', duration: '1s' } },
+        { ask: true },
+        { count: { target: 'th', from: -10, to: 0, duration: '2s' } },
+      ],
+    ],
+    tries: [{ task: '几度', choose: { answer: 0 } }],
+  };
+
+  it('等孩子答的时候只放 ask 之前的动作，答案（后面的动作）还没出现', () => {
+    expect(planStep(def.steps[0]).askAt).toBe(1);
+    const doing = sceneFrame(def, 0, 1, 'doing').objects;
+    expect(doing.find((o) => o.id === 'fire')?.props.opacity).toBe(1);
+    expect(doing.find((o) => o.id === 'th')?.props.value).toBe(-10);
+    expect(stepMotionMs(def, 0, 'doing')).toBe(1000);
+  });
+
+  it('看一看时 ask 不起作用，整段连着放', () => {
+    expect(stepMotionMs(def, 0)).toBe(3000);
+    expect(obj(def, 0, 1, 'th')?.props.value).toBe(0);
+  });
+});
+
+describe('颜色对应（refs）', () => {
+  const def: SceneDef = {
+    stage: { width: 800, height: 400 },
+    objects: [
+      { id: 'r1', type: 'counters', count: 4, color: 'blue', at: [0, 0] },
+      { id: 'eq', type: 'text', text: '[4](@r1) × [3](red)', at: [400, 100] },
+    ],
+    steps: [[{ highlight: { target: 'r1', color: 'red' } }]],
+  };
+
+  it('文字里引用的零件，把它的颜色和高亮程度记进 props.refs', () => {
+    const refs = obj(def, 0, 1, 'eq')?.props.refs as Record<
+      string,
+      { color: unknown; highlight: number }
+    >;
+    expect(refs.r1).toMatchObject({ color: 'blue', highlight: 1 });
+    // 没高亮时为 0
+    const before = sceneFrame(def, 0, 0).objects.find((o) => o.id === 'eq')?.props
+      .refs as typeof refs;
+    expect(before.r1.highlight).toBe(0);
+  });
+
+  it('color: "@id" 跟着另一个零件的颜色', () => {
+    const d: SceneDef = {
+      ...def,
+      objects: [...def.objects, { id: 'x', type: 'text', text: 'x', color: '@r1', at: [0, 0] }],
+    };
+    expect(sceneFrame(d, 0, 1).objects.find((o) => o.id === 'x')?.props.color).toBe('blue');
+  });
+});
+
+describe('动手做：多目标拖动', () => {
+  const def: SceneDef = {
+    stage: { width: 800, height: 400 },
+    objects: [
+      { id: 'pool', type: 'counters', count: 6, layout: 'grid', cols: 6, at: [20, 20] },
+      { id: 'a', type: 'counters', count: 0, layout: 'grid', cols: 2, capacity: 2, at: [20, 200] },
+      { id: 'b', type: 'counters', count: 0, layout: 'grid', cols: 2, capacity: 2, at: [200, 200] },
+      { id: 'c', type: 'counters', count: 0, layout: 'grid', cols: 2, capacity: 2, at: [380, 200] },
+    ],
+    steps: [[{ deal: { target: 'pool', into: ['a', 'b', 'c'] } }]],
+    tries: [{ task: '分', drag: { from: 'pool', to: ['a', 'b', 'c'], count: 3, each: 1 } }],
+  };
+
+  it('目标是列表，每个目标最多放 each 个', () => {
+    expect(dragTargets(def.tries![0]!.drag!)).toEqual(['a', 'b', 'c']);
+    expect(dragEach(def.tries![0]!.drag!)).toBe(1);
+  });
+
+  it('拖对的放进各自的目标', () => {
+    const f = dragFrame(def, 0, [5, 4], undefined, ['a', 'b']);
+    const n = (id: string) => f.objects.find((o) => o.id === id)?.props.count;
+    expect([n('a'), n('b'), n('c'), n('pool')]).toEqual([1, 1, 0, 4]);
+    expect(f.to.map((o) => o.id)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('配置检查：deal 算作标准做法，个数对得上', () => {
+    const issues = checkScene({
+      params: {},
+      objects: def.objects as Record<string, unknown>[],
+      steps: [
+        {
+          say: '分',
+          do: def.steps[0] as Record<string, unknown>[],
+          try: def.tries![0] as never,
+        },
+      ],
+    });
+    expect(issues).toEqual([]);
   });
 });

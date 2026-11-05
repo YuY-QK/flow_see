@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chooseOptions, isAnswer, shuffled } from './choose';
+import { chooseAnswers, chooseOptions, isAnswer, isMultiChoose, shuffled } from './choose';
 
 describe('点选答案', () => {
   it('数字答案自动生成选项：离答案最近的数，在范围之内', () => {
@@ -28,5 +28,17 @@ describe('点选答案', () => {
   it('打乱后元素不变', () => {
     const l = [1, 2, 3, 4];
     expect(shuffled(l, () => 0.3).sort()).toEqual(l);
+  });
+
+  it('多选：答案写成列表，列表里的每一项都算对，选项里一定包含全部答案', () => {
+    const spec = { answer: ['水分', '空气', '适宜的温度'], options: ['水分', '阳光', '土壤'] };
+    expect(isMultiChoose(spec)).toBe(true);
+    expect(isMultiChoose({ answer: 3 })).toBe(false);
+    expect(chooseAnswers(spec)).toEqual(['水分', '空气', '适宜的温度']);
+    expect(isAnswer(spec, '空气')).toBe(true);
+    expect(isAnswer(spec, '阳光')).toBe(false);
+    const opts = chooseOptions(spec).map(String);
+    for (const a of spec.answer) expect(opts).toContain(a);
+    expect(new Set(opts).size).toBe(opts.length);
   });
 });

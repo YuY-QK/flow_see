@@ -19,8 +19,8 @@ stage: { width: 800, height: 390 }
 
 objects:
   - { id: p, type: particles, width: 330, height: 250, radius: 12, count: 36, phase: 0, t: 0, at: [230, 150] }
-  - { id: state, type: text, text: 冰（固态）, size: 38, at: [540, 58] }
-  - { id: chg, type: label, text: 加热 → 融化, size: 22, at: [530, 106], hidden: true }
+  - { id: state, type: text, text: 冰（固态）, size: 38, at: [520, 78] }
+  - { id: chg, type: label, text: 加热 → 融化, size: 22, at: [520, 126], hidden: true }
   - { id: th, type: thermometer, value: -10, height: 200, showValue: true, at: [690, 225] }
   # 左下角的小图：左边一格是热源 / 冷源（火、雪花），右边一格是现在的样子（冰块、水蒸气）
   - { id: fire, type: image, asset: fire, width: 76, height: 76, at: [56, 345], hidden: true }

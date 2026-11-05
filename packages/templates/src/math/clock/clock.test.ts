@@ -94,4 +94,28 @@ describe('clock 模板', () => {
     const d = clockTemplate.createDefault();
     expect(clockScene(d).steps).toHaveLength(3);
   });
+
+  it('读时间的步骤有动手做时：提问前钟面先摆好、电子钟和文字隐藏，答完才写出时间', () => {
+    const b = createAnimation({
+      templateId: 'clock',
+      title: 'x',
+      params: { hour: 3, minute: 0, runMinutes: 60 },
+      steps: [
+        createStep({
+          title: '',
+          desc: '',
+          data: { show: 'read', try: { task: '几时', choose: { answer: 3 } } },
+        }),
+      ],
+    });
+    const def = clockScene(b);
+    const doing = Object.fromEntries(
+      sceneFrame(def, 0, 1, 'doing').objects.map((o) => [o.id, o.props]),
+    );
+    expect(doing.digital.opacity).toBe(0);
+    expect(doing.caption.opacity).toBe(0);
+    const solved = Object.fromEntries(sceneFrame(def, 0, 1).objects.map((o) => [o.id, o.props]));
+    expect(solved.digital.opacity).toBe(1);
+    expect(solved.caption.text).toBe('3 时');
+  });
 });

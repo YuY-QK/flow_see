@@ -159,6 +159,16 @@ describe('参数代入', () => {
       at: [1, 9],
     });
   });
+
+  it('{…} 里可以写算式：括号、四则运算；整个值是算式时保留数字类型', () => {
+    expect(fillText('{total - 3 * i + 3} − 3 = {total - 3 * i}', { total: 12, i: 2 })).toBe(
+      '9 − 3 = 6',
+    );
+    expect(fillText('sub{i + 1}', { i: 2 })).toBe('sub3');
+    expect(fillParams({ count: '{(per - 1) * 3}' }, { per: 4 })).toEqual({ count: 9 });
+    // 用到还没有的参数时保持原样
+    expect(fillText('{a + b}', { a: 1 })).toBe('{a + b}');
+  });
 });
 
 describe('自己做：跳过不用孩子动手的步骤', () => {

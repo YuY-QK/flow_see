@@ -73,15 +73,17 @@ function RichLine({
   const spans = richSpans(rawText(p));
   const refs = (p.refs ?? {}) as Refs;
   const total = spans.reduce((w, sp) => w + textWidth(sp.text, size), 0);
-  let cx = x - total / 2;
+  // 每段的起点：前面各段宽度之和（纯计算，不在渲染里改变量）
+  const starts = spans.map((_, i) =>
+    spans.slice(0, i).reduce((w, sp) => w + textWidth(sp.text, size), x - total / 2),
+  );
   const marks: { x: number; w: number; c: string; hl: number }[] = [];
-  const parts = spans.map((sp) => {
+  const parts = spans.map((sp, i) => {
     const ref = sp.link ? refs[sp.link] : undefined;
     const c = sp.color ? color(sp.color, theme) : ref?.color ? color(ref.color, theme) : fill;
     const w = textWidth(sp.text, size);
     const hl = Math.max(0, Math.min(1, ref?.highlight ?? 0));
-    if (hl > 0 && sp.text.trim()) marks.push({ x: cx, w, c, hl });
-    cx += w;
+    if (hl > 0 && sp.text.trim()) marks.push({ x: starts[i], w, c, hl });
     return { text: sp.text, c, styled: !!(sp.color || sp.link) };
   });
   const pad = size * 0.14;
