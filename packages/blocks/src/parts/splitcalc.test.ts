@@ -35,8 +35,10 @@ describe('拆分算式图', () => {
     // 第一次合并的结果在下面一行，第二次合并在更下面
     expect(L.nodes.m.y).toBeGreaterThan(L.first.y);
     expect(L.second.y).toBeGreaterThan(L.nodes.m.y);
-    // 箭头指向得数：第二条横线一直连到得数正下方
-    expect(L.second.x2).toBe(L.result.x);
+    // 第二条横线只在两个数之间；得数的连线从它中点往下折，横着走到得数正下方
+    expect(L.second.x2).toBeLessThan(L.result.x);
+    expect(L.bend.y).toBeGreaterThan(L.second.y);
+    expect(L.bend.x).toBe((L.second.x1 + L.second.x2) / 2);
   });
 
   it('破十法：拆的是第一个数，第一次合并是 10 - 8', () => {
@@ -47,9 +49,10 @@ describe('拆分算式图', () => {
   });
 
   it('包围盒只包住已经显示的部分，随 show 一步步变大', () => {
-    const h = [0, 1, 2, 4].map((show) => splitCalcPart.bbox({ ...makeTen, show }).h);
+    const h = [0, 1, 2, 3, 4].map((show) => splitCalcPart.bbox({ ...makeTen, show }).h);
     expect(h[0]).toBeLessThan(h[1]);
     expect(h[1]).toBeLessThan(h[2]);
     expect(h[2]).toBeLessThan(h[3]);
+    expect(h[3]).toBeLessThan(h[4]);
   });
 });
