@@ -200,10 +200,10 @@ describe('目录索引与搜索', () => {
     const { bundle } = loadContent(r);
     const index = buildIndex(bundle!, false);
     const g1 = index.catalog.find((c) => c.grade === 1 && c.subject === 'math')!;
-    // 草稿在线上隐藏；认识钟表没有文件 → 即将上线
-    expect(g1.units.flatMap((u) => u.lessons.map((l) => [l.id, l.available]))).toEqual([
-      ['clock-basics', false],
-    ]);
+    // 草稿在线上隐藏；目录里列了但没有文件的（认识钟表）→ 即将上线。只看这两件事，不依赖真实目录里还有哪些知识点
+    const all = g1.units.flatMap((u) => u.lessons);
+    expect(all.some((l) => l.id === 'make-ten')).toBe(false);
+    expect(all.find((l) => l.id === 'clock-basics')?.available).toBe(false);
     expect(findLesson(index, 'fraction-intro')?.entry.grade).toBe(3);
 
     const dev = buildIndex(bundle!, true);
