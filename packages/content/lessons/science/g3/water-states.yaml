@@ -1,0 +1,103 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 水的三态变化：冰（固态）→ 水（液态）→ 水蒸气（气态），再降温变回来。
+# 左边用粒子示意（particles 零件）：把水想象成许多小颗粒（示意图）——固态排得整齐只在原地抖动，液态挨得近能挪动，气态离得远到处跑。
+# 连续时间：t 是动画时钟，每一步用 set + ease: linear 让它匀速增大，颗粒就一直在动；phase 0/1/2 对应固/液/气，连续变化。
+# 温度写“标准大气压下”的常识：冰在 0 ℃ 融化、水在 0 ℃ 结冰、水在 100 ℃ 沸腾（教科版三年级上册“水”单元）。
+id: water-states
+title: 水的三态变化
+summary: 冰、水、水蒸气：水受热、遇冷时怎样变化，小颗粒怎样变
+status: published
+reviewedAt: 2026-11-05
+duration: 3分钟
+tags: [水, 三态, 固态, 液态, 气态, 融化, 沸腾, 凝结, 结冰, 水蒸气]
+cover: { step: 5, text: 冰 水 水蒸气 }
+
+template: scene
+stage: { width: 800, height: 390 }
+
+objects:
+  - { id: p, type: particles, width: 330, height: 280, radius: 12, count: 36, phase: 0, t: 0, at: [220, 195] }
+  - { id: state, type: text, text: 冰（固态）, size: 44, at: [610, 78] }
+  - { id: tl, type: label, text: 温度（℃）, size: 22, at: [610, 150] }
+  - { id: temp, type: text, value: -10, size: 56, at: [610, 218] }
+  - { id: chg, type: label, text: 加热 → 融化, at: [610, 305], hidden: true }
+
+steps:
+  - title: 冰
+    say: 冰是固体。想象它由许多小颗粒组成。
+    do:
+      - set: { target: p, t: 4, duration: 4s, ease: linear }
+      - highlight: { target: p, together: true }
+  - title: 冰里的小颗粒
+    say: 冰里的小颗粒排得整齐，只在原地抖动。
+    do:
+      - set: { target: p, t: 8, duration: 4s, ease: linear }
+      - highlight: { target: p, together: true }
+  - title: 加热融化
+    say: 加热，冰升到 0 ℃，开始融化成水。
+    do:
+      - show: { target: chg, duration: 0.3s }
+      - set: { target: p, t: 14, duration: 6s, ease: linear, together: true }
+      - count: { target: temp, from: -10, to: 0, duration: 3s, together: true }
+      - set: { target: p, phase: 1, duration: 3s, delay: 3s, ease: linear, together: true }
+      - set: { target: state, text: 水（液态）, delay: 5.5s, duration: 0.3s, together: true }
+  - title: 变成水
+    say: 融化成水了。水是液体，会流动。
+    do:
+      - set: { target: p, t: 18, duration: 4s, ease: linear }
+    try:
+      task: 冰刚融化成水时，温度是几摄氏度？
+      choose: { answer: 0, options: [0, 10, 100], show: [temp] }
+      hints:
+        - 看看右边的温度。
+  - title: 水里的小颗粒
+    say: 水里的小颗粒挨得很近，但能挪动位置。
+    do:
+      - set: { target: p, t: 22, duration: 4s, ease: linear }
+      - highlight: { target: p, together: true }
+  - title: 继续加热
+    say: 继续加热到 100 ℃，水沸腾，变成水蒸气。
+    do:
+      - set: { target: chg, text: 继续加热 → 沸腾, duration: 0.3s }
+      - set: { target: p, t: 28, duration: 6s, ease: linear, together: true }
+      - count: { target: temp, from: 0, to: 100, duration: 3s, together: true }
+      - set: { target: p, phase: 2, duration: 3s, delay: 3s, ease: linear, together: true }
+      - set: { target: state, text: 水蒸气（气态）, delay: 5.5s, duration: 0.3s, together: true }
+  - title: 水蒸气
+    say: 水蒸气是看不见的气体，会跑满整个空间。
+    do:
+      - set: { target: p, t: 32, duration: 4s, ease: linear }
+    try:
+      task: 水沸腾变成水蒸气时，温度是几摄氏度？
+      choose: { answer: 100, options: [0, 50, 100], show: [temp] }
+      hints:
+        - 看看右边的温度。
+  - title: 遇冷凝结
+    say: 水蒸气遇冷，凝结成小水珠，变回水。
+    do:
+      - set: { target: chg, text: 降温 → 凝结, duration: 0.3s }
+      - set: { target: p, t: 38, duration: 6s, ease: linear, together: true }
+      - count: { target: temp, from: 100, to: 20, duration: 3s, together: true }
+      - set: { target: p, phase: 1, duration: 3s, delay: 1.5s, ease: linear, together: true }
+      - set: { target: state, text: 水（液态）, delay: 4.5s, duration: 0.3s, together: true }
+  - title: 继续降温结冰
+    say: 水继续降温，到 0 ℃就结成冰。
+    do:
+      - set: { target: chg, text: 继续降温 → 结冰, duration: 0.3s }
+      - set: { target: p, t: 44, duration: 6s, ease: linear, together: true }
+      - count: { target: temp, from: 20, to: 0, duration: 2s, together: true }
+      - set: { target: p, phase: 0, duration: 3s, delay: 2s, ease: linear, together: true }
+      - count: { target: temp, from: 0, to: -10, duration: 2s, delay: 4s, together: true }
+      - set: { target: state, text: 冰（固态）, delay: 5s, duration: 0.3s, together: true }
+  - title: 三种状态
+    say: 水有冰、水、水蒸气三种状态，能互相变化。
+    do:
+      - set: { target: chg, text: 冰 ⇄ 水 ⇄ 水蒸气, duration: 0.3s }
+      - set: { target: p, t: 48, duration: 4s, ease: linear, together: true }
+      - highlight: { target: chg, together: true }
+
+keyPoints:
+  - 水有三种状态：固态的冰、液态的水、气态的水蒸气
+  - 冰受热融化成水，水继续受热沸腾变成水蒸气
+  - 水蒸气遇冷凝结成水，水遇冷结成冰
+  - 固态的小颗粒排得整齐，液态的挨得近能挪动，气态的离得远到处跑
