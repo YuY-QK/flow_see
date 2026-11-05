@@ -15,6 +15,7 @@ import {
 import { arrowPart, imagePart, linePart, shapePart } from './parts/shapes';
 import { circleCutPart } from './parts/circlecut';
 import { columnCalcPart } from './parts/columncalc';
+import { batteryPart, bulbPart, switchPart, wirePart } from './parts/circuit';
 import { sunShadowPart } from './parts/sunshadow';
 import { particlesPart } from './parts/particles';
 import { splitCalcPart } from './parts/splitcalc';
@@ -42,6 +43,14 @@ export {
 export { SHAPE_KINDS } from './parts/shapes';
 export { displayText } from './parts/text';
 export { circleCutLayout, type CircleCutLayout } from './parts/circlecut';
+export {
+  wireBreaks,
+  wireDots,
+  wireDrawn,
+  wirePath,
+  wirePointAt,
+  wireProject,
+} from './parts/circuit';
 export { sunShadowLayout, sunShadowState, type SunShadowState } from './parts/sunshadow';
 export { particleLayout, particlePosition, type ParticleLayout } from './parts/particles';
 export { COLUMN_CALC_OPS, columnCalcPlan, type ColumnCalcPlan } from './parts/columncalc';
@@ -69,6 +78,10 @@ export const PARTS: readonly PartDef[] = [
   circleCutPart,
   particlesPart,
   sunShadowPart,
+  batteryPart,
+  bulbPart,
+  switchPart,
+  wirePart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */
