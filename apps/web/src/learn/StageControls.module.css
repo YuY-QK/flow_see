@@ -1,5 +1,8 @@
 /* 自己做时舞台右侧的出题控件：垂直排列，宽度固定，舞台画面在它左边 */
 .side {
+  margin: 0;
+  border: 0;
+  min-width: 0;
   flex: 0 0 auto;
   width: 76px;
   display: flex;
@@ -7,6 +10,10 @@
   justify-content: center;
   gap: 8px;
   padding-top: 26px; /* 让开舞台右上角的时长、步数 */
+}
+/* 开始做题后锁住：整体变淡 */
+.side:disabled {
+  opacity: 0.45;
 }
 .box {
   display: flex;

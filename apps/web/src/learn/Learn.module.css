@@ -76,19 +76,16 @@
 
 .lessonGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
 }
-/* 知识点卡片：缩略图在左，文字在右，紧凑，一屏能放更多 */
+/* 知识点卡片：上面是缩略图（动画画面），下面是文字 */
 .card {
   display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  gap: 12px;
-  padding: 8px;
+  flex-direction: column;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 14px;
   overflow: hidden;
   color: var(--ink);
   text-decoration: none;
@@ -101,18 +98,15 @@ a.card:hover {
   opacity: 0.55;
   cursor: not-allowed;
 }
-/* 缩略图：用知识点自己的动画画面；加载前显示文字 */
+/* 缩略图：用知识点自己的动画画面（大多是 2:1 左右）；加载前显示文字 */
 .thumb {
   position: relative;
-  flex: 0 0 116px;
-  align-self: flex-start;
-  aspect-ratio: 16 / 10;
-  border-radius: 10px;
-  overflow: hidden;
+  aspect-ratio: 2 / 1;
   background: color-mix(in srgb, var(--subject, var(--primary)) 14%, var(--surface));
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 4px;
 }
 .thumbStage {
   width: 100%;
@@ -120,7 +114,7 @@ a.card:hover {
   pointer-events: none;
 }
 .thumbText {
-  font-size: var(--fs-2xl);
+  font-size: var(--fs-7xl);
   font-weight: 700;
   color: var(--subject, var(--primary));
   white-space: nowrap;
@@ -128,18 +122,16 @@ a.card:hover {
 /* 缩略图右下角：三颗星 */
 .thumbStars {
   position: absolute;
-  right: 3px;
-  bottom: 3px;
-  padding: 1px 3px;
+  right: 6px;
+  bottom: 6px;
+  padding: 2px 5px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
   display: inline-flex;
   line-height: 0;
 }
 .cardBody {
-  flex: 1 1 0;
-  min-width: 0;
-  padding: 2px 4px 2px 0;
+  padding: 8px 12px 10px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -333,9 +325,7 @@ a.card:hover {
 
 @media (max-width: 599px) {
   .lessonGrid {
-    grid-template-columns: 1fr;
-  }
-  .thumb {
-    flex-basis: 104px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 }

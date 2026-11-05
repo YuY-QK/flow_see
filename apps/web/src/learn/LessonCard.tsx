@@ -52,7 +52,7 @@ export function LessonCard({
       <LessonThumb lesson={lesson} color={subj?.color}>
         {lesson.available ? (
           <span className={s.thumbStars}>
-            <Stars values={slots.map((m) => record?.stars?.[m] ?? 0)} size={11} />
+            <Stars values={slots.map((m) => record?.stars?.[m] ?? 0)} size={13} />
           </span>
         ) : null}
       </LessonThumb>

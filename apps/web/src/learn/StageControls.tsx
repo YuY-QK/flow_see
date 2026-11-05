@@ -7,11 +7,18 @@ interface Props {
   /** 当前取值（已含派生值） */
   values: Scope;
   onChange(patch: Scope): void;
+  /** 已经开始做这道题：做完之前不能再调 */
+  locked?: boolean;
 }
 
-export function StageControls({ controls, values, onChange }: Props) {
+export function StageControls({ controls, values, onChange, locked }: Props) {
   return (
-    <div className={s.side} role="group" aria-label={t('handsOn.controls_aria')}>
+    <fieldset
+      className={s.side}
+      disabled={locked}
+      aria-label={t('handsOn.controls_aria')}
+      title={locked ? t('handsOn.controls_locked') : undefined}
+    >
       {controls.map((c) => {
         const v = values[c.param];
         if (c.control === 'slider') {
@@ -70,6 +77,6 @@ export function StageControls({ controls, values, onChange }: Props) {
           </label>
         );
       })}
-    </div>
+    </fieldset>
   );
 }

@@ -311,6 +311,7 @@ lessonTools:
 handsOn:
   demo: 演示
   controls_aria: 调整题目
+  controls_locked: 做完这道题再调数字
   minus: 减小{name}
   plus: 增大{name}
   modes_aria: 学习方式

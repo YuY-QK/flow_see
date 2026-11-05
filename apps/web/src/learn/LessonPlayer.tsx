@@ -41,6 +41,8 @@ interface TryProgress {
   key: string;
   /** 点选：看过演示后，标出正确选项 */
   reveal: boolean;
+  /** 点选：刚选错的那一项（标红、晃一下） */
+  wrong?: string;
 }
 const freshTry = (key: string): TryProgress => ({
   moved: [],
@@ -72,6 +74,8 @@ interface Props {
   onDemo?(): void;
   /** 自己做：字幕框右侧的“换一题”；没有可换的题就不传 */
   onNewProblem?(): void;
+  /** 自己做：孩子开始动手（第一次拖或点）时调用一次；之后到做完前不能再调题目 */
+  onStart?(): void;
   template: Template;
   startIndex: number;
   autoPlay: boolean;
@@ -103,6 +107,7 @@ export function LessonPlayer({
   side,
   onDemo,
   onNewProblem,
+  onStart,
   template,
   startIndex,
   autoPlay,
@@ -188,9 +193,17 @@ export function LessonPlayer({
     setTp({ ...freshTry(tryKey), misses, note: t('handsOn.watch_me'), demo: 0 });
     say(`${t('handsOn.watch_me')} ${steps[state.index] ? narrationText(steps[state.index]) : ''}`);
   };
+  const started = useRef(false);
+  const begin = () => {
+    setTouched(true);
+    if (!started.current) {
+      started.current = true;
+      onStart?.();
+    }
+  };
   const onDrop = (i: number, ok: boolean) => {
     if (!spec) return;
-    setTouched(true);
+    begin();
     if (ok) {
       const moved = [...tp.moved, i];
       setTp({ ...tp, moved, note: '' });
@@ -215,7 +228,7 @@ export function LessonPlayer({
   );
   const onChoose = (v: ChooseValue) => {
     if (!spec || !choose) return;
-    setTouched(true);
+    begin();
     if (isAnswer(choose, v)) {
       setTp({ ...tp, note: '' });
       dispatch({ type: 'solve' });
@@ -226,7 +239,7 @@ export function LessonPlayer({
     const note =
       spec.hints?.[misses - 1] ??
       (misses >= handsOn.targetAfterMisses ? t('handsOn.choose_target') : t('handsOn.choose_miss'));
-    setTp({ ...tp, misses, note });
+    setTp({ ...tp, misses, note, wrong: String(v) });
     say(note);
   };
   // 看我做一遍：按标准做法（do）放一遍这一步，停一会儿再让孩子自己做
@@ -276,6 +289,14 @@ export function LessonPlayer({
           }
         : { phase: 'solved' };
   const doing = !!spec && state.waiting;
+  // 字幕下方的一行反馈（提示、已放好几个）；没有就不占地方
+  const noteText =
+    doing || demoing
+      ? tp.note ||
+        (tp.moved.length
+          ? t('handsOn.moved', { n: tp.moved.length, left: need - tp.moved.length })
+          : '')
+      : '';
   const visit = useRef(onVisit);
   const finish = useRef(onFinish);
   useEffect(() => {
@@ -444,13 +465,13 @@ export function LessonPlayer({
             <div className={s.say}>{doing || demoing ? spec?.task : step?.desc}</div>
             <div className={s.sayActions}>
               {doing && !demoing ? (
-                <button className={`${ui.btn} ${s.showMe}`} onClick={() => startDemo(tp.misses)}>
+                <button className={`${ui.btn} ${s.capBtn}`} onClick={() => startDemo(tp.misses)}>
                   {t('handsOn.show_me')}
                 </button>
               ) : null}
               {self && onNewProblem ? (
                 <button
-                  className={`${ui.btn} ${selfDone ? ui.primary : ''} ${s.showMe}`}
+                  className={`${ui.btn} ${selfDone ? ui.primary : ''} ${s.capBtn}`}
                   onClick={onNewProblem}
                 >
                   {t('handsOn.new_problem')}
@@ -460,11 +481,14 @@ export function LessonPlayer({
           </div>
           {doing && choose && !demoing ? (
             <div className={s.options} role="group" aria-label={t('handsOn.choose_aria')}>
-              {options.map((o) => (
+              {options.map((o, i) => (
                 <button
-                  key={String(o)}
+                  // 选错时换 key，让“晃一下”的动画重新播放
+                  key={`${String(o)}-${tp.wrong === String(o) ? tp.misses : 0}`}
                   className={s.option}
+                  style={{ '--i': i } as CSSProperties}
                   data-reveal={tp.reveal && isAnswer(choose, o)}
+                  data-wrong={tp.wrong === String(o)}
                   onClick={() => onChoose(o)}
                 >
                   {chooseLabel(o)}
@@ -473,12 +497,9 @@ export function LessonPlayer({
             </div>
           ) : null}
           {selfDone ? <div className={s.tryNote}>{t('handsOn.self_done')}</div> : null}
-          {doing || demoing ? (
+          {noteText ? (
             <div className={s.tryNote} data-miss={tp.misses > 0 && !demoing} key={tp.misses}>
-              {tp.note ||
-                (tp.moved.length
-                  ? t('handsOn.moved', { n: tp.moved.length, left: need - tp.moved.length })
-                  : '')}
+              {noteText}
             </div>
           ) : null}
         </div>
