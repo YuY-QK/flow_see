@@ -5,3 +5,23 @@
   file: brand/logo.svg
   source: 自绘
   createdAt: 2026-11-03
+- id: plant-seed
+  file: science/plant-seed.svg
+  source: 自绘
+  createdAt: 2026-11-05
+- id: plant-sprout
+  file: science/plant-sprout.svg
+  source: 自绘
+  createdAt: 2026-11-05
+- id: plant-seedling
+  file: science/plant-seedling.svg
+  source: 自绘
+  createdAt: 2026-11-05
+- id: plant-flower
+  file: science/plant-flower.svg
+  source: 自绘
+  createdAt: 2026-11-05
+- id: plant-fruit
+  file: science/plant-fruit.svg
+  source: 自绘
+  createdAt: 2026-11-05
