@@ -1,0 +1,121 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 平均分与除法：把一堆圆片平均分成 3 份（拖动分一分），每份同样多，写成除法。只用场景模板（scene）的配置。
+# 每份几个 per 是参数，总数 total = per × 3 由 derived 算出来，所以平均分一定分得完。
+# 盘子是点阵排列并写了 capacity 的计数块（平均分用）；拖到哪个盘子就合并进哪个盘子。
+id: divide-equal
+title: 平均分与除法
+summary: 把一堆东西平均分成几份，每份同样多，可以用除法算
+status: published
+reviewedAt: 2026-11-05
+duration: 2分钟
+tags: [除法, 平均分, 除法的初步认识, 表内除法, 分一分]
+recommended: false
+cover: { step: 7, text: 12 ÷ 3 }
+
+template: scene
+stage: { width: 800, height: 350 }
+
+params:
+  per: 4 # 每份分几个
+derived:
+  total: per * 3 # 一共几个
+  pcols: min(total, 9) # 圆片堆每行几个
+  px: (800 - pcols * 44) / 2 # 让圆片堆左右居中
+  cols: ceil(per / ceil(per / 3)) # 盘子每行几个（最多 3 个，4 个排成 2 × 2）
+  w: cols * 44 # 盘子里格子的总宽
+  x1: 150 - w / 2 # 三个盘子左右居中的位置
+  x2: 400 - w / 2
+  x3: 650 - w / 2
+
+explore: # 动手试一试：每份 2–6 个，总数 6–18 个
+  - { param: per, control: slider, label: 每份几个, min: 2, max: 6 }
+presets:
+  - { label: 12 ÷ 3, params: { per: 4 } }
+  - { label: 6 ÷ 3, params: { per: 2 } }
+  - { label: 9 ÷ 3, params: { per: 3 } }
+  - { label: 15 ÷ 3, params: { per: 5 } }
+  - { label: 18 ÷ 3, params: { per: 6 } }
+
+objects:
+  - { id: pool, type: counters, count: '{total}', layout: grid, cols: '{pcols}', size: 44, at: ['{px}', 28], color: orange }
+  - { id: pl1, type: counters, count: 0, layout: grid, cols: '{cols}', capacity: '{per}', size: 44, at: ['{x1}', 150], color: orange }
+  - { id: pl2, type: counters, count: 0, layout: grid, cols: '{cols}', capacity: '{per}', size: 44, at: ['{x2}', 150], color: orange }
+  - { id: pl3, type: counters, count: 0, layout: grid, cols: '{cols}', capacity: '{per}', size: 44, at: ['{x3}', 150], color: orange }
+  - { id: eq, type: text, text: '{total} ÷ 3 = {per}', at: [400, 304], size: 52, hidden: true }
+
+steps:
+  - title: 一共有多少个
+    say: 这里有 {total} 个圆片。
+    do:
+      - highlight: pool
+    try:
+      task: 一共有几个圆片？
+      choose: { answer: '{total}', min: 1, show: [pool] }
+      hints:
+        - 一个一个数一数。
+  - title: 平均分成 3 份
+    say: 把它们平均分成 3 份，每份分得同样多。
+    do:
+      - highlight: [pl1, pl2, pl3]
+  - title: 分第 1 份
+    say: 先分给第 1 份 {per} 个。
+    do:
+      - split: { target: pool, take: '{per}', as: g1, offset: [0, -16] }
+      - move: { target: g1, to: pl1, duration: 1s }
+    try:
+      task: 拖 {per} 个圆片到第 1 个盘子里。
+      drag: { from: pool, to: pl1, count: '{per}' }
+      hints:
+        - 要放进最左边的盘子里哦。
+        - 看，放到亮起来的盘子里。
+  - title: 分第 2 份
+    say: 再分给第 2 份 {per} 个。
+    do:
+      - split: { target: pool, take: '{per}', as: g2, offset: [0, -16] }
+      - move: { target: g2, to: pl2, duration: 1s }
+    try:
+      task: 再拖 {per} 个圆片到中间的盘子里。
+      drag: { from: pool, to: pl2, count: '{per}' }
+      hints:
+        - 要放进中间的盘子里哦。
+        - 看，放到亮起来的盘子里。
+  - title: 分第 3 份
+    say: 最后分给第 3 份 {per} 个，正好分完。
+    do:
+      - split: { target: pool, take: '{per}', as: g3, offset: [0, -16] }
+      - move: { target: g3, to: pl3, duration: 1s }
+    try:
+      task: 把剩下的 {per} 个拖到右边的盘子里。
+      drag: { from: pool, to: pl3, count: '{per}' }
+      hints:
+        - 要放进最右边的盘子里哦。
+        - 看，放到亮起来的盘子里。
+  - title: 每份一样多
+    say: 每份都是 {per} 个，分得同样多，这就是平均分。
+    do:
+      - highlight: [pl1, pl2, pl3]
+    try:
+      task: 每个盘子里有几个圆片？
+      choose: { answer: '{per}', min: 1, show: [pl1, pl2, pl3] }
+      hints:
+        - 数一数一个盘子里有几个。
+  - title: 写成除法
+    say: '{total} 个平均分成 3 份，每份 {per} 个，用除法算。'
+    do:
+      - show: eq
+      - highlight: eq
+    try:
+      task: '{total} 平均分成 3 份，每份是多少？'
+      choose: { answer: '{per}', min: 1, show: [pl1, pl2, pl3] }
+      hints:
+        - 看看每个盘子里有几个。
+  - title: 除法怎么读
+    say: '{total} ÷ 3 = {per}，读作 {total} 除以 3 等于 {per}。'
+    do:
+      - color: { target: eq, to: green }
+      - highlight: eq
+
+keyPoints:
+  - 平均分：每份分得同样多
+  - 把一些东西平均分，可以用除法算
+  - '{total} ÷ 3 = {per}，读作 {total} 除以 3 等于 {per}'
