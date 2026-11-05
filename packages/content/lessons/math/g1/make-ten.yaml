@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=../../../schemas/lesson.schema.json
 # 凑十法。只用场景模板（scene）的配置做出来，不写代码。
-# 大数 a、小数 b 是参数；要拆出几个、剩几个、得数，都由 derived 算出来，所以孩子可以换成 8 + 6 等别的例子。
+# 大数 a、小数 b 是参数；要拆出几个、剩几个、得数，都由 derived 算出来，所以自己做时可以换成 8 + 6 等别的例子。
+# 右边是拆分算式图（split-calc）：原题一直在最上面，每做一步，下面的竖式跟着多出一步。
 # 舞台大小、零件默认值、颜色等都在 site.yaml 的 scene；
 # at 是零件位置：计数块、方格、数轴是左上角（数轴是最左端），其他零件是中心。
 id: make-ten
@@ -11,23 +12,24 @@ reviewedAt: 2026-11-03
 duration: 1分钟
 tags: [凑十, 凑十法, 进位加法, 加法, 十格框]
 recommended: true
-cover: { text: 9 + 4 }
+cover: { text: 9 + 6 }
 
 template: scene
 stage: { width: 800, height: 360 } # 比默认的矮一些，上下不留多余空白
 
 params:
   a: 9 # 大数
-  b: 4 # 小数
+  b: 6 # 小数
 derived:
   gap: 10 - a # 大数还差几个凑成 10
   rest: b - gap # 小数拆出 gap 个以后还剩几个
   sum: a + b
 
-explore: # 动手试一试：只开放“凑十法”讲得通的范围（大数 6–9，小数要能把大数凑成 10 且还有剩）
+explore: # 自己做时舞台右侧的出题控件：只开放“凑十法”讲得通的范围（大数 6–9，小数要能把大数凑成 10 且还有剩）
   - { param: a, control: slider, label: 大数, min: 6, max: 9 }
   - { param: b, control: slider, label: 小数, min: 11 - a, max: 9 }
-presets: # 点选换例子
+presets: # 例子（没有出题控件时用来换题）
+  - { label: 9 + 6, params: { a: 9, b: 6 } }
   - { label: 9 + 4, params: { a: 9, b: 4 } }
   - { label: 8 + 6, params: { a: 8, b: 6 } }
   - { label: 7 + 5, params: { a: 7, b: 5 } }
@@ -40,47 +42,37 @@ objects:
     count: '{a}'
     layout: tenframe
     size: 52
-    at: [70, 40]
+    at: [50, 66]
     color: blue
-  - id: left-num
-    type: text
-    text: '{a}'
-    at: [200, 246]
-    size: 40
-  - id: plus
-    type: text
-    text: +
-    at: [400, 92]
-    size: 48
-  - id: right # b 个橙色圆片，每行 5 个
+  - id: right # b 个橙色圆片，在十格框下面排成一排（拆出来的往上抬，不会压住别的圆片）
     type: counters
     count: '{b}'
-    layout: grid
-    cols: 5
-    size: 52
-    at: [470, 66]
+    layout: row
+    size: 46
+    at: [50, 238]
     color: orange
-  - id: right-num
-    type: text
-    text: '{b}'
-    at: [600, 246]
-    size: 40
   - id: hint
     type: label
     text: 还差 {gap} 个就满 10
-    at: [200, 188]
+    at: [180, 28]
     hidden: true
-  - id: formula
-    type: text
-    text: '{a} + {b} = ?'
-    at: [400, 318]
-    size: 48
+  - id: calc # 拆分算式图：把 b 拆成 gap 和 rest，a 和 gap 凑成 10，10 再加 rest
+    type: split-calc
+    at: [612, 60]
+    a: '{a}'
+    op: +
+    b: '{b}'
+    split: b
+    parts: ['{gap}', '{rest}']
+    first: { join: [a, p], op: +, value: 10 }
+    second: { join: [m, q], op: +, value: '{sum}' }
+    size: 42
 
 steps:
   - title: 提出问题
     say: '{a} 加 {b} 等于几？我们用凑十法来算。'
     do:
-      - highlight: formula
+      - highlight: calc
   - title: 看看大数还差几个
     say: 十格框里有 {a} 个，还空着 {gap} 格。
     do:
@@ -96,7 +88,7 @@ steps:
     do:
       - highlight: right
       - split: { target: right, take: '{gap}', as: one }
-      - set: { target: right-num, text: '{b} = {gap} + {rest}', together: true }
+      - set: { target: calc, show: 1, duration: 0.8s, together: true }
     try:
       task: 把 {b} 拆成 {gap} 和几？
       choose: { answer: '{rest}', min: 1, show: [right] }
@@ -107,31 +99,28 @@ steps:
     do:
       - move: { target: one, to: left, duration: 1.2s }
       - hide: { target: hint, together: true }
-      - set: { target: left-num, text: '10' }
-      - set: { target: right-num, text: '{rest}', together: true }
-      - highlight: { target: [left, left-num] }
+      - set: { target: calc, show: 2, duration: 0.8s }
+      - highlight: { target: [left, calc] }
     try: # 跟着做 / 自己做：孩子把拆出来的圆片拖进十格框；上面的 do 是标准做法（演示、做对后的结果）
       task: 把 {gap} 个橙色圆片拖进十格框。
       drag: { from: one, to: left, count: '{gap}' }
       hints:
-        - 要放进左边的十格框里哦。
+        - 要放进上面的十格框里哦。
         - 看，放到亮起来的十格框里。
   - title: 再加剩下的
     say: 10 加 {rest} 等于 {sum}。
     do:
-      - set: { target: formula, text: '10 + {rest} = {sum}' }
-      - highlight: formula
+      - set: { target: calc, show: 4, duration: 1.4s }
+      - highlight: calc
     try:
       task: 10 + {rest} 等于几？
-      choose: { answer: '{sum}', min: 10, show: [left] }
+      choose: { answer: '{sum}', min: 10, show: [calc] }
       hints:
         - '十格框已经满 10 了，再加 {rest}。'
   - title: 得出结果
     say: 所以 {a} 加 {b} 等于 {sum}。
     do:
-      - set: { target: formula, text: '{a} + {b} = {sum}' }
-      - color: { target: formula, to: green, together: true }
-      - highlight: formula
+      - highlight: calc
 
 keyPoints:
   - 先看大数还差几个凑成 10，就从小数里拆出几个

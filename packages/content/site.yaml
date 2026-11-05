@@ -88,6 +88,7 @@ scene:
     line: { color: ink, width: 4, draw: 1 }
     arrow: { color: ink, width: 4, draw: 1 }
     image: { width: 160, height: 160 }
+    split-calc: { size: 40, show: 0, op: '+', split: b, color: ink, partColor: blue, accent: red }
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:

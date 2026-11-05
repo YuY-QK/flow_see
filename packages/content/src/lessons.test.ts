@@ -20,7 +20,7 @@ describe('真实的知识点配置', () => {
     expect(load().issues.filter((i) => i.level === 'error')).toEqual([]);
   });
 
-  it('凑十法 9 + 4：只用配置做出来，最后一步画面是 10 + 3 → 13', () => {
+  it('凑十法 9 + 6：只用配置做出来，最后一步是 10 + 5，拆分算式图全部画出、得数 15', () => {
     const lf = load().bundle!.lessons.find((l) => l.lesson.id === 'make-ten')!;
     expect(lf.lesson).toMatchObject({ template: 'scene', status: 'published' });
     const anim = lessonToAnimation({ ...lf.lesson, subject: lf.subject, grade: lf.grade });
@@ -28,8 +28,10 @@ describe('真实的知识点配置', () => {
     const frame = sceneFrame(sceneOf(anim), last);
     const byId = Object.fromEntries(frame.objects.map((o) => [o.id, o.props]));
     expect(byId.left.count).toBe(10);
-    expect(byId.right.count).toBe(3);
-    expect(byId.formula.text).toBe('9 + 4 = 13');
+    expect(byId.right.count).toBe(5);
+    // 原题不变，竖式全部显示出来
+    expect(byId.calc).toMatchObject({ a: 9, b: 6, parts: [1, 5], show: 4 });
+    expect((byId.calc.second as { value: number }).value).toBe(15);
     // 借来的 1 个保留橙色，孩子能看出是从 4 里拿的
     expect((byId.left.colors as string[]).at(-1)).toBe('orange');
     // 每一步都有动画段（连续时间模型）
@@ -54,7 +56,7 @@ describe('凑十法：动手试一试，换示例', () => {
     const { anim, byId } = finalFrame({ a: 8, b: 6 });
     expect(byId.left.count).toBe(10);
     expect(byId.right.count).toBe(4);
-    expect(byId.formula.text).toBe('8 + 6 = 14');
+    expect(byId.calc).toMatchObject({ a: 8, b: 6, parts: [2, 4] });
     expect(anim.steps[2].desc).toBe('把 6 拆成 2 和 4，先拿出 2 个。');
     expect(anim.steps[3].desc).toBe('把这 2 个放进十格框，8 和 2 凑成 10。');
   });
@@ -70,7 +72,8 @@ describe('凑十法：动手试一试，换示例', () => {
       const { byId } = finalFrame(p);
       expect(byId.left.count, `${a}+${b}`).toBe(10);
       expect(byId.right.count, `${a}+${b}`).toBe(a + b - 10);
-      expect(byId.formula.text).toBe(`${a} + ${b} = ${a + b}`);
+      expect(byId.calc, `${a}+${b}`).toMatchObject({ a, b, parts: [10 - a, a + b - 10], show: 4 });
+      expect((byId.calc.second as { value: number }).value).toBe(a + b);
     }
     for (const pr of l.presets!)
       expect(clampParams(controls, { ...l.params, ...pr.params }, l.derived)).toMatchObject(
@@ -86,8 +89,8 @@ describe('凑十法：动手试一试，换示例', () => {
     });
   });
 
-  it('标准讲解（不传参数）仍是 9 + 4', () => {
-    expect(finalFrame().byId.formula.text).toBe('9 + 4 = 13');
+  it('标准讲解（不传参数）是 9 + 6', () => {
+    expect(finalFrame().byId.calc).toMatchObject({ a: 9, b: 6 });
   });
 });
 
