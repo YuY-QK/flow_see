@@ -106,11 +106,11 @@ describe('认识分数：fraction 模板，只用配置', () => {
     expect(last({ parts: 6, take: 5 }).steps[1].desc).toBe('把它平均分成 6 份，每一份都一样大。');
   });
 
-  it('“分成几份”从 6 调到 3 时，“取几份”是 5 会自动变为 3', () => {
+  it('“分成几份”从 6 调到 3 时，“取几份”是 5 会自动变为 2（最多比份数少 1）', () => {
     const l = lesson();
     expect(
       clampParams(l.explore as ExploreControl[], { shape: 'circle', parts: 3, take: 5 }, l.derived),
-    ).toMatchObject({ parts: 3, take: 3 });
+    ).toMatchObject({ parts: 3, take: 2 });
   });
 
   it('滑块和按钮的每一种组合都能生成画面', () => {

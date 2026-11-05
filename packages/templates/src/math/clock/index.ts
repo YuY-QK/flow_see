@@ -4,6 +4,7 @@ import { formatClockTime } from '@flow-see/blocks';
 import { createAnimation, createStep, styleConfig, t, type Animation } from '@flow-see/core';
 import type { Template } from '@flow-see/runtime/template.ts';
 import { stepMotionMs, type SceneDef } from '../../scene/evaluate';
+import { triesOf } from '../../scene/scene';
 import { makeSceneStage } from '../../scene/stage';
 import { checkClock } from './check';
 import { runMinutesOf, type ClockShow } from './shows';
@@ -131,6 +132,7 @@ export function clockScene(animation: Animation): SceneDef {
       },
     ],
     steps,
+    tries: triesOf(animation),
   };
 }
 
@@ -168,6 +170,6 @@ export const clockTemplate: Template = {
   },
   newStep: () => ({ data: { show: 'read' } }),
   Stage: makeSceneStage(sceneOf),
-  motionMs: (animation, index) => stepMotionMs(sceneOf(animation), index),
+  motionMs: (animation, index, phase) => stepMotionMs(sceneOf(animation), index, phase),
   checkConfig: checkClock,
 };

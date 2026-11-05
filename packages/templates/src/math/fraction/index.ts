@@ -5,6 +5,7 @@ import type { Template } from '@flow-see/runtime/template.ts';
 import { checkFraction } from './check';
 import type { SceneDef } from '../../scene/evaluate';
 import { stepMotionMs } from '../../scene/evaluate';
+import { triesOf } from '../../scene/scene';
 import { makeSceneStage } from '../../scene/stage';
 
 import { FRACTION_SHAPES, type FractionShow } from './shows';
@@ -111,6 +112,7 @@ export function fractionScene(animation: Animation): SceneDef {
       },
     ],
     steps: animation.steps.map((s) => actionsFor(s.data.show as string | undefined, p)),
+    tries: triesOf(animation),
   };
 }
 
@@ -150,6 +152,6 @@ export const fractionTemplate: Template = {
   },
   newStep: () => ({ data: { show: 'take-many' } }),
   Stage: makeSceneStage(sceneOf),
-  motionMs: (animation, index) => stepMotionMs(sceneOf(animation), index),
+  motionMs: (animation, index, phase) => stepMotionMs(sceneOf(animation), index, phase),
   checkConfig: checkFraction,
 };

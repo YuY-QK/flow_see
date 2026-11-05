@@ -10,7 +10,7 @@ import { SceneStage } from './stage';
 export { VERBS, parseDuration, planStep } from './actions';
 export { checkScene } from './check';
 export { coveredActions, dragFrame, sceneFrame, stepMotionMs, type SceneDef } from './evaluate';
-export { sceneOf } from './scene';
+export { sceneOf, triesOf } from './scene';
 export { makeSceneStage } from './stage';
 
 export const sceneTemplate: Template = {

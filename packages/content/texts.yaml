@@ -319,6 +319,9 @@ handsOn:
   praise: 做对了！
   miss: 没放对，再试一次。
   target: 看，放到亮起来的地方。
+  choose_miss: 不对，再想一想。
+  choose_target: 看亮起来的地方，再想一想。
+  choose_aria: 选择答案
   watch_me: 看我做一遍。
   you_try: 现在你来试试。
   show_me: 看我做一遍
