@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=../../schemas/curriculum.schema.json
+# 四年级科学（教科版）。单元和知识点的顺序就是页面上的顺序。
+subject: science
+grade: 4
+units:
+  - id: circuit
+    title: 电路
+    lessons:
+      - simple-circuit

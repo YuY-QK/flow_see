@@ -1,0 +1,103 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 简单电路：电池、导线、开关、灯泡连成一圈，开关合上电流才能流过，灯才会亮（教科版四年级下册“电路”）。
+# 用 battery / bulb / switch / wire 四个零件摆出来：电池竖着放（rotate: 90，正极在下），导线是一条闭合的折线，
+# 从电池正极出发，经过开关、灯泡，回到负极（电流方向按“正极 → 负极”的约定）；breaks 是被零件盖住的路段。
+# 灯亮不亮 lit、开关合没合 on 都是 0–1 的数，用 set 改；电流小圆点由 wire 的 flow 和时钟 t 控制。
+# 术语：电路、通路、断路（教科版）；不讲短路和并联。
+id: simple-circuit
+title: 简单电路
+summary: 电池、导线、开关和灯泡怎样连成电路，灯什么时候才会亮
+status: published
+reviewedAt: 2026-11-05
+duration: 3分钟
+tags: [电路, 电池, 导线, 开关, 灯泡, 通路, 断路, 电流]
+cover: { step: 4, text: 简单电路 }
+
+template: scene
+stage: { width: 800, height: 405 }
+
+objects:
+  - id: wire # 从电池正极（下端）出发：下 → 右（开关）→ 上 → 左（灯泡）→ 回到负极（上端）
+    type: wire
+    points: [[200, 255], [200, 320], [600, 320], [600, 110], [200, 110], [200, 165]]
+    breaks: [[[355, 320], [445, 320]], [[444, 110], [356, 110]]]
+  - { id: battery, type: battery, rotate: 90, at: [200, 210] }
+  - { id: bulb, type: bulb, at: [400, 110] }
+  - { id: sw, type: switch, on: 0, at: [400, 320] }
+  - { id: lb, type: label, text: 电池, at: [112, 210], hidden: true }
+  - { id: lw, type: label, text: 导线, at: [600, 215], hidden: true }
+  - { id: ll, type: label, text: 灯泡, at: [400, 40], hidden: true }
+  - { id: ls, type: label, text: 开关, at: [400, 368], hidden: true }
+  - { id: lp, type: label, text: 正极（＋）, at: [96, 270], hidden: true }
+  - { id: lq, type: label, text: 负极（－）, at: [96, 150], hidden: true }
+
+steps:
+  - title: 要让灯亮
+    say: 要让小灯泡亮，需要电池、导线、开关和灯泡。
+    do:
+      - show: [lb, lw, ll, ls]
+      - highlight: [battery, wire, bulb, sw]
+  - title: 开关断开
+    say: 开关是断开的，电路有缺口，灯不亮。
+    do:
+      - hide: [lb, lw, ll, ls]
+      - highlight: sw
+    try:
+      task: 现在，灯泡亮不亮？
+      choose: { answer: 不亮, options: [亮, 不亮], show: [sw] }
+      hints:
+        - 看看开关，电路连成一圈了吗？
+  - title: 合上开关
+    say: 合上开关，电路接通，灯就亮了。
+    do:
+      - set: { target: sw, on: 1, duration: 0.8s }
+      - set: { target: bulb, lit: 1, duration: 0.6s }
+      - set: { target: wire, flow: 1, duration: 0.4s, together: true }
+      - set: { target: wire, t: 3, duration: 3s, ease: linear, together: true }
+  - title: 电流的方向
+    say: 电流从电池的正极出发，经过灯泡，回到负极。
+    do:
+      - show: [lp, lq]
+      - set: { target: wire, t: 9, duration: 6s, ease: linear, together: true }
+    try:
+      task: 电流从电池的哪一极出发？
+      choose: { answer: 正极, options: [正极, 负极], show: [battery] }
+      hints:
+        - 看看小圆点是从电池哪一端出来的。
+  - title: 通路
+    say: 电流能一圈一圈流动的电路，叫通路。
+    do:
+      - hide: [lp, lq]
+      - set: { target: wire, t: 13, duration: 4s, ease: linear, together: true }
+      - highlight: wire
+  - title: 导线断了
+    say: 如果导线断了，电流就过不去了。
+    do:
+      - set: { target: wire, breaks: [[[355, 320], [445, 320]], [[444, 110], [356, 110]], [[600, 230], [600, 190]]], duration: 0.3s }
+      - set: { target: wire, flow: 0, duration: 0.3s, together: true }
+      - set: { target: bulb, lit: 0, duration: 0.4s, together: true }
+      - highlight: wire
+  - title: 断路
+    say: 电路中间断开了，叫断路。灯不会亮。
+    do:
+      - highlight: wire
+    try:
+      task: 开关合着，灯为什么不亮？
+      choose:
+        answer: 导线断了，电流过不去
+        options: [导线断了，电流过不去, 灯泡太小了, 电池没有正极]
+        show: [wire]
+      hints:
+        - 看看电路上有没有缺口。
+  - title: 接通才亮
+    say: 电路是通路，灯才会亮；断了，灯就不亮。
+    do:
+      - set: { target: wire, breaks: [[[355, 320], [445, 320]], [[444, 110], [356, 110]]], duration: 0.3s }
+      - set: { target: wire, flow: 1, duration: 0.4s, together: true }
+      - set: { target: bulb, lit: 1, duration: 0.4s, together: true }
+      - set: { target: wire, t: 18, duration: 4s, ease: linear, together: true }
+
+keyPoints:
+  - 简单电路由电池、导线、开关和灯泡连成一圈
+  - 开关合上，电流能从电池正极出发，经过灯泡，回到负极，灯就亮了
+  - 电流能一圈一圈流动的电路叫通路，中间断开了叫断路，断路时灯不亮
