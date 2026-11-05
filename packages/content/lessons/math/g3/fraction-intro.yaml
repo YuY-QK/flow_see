@@ -10,6 +10,7 @@ reviewedAt: 2026-11-04
 duration: 2分钟
 tags: [分数, 平均分, 分子, 分母]
 recommended: true
+cover: { text: 3/4 }
 
 template: fraction
 params:

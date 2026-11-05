@@ -530,6 +530,18 @@ export const lessonSchema = z
     tags: z.array(text).default([]),
     recommended: z.boolean().default(false),
     thumbnail: z.string().optional().describe('素材 id'),
+    cover: z
+      .object({
+        step: z.int().min(1).optional().describe('缩略图用第几步的画面，默认最后一步'),
+        params: z
+          .record(z.string(), z.unknown())
+          .optional()
+          .describe('缩略图用的参数，默认标准取值'),
+        text: text.optional().describe('画面加载出来之前显示的文字，如算式“9 + 4”“3/4”'),
+      })
+      .strict()
+      .optional()
+      .describe('缩略图：用这个知识点自己的动画画面，不用另外做图'),
     template: z.string(),
     theme: z.enum(ANIM_THEMES).optional(),
     stage: z

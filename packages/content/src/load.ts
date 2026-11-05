@@ -380,6 +380,11 @@ export function loadContent(
         '拖动（try.drag）目前只有场景模板（template: scene）支持；其他模板用点选（try.choose）',
       );
 
+    if (lesson.cover?.step && lesson.cover.step > lesson.steps.length)
+      err(name, `cover.step 超出了步骤数（共 ${lesson.steps.length} 步）`);
+    for (const k of Object.keys(lesson.cover?.params ?? {}))
+      if (!Object.hasOwn(lesson.params, k))
+        err(name, `cover.params 里的参数 ${k} 没有在 params 中给出标准取值`);
     const lf = { file: name, subject, grade, lesson };
     lessons.push(lf);
     lessonById.set(lesson.id, lf);

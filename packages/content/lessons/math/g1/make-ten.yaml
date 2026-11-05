@@ -11,6 +11,7 @@ reviewedAt: 2026-11-03
 duration: 1分钟
 tags: [凑十, 凑十法, 进位加法, 加法, 十格框]
 recommended: true
+cover: { text: 9 + 4 }
 
 template: scene
 stage: { width: 800, height: 360 } # 比默认的矮一些，上下不留多余空白
