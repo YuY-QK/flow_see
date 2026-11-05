@@ -15,6 +15,7 @@ import {
 import { arrowPart, imagePart, linePart, shapePart } from './parts/shapes';
 import { circleCutPart } from './parts/circlecut';
 import { columnCalcPart } from './parts/columncalc';
+import { particlesPart } from './parts/particles';
 import { splitCalcPart } from './parts/splitcalc';
 import { fractionPart, labelPart, textPart } from './parts/text';
 
@@ -40,6 +41,7 @@ export {
 export { SHAPE_KINDS } from './parts/shapes';
 export { displayText } from './parts/text';
 export { circleCutLayout, type CircleCutLayout } from './parts/circlecut';
+export { particleLayout, particlePosition, type ParticleLayout } from './parts/particles';
 export { COLUMN_CALC_OPS, columnCalcPlan, type ColumnCalcPlan } from './parts/columncalc';
 export { splitCalcLayout } from './parts/splitcalc';
 
@@ -63,6 +65,7 @@ export const PARTS: readonly PartDef[] = [
   splitCalcPart,
   columnCalcPart,
   circleCutPart,
+  particlesPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */

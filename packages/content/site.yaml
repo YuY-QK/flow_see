@@ -90,6 +90,7 @@ scene:
     arrow: { color: ink, width: 4, draw: 1 }
     image: { width: 160, height: 160 }
     circle-cut: { radius: 100, parts: 1, t: 0, color: blue, color2: orange }
+    particles: { width: 300, height: 260, radius: 9, count: 36, phase: 0, t: 0, color: blue }
     column-calc: { size: 44, op: '×', show: 0, accent: red, focus: true, color: ink }
     split-calc: { size: 40, show: 0, op: '+', split: b, color: ink, partColor: blue, accent: red }
 
