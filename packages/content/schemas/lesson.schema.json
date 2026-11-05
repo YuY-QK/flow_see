@@ -48,6 +48,32 @@
       "description": "素材 id",
       "type": "string"
     },
+    "cover": {
+      "description": "缩略图：用这个知识点自己的动画画面，不用另外做图",
+      "type": "object",
+      "properties": {
+        "step": {
+          "description": "缩略图用第几步的画面，默认最后一步",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "params": {
+          "description": "缩略图用的参数，默认标准取值",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "text": {
+          "description": "画面加载出来之前显示的文字，如算式“9 + 4”“3/4”",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
     "template": {
       "type": "string"
     },

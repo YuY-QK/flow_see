@@ -4,6 +4,7 @@ import { findSubject, gradeName } from '../site';
 import { starModes, type LessonRecord } from '../store/learning';
 import { Stars } from '../ui/Stars';
 import { Highlight } from './Highlight';
+import { LessonThumb } from './LessonThumb';
 import { lessonPath } from './paths';
 import s from './Learn.module.css';
 
@@ -48,14 +49,13 @@ export function LessonCard({
   const slots = starModes(meta?.hands ?? true);
   const body = (
     <>
-      <div className={s.thumb} style={{ ['--subject' as string]: subj?.color }}>
-        <span aria-hidden>{lesson.title.slice(0, 1)}</span>
+      <LessonThumb lesson={lesson} color={subj?.color}>
         {lesson.available ? (
           <span className={s.thumbStars}>
-            <Stars values={slots.map((m) => record?.stars?.[m] ?? 0)} size={14} />
+            <Stars values={slots.map((m) => record?.stars?.[m] ?? 0)} size={11} />
           </span>
         ) : null}
-      </div>
+      </LessonThumb>
       <div className={s.cardBody}>
         <div className={s.cardTitle}>
           <span>

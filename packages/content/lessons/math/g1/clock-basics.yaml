@@ -12,6 +12,7 @@ reviewedAt: 2026-11-04
 duration: 3分钟
 tags: [钟表, 时针, 分针, 整点, 半点, 几时几分, 时间]
 recommended: true
+cover: { step: 4, text: '3:00' } # 用“读整点”那一步的画面
 
 template: clock
 params:

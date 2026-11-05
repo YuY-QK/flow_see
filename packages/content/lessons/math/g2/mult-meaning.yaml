@@ -10,6 +10,7 @@ reviewedAt: 2026-11-04
 duration: 1分钟
 tags: [乘法, 乘法的意义, 相同加数, 点阵, 表内乘法]
 recommended: false
+cover: { text: 4 × 3 }
 
 template: scene
 stage: { width: 800, height: 380 } # 比默认的矮一些，上下不留多余空白

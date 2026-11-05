@@ -20,6 +20,8 @@ export interface LessonMeta {
   status: LessonStatus;
   /** 缩略图素材 id */
   thumbnail?: string;
+  /** 缩略图画面加载出来之前显示的文字（cover.text） */
+  coverText?: string;
   template: string;
   steps: number;
   /** 有没有动手做（步骤里有 try）：有 = 三颗星，没有 = 只有“看一看”一颗 */
@@ -86,6 +88,7 @@ export interface IndexSource {
       recommended: boolean;
       status: LessonStatus;
       thumbnail?: string;
+      cover?: { text?: string };
       template: string;
       steps: { try?: unknown }[];
     };
@@ -110,6 +113,7 @@ export function buildIndex(src: IndexSource, dev: boolean): ContentIndex {
         recommended: l.recommended,
         status: l.status,
         thumbnail: l.thumbnail,
+        coverText: l.cover?.text,
         template: l.template,
         steps: l.steps.length,
         hands: l.steps.some((st) => !!st.try),
