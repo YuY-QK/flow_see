@@ -10,3 +10,7 @@ units:
     title: 两位数乘两位数
     lessons:
       - mult-column
+  - id: area
+    title: 面积
+    lessons:
+      - rect-area

@@ -1,0 +1,109 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 长方形的面积：用 1 平方厘米的小方格铺满，数一数 = 每行个数 × 行数 = 长 × 宽。只用场景模板（scene）的配置。
+# 长 len、宽 wid 是参数，小方格用方格零件（grid）；每个小方格 50 个单位大小，位置按长宽算出来，让图形居中、上下不留大片空白。
+id: rect-area
+title: 长方形的面积
+summary: 用小方格铺满长方形，数一数，发现面积等于长乘宽
+status: published
+reviewedAt: 2026-11-05
+duration: 2分钟
+tags: [面积, 长方形, 长方形的面积, 平方厘米, 方格, 乘法]
+cover: { step: 6, text: 长 × 宽 }
+
+template: scene
+stage: { width: 720, height: 380 }
+
+params:
+  len: 6 # 长（厘米）
+  wid: 4 # 宽（厘米）
+derived:
+  area: len * wid
+  rw: len * 50 # 长方形的宽度（每个小方格 50）
+  rh: wid * 50
+  m: (380 - rh - 100) / 2 # 上下留白，让整体居中
+  x0: 350 - rw / 2 # 长方形左上角
+  y0: m + 40
+  cx: x0 + rw / 2
+  cy: y0 + rh / 2
+  lx: x0 - 84 # 宽的标注
+  ty: y0 - 34 # 长的标注
+  ey: y0 + rh + 46 # 算式
+  y1: y0 + 25 # 第一行的中心
+  x1: x0 + 25 # 第一列的中心
+
+explore: # 动手试一试：长 3–8 厘米，宽 2–5 厘米
+  - { param: len, control: slider, label: 长（厘米）, min: 3, max: 8 }
+  - { param: wid, control: slider, label: 宽（厘米）, min: 2, max: 5 }
+presets:
+  - { label: 6 × 4, params: { len: 6, wid: 4 } }
+  - { label: 5 × 3, params: { len: 5, wid: 3 } }
+  - { label: 8 × 2, params: { len: 8, wid: 2 } }
+  - { label: 7 × 5, params: { len: 7, wid: 5 } }
+
+objects:
+  - { id: rect, type: shape, shape: rect, width: '{rw}', height: '{rh}', at: ['{cx}', '{cy}'], color: blue }
+  - { id: grid, type: grid, rows: '{wid}', cols: '{len}', cell: 50, filled: 0, at: ['{x0}', '{y0}'], color: green, hidden: true }
+  - { id: rowbox, type: shape, shape: rect, width: '{rw}', height: 50, at: ['{cx}', '{y1}'], color: red, fill: false, hidden: true }
+  - { id: colbox, type: shape, shape: rect, width: 50, height: '{rh}', at: ['{x1}', '{cy}'], color: red, fill: false, hidden: true }
+  - { id: lenl, type: label, text: '长 {len} 厘米', size: 22, at: ['{cx}', '{ty}'] }
+  - { id: widl, type: label, text: '宽 {wid} 厘米', size: 22, at: ['{lx}', '{cy}'] }
+  - { id: eq, type: text, text: '{len} × {wid} = {area}', at: ['{cx}', '{ey}'], size: 44, hidden: true }
+
+steps:
+  - title: 提出问题
+    say: 这个长方形长 {len} 厘米，宽 {wid} 厘米，面积是多少？
+    do:
+      - highlight: rect
+  - title: 铺小方格
+    say: 用 1 平方厘米的小方格，把它铺满。
+    do:
+      - hide: { target: rect, duration: 0.3s }
+      - show: { target: grid, together: true, duration: 0.3s }
+      - set: { target: grid, filled: '{area}', duration: 2.5s, ease: linear }
+  - title: 数每行
+    say: 每行铺了 {len} 个小方格。
+    do:
+      - show: rowbox
+      - highlight: rowbox
+    try:
+      task: 每行铺了几个小方格？
+      choose: { answer: '{len}', min: 1, show: [grid] }
+      hints:
+        - 数一数第一行有几个小方格。
+  - title: 数几行
+    say: 一共铺了 {wid} 行。
+    do:
+      - hide: rowbox
+      - show: colbox
+      - highlight: colbox
+    try:
+      task: 一共铺了几行？
+      choose: { answer: '{wid}', min: 1, show: [grid] }
+      hints:
+        - 从上往下数一数有几行。
+  - title: 一共几个
+    say: 每行 {len} 个，{wid} 行：{len} × {wid} = {area} 个。
+    do:
+      - hide: colbox
+      - show: eq
+      - highlight: eq
+    try:
+      task: '{len} × {wid} 等于几？'
+      choose: { answer: '{area}', min: 1, show: [grid] }
+      hints:
+        - 每行 {len} 个，{wid} 行，一共有几个？
+  - title: 面积是多少
+    say: 每个小方格是 1 平方厘米，面积是 {area} 平方厘米。
+    do:
+      - set: { target: eq, text: '面积 = {area} 平方厘米', color: green, duration: 0.5s }
+      - highlight: eq
+  - title: 面积公式
+    say: 长方形的面积等于长乘宽。
+    do:
+      - set: { target: eq, text: '面积 = 长 × 宽', duration: 0.5s }
+      - highlight: [lenl, widl, eq]
+
+keyPoints:
+  - 面积是图形所占平面的大小，常用平方厘米做单位
+  - '长方形每行铺 {len} 个、铺 {wid} 行，一共 {len} × {wid} = {area} 个小方格'
+  - 长方形的面积等于长乘宽
