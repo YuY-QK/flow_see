@@ -194,6 +194,8 @@ function LessonReady({
   });
   // 刚放完的是哪种学习方式：放完后提示下一种（自己做放完后由“换一题”接着）
   const [finished, setFinished] = useState<HandsMode | null>(null);
+  // 自己做：开始动手后到做完前，右侧的出题控件锁住（换一道题、调数字都会重新开始）
+  const [started, setStarted] = useState(false);
   const animation = useMemo(
     () => lessonToAnimation(lesson, { themeId: defaultTheme, params: session.trial ?? undefined }),
     [lesson, defaultTheme, session.trial],
@@ -220,6 +222,7 @@ function LessonReady({
   /** 切换学习方式；keepProblem = 带着现在这道题的数字（“演示”）；进入自己做时自动换一道题 */
   const switchMode = (mode: HandsMode, keepProblem = false) => {
     setFinished(null);
+    setStarted(false);
     const picked = mode === 'self' ? pickProblem(values) : null;
     setSession((st) => {
       const trial = mode === 'self' ? (picked ?? st.trial) : keepProblem ? st.trial : null;
@@ -230,6 +233,7 @@ function LessonReady({
     const next = pickProblem(values);
     if (!next) return;
     setFinished(null);
+    setStarted(false);
     setSession((st) => ({ ...st, trial: next, n: st.n + 1, startIndex: 0, autoPlay: false }));
   };
   // 舞台右侧的控件：自己调题目的数字，调完从头做
@@ -340,11 +344,17 @@ function LessonReady({
           onFinish={onFinish}
           side={
             mode === 'self' && explore.length ? (
-              <StageControls controls={explore} values={values} onChange={tryParams} />
+              <StageControls
+                controls={explore}
+                values={values}
+                onChange={tryParams}
+                locked={started && finished !== 'self'}
+              />
             ) : undefined
           }
           onDemo={mode === 'self' ? () => switchMode('watch', true) : undefined}
           onNewProblem={mode === 'self' && pool.length > 1 ? newProblem : undefined}
+          onStart={() => setStarted(true)}
           duration={lesson.duration}
           badge={{
             saved: stars[mode],
