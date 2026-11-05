@@ -91,6 +91,7 @@ scene:
     image: { width: 160, height: 160 }
     circle-cut: { radius: 100, parts: 1, t: 0, color: blue, color2: orange }
     particles: { width: 300, height: 260, radius: 9, count: 36, phase: 0, t: 0, color: blue }
+    sun-shadow: { time: 720, latitude: 35, declination: 0, radius: 120, pole: 56, unit: 26, sideWidth: 380, labels: [北, 东, 南, 西], color: ink, shadowColor: gray }
     column-calc: { size: 44, op: '×', show: 0, accent: red, focus: true, color: ink }
     split-calc: { size: 40, show: 0, op: '+', split: b, color: ink, partColor: blue, accent: red }
 
