@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schemas/curriculum.schema.json
+subject: math
+grade: 3
+units:
+  - id: fraction
+    title: 分数的初步认识
+    lessons:
+      - fraction-intro
+  - id: multiplication-2
+    title: 两位数乘两位数
+    lessons:
+      - mult-column
+  - id: area
+    title: 面积
+    lessons:
+      - rect-area

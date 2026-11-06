@@ -1,0 +1,137 @@
+# yaml-language-server: $schema=./schemas/site.schema.json
+# 站点公共配置（《小学版页面规格》2.7）。改这里不需要改代码；缺项时用 schema 里的默认值。
+site:
+  name: 动画学堂
+  slogan: 看动画，动手试，弄明白为什么
+  logo: assets/brand/logo.svg
+contact:                 # 全部留空 → 帮助页隐藏反馈区
+  email: ""              # 例：hello@example.com
+  wechat: ""
+defaults:                # 第一次打开时的默认值；用户改过后以本机设置为准
+  grade: 1
+  subject: math
+  uiTheme: light         # light | dark | auto
+  animTheme: cute        # flat | cute | chalk | pro
+  fontSize: normal       # normal | large
+  narrate: true          # 自动朗读
+  speechRate: normal     # slow | normal | fast
+  speed: 1               # 0.5 | 1 | 1.5 | 2
+  autoplayOnFirstOpen: true
+learning:
+  recordLimit: 200
+  continueCount: { desktop: 3, pad: 2, phone: 2 }
+  recommendedLimit: 4
+  prevNextCrossGrade: false
+  prevNextCrossSubject: false
+search:
+  hints: [分数, 钟表, 凑十, 植物, 水]
+  maxResults: 50
+share:
+  apiBase: /api          # 分享接口地址；换到自己的服务器时只改这里
+help:
+  faq: help.yaml         # 常见问题较长，单独一个文件，由这里引用
+texts: texts.yaml        # 界面文案：分组 → 键 → 文字；代码里用 t('分组.键') 读取
+style: style.yaml        # 动画主题（配色、圆角、字体）和导出视频/GIF 的画面样式
+
+# ───────── 知识点动画：场景零件的外观和默认值（packages/blocks 读取）─────────
+scene:
+  stage: { width: 800, height: 450 }   # 没有写 stage 的知识点用这个舞台大小
+  colors:                              # 配置里可以直接写的颜色名；也可以写 #RRGGBB，或 ink / dim / accent / line（跟随动画主题）
+    blue: "#2F6FE4"
+    orange: "#F28C28"
+    red: "#E5484D"
+    green: "#2EA36B"
+    purple: "#7C5CE0"
+    yellow: "#F2B705"
+    pink: "#E85D9E"
+    brown: "#A0673A"
+    gray: "#9AA3B5"
+    white: "#FFFFFF"
+    black: "#1F2433"
+  highlight: { padding: 12, strokeWidth: 4, fillOpacity: 0.12, dash: "10 6" }
+  actionSeconds:                       # 各动作没写 duration 时的默认时长（秒）
+    show: 0.5
+    hide: 0.5
+    highlight: 0.4
+    unhighlight: 0.3
+    move: 0.8
+    split: 0.5
+    merge: 0.8
+    set: 0.6
+    rotate: 0.8
+    scale: 0.5
+    color: 0.5
+    count: 1
+    hop: 0.8
+    wait: 0.5
+    deal: 0.45                         # 一个一个分：每分一个的时长
+    ask: 0
+  splitLift: 0.9                       # 拆分出来的计数块默认往上抬多少（相对格子大小）
+  tenframeGap: 0.4                     # 十格框之间的间距（相对格子大小）
+  counterPlate: { pad: 8, radius: 14 }         # 点阵计数块写了 capacity 时画的盘子：比格子外扩多少、圆角
+  counterBorder: { width: 3, darken: 0.45 }    # 计数块的边框：粗细、比填充色深多少
+  counterShadow: { dx: 1.5, dy: 3.5, opacity: 0.3 }   # 计数块的阴影：向右、向下偏多少，深浅
+  tryIt:                               # 动手做（跟着做 / 自己做）时舞台上的拖动
+    dropPadding: 30                    # 放到目标零件外面这么远以内也算放进去（舞台坐标）
+    hitScale: 1.6                      # 能拖的零件，按下的范围是它本身的几倍（手指好按；手机上零件会缩小）
+    liftScale: 1.15                    # 拖起来时放大一点
+  parts:                               # 各零件的默认属性；知识点里写了就用知识点的
+    text: { size: 36, color: ink, weight: bold }
+    fraction: { size: 40, color: ink }
+    label: { size: 26, color: accent }
+    counters: { count: 1, layout: row, shape: circle, size: 44, color: blue }
+    tenframe: { count: 0, layout: tenframe, shape: circle, size: 44, color: blue }
+    numberline: { from: 0, to: 10, step: 1, length: 600, color: ink, size: 22 }
+    clock: { time: 180, radius: 130, numbers: true, ticks: true, color: ink, emphasis: none }
+    digital-clock: { time: 180, size: 48, color: ink }
+    fraction-circle: { parts: 4, take: 0, radius: 120, color: orange }
+    fraction-bar: { parts: 4, take: 0, width: 480, height: 64, color: orange }
+    grid: { rows: 3, cols: 4, cell: 44, filled: 0, color: green }
+    shape: { shape: rect, width: 160, height: 100, radius: 70, angle: 90, color: blue }
+    line: { color: ink, width: 4, draw: 1 }
+    arrow: { color: ink, width: 4, draw: 1 }
+    image: { width: 160, height: 160 }
+    circle-cut: { radius: 100, parts: 1, t: 0, color: blue, color2: orange }
+    particles: { width: 300, height: 260, radius: 9, count: 36, phase: 0, t: 0, color: blue }
+    sun-shadow: { time: 720, latitude: 35, declination: 0, radius: 120, pole: 56, unit: 26, sideWidth: 380, labels: [北, 东, 南, 西], color: ink, shadowColor: gray, sunAsset: sun }   # sunAsset：太阳的图片；objectAsset：把杆换成图片（如小树、小兔子），不写画杆
+    thermometer: { value: 20, min: -20, max: 110, height: 240, width: 22, step: 10, labelEvery: 20, color: ink, cold: blue, hot: red, coldAt: 0, hotAt: 100, showValue: false }   # value：当前温度（℃）；液柱不高于 coldAt 用 cold、不低于 hotAt 用 hot，之间渐变
+    battery: { width: 90, height: 44, color: green }
+    bulb: { radius: 26, lead: 18, lit: 0, color: yellow }
+    switch: { width: 90, on: 0, color: ink }
+    wire: { width: 6, flow: 0, t: 0, speed: 90, spacing: 36, color: ink }
+    column-calc: { size: 44, op: '×', show: 0, accent: red, focus: true, color: ink }
+    split-calc: { size: 40, show: 0, op: '+', split: b, color: ink, partColor: blue, accent: red }
+
+# ───────── 知识点播放器的时间和行为 ─────────
+player:
+  skeletonDelayMs: 300                 # 加载超过这么久才显示骨架屏
+  toastMs: 2000                        # 轻提示显示多久
+  largeCaptionMaxGrade: 2              # 这个年级及以下，字幕用大字号
+  dwell: { msPerChar: 220, minMs: 1800 }   # 不朗读时，按字数估算每一步停留多久
+  afterSpeech: { pauseMs: 1200, minMs: 500, blockedRatio: 0.6 }   # 读完后的停顿
+  maxFrameMs: 100                      # 时钟单帧最多推进多久
+  handsOn:                             # 动手做：跟着做 / 自己做（规格 P3）
+    targetAfterMisses: 2               # 做错几次后，高亮该放到哪里
+    demoAfterMisses: 3                 # 做错几次后，自动“看我做一遍”
+    demoPauseMs: 800                   # 演示放完后停多久，再让孩子自己做
+    remindMs: 8000                     # 多选、一个一个分时：停下来这么久还没做完，提示还差几个
+    selfDwellMs: 1500                  # 自己做：最后一步（结果）显示多久后算做完
+
+# ───────── 个人中心 ─────────
+profile:
+  avatarCount: 4                       # 头像颜色的个数；颜色在 apps/web/src/styles/global.css 的 --avatar-0…（个数要一致，约定检查会核对）
+  nicknameMax: 8                       # 昵称最多几个字
+
+# ───────── 朗读 ─────────
+speech:
+  rates: { slow: 0.8, normal: 1, fast: 1.2 }   # 设置里“朗读语速”三档对应的倍率
+
+# ───────── 创作编辑器 ─────────
+editor:
+  autosaveMs: 600                      # 改动后多久自动保存
+  stepDurations: [1, 2, 3, 5]          # “停留时间”下拉里除“自动按朗读”外的可选秒数
+
+# ───────── 界面的时间参数 ─────────
+ui:
+  focusDelayMs: 50                     # 展开搜索框后，等多久再让输入框获得焦点
+  saveRevokeMs: 60000                  # 导出文件下载后，多久释放临时地址

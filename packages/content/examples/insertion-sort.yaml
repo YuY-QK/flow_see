@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=../schemas/example.schema.json
+id: insertion-sort
+title: 插入排序
+category: 算法
+featured: false
+summary: 像整理扑克牌一样，一张张插到合适的位置。
+template: data
+theme: cute
+params:
+  values: [8, 3, 5, 1, 6, 2]
+  algorithm: insertion
+  order: asc

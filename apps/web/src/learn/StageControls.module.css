@@ -1,0 +1,119 @@
+/* 自己做时舞台右侧的出题控件：垂直排列，宽度固定，舞台画面在它左边 */
+.side {
+  margin: 0;
+  border: 0;
+  min-width: 0;
+  flex: 0 0 auto;
+  width: 76px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 26px; /* 让开舞台右上角的时长、步数 */
+}
+/* 开始做题后锁住：整体变淡 */
+.side:disabled {
+  opacity: 0.45;
+}
+.box {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  padding: 4px 4px 6px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+}
+.label {
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+  text-align: center;
+  white-space: nowrap;
+}
+.stepper {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  gap: 2px;
+}
+.stepper strong {
+  font-size: var(--fs-4xl);
+  line-height: 1.1;
+}
+.stepper button,
+.chips button {
+  min-width: 36px;
+  min-height: 32px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--primary);
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  padding: 0 6px;
+}
+.stepper button:hover:not(:disabled),
+.chips button:hover {
+  background: var(--primary-soft);
+}
+.stepper button:disabled {
+  opacity: 0.35;
+}
+/* 加号在上、减号在下：数字往上调更直观 */
+.stepper button:first-child {
+  order: 3;
+}
+.stepper strong {
+  order: 2;
+}
+.stepper button:last-child {
+  order: 1;
+}
+.chips {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.chips button {
+  color: var(--ink);
+  font-size: var(--fs-md);
+}
+.chips button[data-on='true'] {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-color);
+}
+.switchRow {
+  align-items: center;
+}
+@media (max-width: 767px) {
+  /* 手机：加减横着排，每个控件只有两行高，两个控件加起来不超过舞台高度 */
+  .side {
+    width: 92px;
+    gap: 6px;
+    padding-top: 22px;
+    padding-bottom: 44px; /* 让开右下角的菜单按钮 */
+  }
+  .stepper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2px;
+  }
+  .stepper button:first-child,
+  .stepper button:last-child,
+  .stepper strong {
+    order: 0;
+  }
+  .stepper strong {
+    font-size: var(--fs-2xl);
+  }
+  .stepper button,
+  .chips button {
+    min-width: 26px;
+    min-height: 28px;
+    padding: 0;
+  }
+}

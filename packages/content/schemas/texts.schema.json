@@ -1,0 +1,20 @@
+{
+  "title": "界面文案 texts.yaml",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "propertyNames": {
+    "type": "string",
+    "pattern": "^[a-z][A-Za-z0-9]*$"
+  },
+  "additionalProperties": {
+    "type": "object",
+    "propertyNames": {
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9_]*$"
+    },
+    "additionalProperties": {
+      "type": "string"
+    }
+  },
+  "description": "界面文案：分组 → 键 → 文字；文字里的 {名字} 由代码代入"
+}

@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 认识分数：用 fraction 模板（需求设计 5.4），只写参数和讲解，不写代码。
+# fraction 模板每一步的 show：whole（完整的）、split（平均分）、take-one（取 1 份）、take-many（取 take 份）。
+# try 的步骤，模板会先把图形画好、等孩子答完再出文字和分数（不会提前写出答案）。
+# 图形的位置、大小、颜色在 style.yaml 的 templates.fraction。
+id: fraction-intro
+title: 认识分数
+summary: 把一个整体平均分，取其中的几份
+status: published
+reviewedAt: 2026-11-04
+duration: 2分钟
+tags: [分数, 平均分, 分子, 分母]
+recommended: true
+cover: { text: 3/4 }
+
+template: fraction
+params:
+  shape: circle # circle 圆 / bar 长条
+  parts: 4 # 平均分成几份
+  take: 3 # 取其中几份
+
+explore: # 动手试一试
+  - param: shape
+    control: buttons
+    label: 图形
+    options:
+      - { value: circle, label: 圆 }
+      - { value: bar, label: 长条 }
+  - { param: parts, control: slider, label: 平均分成几份, min: 2, max: 12 }
+  - { param: take, control: slider, label: 取其中几份, min: 1, max: '{parts} - 1' }
+presets: # 点选换例子
+  - { label: 1/2, params: { parts: 2, take: 1 } }
+  - { label: 3/4, params: { parts: 4, take: 3 } }
+  - { label: 2/5, params: { parts: 5, take: 2 } }
+  - { label: 5/8, params: { parts: 8, take: 5 } }
+
+steps:
+  - title: 一个整体
+    say: 看，这是一个完整的图形，把它看作一个整体。
+    show: whole
+  - title: 平均分
+    say: 把它平均分成 {parts} 份，每一份都一样大。
+    show: split
+    try:
+      task: 图形平均分成了几份？
+      choose: { answer: '{parts}', min: 2, max: 12, show: [shape] }
+      hints:
+        - 数一数一共有几份一样大的。
+  - title: 取 1 份
+    say: 取其中的 1 份，就是 {parts} 分之 1，写作 1/{parts}。
+    show: take-one
+  - title: 取几份
+    say: 取其中 {take} 份，就是 {parts} 分之 {take}，写作 {take}/{parts}。
+    show: take-many
+    try:
+      task: 取其中 {take} 份，用分数表示是？
+      choose:
+        answer: '{take}/{parts}'
+        options: ['{take}/{parts}', '{parts}/{take}', '{parts}/{parts}']
+        show: [shape]
+      hints:
+        - 分母是平均分成的份数，分子是取的份数。
+
+keyPoints:
+  - 一定要“平均分”，每一份同样大，才能用分数表示
+  - 分母表示平均分成几份，分子表示取了几份
+  - '{take}/{parts}：平均分成 {parts} 份，取其中 {take} 份'

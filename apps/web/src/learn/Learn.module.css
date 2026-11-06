@@ -1,0 +1,331 @@
+/* 学习中心相关页面：首页、学科页、搜索、个人中心、帮助 */
+.subjects {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.subjectCard {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--subject) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--subject) 25%, var(--border));
+  color: var(--ink);
+  text-decoration: none;
+  min-height: 112px;
+}
+.subjectCard:hover {
+  color: var(--ink);
+  border-color: var(--subject);
+}
+.subjectIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--subject);
+  color: var(--on-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-8xl);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.subjectText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+.subjectText strong {
+  font-size: var(--fs-4xl);
+}
+.subjectText small {
+  color: var(--ink-3);
+  font-size: var(--fs-md);
+}
+.progress {
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--subject) 15%, var(--surface));
+  overflow: hidden;
+}
+.progress span {
+  display: block;
+  height: 100%;
+  background: var(--subject);
+}
+
+.banner {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--subject) 10%, var(--surface));
+}
+.unitNo {
+  color: var(--ink-3);
+  font-weight: 500;
+  font-size: var(--fs-md);
+  margin-right: 8px;
+}
+
+.lessonGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+/* 知识点卡片：上面是缩略图（动画画面），下面是文字 */
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  color: var(--ink);
+  text-decoration: none;
+}
+a.card:hover {
+  color: var(--ink);
+  box-shadow: var(--shadow-card);
+}
+.soon {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+/* 缩略图：用知识点自己的动画画面（大多是 2:1 左右）；加载前显示文字 */
+.thumb {
+  position: relative;
+  aspect-ratio: 2 / 1;
+  background: color-mix(in srgb, var(--subject, var(--primary)) 14%, var(--surface));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+.thumbStage {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.thumbText {
+  font-size: var(--fs-7xl);
+  font-weight: 700;
+  color: var(--subject, var(--primary));
+  white-space: nowrap;
+}
+/* 缩略图右下角：三颗星 */
+.thumbStars {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  display: inline-flex;
+  line-height: 0;
+}
+.cardBody {
+  padding: 8px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cardTitle {
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.devMark {
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--danger);
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  padding: 0 6px;
+}
+.cardWhere {
+  font-size: var(--fs-sm);
+  color: var(--ink-3);
+}
+.cardSummary {
+  margin: 0;
+  font-size: var(--fs-md);
+  color: var(--ink-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.cardMeta {
+  display: flex;
+  gap: 12px;
+  font-size: var(--fs-sm);
+  color: var(--ink-3);
+}
+.done {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.hint {
+  padding: 8px 14px;
+  min-height: var(--touch);
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  text-decoration: none;
+}
+
+.profile {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.profileFields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  min-width: 240px;
+  max-width: 420px;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.field > span {
+  font-size: var(--fs-sm);
+  color: var(--ink-3);
+}
+.avatars {
+  display: flex;
+  gap: 8px;
+}
+.avatarPick {
+  border: 2px solid transparent;
+  background: none;
+  border-radius: 50%;
+  padding: 2px;
+  min-width: var(--touch);
+  min-height: var(--touch);
+}
+.avatarPick[aria-checked='true'] {
+  border-color: var(--primary);
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 599px) {
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.stats div {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  color: var(--ink-3);
+  font-size: var(--fs-md);
+}
+.stats strong {
+  font-size: var(--fs-9xl);
+  color: var(--ink);
+}
+/* 星星：总进度条和各学科的星星数 */
+.starBox {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.starBar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--star-empty);
+  overflow: hidden;
+}
+.starBar > i {
+  display: block;
+  height: 100%;
+  background: var(--star);
+  border-radius: 4px;
+}
+.starSubjects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  font-size: var(--fs-md);
+  color: var(--ink-2);
+}
+.starSubjects b {
+  color: var(--ink);
+  margin-right: 6px;
+}
+
+.faq {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.faq details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 16px;
+}
+.faq summary {
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  cursor: pointer;
+}
+.faq p {
+  margin: 0 0 14px;
+  color: var(--ink-2);
+  white-space: pre-line;
+}
+.contact {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 搜索命中的字 */
+.mark {
+  background: color-mix(in srgb, var(--mark) 45%, transparent);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+@media (max-width: 599px) {
+  .lessonGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}

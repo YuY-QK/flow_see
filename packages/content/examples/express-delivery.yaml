@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=../schemas/example.schema.json
+id: express-delivery
+title: 快递是怎么送到家的
+category: 生活流程
+featured: false
+summary: 网上下单后，包裹是怎么一步步到你手里的。
+template: message
+theme: flat
+elements:
+  - 你
+  - 商家
+  - 分拣中心
+  - 快递员
+steps:
+  - from: 你
+    to: 商家
+    label: 下单
+    title: 你在网上下单
+    desc: 你选好商品，付款下单。
+  - from: 商家
+    to: 分拣中心
+    label: 发货
+    title: 商家打包发货
+    desc: 商家把包裹交给快递公司，送往分拣中心。
+  - from: 分拣中心
+    to: 快递员
+    label: 派送
+    title: 分拣中心分拣
+    desc: 按地址分好，交给负责你家附近的快递员。
+  - from: 快递员
+    to: 你
+    label: 送达
+    title: 快递员送货上门
+    desc: 快递员把包裹送到你手里。
+  - from: 你
+    to: 商家
+    label: 确认收货
+    title: 你确认收货
+    desc: 你在网上点击确认收货，交易完成。

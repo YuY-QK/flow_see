@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schemas/curriculum.schema.json
+subject: science
+grade: 3
+units:
+  - id: water
+    title: 水
+    lessons:
+      - water-states
+  - id: plant-growth
+    title: 植物的生长变化
+    lessons:
+      - plant-life
+  - id: sun-earth-moon
+    title: 太阳、地球和月球
+    lessons:
+      - shadow-change

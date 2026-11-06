@@ -1,0 +1,12 @@
+# Cloudflare Pages 部署配置（网页 + /api 分享接口）
+# 首次部署前：
+#   1. pnpm exec wrangler kv namespace create SHARES，把输出的 id 填到下面
+#   2. 在 Cloudflare 控制台创建 Pages 项目并连接 GitHub 仓库，构建设置见 docs/部署.md
+name = "flow-see"
+pages_build_output_dir = "apps/web/dist"
+compatibility_date = "2026-10-01"
+
+# 分享内容存在 Workers KV 里；Functions 里通过 env.SHARES 访问
+[[kv_namespaces]]
+binding = "SHARES"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"

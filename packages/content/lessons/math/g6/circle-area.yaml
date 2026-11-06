@@ -1,0 +1,122 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 圆的面积：把圆平均分成越来越多的扇形，交错拼成近似的长方形，长 = 圆周长的一半 = πr，宽 = r，所以 S = πr²。
+# 切圆拼图用 circle-cut 零件（t 是拼合程度，parts 是切成几份）；半径 r（厘米）是参数，只影响最后的算一算，图里圆的大小不变。
+# π 取 3.14（六年级教材约定）；算一算的错误选项：周长（3.14 × 2 × r）、半径的平方（忘了乘 π）。
+id: circle-area
+title: 圆的面积
+summary: 把圆切成许多扇形拼成近似长方形，推出圆的面积公式
+status: published
+reviewedAt: 2026-11-05
+duration: 3分钟
+tags: [圆, 圆的面积, 面积公式, 扇形, 割补, 圆周率]
+cover: { step: 7, text: S = πr² }
+
+template: scene
+stage: { width: 840, height: 380 } # 左边 0–500 是圆和拼成的图形，右边 520–830 是算式
+
+params:
+  r: 3 # 半径（厘米），只用在最后的算一算
+derived:
+  S: round(3.14 * r * r * 100) / 100 # 圆的面积
+  C2: round(3.14 * 2 * r * 100) / 100 # 错误选项：圆的周长
+  sq: r * r # 错误选项：忘了乘 π
+
+explore: # 动手试一试：半径 3–10 厘米（r = 2 时周长和面积的数值相同，选项会重复，所以从 3 起）
+  - { param: r, control: slider, label: 半径（厘米）, min: 3, max: 10 }
+presets:
+  - { label: 3 厘米, params: { r: 3 } }
+  - { label: 5 厘米, params: { r: 5 } }
+  - { label: 8 厘米, params: { r: 8 } }
+  - { label: 10 厘米, params: { r: 10 } }
+
+objects:
+  - { id: cc, type: circle-cut, radius: 90, parts: 1, t: 0, at: [300, 190] }
+  # 长（圆周长的一半）是绿色，宽（半径）是红色：算式里的“长”“宽”“πr”“r”和它们同色
+  - { id: rectbox, type: shape, shape: rect, width: 283, height: 90, at: [300, 190], color: purple, fill: false, hidden: true }
+  - { id: wl, type: label, text: 长 = 圆周长的一半, at: [300, 100], color: green, hidden: true }
+  - { id: hl, type: label, text: 宽, at: [72, 190], color: red, hidden: true }
+  - { id: rv, type: label, text: 'r = {r} 厘米', at: [110, 350], hidden: true }
+  - { id: eq1, type: text, text: 'S = [长](green @wl) × [宽](red @hl)', at: [605, 100], size: 36, hidden: true }
+  - { id: eq2, type: text, text: '= [πr](green @wl) × [r](red @hl)', at: [605, 160], size: 36, hidden: true }
+  - { id: eq3, type: text, text: '= πr²', at: [605, 220], size: 36, hidden: true }
+  - { id: num1, type: text, text: '= 3.14 × {r} × {r}', at: [605, 285], size: 32, hidden: true }
+  - { id: num2, type: text, text: '= {S}', at: [605, 340], size: 32, hidden: true }
+
+steps:
+  - title: 提出问题
+    say: 圆的面积怎么算？把圆剪开，拼成学过的图形。
+    do:
+      - highlight: cc
+  - title: 平均分成 8 份
+    say: 先把圆平均分成 8 个扇形。
+    do:
+      - set: { target: cc, parts: 8, duration: 0s }
+      - highlight: cc
+  - title: 交错拼起来
+    say: 把扇形一上一下交错拼起来。
+    do:
+      - set: { target: cc, t: 1, duration: 2.5s }
+  - title: 拼成什么
+    say: 拼成的图形有点像平行四边形。
+    do:
+      - highlight: cc
+    try:
+      task: 拼成的图形，像什么？
+      choose: { answer: 平行四边形, options: [平行四边形, 圆, 三角形], show: [cc] }
+      hints:
+        - 看看它的两条长边，是不是差不多平行？
+  - title: 分成 16 份
+    say: 分成 16 份再拼，是不是更接近长方形？
+    do:
+      - set: { target: cc, t: 0, duration: 0.8s }
+      - set: { target: cc, parts: 16, duration: 0s }
+      - set: { target: cc, t: 1, duration: 2.5s }
+  - title: 分成 32 份
+    say: 分成 32 份再拼，更像长方形了。
+    do:
+      - set: { target: cc, t: 0, duration: 0.8s }
+      - set: { target: cc, parts: 32, duration: 0s }
+      - set: { target: cc, t: 1, duration: 2.5s }
+  - title: 越来越像
+    say: 分的份数越多，拼成的图形越接近长方形。
+    do:
+      - show: rectbox
+      - highlight: rectbox
+  - title: 长和宽
+    say: 长是圆周长的一半，宽是圆的半径。
+    do:
+      - show: [wl, hl]
+      - ask: true
+      - set: { target: hl, text: 宽 = 半径 }
+      - highlight: [wl, hl]
+    try:
+      task: 长方形的宽，是圆的什么？
+      choose: { answer: 半径, options: [半径, 直径, 周长], show: [hl] }
+      hints:
+        - 看左边标出的宽，对着圆的哪一条线？
+  - title: 面积公式
+    say: 面积 S = 长 × 宽 = πr × r = πr²。
+    do:
+      - highlight: [wl, hl]
+      - show: { target: eq1, together: true }
+      - show: eq2
+      - show: eq3
+  - title: 算一算
+    say: '半径 {r} 厘米，面积是 {S} 平方厘米。'
+    do:
+      - show: [rv, num1]
+      - highlight: num1
+      - ask: true
+      - show: num2
+      - highlight: num2
+    try:
+      task: '半径是 {r} 厘米，圆的面积是多少平方厘米？'
+      choose: { answer: '{S}', options: ['{S}', '{C2}', '{sq}'], show: [num1] }
+      hints:
+        - 面积 = π × 半径 × 半径，π 取 3.14。
+
+keyPoints:
+  - 把圆平均分成许多扇形，可以拼成近似的长方形
+  - 长方形的长是圆周长的一半（πr），宽是圆的半径（r）
+  - 圆的面积 S = πr²
+  - '半径 {r} 厘米：S = 3.14 × {r} × {r} = {S} 平方厘米'

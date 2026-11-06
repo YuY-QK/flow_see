@@ -1,0 +1,693 @@
+{
+  "title": "站点公共配置 site.yaml",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "site": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "name": {
+          "default": "动画学堂",
+          "description": "网站名称：顶部栏、侧边栏、网页标题、设置·关于",
+          "type": "string",
+          "minLength": 1
+        },
+        "slogan": {
+          "default": "看动画，动手试，弄明白为什么",
+          "type": "string"
+        },
+        "logo": {
+          "default": "assets/brand/logo.svg",
+          "description": "相对 packages/content 的路径",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "contact": {
+      "description": "全部留空 → 帮助页隐藏反馈区",
+      "default": {},
+      "type": "object",
+      "properties": {
+        "email": {
+          "default": "",
+          "anyOf": [
+            {
+              "type": "string",
+              "const": ""
+            },
+            {
+              "type": "string",
+              "format": "email",
+              "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+            }
+          ]
+        },
+        "wechat": {
+          "default": "",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "defaults": {
+      "description": "第一次打开时的默认值；用户改过后以本机设置为准",
+      "default": {},
+      "type": "object",
+      "properties": {
+        "grade": {
+          "default": 1,
+          "description": "第一次打开时的年级，须在 curriculum/grades.yaml 中",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "subject": {
+          "default": "math",
+          "type": "string"
+        },
+        "uiTheme": {
+          "default": "light",
+          "type": "string",
+          "enum": [
+            "light",
+            "dark",
+            "auto"
+          ]
+        },
+        "animTheme": {
+          "default": "cute",
+          "type": "string",
+          "enum": [
+            "flat",
+            "cute",
+            "chalk",
+            "pro"
+          ]
+        },
+        "fontSize": {
+          "default": "normal",
+          "type": "string",
+          "enum": [
+            "normal",
+            "large"
+          ]
+        },
+        "narrate": {
+          "default": true,
+          "description": "自动朗读",
+          "type": "boolean"
+        },
+        "speechRate": {
+          "default": "normal",
+          "type": "string",
+          "enum": [
+            "slow",
+            "normal",
+            "fast"
+          ]
+        },
+        "speed": {
+          "default": 1,
+          "anyOf": [
+            {
+              "type": "number",
+              "const": 0.5
+            },
+            {
+              "type": "number",
+              "const": 1
+            },
+            {
+              "type": "number",
+              "const": 1.5
+            },
+            {
+              "type": "number",
+              "const": 2
+            }
+          ]
+        },
+        "autoplayOnFirstOpen": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "learning": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "recordLimit": {
+          "default": 200,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "continueCount": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "desktop": {
+              "default": 3,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "pad": {
+              "default": 2,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "phone": {
+              "default": 2,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "additionalProperties": false
+        },
+        "recommendedLimit": {
+          "default": 4,
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "prevNextCrossGrade": {
+          "default": false,
+          "type": "boolean"
+        },
+        "prevNextCrossSubject": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "search": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "hints": {
+          "default": [
+            "分数",
+            "钟表",
+            "凑十",
+            "植物",
+            "水"
+          ],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "maxResults": {
+          "default": 50,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "additionalProperties": false
+    },
+    "share": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "apiBase": {
+          "default": "/api",
+          "description": "分享接口地址；换到自己的服务器时只改这里",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "help": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "faq": {
+          "default": "help.yaml",
+          "description": "常见问题文件，相对 packages/content",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "style": {
+      "default": "style.yaml",
+      "description": "动画主题和导出画面的样式文件，相对 packages/content",
+      "type": "string"
+    },
+    "texts": {
+      "default": "texts.yaml",
+      "description": "界面文案文件，相对 packages/content；代码里用 t(\"分组.键\") 读取",
+      "type": "string"
+    },
+    "scene": {
+      "type": "object",
+      "properties": {
+        "stage": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "height": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "width",
+            "height"
+          ],
+          "additionalProperties": false,
+          "description": "没有写 stage 的知识点用这个舞台大小"
+        },
+        "colors": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "description": "配置里可以直接写的颜色名"
+        },
+        "highlight": {
+          "type": "object",
+          "properties": {
+            "padding": {
+              "type": "number",
+              "minimum": 0
+            },
+            "strokeWidth": {
+              "type": "number",
+              "minimum": 0
+            },
+            "fillOpacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "dash": {
+              "type": "string",
+              "description": "虚线样式，如 \"10 6\""
+            }
+          },
+          "required": [
+            "padding",
+            "strokeWidth",
+            "fillOpacity",
+            "dash"
+          ],
+          "additionalProperties": false
+        },
+        "actionSeconds": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0
+          },
+          "description": "各动作没写 duration 时的默认时长（秒），键是动作名"
+        },
+        "splitLift": {
+          "type": "number",
+          "description": "拆分出来的计数块默认往上抬多少（相对格子大小）"
+        },
+        "tenframeGap": {
+          "type": "number",
+          "minimum": 0,
+          "description": "十格框之间的间距（相对格子大小）"
+        },
+        "counterPlate": {
+          "type": "object",
+          "properties": {
+            "pad": {
+              "type": "number",
+              "minimum": 0,
+              "description": "盘子比格子外扩多少（舞台坐标）"
+            },
+            "radius": {
+              "type": "number",
+              "minimum": 0,
+              "description": "盘子的圆角（舞台坐标）"
+            }
+          },
+          "required": [
+            "pad",
+            "radius"
+          ],
+          "additionalProperties": false,
+          "description": "点阵计数块写了 capacity 时画的盘子（平均分用）"
+        },
+        "counterBorder": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": "number",
+              "minimum": 0,
+              "description": "边框粗细（舞台坐标）"
+            },
+            "darken": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "边框比填充色深多少，0 = 同色，1 = 黑色"
+            }
+          },
+          "required": [
+            "width",
+            "darken"
+          ],
+          "additionalProperties": false,
+          "description": "计数块的边框：让靠在一起、叠在一起的块也分得清"
+        },
+        "counterShadow": {
+          "type": "object",
+          "properties": {
+            "dx": {
+              "type": "number",
+              "description": "阴影向右偏多少（舞台坐标）"
+            },
+            "dy": {
+              "type": "number",
+              "description": "阴影向下偏多少（舞台坐标）"
+            },
+            "opacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "阴影深浅，0 = 没有"
+            }
+          },
+          "required": [
+            "dx",
+            "dy",
+            "opacity"
+          ],
+          "additionalProperties": false,
+          "description": "计数块的阴影：让块看起来浮在上面，叠在一起也分得清"
+        },
+        "tryIt": {
+          "type": "object",
+          "properties": {
+            "dropPadding": {
+              "type": "number",
+              "minimum": 0,
+              "description": "放到目标零件外面这么远以内也算放进去（舞台坐标）"
+            },
+            "hitScale": {
+              "type": "number",
+              "minimum": 1,
+              "description": "能拖的零件，按下的范围是它本身的几倍"
+            },
+            "liftScale": {
+              "type": "number",
+              "minimum": 1,
+              "description": "拖起来时放大的倍数"
+            }
+          },
+          "required": [
+            "dropPadding",
+            "hitScale",
+            "liftScale"
+          ],
+          "additionalProperties": false,
+          "description": "动手做时舞台上的拖动"
+        },
+        "parts": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "description": "各零件的默认属性，键是零件 type"
+        }
+      },
+      "required": [
+        "stage",
+        "colors",
+        "highlight",
+        "actionSeconds",
+        "splitLift",
+        "tenframeGap",
+        "counterPlate",
+        "counterBorder",
+        "counterShadow",
+        "tryIt",
+        "parts"
+      ],
+      "additionalProperties": false
+    },
+    "player": {
+      "type": "object",
+      "properties": {
+        "skeletonDelayMs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "加载超过这么久才显示骨架屏，避免闪一下"
+        },
+        "toastMs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "轻提示显示多久"
+        },
+        "largeCaptionMaxGrade": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "这个年级及以下，字幕用大字号"
+        },
+        "dwell": {
+          "type": "object",
+          "properties": {
+            "msPerChar": {
+              "type": "number",
+              "minimum": 0,
+              "description": "不朗读时，每个字停留多少毫秒"
+            },
+            "minMs": {
+              "type": "number",
+              "minimum": 0,
+              "description": "不朗读时，一步至少停留多久"
+            }
+          },
+          "required": [
+            "msPerChar",
+            "minMs"
+          ],
+          "additionalProperties": false
+        },
+        "afterSpeech": {
+          "type": "object",
+          "properties": {
+            "pauseMs": {
+              "type": "number",
+              "minimum": 0,
+              "description": "读完后至少再停多久（1 倍速）"
+            },
+            "minMs": {
+              "type": "number",
+              "minimum": 0,
+              "description": "读完后停顿的下限"
+            },
+            "blockedRatio": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "朗读被浏览器拦下、瞬间“读完”时，按估算停留时间的这个比例等待"
+            }
+          },
+          "required": [
+            "pauseMs",
+            "minMs",
+            "blockedRatio"
+          ],
+          "additionalProperties": false
+        },
+        "maxFrameMs": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "时钟单帧最多推进多久，切到后台再回来时不会一下跳过去"
+        },
+        "handsOn": {
+          "type": "object",
+          "properties": {
+            "targetAfterMisses": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "description": "做错几次后，高亮该放到哪里"
+            },
+            "demoAfterMisses": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "description": "做错几次后，自动“看我做一遍”"
+            },
+            "demoPauseMs": {
+              "type": "number",
+              "minimum": 0,
+              "description": "演示放完后停多久，再让孩子自己做"
+            },
+            "remindMs": {
+              "type": "number",
+              "minimum": 0,
+              "description": "多选、拖到几个目标时：孩子停下来这么久还没做完，提示还差几个"
+            },
+            "selfDwellMs": {
+              "type": "number",
+              "minimum": 0,
+              "description": "自己做：最后一步（结果）显示多久后算做完"
+            }
+          },
+          "required": [
+            "targetAfterMisses",
+            "demoAfterMisses",
+            "demoPauseMs",
+            "remindMs",
+            "selfDwellMs"
+          ],
+          "additionalProperties": false,
+          "description": "动手做：跟着做 / 自己做"
+        }
+      },
+      "required": [
+        "skeletonDelayMs",
+        "toastMs",
+        "largeCaptionMaxGrade",
+        "dwell",
+        "afterSpeech",
+        "maxFrameMs",
+        "handsOn"
+      ],
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "object",
+      "properties": {
+        "avatarCount": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "description": "头像颜色的个数，须和 global.css 的 --avatar-N 个数一致"
+        },
+        "nicknameMax": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "description": "昵称最多几个字"
+        }
+      },
+      "required": [
+        "avatarCount",
+        "nicknameMax"
+      ],
+      "additionalProperties": false
+    },
+    "speech": {
+      "type": "object",
+      "properties": {
+        "rates": {
+          "type": "object",
+          "properties": {
+            "slow": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "normal": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "fast": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "slow",
+            "normal",
+            "fast"
+          ],
+          "additionalProperties": false,
+          "description": "朗读语速三档对应的倍率"
+        }
+      },
+      "required": [
+        "rates"
+      ],
+      "additionalProperties": false
+    },
+    "editor": {
+      "type": "object",
+      "properties": {
+        "autosaveMs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "改动后多久自动保存"
+        },
+        "stepDurations": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "description": "“停留时间”下拉里除“自动按朗读”外的可选秒数"
+        }
+      },
+      "required": [
+        "autosaveMs",
+        "stepDurations"
+      ],
+      "additionalProperties": false
+    },
+    "ui": {
+      "type": "object",
+      "properties": {
+        "focusDelayMs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "展开搜索框后，等多久再让输入框获得焦点"
+        },
+        "saveRevokeMs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "导出文件下载后，多久释放临时地址"
+        }
+      },
+      "required": [
+        "focusDelayMs",
+        "saveRevokeMs"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "scene",
+    "player",
+    "profile",
+    "speech",
+    "editor",
+    "ui"
+  ],
+  "additionalProperties": false
+}

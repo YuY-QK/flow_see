@@ -1,0 +1,108 @@
+{
+  "title": "创作示例 examples/<id>.yaml",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1,
+      "description": "必须是 examples/index.yaml 里 categories 的一项"
+    },
+    "featured": {
+      "default": false,
+      "type": "boolean"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "template": {
+      "type": "string",
+      "enum": [
+        "message",
+        "flow",
+        "cycle",
+        "data"
+      ]
+    },
+    "theme": {
+      "type": "string",
+      "enum": [
+        "flat",
+        "cute",
+        "chalk",
+        "pro"
+      ]
+    },
+    "elements": {
+      "description": "角色 / 节点 / 阶段的名字，不能重复",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "params": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "desc": {
+            "default": "",
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "node": {
+            "type": "string"
+          },
+          "via": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "category",
+    "summary",
+    "template",
+    "theme"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../schemas/example.schema.json
+id: water-cycle
+title: 水的循环
+category: 自然科学
+featured: true
+summary: 水在大海、天空和陆地之间不停地循环。
+template: cycle
+theme: chalk
+params:
+  layout: cycle
+elements:
+  - 蒸发
+  - 凝结
+  - 降水
+  - 汇集
+steps:
+  - stage: 蒸发
+    title: 蒸发
+    desc: 太阳加热，海洋和湖泊里的水变成水蒸气升上天空。
+  - stage: 凝结
+    title: 凝结
+    desc: 水蒸气遇冷，凝结成小水滴，聚在一起形成云。
+  - stage: 降水
+    title: 降水
+    desc: 小水滴越聚越大，落下来变成雨或雪。
+  - stage: 汇集
+    title: 汇集
+    desc: 雨水流进江河湖海，或者渗入地下。
+  - stage: 蒸发
+    title: 再次蒸发
+    desc: 水又被太阳加热，开始新的一轮循环。

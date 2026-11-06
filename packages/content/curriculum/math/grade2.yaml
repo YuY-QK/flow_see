@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schemas/curriculum.schema.json
+# 二年级数学。单元和知识点的顺序就是页面上的顺序。
+subject: math
+grade: 2
+units:
+  - id: multiplication-1
+    title: 表内乘法（一）
+    lessons:
+      - mult-meaning
+  - id: subtract-within-100
+    title: 100 以内的退位减法
+    lessons:
+      - break-ten
+  - id: division-1
+    title: 表内除法（一）
+    lessons:
+      - divide-equal

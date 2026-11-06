@@ -1,0 +1,142 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 平均分与除法：把一堆圆片平均分成 3 份，一个一个地分（一轮每个盘子放一个），每分一轮就从总数里减去 3（连减），
+# 最后写成除法，说明“除法就是平均分”，也可以看成连续减去同一个数。只用场景模板（scene）的配置。
+# 动画在左、算式在右；算式里的数和图形同色：总数是橙色圆片，3 是红色盘子，每份是盘子里的橙色圆片。
+# 余数：总数不是 3 的倍数时，deal 最后一轮不够放满，剩下的留在原处，可以讲“还剩几个，不够再分”（本知识点没有用到）。
+# 每份几个 per 是参数，总数 total = per × 3 由 derived 算出来，所以平均分一定分得完。
+# 盘子是点阵排列并写了 capacity 的计数块（平均分用）；拖到哪个盘子就合并进哪个盘子。
+id: divide-equal
+title: 平均分与除法
+summary: 把一堆东西平均分成几份，每份同样多，可以用除法算
+status: published
+reviewedAt: 2026-11-05
+duration: 2分钟
+tags: [除法, 平均分, 除法的初步认识, 表内除法, 分一分]
+recommended: false
+cover: { step: 7, text: 12 ÷ 3 }
+
+template: scene
+stage: { width: 800, height: 360 } # 左边 0–480 是动画，右边 520–780 是算式
+
+params:
+  per: 4 # 每份分几个
+derived:
+  total: per * 3 # 一共几个
+  pcols: min(total, 9) # 圆片堆每行几个
+  px: (480 - pcols * 40) / 2 # 让圆片堆在左半边居中
+  cols: ceil(per / ceil(per / 3)) # 盘子每行几个（最多 3 个，4 个排成 2 × 2）
+  w: cols * 40 # 盘子里格子的总宽
+  x1: 80 - w / 2 # 三个盘子在左半边居中的位置
+  x2: 240 - w / 2
+  x3: 400 - w / 2
+  rounds: per - 2 # 前两轮让孩子分，其余的轮数
+
+explore: # 动手试一试：每份 3–6 个，总数 9–18 个
+  - { param: per, control: slider, label: 每份几个, min: 3, max: 6 }
+presets:
+  - { label: 12 ÷ 3, params: { per: 4 } }
+  - { label: 9 ÷ 3, params: { per: 3 } }
+  - { label: 15 ÷ 3, params: { per: 5 } }
+  - { label: 18 ÷ 3, params: { per: 6 } }
+
+objects:
+  - { id: pool, type: counters, count: '{total}', layout: grid, cols: '{pcols}', size: 40, at: ['{px}', 20], color: orange }
+  - { id: pl1, type: counters, count: 0, layout: grid, cols: '{cols}', capacity: '{per}', size: 40, at: ['{x1}', 160], color: orange }
+  - { id: pl2, type: counters, count: 0, layout: grid, cols: '{cols}', capacity: '{per}', size: 40, at: ['{x2}', 160], color: orange }
+  - { id: pl3, type: counters, count: 0, layout: grid, cols: '{cols}', capacity: '{per}', size: 40, at: ['{x3}', 160], color: orange }
+  # 每分一轮，右边多一行减法：总数连续减 3
+  - { repeat: '{per}', id: 'sub{i}', type: text, text: '[{total - 3 * i + 3}](orange) − [3](red) = {total - 3 * i}', at: [605, '{50 + 34 * i}'], size: 28, hidden: true }
+  - { id: eq, type: text, text: '[{total}](orange) ÷ [3](red @pl3) = [{per}](@pl1)', at: [605, '{50 + 34 * per + 40}'], size: 36, hidden: true }
+  - { id: rel, type: text, text: '连续减 [3](red)，减了 {per} 次', at: [605, '{50 + 34 * per + 76}'], size: 24, hidden: true }
+
+steps:
+  - title: 一共有多少个
+    say: 这里有 {total} 个圆片。
+    do:
+      - highlight: pool
+    try:
+      task: 一共有几个圆片？
+      choose: { answer: '{total}', min: 1, show: [pool] }
+      hints:
+        - 一个一个数一数。
+  - title: 平均分成 3 份
+    say: 把它们平均分成 3 份，每份要一样多，我们一个一个地分。
+    do:
+      - highlight: { target: [pl1, pl2, pl3], color: red }
+  - title: 分第 1 轮
+    say: 拿一个放第 1 个盘子，再放第 2 个，再放第 3 个。
+    do:
+      - deal: { target: pool, into: [pl1, pl2, pl3] }
+    try:
+      task: 一个一个地分，每个盘子放 1 个。
+      drag: { from: pool, to: [pl1, pl2, pl3], count: 3, each: 1 }
+      hints:
+        - 每个盘子先放 1 个，别放在同一个盘子里。
+        - 拿一个，放到亮起来的盘子里。
+  - title: 分一轮减去 3
+    say: 分了一轮，就是从 {total} 里减去 3。
+    do:
+      - show: sub1
+      - highlight: sub1
+  - title: 分第 2 轮
+    say: 再分一轮，每个盘子再放一个。
+    do:
+      - deal: { target: pool, into: [pl1, pl2, pl3] }
+      - show: sub2
+      - highlight: sub2
+    try:
+      task: 再分一轮，每个盘子再放 1 个。
+      drag: { from: pool, to: [pl1, pl2, pl3], count: 3, each: 1 }
+      hints:
+        - 每个盘子再放 1 个。
+        - 拿一个，放到亮起来的盘子里。
+  - title: 接着分
+    say: 一轮一轮地分下去，每分一轮就再减去 3。
+    do:
+      - repeat: '{rounds}'
+        do:
+          - deal: { target: pool, into: [pl1, pl2, pl3] }
+          - show: 'sub{i + 2}'
+  - title: 分完了
+    say: '{total} 连续减了 {per} 个 3，正好减完，分了 {per} 轮。'
+    do:
+      - repeat: '{per}'
+        do:
+          - highlight: { target: 'sub{i}', together: true }
+  - title: 每份几个
+    say: 每个盘子里都有一样多。
+    do:
+      - highlight: { target: [pl1, pl2, pl3], color: red }
+    try:
+      task: 每个盘子里有几个圆片？
+      choose: { answer: '{per}', min: 1, show: [pl1, pl2, pl3] }
+      hints:
+        - 数一数一个盘子里有几个。
+  - title: 写成除法
+    say: 平均分，就用除法算：{total} 除以 3 等于 {per}。
+    do:
+      - show: eq
+      - highlight: { target: [eq, pl1, pl2, pl3], color: red }
+  - title: 除法就是平均分
+    say: 除法就是平均分：{total} 个平均分成 3 份，每份 {per} 个。
+    do:
+      - highlight: { target: [pl1, pl2, pl3], color: red }
+      - highlight: { target: eq, together: true }
+  - title: 除法和减法
+    say: '{total} 里有 {per} 个 3，所以 {total} ÷ 3 = {per}。'
+    do:
+      - show: rel
+      - repeat: '{per}'
+        do:
+          - highlight: { target: 'sub{i}', together: true }
+      - highlight: { target: eq, together: true }
+  - title: 除法怎么读
+    say: '{total} ÷ 3 = {per}，读作 {total} 除以 3 等于 {per}。'
+    do:
+      - highlight: eq
+
+keyPoints:
+  - 平均分：每份分得同样多，可以一个一个地分
+  - 除法就是平均分：把一些东西平均分，可以用除法算
+  - 除法可以看成连续减去同一个数：{total} 连续减 {per} 个 3，所以 {total} ÷ 3 = {per}
+  - '{total} ÷ 3 = {per}，读作 {total} 除以 3 等于 {per}'

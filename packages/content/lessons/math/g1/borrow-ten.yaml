@@ -1,0 +1,105 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 借十法：十几减几，从 10 里借。只用场景模板（scene）的配置，竖式用拆分算式图（split-calc）。
+# 大数 a（11–18）、小数 b 是参数；拆出几、减完剩几、得数都由 derived 算出来，自己做时可以换成别的题。
+# 默认例子 16 - 9：16 拆成 10 和 6，10 - 9 = 1，6 + 1 = 7。
+id: borrow-ten
+title: 借十法
+summary: 个位不够减，先把大数拆成 10 和几，用 10 去减，再加上剩下的
+status: published
+reviewedAt: 2026-11-05
+duration: 1分钟
+tags: [借十法, 退位减法, 十几减几, 减法, 十格框]
+cover: { text: 16 − 9 }
+
+template: scene
+stage: { width: 800, height: 360 }
+
+params:
+  a: 16 # 被减数（十几）
+  b: 9 # 减数
+derived:
+  p: a - 10 # 大数拆出 10 以后剩下的
+  rest: 10 - b # 10 减去 b 剩几
+  res: a - b
+
+explore: # 自己做时舞台右侧的出题控件：个位不够减才要借十，所以减数至少是个位数加 1
+  - { param: a, control: slider, label: 被减数, min: 11, max: 18 }
+  - { param: b, control: slider, label: 减数, min: 'a - 9', max: 9 }
+
+objects:
+  - id: ten # 借出来的 10：十个蓝色圆片
+    type: counters
+    count: 10
+    layout: tenframe
+    size: 52
+    at: [50, 60]
+    color: blue
+  - id: ones # 大数里剩下的个位，在十格框下面排成一排
+    type: counters
+    count: '{p}'
+    layout: row
+    size: 46
+    at: [50, 236]
+    color: blue
+  - id: calc # 拆分算式图：a 拆成 p 和 10，10 - b = rest，p + rest = 得数
+    type: split-calc
+    at: [612, 60]
+    a: '{a}'
+    op: −
+    b: '{b}'
+    split: a
+    parts: ['{p}', 10]
+    first: { join: [q, b], op: −, value: '{rest}' }
+    second: { join: [p, m], op: +, value: '{res}' }
+    size: 42
+    colors: { a: blue, p: '@ones', q: '@ten' } # 算式里的数和图形里的圆片同色，讲到哪一堆，对应的数一起亮
+
+steps:
+  - title: 提出问题
+    say: '{a} 减 {b} 等于几？个位不够减，用借十法。'
+    do:
+      - highlight: calc
+  - title: 拆大数
+    say: 把 {a} 拆成 10 和 {p}。
+    do:
+      - highlight: [ten, ones]
+      - set: { target: calc, show: 1, duration: 0.8s, together: true }
+    try:
+      task: '{a} 拆成 10 和几？'
+      choose: { answer: '{p}', min: 1, show: [ones] }
+      hints:
+        - '{a} 里面有 1 个十，再看还剩几个一。'
+  - title: 借出 10 减小数
+    say: 用 10 减 {b}，10 减 {b} 等于 {rest}。
+    do:
+      - highlight: ten
+      - split: { target: ten, take: '{b}', as: gone, offset: [0, -60] }
+      - color: { target: gone, to: gray }
+      - hide: { target: gone, duration: 0.6s }
+      - set: { target: calc, show: 2, duration: 0.8s }
+    try:
+      task: 10 减 {b} 等于几？
+      choose: { answer: '{rest}', min: 1, show: [ten] }
+      hints:
+        - 从十格框的 10 个里拿走 {b} 个，还剩几个？
+  - title: 加剩数
+    say: 剩下的 {rest} 和 {p} 合起来，是 {res}。
+    do:
+      - merge: { target: ten, into: ones, duration: 1s }
+      - set: { target: calc, show: 3, duration: 0.8s }
+      - highlight: [ones, calc]
+    try:
+      task: '{p} 加 {rest} 等于几？'
+      choose: { answer: '{res}', min: 1, show: [ones] }
+      hints:
+        - 把剩下的 {rest} 个，和 {p} 个合在一起数一数。
+  - title: 得出结果
+    say: 所以 {a} 减 {b} 等于 {res}。
+    do:
+      - set: { target: calc, show: 4, duration: 1.2s }
+      - highlight: calc
+
+keyPoints:
+  - 个位不够减，就把大数拆成 10 和几，用 10 去减
+  - 10 减小数，再加上剩下的数，就是得数
+  - '{a} - {b}：{a} 拆成 10 和 {p}，10 - {b} = {rest}，{p} + {rest} = {res}'

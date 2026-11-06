@@ -1,0 +1,459 @@
+{
+  "title": "知识点 lessons/<学科>/g<年级>/<id>.yaml",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "default": "draft",
+      "type": "string",
+      "enum": [
+        "draft",
+        "reviewed",
+        "published"
+      ]
+    },
+    "reviewedAt": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+    },
+    "duration": {
+      "type": "string"
+    },
+    "tags": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "recommended": {
+      "default": false,
+      "type": "boolean"
+    },
+    "thumbnail": {
+      "description": "素材 id",
+      "type": "string"
+    },
+    "cover": {
+      "description": "缩略图：用这个知识点自己的动画画面，不用另外做图",
+      "type": "object",
+      "properties": {
+        "step": {
+          "description": "缩略图用第几步的画面，默认最后一步",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "params": {
+          "description": "缩略图用的参数，默认标准取值",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "text": {
+          "description": "画面加载出来之前显示的文字，如算式“9 + 4”“3/4”",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "template": {
+      "type": "string"
+    },
+    "theme": {
+      "type": "string",
+      "enum": [
+        "flat",
+        "cute",
+        "chalk",
+        "pro"
+      ]
+    },
+    "stage": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    },
+    "params": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    },
+    "derived": {
+      "description": "派生值：由参数算出来，如 gap: \"10 - a\"；按写的顺序计算，后面的可以用前面的",
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[A-Za-z_]\\w*$"
+      },
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "minLength": 1
+          }
+        ]
+      }
+    },
+    "presets": {
+      "description": "动手试一试：点选的例子（只写要改的参数）",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "按钮上的文字，如 8 + 6"
+          },
+          "params": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "label",
+          "params"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type"
+        ],
+        "additionalProperties": {}
+      }
+    },
+    "explore": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "param": {
+            "type": "string"
+          },
+          "control": {
+            "type": "string",
+            "enum": [
+              "slider",
+              "buttons",
+              "switch"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "step": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {},
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "value",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "param",
+          "control",
+          "label"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "steps": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "say": {
+            "type": "string",
+            "minLength": 1,
+            "description": "这一步的讲解，会朗读；可以用 {参数名} 代入参数"
+          },
+          "title": {
+            "type": "string"
+          },
+          "show": {
+            "description": "模板约定的画面状态",
+            "type": "string"
+          },
+          "do": {
+            "description": "场景模板：这一步对零件做的动作",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            }
+          },
+          "try": {
+            "description": "动手做：跟着做 / 自己做时，这一步由孩子来做",
+            "type": "object",
+            "properties": {
+              "task": {
+                "type": "string",
+                "minLength": 1,
+                "description": "任务提示：轮到孩子时显示并朗读，如“把 1 个圆片拖进十格框。”“十格框还空着几格？”"
+              },
+              "drag": {
+                "description": "拖动：把计数块一个一个拖到目标零件上（只有场景模板支持）",
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "description": "从哪一组计数块里拖（零件 id）"
+                  },
+                  "to": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "minItems": 2,
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ],
+                    "description": "拖到哪个零件上（零件 id）；写成列表是“一个一个分”，每个目标放 each 个"
+                  },
+                  "count": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    ],
+                    "description": "要拖几个，可以写参数，如 \"{gap}\""
+                  },
+                  "each": {
+                    "description": "拖到多个目标时，每个目标放几个；不写时平均分",
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "from",
+                  "to",
+                  "count"
+                ],
+                "additionalProperties": false
+              },
+              "choose": {
+                "description": "点选：从几个选项里选出答案（所有模板都支持）",
+                "type": "object",
+                "properties": {
+                  "answer": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        ]
+                      },
+                      {
+                        "minItems": 2,
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "string",
+                              "minLength": 1
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "description": "正确答案：数字或文字，可以写参数，如 \"{gap}\"、\"{take}/{parts}\"；写成列表是多选，要全部选出来才算做对"
+                  },
+                  "options": {
+                    "description": "选项；不写时答案是数字就自动生成（答案和离它最近的两个数）",
+                    "minItems": 2,
+                    "maxItems": 6,
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ]
+                    }
+                  },
+                  "min": {
+                    "description": "自动生成选项时数字的下限",
+                    "type": "number"
+                  },
+                  "max": {
+                    "description": "自动生成选项时数字的上限",
+                    "type": "number"
+                  },
+                  "show": {
+                    "description": "做错几次后高亮这些零件（零件 id）；不写就不高亮",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "answer"
+                ],
+                "additionalProperties": false
+              },
+              "hints": {
+                "description": "做错时依次给出的提示（每句不超过约 30 字）；不写用通用提示",
+                "maxItems": 3,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "task"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "say"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "keyPoints": {
+      "minItems": 2,
+      "maxItems": 4,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "summary",
+    "template",
+    "steps",
+    "keyPoints"
+  ],
+  "additionalProperties": false
+}

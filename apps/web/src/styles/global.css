@@ -1,0 +1,197 @@
+/* 设计变量：对应产品原型的视觉规范（清爽明亮） */
+:root {
+  --bg: #f6f7fb;
+  --surface: #ffffff;
+  --surface-2: #fbfbfd;
+  --border: #e6e8ef;
+  --border-strong: #d9dce5;
+  --hover: #f1f3f8;
+  --ink: #1f2433;
+  --ink-2: #3a4152;
+  --ink-3: #5b6275;
+  --primary: #2f5fe0;
+  --primary-hover: #1e46b8;
+  --primary-soft: #eaf0ff;
+  --primary-ring: #dce5ff;
+  --danger: #b42318;
+  --success: #1e7f4f;
+  --success-soft: #e6f6ee;
+  --star: #f2b705;
+  --star-edge: #c98f00;
+  --star-empty: #d9dce5;
+
+  /* 模板识别色 */
+  --tpl-flow-bg: #eaf0ff;
+  --tpl-flow-ink: #2f5fe0;
+  --tpl-message-bg: #fff1e5;
+  --tpl-message-ink: #9a4700;
+  --tpl-data-bg: #e6f6ee;
+  --tpl-data-ink: #1e7f4f;
+  --tpl-cycle-bg: #f0ecff;
+  --tpl-cycle-ink: #5a3fc4;
+
+  /* 补充色：主色/彩色底上的文字、分隔线、虚线边框、危险/警告底色、高亮标记等 */
+  --on-color: #ffffff;
+  --ink-4: #a3aabb;
+  --surface-3: #eef1f7;
+  --divider: #eef0f5;
+  --border-dashed: #b9c0d0;
+  --primary-border: #b9c4e4;
+  --switch-off: #c9ced9;
+  --danger-soft: #fdecea;
+  --warning: #c25a00;
+  --mark: #ffc53d;
+  --scrim: rgba(31, 36, 51, 0.4);
+
+  /* 阴影 */
+  --shadow-card: 0 10px 28px rgba(31, 36, 51, 0.08);
+  --shadow-card-strong: 0 10px 28px rgba(31, 36, 51, 0.1);
+  --shadow-float: 0 8px 24px rgba(31, 36, 51, 0.14);
+  --shadow-primary: 0 6px 20px rgba(47, 95, 224, 0.1);
+
+  /* 字号阶梯：界面里的字号只能用这些变量（pnpm check:conventions 会检查） */
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-md: 14px;
+  --fs-base: 15px;
+  --fs-lg: 16px;
+  --fs-xl: 17px;
+  --fs-2xl: 18px;
+  --fs-3xl: 19px;
+  --fs-4xl: 20px;
+  --fs-5xl: 22px;
+  --fs-6xl: 23px;
+  --fs-7xl: 24px;
+  --fs-8xl: 26px;
+  --fs-9xl: 28px;
+  --fs-hero: 36px;
+  --fs-h1: clamp(26px, 4vw, 32px);
+
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --shadow-pop: 0 18px 48px rgba(31, 36, 51, 0.16);
+  --touch: 44px;
+
+  /* 个人中心的头像颜色（4 种） */
+  --avatar-0: #2f5fe0;
+  --avatar-1: #e8590c;
+  --avatar-2: #1e7f4f;
+  --avatar-3: #8e44ad;
+
+  --font: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif;
+  color-scheme: light;
+}
+
+/* 深色界面主题（设置 · 外观 · 界面主题） */
+html[data-theme='dark'] {
+  --bg: #12151d;
+  --surface: #1b1f2a;
+  --surface-2: #202532;
+  --border: #2c3242;
+  --border-strong: #3a4155;
+  --hover: #252b3a;
+  --ink: #eceef4;
+  --ink-2: #c9cdd8;
+  --ink-3: #9aa1b2;
+  --primary: #7b9cff;
+  --primary-hover: #a3bbff;
+  --primary-soft: #1f2a4d;
+  --primary-ring: #2f3f73;
+  --danger: #ff8a7a;
+  --success: #5fd39a;
+  --success-soft: #173326;
+  --star: #ffc53d;
+  --star-edge: #ffd666;
+  --star-empty: #3a4155;
+
+  --tpl-flow-bg: #1f2a4d;
+  --tpl-flow-ink: #a3bbff;
+  --tpl-message-bg: #3a2614;
+  --tpl-message-ink: #ffb877;
+  --tpl-data-bg: #173326;
+  --tpl-data-ink: #5fd39a;
+  --tpl-cycle-bg: #2a2147;
+  --tpl-cycle-ink: #c3b2ff;
+
+  --shadow-pop: 0 18px 48px rgba(0, 0, 0, 0.5);
+  --ink-4: #6c7488;
+  --surface-3: #252b3a;
+  --divider: #262b39;
+  --border-dashed: #4a5268;
+  --primary-border: #2f3f73;
+  --switch-off: #4a5268;
+  --danger-soft: #3a1f1c;
+  --warning: #ffb877;
+  --scrim: rgba(0, 0, 0, 0.6);
+
+  --shadow-card: 0 10px 28px rgba(0, 0, 0, 0.4);
+  --shadow-card-strong: 0 10px 28px rgba(0, 0, 0, 0.45);
+  --shadow-float: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-primary: 0 6px 20px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--primary);
+}
+a:hover {
+  color: var(--primary-hover);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 3px solid var(--primary-ring);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* 大字号：整体放大，高度按比例收回，避免整页出现滚动条 */
+html[data-size='large'] #root {
+  zoom: 1.15;
+  height: calc(100% / 1.15);
+}

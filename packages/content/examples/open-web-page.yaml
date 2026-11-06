@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=../schemas/example.schema.json
+id: open-web-page
+title: 打开网页时发生了什么
+category: 网络协议
+featured: false
+summary: 从输入网址到看到网页，背后发生了哪些对话。
+template: message
+theme: flat
+elements:
+  - 浏览器
+  - DNS 服务器
+  - 网站服务器
+steps:
+  - from: 浏览器
+    to: DNS 服务器
+    label: 查询地址
+    title: 浏览器问 DNS
+    desc: “example.com 在哪里？”
+  - from: DNS 服务器
+    to: 浏览器
+    label: IP 地址
+    title: DNS 回答地址
+    desc: “在 93.184.216.34。”
+  - from: 浏览器
+    to: 网站服务器
+    label: HTTP 请求
+    title: 浏览器请求网页
+    desc: 浏览器向网站服务器要网页内容。
+  - from: 网站服务器
+    to: 浏览器
+    label: 网页内容
+    title: 服务器返回网页
+    desc: 服务器把 HTML 发回给浏览器。
+  - from: 浏览器
+    to: 浏览器
+    label: 渲染
+    title: 浏览器显示网页
+    desc: 浏览器把收到的内容画成你看到的页面。

@@ -1,0 +1,83 @@
+/* 舞台角上的工具扇形菜单（ToolFan.tsx）。颜色都用全局变量。 */
+.fan {
+  --fan-edge: 14px;
+  --main: 44px;
+  --item: 40px;
+  position: absolute;
+  z-index: 2;
+  width: var(--main);
+  height: var(--main);
+}
+/* left/top 是主按钮的中心；松手后吸附到边上时滑过去 */
+.fan {
+  transform: translate(-50%, -50%);
+  transition:
+    left 0.2s ease,
+    top 0.2s ease;
+}
+.fan[data-dragging='true'] {
+  transition: none;
+}
+.main,
+.item {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-float);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.main {
+  inset: 0;
+  z-index: 1;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: background 0.15s;
+}
+.fan[data-dragging='true'] .main {
+  cursor: grabbing;
+}
+.fan[data-open='true'] .main {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.item {
+  width: var(--item);
+  height: var(--item);
+  left: calc((var(--main) - var(--item)) / 2);
+  top: calc((var(--main) - var(--item)) / 2);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(0, 0) scale(0.4);
+  transition:
+    transform 0.22s ease,
+    opacity 0.18s ease;
+  transition-delay: calc(var(--i) * 25ms);
+}
+.item:hover {
+  background: var(--hover);
+}
+.fan[data-open='true'] .item {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(var(--x), var(--y)) scale(1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .item,
+  .fan {
+    transition: none;
+  }
+}
+@media (max-width: 767px) {
+  .fan {
+    --fan-edge: 8px;
+    --main: 40px;
+    --item: 38px;
+  }
+}

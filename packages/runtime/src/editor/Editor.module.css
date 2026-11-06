@@ -1,0 +1,544 @@
+.page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 顶部栏 */
+.top {
+  height: calc(64px + env(safe-area-inset-top, 0px));
+  flex-shrink: 0;
+  padding: env(safe-area-inset-top, 0px) max(16px, env(safe-area-inset-right, 0px)) 0
+    max(16px, env(safe-area-inset-left, 0px));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.back {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ink-3);
+  text-decoration: none;
+  font-size: var(--fs-md);
+  padding: 10px 6px;
+  white-space: nowrap;
+}
+.titleInput {
+  border: none;
+  background: transparent;
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  padding: 8px;
+  border-radius: 8px;
+  min-width: 0;
+  flex: 0 1 280px;
+  outline: none;
+}
+.titleInput:focus {
+  background: var(--hover);
+}
+.save {
+  font-size: var(--fs-sm);
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+  color: var(--success);
+  background: var(--success-soft);
+}
+.save[data-state='saving'] {
+  color: var(--ink-3);
+  background: var(--hover);
+}
+.save[data-state='error'] {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+.spacer {
+  flex-grow: 1;
+}
+.topActions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 主体：左编辑、右预览 */
+.body {
+  flex-grow: 1;
+  min-height: 0;
+  display: flex;
+}
+.editPane {
+  width: 520px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  background: var(--surface-2);
+  border-right: 1px solid var(--border);
+  padding: 22px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.previewPane {
+  flex-grow: 1;
+  min-width: 0;
+  padding: 22px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.previewHead {
+  display: flex;
+  align-items: center;
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+.previewHead span {
+  text-align: right;
+  margin-left: auto;
+  font-weight: 400;
+  color: var(--ink-3);
+  font-size: var(--fs-sm);
+}
+
+.tplRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--fs-md);
+  color: var(--ink-3);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.sectionTitle {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  margin: 0;
+}
+.hint {
+  margin-left: auto;
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+}
+
+/* 参与者 */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 6px 0 14px;
+  height: var(--touch);
+}
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.chipInput {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: var(--fs-md);
+  padding: 4px 2px;
+  max-width: 140px;
+}
+.chipInput:focus {
+  background: var(--hover);
+  border-radius: 6px;
+}
+.chipRemove {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chipRemove:hover {
+  background: var(--hover);
+}
+.chipAdd {
+  height: var(--touch);
+  border: 1px dashed var(--border-dashed);
+  background: transparent;
+  border-radius: 999px;
+  padding: 0 14px;
+  font-size: var(--fs-md);
+  color: var(--ink-3);
+}
+
+/* 步骤 */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.stepRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  position: relative;
+}
+.handle {
+  width: 28px;
+  height: 52px;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--ink-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: grab;
+  touch-action: none;
+}
+.handle:hover {
+  background: var(--hover);
+  color: var(--ink-3);
+}
+.stepCollapsed {
+  flex-grow: 1;
+  min-width: 0;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+}
+.stepCollapsed:hover {
+  border-color: var(--primary-border);
+}
+.num {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--ink-2);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.numOn {
+  background: var(--primary);
+  color: var(--on-color);
+}
+.stepSummary {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.stepSummaryTitle {
+  font-weight: 600;
+}
+.stepSummaryDesc {
+  font-size: var(--fs-sm);
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stepOpen {
+  flex-grow: 1;
+  min-width: 0;
+  background: var(--surface);
+  border: 2px solid var(--primary);
+  border-radius: 16px;
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-primary);
+}
+.stepOpenHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+}
+.stepOpenLabel {
+  font-size: var(--fs-md);
+  color: var(--ink-3);
+  flex-grow: 1;
+}
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.moreBtn {
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  color: var(--primary);
+  font-size: var(--fs-md);
+  padding: 8px 0;
+}
+.advanced {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 14px;
+}
+.span2 {
+  grid-column: span 2;
+}
+.addStep {
+  height: 52px;
+  border: 1.5px dashed var(--border-dashed);
+  background: transparent;
+  border-radius: 16px;
+  font-size: var(--fs-base);
+  color: var(--ink-2);
+  margin-left: 32px;
+}
+.addStep:hover {
+  background: var(--hover);
+}
+
+/* 外观面板 */
+.popover {
+  position: absolute;
+  top: calc(68px + env(safe-area-inset-top, 0px));
+  right: 16px;
+  z-index: 10;
+  width: min(380px, calc(100vw - 32px));
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-pop);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.popTitle {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+.popLabel {
+  font-size: var(--fs-sm);
+  color: var(--ink-3);
+}
+.popHint {
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+}
+.popRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.themeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.themeBtn {
+  border: 2px solid var(--border);
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+.themeBtn[aria-pressed='true'] {
+  border-color: var(--primary);
+}
+.swatch {
+  height: 44px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.swatch span {
+  width: 22px;
+  height: 14px;
+}
+.swatch i {
+  width: 20px;
+  height: 2px;
+}
+
+/* 手机：编辑 / 预览切换 */
+.tabs {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .top {
+    padding-left: max(8px, env(safe-area-inset-left, 0px));
+    padding-right: max(8px, env(safe-area-inset-right, 0px));
+    gap: 4px;
+  }
+  .backText,
+  .hideMobile {
+    display: none;
+  }
+  .titleInput {
+    font-size: var(--fs-lg);
+    flex: 1 1 auto;
+  }
+  .editPane {
+    width: 100%;
+    border-right: none;
+    padding: 16px 12px 110px;
+  }
+  .previewPane {
+    padding: 14px 12px 110px;
+    overflow-y: auto;
+  }
+  .body[data-tab='edit'] .previewPane,
+  .body[data-tab='preview'] .editPane {
+    display: none;
+  }
+  .advanced {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .span2 {
+    grid-column: auto;
+  }
+  .hint,
+  .previewHead span {
+    display: none;
+  }
+  .tabs {
+    display: flex;
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    height: 56px;
+    border-radius: 18px;
+    background: var(--surface);
+    box-shadow: var(--shadow-float);
+    padding: 6px;
+    gap: 6px;
+    z-index: 5;
+  }
+  .tabs button {
+    flex: 1 1 0;
+    border: none;
+    border-radius: 13px;
+    background: transparent;
+    font-size: var(--fs-lg);
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+  .tabs button[aria-pressed='true'] {
+    background: var(--primary);
+    color: var(--on-color);
+  }
+}
+
+/* 参数与自动生成的步骤 */
+.paramsForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+}
+.paramsForm > :first-child:nth-last-child(odd) {
+  grid-column: 1 / -1;
+}
+.fieldHint {
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+}
+.fieldError {
+  font-size: var(--fs-xs);
+  color: var(--danger);
+}
+.elementHint {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+}
+.genList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.genItem {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 12px;
+  padding: 8px 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-height: var(--touch);
+}
+.genItem:hover {
+  background: var(--hover);
+}
+.genItem[aria-current='step'] {
+  background: var(--surface);
+  border-color: var(--primary);
+}
+.genNum {
+  width: 24px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: var(--fs-sm);
+  color: var(--ink-3);
+}
+.genText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .paramsForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
