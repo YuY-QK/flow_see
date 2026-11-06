@@ -10,13 +10,7 @@ import {
 } from '@flow-see/blocks';
 import type { StageProps } from '@flow-see/runtime/template.ts';
 import { t } from '@flow-see/core';
-import {
-  dragFrame,
-  dragTargets,
-  sceneFrame,
-  type SceneDef,
-  type SceneObject,
-} from './evaluate';
+import { dragFrame, dragTargets, sceneFrame, type SceneDef, type SceneObject } from './evaluate';
 
 /**
  * 场景画面：纯函数，画面只由 (场景, 第几步, 步内进度) 决定。
@@ -30,6 +24,7 @@ export function SceneView({
   theme,
   progress = 1,
   tryIt,
+  viewBox,
 }: StageProps & { def: SceneDef }) {
   const assetUrl = useContext(AssetUrlContext);
   const ctx: PartContext = useMemo(() => ({ theme, assetUrl }), [theme, assetUrl]);
@@ -115,7 +110,7 @@ export function SceneView({
   return (
     <svg
       ref={svgRef}
-      viewBox={`0 0 ${W} ${H}`}
+      viewBox={viewBox ? `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}` : `0 0 ${W} ${H}`}
       width="100%"
       height="100%"
       preserveAspectRatio="xMidYMid meet"
@@ -209,17 +204,17 @@ function PartView({
     scale !== 1 || rotate !== 0
       ? `translate(${cx} ${cy}) rotate(${rotate}) scale(${scale}) translate(${-cx} ${-cy})`
       : undefined;
-  const { padding: pad, strokeWidth, fillOpacity, dash } = sceneStyle().highlight;
+  const { padX, padY, strokeWidth, fillOpacity, dash } = sceneStyle().highlight;
   // 高亮框的颜色：highlight 动作写了 color 就用它，否则用动画主题的强调色
   const frame = color(o.props.hlColor, theme, 'accent');
   return (
     <g opacity={opacity} transform={transform} data-part={o.id}>
       {hl > 0 ? (
         <rect
-          x={b.x - pad}
-          y={b.y - pad}
-          width={b.w + pad * 2}
-          height={b.h + pad * 2}
+          x={b.x - padX}
+          y={b.y - padY}
+          width={b.w + padX * 2}
+          height={b.h + padY * 2}
           rx={Math.min(theme.radius, 18)}
           fill={frame}
           fillOpacity={fillOpacity * hl}

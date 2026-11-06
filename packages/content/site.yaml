@@ -48,7 +48,33 @@ scene:
     gray: "#9AA3B5"
     white: "#FFFFFF"
     black: "#1F2433"
-  highlight: { padding: 12, strokeWidth: 4, fillOpacity: 0.12, dash: "10 6" }
+  highlight:                           # 高亮框（虚线）和算式里颜色标记的底块；所有零件、知识点统一用这一套间距
+    padX: 18                           # 高亮框比零件包围盒横向外扩多少（舞台坐标）；横向留得多一些，不压到文字边缘
+    padY: 10                           # 纵向外扩多少
+    strokeWidth: 4
+    fillOpacity: 0.12
+    dash: "10 6"
+    markPadX: 0.18                     # 颜色标记底块：左右各比字宽多出字号的几倍
+    markPadY: 0.12                     # 上下各比字高（= 字号）多出字号的几倍
+    markRadius: 0.22                   # 底块圆角（字号的几倍）
+  textMetrics:                         # 文字宽度估算（字号的倍数）：按最宽的动画主题字体取值，宁宽勿窄；底块、包围盒、居中都靠它
+    digit: 0.64                        # 数字
+    latin: 0.62                        # 拉丁字母和其他半角符号
+    space: 0.42                        # 空格
+    operator: 0.7                      # 运算符 + − × ÷ = 等
+    wide: 1.05                         # 汉字、全角符号
+  fit:                                 # 手机上舞台“贴合内容”：画面范围收到所有步骤里零件的包围盒并集，舞台的宽高比也跟着变（电脑、iPad 不变）
+    phone: true
+    margin: 16                         # 包围盒外再留多少（舞台坐标）
+    topPx: 30                          # 顶部给左上角的“时长 · 第几步”留的高度（像素，按屏幕换算成舞台坐标），免得盖住画面
+    minRatio: 1.15                     # 宽高比（宽 ÷ 高）至少多少：内容太高时左右补空，免得舞台在手机上太高
+  blank:                               # 题目要孩子答的那个数：画成虚线空框，缓慢闪烁（答对后才填上）
+    strokeWidth: 3
+    dash: "7 5"
+    fillOpacity: 0.08
+    minOpacity: 0.35                   # 闪烁时最淡的透明度
+    seconds: 1.6                       # 闪一次的时长（秒）；“减少动态效果”时不闪
+    padX: 0.12                         # 空框比字宽多出字号的几倍（左右各）
   actionSeconds:                       # 各动作没写 duration 时的默认时长（秒）
     show: 0.5
     hide: 0.5
@@ -116,6 +142,11 @@ player:
     demoPauseMs: 800                   # 演示放完后停多久，再让孩子自己做
     remindMs: 8000                     # 多选、一个一个分时：停下来这么久还没做完，提示还差几个
     selfDwellMs: 1500                  # 自己做：最后一步（结果）显示多久后算做完
+  toolbar:                             # 舞台底部的工具条（演示、教我、换题、分享、下载、全屏）
+    closeOnPick: true                  # 点了某个功能后是否自动收起工具条
+  params:                              # 自己做时舞台上方的出题参数面板
+    openOnEnter: true                  # 进入自己做时默认展开
+    closeOnStart: true                 # 孩子开始作答后自动收起
 
 # ───────── 个人中心 ─────────
 profile:

@@ -54,7 +54,7 @@ objects:
   - id: hint
     type: label
     text: 还差 {gap} 个就满 10
-    at: [180, 28]
+    at: [270, 28] # 往右放一点，让开舞台左上角的“时长 · 第几步”
     hidden: true
   - id: calc # 拆分算式图：把 b 拆成 gap 和 rest，a 和 gap 凑成 10，10 再加 rest
     type: split-calc
@@ -78,6 +78,7 @@ steps:
     say: 十格框里有 {a} 个，还空着 {gap} 格。
     do:
       - highlight: left
+      - ask: true # 问“还空着几格”：先只亮出十格框，“还差几个”的提示等孩子答完再出
       - show: { target: hint, together: true }
     try:
       task: 十格框里还空着几格？
@@ -88,8 +89,10 @@ steps:
     say: 把 {b} 拆成 {gap} 和 {rest}，先拿出 {gap} 个。
     do:
       - highlight: right
+      - set: { target: calc, show: 1, blank: [q], duration: 0.8s } # 题里说了“拆成 {gap} 和几”：画出分叉和左边的 {gap}，只把要答的右边空着
+      - ask: true
+      - set: { target: calc, blank: [], duration: 0.5s } # 答对了，右边填上
       - split: { target: right, take: '{gap}', as: one }
-      - set: { target: calc, show: 1, duration: 0.8s, together: true }
     try:
       task: 把 {b} 拆成 {gap} 和几？
       choose: { answer: '{rest}', min: 1, show: [right] }
@@ -112,7 +115,10 @@ steps:
   - title: 再加剩下的
     say: 10 加 {rest} 等于 {sum}。
     do:
+      - set: { target: calc, blank: [r], duration: 0.3s } # 题里说了“10 + {rest}”：连线早已画出，只把得数空着
       - highlight: calc
+      - ask: true
+      - set: { target: calc, show: 4, blank: [], duration: 1.2s } # 答对了，得数的连线出来，写出得数
     try:
       task: 10 + {rest} 等于几？
       choose: { answer: '{sum}', min: 10, show: [calc] }
@@ -121,8 +127,7 @@ steps:
   - title: 得出结果
     say: 所以 {a} 加 {b} 等于 {sum}。
     do:
-      - set: { target: calc, show: 4, duration: 1.2s } # 得数的连线出来，写出得数
-      - highlight: calc
+      - highlight: calc # 得数在上一步答对时已经写出
 
 keyPoints:
   - 先看大数还差几个凑成 10，就从小数里拆出几个

@@ -20,7 +20,6 @@ import {
 import { useSettings } from '@flow-see/runtime/store/settings.ts';
 import ui from '@flow-see/runtime/ui/ui.module.css';
 import { getTemplate } from '@flow-see/templates';
-import { StageControls } from '../learn/StageControls';
 import { LessonPlayer, type HandsMode } from '../learn/LessonPlayer';
 import { lessonPath } from '../learn/paths';
 import { assetUrl, content, findSubject, gradeName, loadLesson, site } from '../site';
@@ -129,7 +128,7 @@ function LessonBody({ lessonId, lessonKey }: { lessonId: string; lessonKey: Less
 
   if (state.kind !== 'ready')
     return (
-      <main className={`${p.content} ${s.lessonMain}`}>
+      <main className={`${p.content} ${s.lessonMain} ui-scaled`}>
         {header()}
         {state.kind === 'error' ? (
           <div className={s.problem}>
@@ -234,7 +233,7 @@ function LessonReady({
     setStarted(false);
     setSession((st) => ({ ...st, trial: next, n: st.n + 1, startIndex: 0, autoPlay: false }));
   };
-  // 舞台右侧的控件：自己调题目的数字，调完从头做
+  // 舞台上方的参数面板：自己调题目的数字，调完从头做
   const tryParams = (patch: Scope) => {
     // 取值超出范围时自动收回（例如“小数”不能小于“11 - 大数”）
     const next = clampParams(
@@ -280,7 +279,7 @@ function LessonReady({
   const onFinish = useCallback(() => setFinished(mode), [mode]);
   if (!template)
     return (
-      <main className={`${p.content} ${s.lessonMain}`}>
+      <main className={`${p.content} ${s.lessonMain} ui-scaled`}>
         {header()}
         <div className={s.problem}>
           <div>{t('lessonPage.zhe_ge_dong_hua')}</div>
@@ -301,7 +300,7 @@ function LessonReady({
 
   return (
     <AssetUrlContext.Provider value={assetUrl}>
-      <main className={`${p.content} ${s.lessonMain}`}>
+      <main className={`${p.content} ${s.lessonMain} ui-scaled`}>
         {header(
           hasTry ? (
             <div className={s.modes} role="group" aria-label={t('handsOn.modes_aria')}>
@@ -340,15 +339,15 @@ function LessonReady({
           largeCaption={lessonKey.grade <= site.player.largeCaptionMaxGrade}
           onVisit={(i) => visit(key, i)}
           onFinish={onFinish}
-          side={
-            mode === 'self' && explore.length ? (
-              <StageControls
-                controls={explore}
-                values={values}
-                onChange={tryParams}
-                locked={started && finished !== 'self'}
-              />
-            ) : undefined
+          panel={
+            mode === 'self' && explore.length
+              ? {
+                  controls: explore,
+                  values,
+                  onChange: tryParams,
+                  locked: started && finished !== 'self',
+                }
+              : undefined
           }
           onDemo={mode === 'self' ? () => switchMode('watch', true) : undefined}
           onNewProblem={mode === 'self' && pool.length > 1 ? newProblem : undefined}

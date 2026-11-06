@@ -63,7 +63,9 @@ steps:
     say: 把 {a} 拆成 10 和 {p}。
     do:
       - highlight: [ten, ones]
-      - set: { target: calc, show: 1, duration: 0.8s, together: true }
+      - set: { target: calc, show: 1, blank: [p], duration: 0.8s, together: true } # 题里说了“拆成 10 和几”：画出分叉和右边的 10，只空着要答的 {p}
+      - ask: true
+      - set: { target: calc, blank: [], duration: 0.5s }
     try:
       task: '{a} 拆成 10 和几？'
       choose: { answer: '{p}', min: 1, show: [ones] }
@@ -73,10 +75,12 @@ steps:
     say: 用 10 减 {b}，10 减 {b} 等于 {rest}。
     do:
       - highlight: ten
+      - set: { target: calc, show: 2, blank: [m], duration: 0.8s } # 题里说了“10 减 {b}”：画出括线和减号，只空着差
+      - ask: true
+      - set: { target: calc, blank: [], duration: 0.5s }
       - split: { target: ten, take: '{b}', as: gone, offset: [0, -60] }
       - color: { target: gone, to: gray }
       - hide: { target: gone, duration: 0.6s }
-      - set: { target: calc, show: 2, duration: 0.8s }
     try:
       task: 10 减 {b} 等于几？
       choose: { answer: '{rest}', min: 1, show: [ten] }
@@ -85,9 +89,11 @@ steps:
   - title: 加剩数
     say: 剩下的 {rest} 和 {p} 合起来，是 {res}。
     do:
-      - merge: { target: ten, into: ones, duration: 1s }
-      - set: { target: calc, show: 3, duration: 0.8s }
+      - set: { target: calc, show: 3, blank: [r], duration: 0.8s } # 题里说了“{p} 加 {rest}”：画出括线和加号，只空着得数
       - highlight: [ones, calc]
+      - ask: true
+      - set: { target: calc, show: 4, blank: [], duration: 1.2s } # 答对了，得数的连线出来，写出得数
+      - merge: { target: ten, into: ones, duration: 1s, together: true }
     try:
       task: '{p} 加 {rest} 等于几？'
       choose: { answer: '{res}', min: 1, show: [ones] }
@@ -96,8 +102,7 @@ steps:
   - title: 得出结果
     say: 所以 {a} 减 {b} 等于 {res}。
     do:
-      - set: { target: calc, show: 4, duration: 1.2s }
-      - highlight: calc
+      - highlight: calc # 得数在上一步答对时已经写出
 
 keyPoints:
   - 个位不够减，就把大数拆成 10 和几，用 10 去减

@@ -33,12 +33,47 @@ const sceneStyleSchema = z
       .describe('配置里可以直接写的颜色名'),
     highlight: z
       .object({
-        padding: nonNeg,
+        padX: nonNeg.describe('高亮框比零件包围盒横向外扩多少（舞台坐标）'),
+        padY: nonNeg.describe('高亮框纵向外扩多少（舞台坐标）'),
         strokeWidth: nonNeg,
         fillOpacity: z.number().min(0).max(1),
         dash: z.string().describe('虚线样式，如 "10 6"'),
+        markPadX: nonNeg.describe('颜色标记底块：左右各比字宽多出字号的几倍'),
+        markPadY: nonNeg.describe('颜色标记底块：上下各比字高（= 字号）多出字号的几倍'),
+        markRadius: nonNeg.describe('颜色标记底块的圆角（字号的几倍）'),
       })
-      .strict(),
+      .strict()
+      .describe('高亮框和颜色标记底块的统一间距'),
+    textMetrics: z
+      .object({
+        digit: z.number().positive().describe('数字的宽度（字号的倍数）'),
+        latin: z.number().positive().describe('拉丁字母和其他半角符号'),
+        space: z.number().positive().describe('空格'),
+        operator: z.number().positive().describe('运算符 + − × ÷ = 等'),
+        wide: z.number().positive().describe('汉字和全角符号'),
+      })
+      .strict()
+      .describe('文字宽度估算：按最宽的动画主题字体取值，宁宽勿窄'),
+    fit: z
+      .object({
+        phone: z.boolean().describe('手机上舞台是否贴合内容（画面范围收到所有零件的包围盒并集）'),
+        margin: nonNeg.describe('包围盒外再留多少（舞台坐标）'),
+        topPx: nonNeg.describe('顶部给左上角的“时长 · 第几步”留的高度（像素）'),
+        minRatio: z.number().positive().describe('贴合后宽高比（宽 ÷ 高）的下限'),
+      })
+      .strict()
+      .describe('手机上舞台贴合内容：电脑、iPad 不变'),
+    blank: z
+      .object({
+        strokeWidth: nonNeg,
+        dash: z.string().describe('虚线样式，如 "7 5"'),
+        fillOpacity: z.number().min(0).max(1),
+        minOpacity: z.number().min(0).max(1).describe('闪烁时最淡的透明度'),
+        seconds: z.number().positive().describe('闪一次的时长（秒）'),
+        padX: nonNeg.describe('空框比字宽多出字号的几倍（左右各）'),
+      })
+      .strict()
+      .describe('要孩子答的那个数：画成虚线空框并缓慢闪烁，答对后才填上'),
     actionSeconds: z
       .record(z.string(), nonNeg)
       .describe('各动作没写 duration 时的默认时长（秒），键是动作名'),
@@ -117,6 +152,19 @@ const playerSchema = z
       })
       .strict()
       .describe('动手做：跟着做 / 自己做'),
+    toolbar: z
+      .object({
+        closeOnPick: z.boolean().describe('点了某个功能后是否自动收起舞台底部的工具条'),
+      })
+      .strict()
+      .describe('舞台底部的工具条'),
+    params: z
+      .object({
+        openOnEnter: z.boolean().describe('进入自己做时，出题参数面板是否默认展开'),
+        closeOnStart: z.boolean().describe('孩子开始作答后是否自动收起参数面板'),
+      })
+      .strict()
+      .describe('自己做时舞台上方的出题参数面板'),
   })
   .strict();
 

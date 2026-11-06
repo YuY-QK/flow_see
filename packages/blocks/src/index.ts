@@ -42,7 +42,8 @@ export {
   type Hop,
 } from './parts/math';
 export { SHAPE_KINDS } from './parts/shapes';
-export { displayText } from './parts/text';
+export { displayText, richSpans } from './parts/text';
+export { blankRect, markRect } from './parts/markRect';
 export { circleCutLayout, type CircleCutLayout } from './parts/circlecut';
 export {
   wireBreaks,

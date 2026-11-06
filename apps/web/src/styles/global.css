@@ -132,6 +132,45 @@ html[data-theme='dark'] {
   color-scheme: dark;
 }
 
+/*
+ * 界面缩放基准（知识点学习页用）：--ui 是电脑上的 1，窗口变窄时等比缩小，
+ * 播放区里的按钮、字号、星星、图标、参数面板都写成 calc(基准值 * var(--ui))。
+ * 断点和 apps/web/src/learn/device.ts 一致：iPad 768–1023，手机 <768。
+ * 只在带 .ui-scaled 的容器里生效（其他页面保持原样）；字号有 11px 的下限，免得太小看不清。
+ */
+:root {
+  --ui: 1;
+}
+@media (max-width: 1023px) {
+  :root {
+    --ui: 0.92;
+  }
+}
+@media (max-width: 767px) {
+  :root {
+    --ui: 0.8;
+  }
+}
+.ui-scaled {
+  --touch: max(36px, calc(44px * var(--ui)));
+  --fs-xs: max(11px, calc(12px * var(--ui)));
+  --fs-sm: max(11px, calc(13px * var(--ui)));
+  --fs-md: max(11px, calc(14px * var(--ui)));
+  --fs-base: max(11px, calc(15px * var(--ui)));
+  --fs-lg: max(11px, calc(16px * var(--ui)));
+  --fs-xl: max(11px, calc(17px * var(--ui)));
+  --fs-2xl: max(11px, calc(18px * var(--ui)));
+  --fs-3xl: max(11px, calc(19px * var(--ui)));
+  --fs-4xl: max(11px, calc(20px * var(--ui)));
+  --fs-5xl: max(11px, calc(22px * var(--ui)));
+  --fs-6xl: max(11px, calc(23px * var(--ui)));
+  --fs-7xl: max(11px, calc(24px * var(--ui)));
+  --fs-8xl: max(11px, calc(26px * var(--ui)));
+  --fs-9xl: max(11px, calc(28px * var(--ui)));
+  --fs-hero: max(11px, calc(36px * var(--ui)));
+  --fs-h1: calc(clamp(26px, 4vw, 32px) * var(--ui));
+}
+
 *,
 *::before,
 *::after {

@@ -219,3 +219,22 @@ describe('上一个 / 下一个（规格 3.5）', () => {
     expect(ids('c', true)).toEqual(['b', 'd']);
   });
 });
+
+describe('题目里说到的画出来，要孩子答的才不画（凑十法）', () => {
+  const lf = () => load().bundle!.lessons.find((l) => l.lesson.id === 'make-ten')!;
+  const anim = () => lessonToAnimation({ ...lf().lesson, subject: lf().subject, grade: lf().grade });
+  const calcAt = (index: number, phase: 'doing' | 'solved') => {
+    const a = anim();
+    return sceneFrame(sceneOf(a), index, 1, phase).objects.find((o) => o.id === 'calc')!.props;
+  };
+
+  it('“把 6 拆成 1 和几”：提问时分叉和左边的 1 已经画出，右边空着；答对后填上', () => {
+    const doing = calcAt(2, 'doing');
+    expect(doing).toMatchObject({ show: 1, blank: ['q'], parts: [1, 5] });
+    expect(calcAt(2, 'solved').blank).toEqual([]);
+  });
+  it('“10 + 5 等于几”：提问时连线已经画出，得数空着；答对后写出得数', () => {
+    expect(calcAt(4, 'doing')).toMatchObject({ show: 3, blank: ['r'] });
+    expect(calcAt(4, 'solved')).toMatchObject({ show: 4, blank: [] });
+  });
+});

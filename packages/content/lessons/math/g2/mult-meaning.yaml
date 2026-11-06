@@ -38,7 +38,7 @@ objects:
   - { id: r3, type: counters, count: '{n}', layout: row, size: 44, at: ['{x0}', 222], color: blue, hidden: true }
   - { id: lbl1, type: text, text: '每行 [{n}](@r1) 个', at: [240, 24], size: 30, hidden: true }
   - { id: lbl2, type: text, text: '共 [3](red @r3) 行', at: [240, 322], size: 30, hidden: true }
-  - { id: add, type: text, text: '[{n}](@r1) + [{n}](@r2) + [{n}](@r3) = {total}', at: [605, 90], size: 32, hidden: true }
+  - { id: add, type: text, text: '[{n}](@r1) + [{n}](@r2) + [{n}](@r3) = [{total}](blank)', at: [605, 90], size: 32, hidden: true }
   - { id: mul, type: text, text: '[{n}](@r1) × [3](red @r3) = {total}', at: [605, 190], size: 40, hidden: true }
 
 steps:
@@ -46,6 +46,7 @@ steps:
     say: 这一行有 {n} 个圆点。
     do:
       - highlight: r1
+      - ask: true # 先只亮出这一行；“每行几个”的标注等孩子答完再出
       - show: lbl1
     try:
       task: 这一行有几个圆点？
@@ -72,6 +73,8 @@ steps:
       - unhighlight: r2
       - highlight: r3
       - unhighlight: r3
+      - ask: true
+      - set: { target: add, text: '[{n}](@r1) + [{n}](@r2) + [{n}](@r3) = {total}', duration: 0.4s } # 答对了，得数填上
     try:
       task: '{n} + {n} + {n} 等于几？'
       choose: { answer: '{total}', min: 1, show: [r1, r2, r3] }

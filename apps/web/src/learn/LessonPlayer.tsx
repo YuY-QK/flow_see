@@ -22,8 +22,9 @@ import type { StageTry, Template, TrySpec } from '@flow-see/runtime/template.ts'
 import { Icon } from '@flow-see/runtime/ui/Icon.tsx';
 import type { TimelineAction } from '@flow-see/core';
 import { site } from '../site';
-import { ToolFan, type ToolItem } from './ToolFan';
-import ui from '@flow-see/runtime/ui/ui.module.css';
+import { StageControls, type ParamsPanelProps } from './StageControls';
+import { StageToolbar, type ToolItem, type ToolText } from './StageToolbar';
+import { useDevice } from './device';
 import s from './Lesson.module.css';
 
 /** 学习方式：看一看（照常播放）/ 跟着做（关键步骤停下来让孩子做）/ 自己做（只给任务提示） */
@@ -73,13 +74,13 @@ interface Props {
   badge?: { saved: number; onMark?(): void; onUndo?(): void };
   /** 当前学习方式的完成度有变化时调用（0–1，做完整个流程 = 1）；只在孩子操作过之后调用 */
   onProgress?(ratio: number): void;
-  /** 舞台右下角扇形菜单里的工具（分享、导出……）；全屏由播放器自己加 */
+  /** 舞台底部工具条右边的图标按钮（分享、下载……）；全屏由播放器自己加 */
   tools?: ToolItem[];
-  /** 自己做：舞台右侧竖排的出题控件 */
-  side?: React.ReactNode;
-  /** 自己做：舞台左上角的“演示”（用这道题的数字切到看一看） */
+  /** 自己做：舞台上方的出题参数面板（右上角齿轮展开） */
+  panel?: ParamsPanelProps;
+  /** 自己做：工具条里的“演示”（用这道题的数字切到看一看） */
   onDemo?(): void;
-  /** 自己做：字幕框右侧的“换一题”；没有可换的题就不传 */
+  /** 自己做：工具条里的“换题”；没有可换的题就不传 */
   onNewProblem?(): void;
   /** 自己做：孩子开始动手（第一次拖或点）时调用一次；之后到做完前不能再调题目 */
   onStart?(): void;
@@ -111,7 +112,7 @@ export function LessonPlayer({
   badge,
   onProgress,
   tools = [],
-  side,
+  panel,
   onDemo,
   onNewProblem,
   onStart,
@@ -124,6 +125,8 @@ export function LessonPlayer({
 }: Props) {
   const speechOk = isSpeechSupported();
   const settings = useSettings();
+  // 出题参数面板：进入自己做时默认展开；孩子开始作答后自动收起（site.yaml 的 player.params）
+  const [paramsOpen, setParamsOpen] = useState(site.player.params.openOnEnter);
   const narrate = speechOk && settings.autoNarrate;
   const steps = animation.steps;
   const total = steps.length;
@@ -215,6 +218,7 @@ export function LessonPlayer({
     if (!started.current) {
       started.current = true;
       onStart?.();
+      if (site.player.params.closeOnStart) setParamsOpen(false);
     }
   };
   /** 做错一次：逐级引导（提示 → 高亮目标 → 看我做一遍）；full 是“这里已经放满了” */
@@ -293,9 +297,7 @@ export function LessonPlayer({
   useEffect(() => {
     if (!doingNow || left <= 0 || (!multi && targets.length < 2)) return;
     const timer = window.setTimeout(() => {
-      const note = multi
-        ? t('handsOn.multi_remind', { left })
-        : t('handsOn.deal_remind', { left });
+      const note = multi ? t('handsOn.multi_remind', { left }) : t('handsOn.deal_remind', { left });
       setTp((x) => (x.key === tryKey ? { ...x, note } : x));
       say(note);
     }, handsOn.remindMs);
@@ -425,6 +427,26 @@ export function LessonPlayer({
     width: 800,
     height: 450,
   };
+  // 手机上舞台贴合内容：画面范围收到所有步骤里零件的包围盒并集，舞台的宽高比跟着变（site.yaml 的 scene.fit）
+  const phone = useDevice() === 'phone';
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [stageW, setStageW] = useState(0);
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => setStageW(el.clientWidth));
+    ro.observe(el);
+    setStageW(el.clientWidth);
+    return () => ro.disconnect();
+  }, []);
+  const viewBox = useMemo(() => {
+    const box = phone ? template.viewBox?.(animation) : undefined;
+    if (!box || stageW <= 0) return box;
+    // 顶部给左上角的信息留 fit.topPx 像素：按当前舞台宽度换算成舞台坐标，往上多留出这一条
+    const extra = site.scene.fit.topPx / (stageW / box.w);
+    return { ...box, y: box.y - extra, h: box.h + extra };
+  }, [phone, template, animation, stageW]);
+  const stageRatio = viewBox ? `${viewBox.w} / ${viewBox.h}` : `${stage.width} / ${stage.height}`;
   const position = state.index + state.progress;
   // 自己做：做完整道题（最后一步放完）
   const selfDone = self && state.finishes > 0;
@@ -447,13 +469,13 @@ export function LessonPlayer({
     <div ref={rootRef} className={s.player} data-full={isFull}>
       <div className={s.stageBox}>
         <div
+          ref={stageRef}
           className={s.stage}
-          data-side={!!side}
           style={
             {
               background: theme.stageBg,
               borderColor: theme.stageBorder,
-              '--ratio': `${stage.width} / ${stage.height}`,
+              '--ratio': stageRatio,
             } as CSSProperties
           }
         >
@@ -464,25 +486,40 @@ export function LessonPlayer({
               progress={demoing ? (tp.demo ?? 0) : state.progress}
               theme={theme}
               tryIt={tryIt}
+              viewBox={viewBox}
             />
           </div>
-          {side}
         </div>
-        {self && onDemo ? (
-          <button className={`${s.cornerLeft} ${s.demoBtn}`} onClick={onDemo}>
-            {t('handsOn.demo')}
-          </button>
-        ) : null}
+        {/* 左上角：完成状态图标在前，时长和第几步在后 */}
         <div className={s.cornerTop}>
+          {badge ? <LearnedBadge badge={badge} ratio={shownRatio} /> : null}
           <span className={s.stageMeta}>
             {[duration, t('common.step_progress', { n: state.index + 1, total })]
               .filter(Boolean)
               .join(' · ')}
           </span>
-          {badge ? <LearnedBadge badge={badge} ratio={shownRatio} /> : null}
         </div>
-        <ToolFan
-          items={[
+        {panel ? (
+          <StageControls {...panel} open={paramsOpen} onToggle={() => setParamsOpen((v) => !v)} />
+        ) : null}
+        <StageToolbar
+          texts={[
+            ...(self && onDemo ? [{ id: 'demo', label: t('handsOn.demo'), onClick: onDemo }] : []),
+            ...(doing && !demoing
+              ? [{ id: 'teach', label: t('handsOn.show_me'), onClick: () => startDemo(tp.misses) }]
+              : []),
+            ...(self && onNewProblem
+              ? ([
+                  {
+                    id: 'new',
+                    label: t('handsOn.new_problem'),
+                    onClick: onNewProblem,
+                    primary: selfDone,
+                  },
+                ] satisfies ToolText[])
+              : []),
+          ]}
+          icons={[
             ...tools,
             ...(canFullscreen
               ? [
@@ -518,29 +555,13 @@ export function LessonPlayer({
           {doing || step?.title ? (
             <div className={s.counterRow}>
               <div className={s.counter}>
-                {doing ? <span className={s.yourTurn}>{t('handsOn.your_turn')}</span> : null}
                 {step?.title}
+                {doing ? <span className={s.yourTurn}>{t('handsOn.your_turn')}</span> : null}
               </div>
             </div>
           ) : null}
-          {/* “看我做一遍”和讲解文字顶部对齐，在右侧 */}
           <div className={s.sayRow}>
             <div className={s.say}>{doing || demoing ? spec?.task : step?.desc}</div>
-            <div className={s.sayActions}>
-              {doing && !demoing ? (
-                <button className={`${ui.btn} ${s.capBtn}`} onClick={() => startDemo(tp.misses)}>
-                  {t('handsOn.show_me')}
-                </button>
-              ) : null}
-              {self && onNewProblem ? (
-                <button
-                  className={`${ui.btn} ${selfDone ? ui.primary : ''} ${s.capBtn}`}
-                  onClick={onNewProblem}
-                >
-                  {t('handsOn.new_problem')}
-                </button>
-              ) : null}
-            </div>
           </div>
           {doing && choose && !demoing ? (
             <div className={s.options} role="group" aria-label={t('handsOn.choose_aria')}>
@@ -575,32 +596,34 @@ export function LessonPlayer({
 
       {!self ? (
         <div className={s.controls}>
-          <button
-            className={s.ctrl}
-            aria-label={t('common.shang_yi_bu')}
-            onClick={() => act({ type: 'prev' })}
-            disabled={!steps.some((_, i) => i < state.index && !skips?.[i])}
-          >
-            <Icon name="prev" />
-          </button>
-          {/* 自己做：没有播放，每一步都由孩子自己点或拖 */}
-          {!self ? (
+          <div className={s.transport}>
             <button
-              className={s.play}
-              aria-label={state.playing ? t('common.zan_ting') : t('common.bo_fang')}
-              onClick={() => act({ type: 'toggle' })}
+              className={s.ctrl}
+              aria-label={t('common.shang_yi_bu')}
+              onClick={() => act({ type: 'prev' })}
+              disabled={!steps.some((_, i) => i < state.index && !skips?.[i])}
             >
-              <Icon name={state.playing ? 'pause' : 'play'} size={24} />
+              <Icon name="prev" />
             </button>
-          ) : null}
-          <button
-            className={s.ctrl}
-            aria-label={t('common.xia_yi_bu')}
-            onClick={() => act({ type: 'next' })}
-            disabled={!steps.some((_, i) => i > state.index && !skips?.[i]) || doing}
-          >
-            <Icon name="next" />
-          </button>
+            {/* 自己做：没有播放，每一步都由孩子自己点或拖 */}
+            {!self ? (
+              <button
+                className={s.play}
+                aria-label={state.playing ? t('common.zan_ting') : t('common.bo_fang')}
+                onClick={() => act({ type: 'toggle' })}
+              >
+                <Icon name={state.playing ? 'pause' : 'play'} size={24} />
+              </button>
+            ) : null}
+            <button
+              className={s.ctrl}
+              aria-label={t('common.xia_yi_bu')}
+              onClick={() => act({ type: 'next' })}
+              disabled={!steps.some((_, i) => i > state.index && !skips?.[i]) || doing}
+            >
+              <Icon name="next" />
+            </button>
+          </div>
 
           <div className={s.track}>
             {/* 进度点就在进度条上：点一个点回到那一步的开头；动手做时不能拖进度跳过 */}

@@ -5,6 +5,7 @@ import { createAnimation, createStep, styleConfig, t, type Animation } from '@fl
 import type { Template } from '@flow-see/runtime/template.ts';
 import { stepMotionMs, type SceneDef } from '../../scene/evaluate';
 import { triesOf } from '../../scene/scene';
+import { fitBox } from '../../scene/box';
 import { makeSceneStage } from '../../scene/stage';
 import { checkClock } from './check';
 import { runMinutesOf, type ClockShow } from './shows';
@@ -174,6 +175,7 @@ export const clockTemplate: Template = {
   },
   newStep: () => ({ data: { show: 'read' } }),
   Stage: makeSceneStage(sceneOf),
+  viewBox: (animation) => fitBox(sceneOf(animation)),
   motionMs: (animation, index, phase) => stepMotionMs(sceneOf(animation), index, phase),
   checkConfig: checkClock,
 };

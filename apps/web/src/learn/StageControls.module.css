@@ -1,29 +1,89 @@
-/* 自己做时舞台右侧的出题控件：垂直排列，宽度固定，舞台画面在它左边 */
-.side {
+/* 自己做时舞台上方的出题参数面板：右上角齿轮，面板从舞台顶部向下滑入、向上滑出 */
+.dock {
+  --btn: max(36px, calc(40px * var(--ui)));
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none; /* 只有面板和齿轮接收点击，不挡住舞台上的拖动 */
+}
+.panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 8px calc(var(--btn) + 16px) 8px 8px; /* 右边让开齿轮 */
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-float);
+  transform: translateY(-100%);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease,
+    visibility 0s linear 0.25s;
+}
+.dock[data-open='true'] .panel {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+.gear {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: var(--btn);
+  height: var(--btn);
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-float);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  transition: background 0.15s;
+}
+.gear svg {
+  width: calc(20px * var(--ui));
+  height: calc(20px * var(--ui));
+}
+.gear:hover {
+  background: var(--hover);
+}
+.dock[data-open='true'] .gear {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* 一排“块”：每块两行，上面标签，下面调节 */
+.blocks {
   margin: 0;
   border: 0;
+  padding: 0;
   min-width: 0;
-  flex: 0 0 auto;
-  width: 76px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-wrap: wrap;
   gap: 8px;
-  padding-top: 26px; /* 让开舞台右上角的时长、步数 */
 }
 /* 开始做题后锁住：整体变淡 */
-.side:disabled {
+.blocks:disabled {
   opacity: 0.45;
 }
-.box {
+.block {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 2px;
-  padding: 4px 4px 6px;
+  padding: 4px 8px 6px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--surface-2);
   color: var(--ink);
 }
 .label {
@@ -33,22 +93,18 @@
   white-space: nowrap;
 }
 .stepper {
-  display: grid;
-  grid-template-columns: 1fr;
-  justify-items: center;
-  gap: 2px;
-}
-.stepper strong {
-  font-size: var(--fs-4xl);
-  line-height: 1.1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 .stepper button,
 .chips button {
-  min-width: 36px;
-  min-height: 32px;
+  min-width: var(--btn);
+  min-height: var(--btn);
   border-radius: 10px;
   border: 1px solid var(--border-strong);
-  background: var(--surface-2);
+  background: var(--surface);
   color: var(--primary);
   font-size: var(--fs-xl);
   font-weight: 700;
@@ -61,20 +117,22 @@
 .stepper button:disabled {
   opacity: 0.35;
 }
-/* 加号在上、减号在下：数字往上调更直观 */
-.stepper button:first-child {
-  order: 3;
-}
-.stepper strong {
-  order: 2;
-}
-.stepper button:last-child {
-  order: 1;
+.num {
+  width: calc(3.2ch + 12px);
+  min-width: 40px;
+  height: var(--btn);
+  padding: 0 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  text-align: center;
 }
 .chips {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 .chips button {
   color: var(--ink);
@@ -85,35 +143,12 @@
   border-color: var(--primary);
   color: var(--on-color);
 }
-.switchRow {
-  align-items: center;
+.switch {
+  align-self: center;
+  margin: 6px 0;
 }
-@media (max-width: 767px) {
-  /* 手机：加减横着排，每个控件只有两行高，两个控件加起来不超过舞台高度 */
-  .side {
-    width: 92px;
-    gap: 6px;
-    padding-top: 22px;
-    padding-bottom: 44px; /* 让开右下角的菜单按钮 */
-  }
-  .stepper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2px;
-  }
-  .stepper button:first-child,
-  .stepper button:last-child,
-  .stepper strong {
-    order: 0;
-  }
-  .stepper strong {
-    font-size: var(--fs-2xl);
-  }
-  .stepper button,
-  .chips button {
-    min-width: 26px;
-    min-height: 28px;
-    padding: 0;
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    transition: none;
   }
 }

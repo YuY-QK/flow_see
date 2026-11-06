@@ -308,10 +308,13 @@ stars:
 lessonTools:
   open: 工具
   close: 收起
+  aria: 舞台工具
 handsOn:
   demo: 演示
   controls_aria: 调整题目
   controls_locked: 做完这道题再调数字
+  params_open: 调整题目
+  params_close: 收起题目调整
   minus: 减小{name}
   plus: 增大{name}
   modes_aria: 学习方式
@@ -327,7 +330,7 @@ handsOn:
   choose_aria: 选择答案
   watch_me: 看我做一遍。
   you_try: 现在你来试试。
-  show_me: 看我做一遍
+  show_me: 教我
   drag_item_aria: 拖动这一个，放到目标上
   moved: 已经放好 {n} 个，还要 {left} 个
   watch_done: 看完了！轮到你跟着做一做。
@@ -335,7 +338,7 @@ handsOn:
   self_done: 全部做对了！换一题再试试吧。
   go_guided: 跟着做
   go_self: 自己做
-  new_problem: 换一题
+  new_problem: 换题
   multi_hint: 可以选好几个，都选出来才算完成
   multi_got: 选对了！还有 {left} 个，接着找。
   multi_remind: 还有 {left} 个没选出来，再看看。

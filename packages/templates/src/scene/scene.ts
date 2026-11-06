@@ -22,7 +22,9 @@ export function sceneOf(animation: Animation): SceneDef {
   def = {
     stage: cfg.stage ?? sceneStyle().stage,
     objects: expandObjects(Array.isArray(cfg.objects) ? cfg.objects : [], scope),
-    steps: animation.steps.map((s) => expandActions(Array.isArray(s.data.do) ? s.data.do : [], scope)),
+    steps: animation.steps.map((s) =>
+      expandActions(Array.isArray(s.data.do) ? s.data.do : [], scope),
+    ),
     tries: triesOf(animation),
   };
   cache.set(animation, def);

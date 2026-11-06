@@ -56,7 +56,9 @@ steps:
     say: 把 {b} 拆成 {p} 和 {q}，先减 {p}，减到 10。
     do:
       - highlight: all
-      - set: { target: calc, show: 1, duration: 0.8s, together: true }
+      - set: { target: calc, show: 1, blank: [q], duration: 0.8s, together: true } # 题里说了“拆成 {p} 和几”：画出分叉和左边的 {p}，只空着要答的
+      - ask: true
+      - set: { target: calc, blank: [], duration: 0.5s }
     try:
       task: '{b} 拆成 {p} 和几？'
       choose: { answer: '{q}', min: 1, show: [all] }
@@ -65,11 +67,13 @@ steps:
   - title: 先减到 10
     say: 先减 {p}，{a} 减 {p} 等于 10。
     do:
+      - set: { target: calc, show: 2, blank: [m], duration: 0.8s } # 题里说了“{a} 减 {p}”：画出括线和减号，只空着差
+      - highlight: all
+      - ask: true
+      - set: { target: calc, blank: [], duration: 0.5s }
       - split: { target: all, take: '{p}', as: gone1, offset: [0, -40] }
       - color: { target: gone1, to: gray }
       - hide: { target: gone1, duration: 0.6s }
-      - set: { target: calc, show: 2, duration: 0.8s }
-      - highlight: all
     try:
       task: '{a} 减 {p} 等于几？'
       choose: { answer: 10, min: 1, show: [all] }
@@ -78,11 +82,13 @@ steps:
   - title: 再减剩下的
     say: 再减 {q}，10 减 {q} 等于 {res}。
     do:
+      - set: { target: calc, show: 3, blank: [r], duration: 0.8s } # 题里说了“10 减 {q}”：画出括线和减号，只空着得数
+      - highlight: [all, calc]
+      - ask: true
+      - set: { target: calc, show: 4, blank: [], duration: 1.2s } # 答对了，得数的连线出来，写出得数
       - split: { target: all, take: '{q}', as: gone2, offset: [0, -40] }
       - color: { target: gone2, to: gray }
-      - hide: { target: gone2, duration: 0.6s }
-      - set: { target: calc, show: 3, duration: 0.8s }
-      - highlight: [all, calc]
+      - hide: { target: gone2, duration: 0.6s, together: true }
     try:
       task: 10 减 {q} 等于几？
       choose: { answer: '{res}', min: 1, show: [all] }
@@ -91,8 +97,7 @@ steps:
   - title: 得出结果
     say: 所以 {a} 减 {b} 等于 {res}。
     do:
-      - set: { target: calc, show: 4, duration: 1.2s }
-      - highlight: calc
+      - highlight: calc # 得数在上一步答对时已经写出
 
 keyPoints:
   - 平十法：把减数拆成两部分，先减到 10，再减剩下的

@@ -1,0 +1,106 @@
+/* 舞台底部的工具条（StageToolbar.tsx）：从舞台底部向上滑入；颜色都用全局变量 */
+.dock {
+  --btn: max(36px, calc(40px * var(--ui))); /* 按下的范围不小于 36px */
+  --bar-h: calc(var(--btn) + 9px);
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none; /* 只有按钮和工具条本身接收点击，不挡住舞台上的拖动 */
+}
+.bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: var(--bar-h);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  border-top: 1px solid var(--border);
+  box-shadow: var(--shadow-float);
+  transform: translateY(100%);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease,
+    visibility 0s linear 0.25s;
+}
+.dock[data-open='true'] .bar {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+.gap {
+  flex: 1 1 0;
+}
+.text {
+  min-height: var(--btn);
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--primary);
+  background: var(--surface);
+  color: var(--primary);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.text:hover {
+  background: var(--primary-soft);
+}
+.text[data-primary='true'] {
+  background: var(--primary);
+  color: var(--on-color);
+}
+.text[data-primary='true']:hover {
+  background: var(--primary-hover);
+}
+.icon,
+.menu {
+  width: var(--btn);
+  height: var(--btn);
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon:hover {
+  background: var(--hover);
+}
+.icon svg,
+.menu svg {
+  width: calc(20px * var(--ui));
+  height: calc(20px * var(--ui));
+}
+/* 菜单按钮：收起时在舞台右下角；展开后移到工具条上方，一直能点 */
+.menu {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  pointer-events: auto;
+  box-shadow: var(--shadow-float);
+  transition:
+    bottom 0.25s ease,
+    background 0.15s;
+}
+.dock[data-open='true'] .menu {
+  bottom: calc(var(--bar-h) + 8px);
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar,
+  .menu {
+    transition: none;
+  }
+}
