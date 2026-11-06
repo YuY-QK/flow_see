@@ -8,6 +8,7 @@
 //   └───+────┘↑          第二次合并（second）：和剩下的数再算一次，箭头指向得数
 //
 // 节点名：a、b = 原题的两个数；p、q = 拆出来的两部分（左、右）；m = 第一次合并的结果。
+// blank：要孩子答的节点名列表（a b p q m r），不写数字，画成虚线空框并闪烁；答对后 set 成 [] 才填上。
 // show（0–4，可以连续变化，用 set 动作逐步显示）：
 //   0 原题（得数是“?”）；1 拆开；2 第一次合并；3 第二次合并；4 写出得数。
 import {
@@ -22,6 +23,8 @@ import {
   type Point,
   type Props,
 } from '../base';
+import { BlankBox } from './mark';
+import { markRect } from './markRect';
 
 type NodeName = 'a' | 'b' | 'p' | 'q' | 'm';
 interface Join {
@@ -163,6 +166,7 @@ export const splitCalcPart: PartDef = {
     'partColor',
     'accent',
     'colors',
+    'blank',
   ],
   bbox(p) {
     // 只包住已经显示出来的部分（高亮框跟着竖式一步步变大）
@@ -206,18 +210,16 @@ export const splitCalcPart: PartDef = {
       }
       return { c: v ? color(v, ctx.theme) : fallback, hl: 0 };
     };
+    const blanks = new Set(Array.isArray(p.blank) ? p.blank.map(String) : []);
     const node$ = (name: string, t: string, x: number, y: number, fallback: string) => {
       const { c, hl } = nodeColor(name, fallback);
-      const w = Math.max(textWidth(t, s), s * 0.6) + s * 0.3;
+      const tw = Math.max(textWidth(t, s), s * 0.6);
+      if (blanks.has(name)) return <BlankBox cx={x} cy={y} textW={tw} size={s} stroke={c} />;
       return (
         <g>
           {hl > 0 ? (
             <rect
-              x={x - w / 2}
-              y={y - s * 0.62}
-              width={w}
-              height={s * 1.24}
-              rx={s * 0.22}
+              {...markRect(x, y, tw, s)}
               fill={c}
               fillOpacity={0.16 * hl}
               stroke={c}
@@ -273,8 +275,15 @@ export const splitCalcPart: PartDef = {
                 : num$(t.text, t.x, L.y0, ink)}
           </g>
         ))}
-        <g opacity={1 - k4}>{num$('?', L.tokens[4].x, L.y0, ink)}</g>
-        <g opacity={k4}>{node$('r', L.tokens[4].text, L.tokens[4].x, L.y0, accent)}</g>
+        {/* 得数的位置：要孩子答时画空框，否则先写 ? */}
+        <g opacity={blanks.has('r') ? 1 : 1 - k4}>
+          {blanks.has('r')
+            ? node$('r', L.tokens[4].text, L.tokens[4].x, L.y0, accent)
+            : num$('?', L.tokens[4].x, L.y0, ink)}
+        </g>
+        {blanks.has('r') ? null : (
+          <g opacity={k4}>{node$('r', L.tokens[4].text, L.tokens[4].x, L.y0, accent)}</g>
+        )}
 
         {/* 1 拆开 */}
         <g opacity={k1}>

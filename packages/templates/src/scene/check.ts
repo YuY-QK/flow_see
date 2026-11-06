@@ -67,10 +67,18 @@ function checkProps(
       for (const [n, c] of Object.entries(v))
         if (!colorOk(c, alive))
           out.push({ path: [...path, k, n], message: `${n} 的颜色写颜色名、#RRGGBB 或 "@零件id"` });
+    if (k === 'blank' && type === 'split-calc') {
+      const names = ['a', 'b', 'p', 'q', 'm', 'r'];
+      if (!Array.isArray(v) || v.some((n) => !names.includes(String(n))))
+        out.push({
+          path: [...path, k],
+          message: `blank 写成节点名列表，如 [q]；可用的节点：${names.join('、')}`,
+        });
+    }
     if (k === 'text' && typeof v === 'string')
       for (const m of v.matchAll(RICH)) {
         const words = m[2].trim().split(/\s+/).filter(Boolean);
-        const bad = words.find((w) => !colorOk(w, alive));
+        const bad = words.find((w) => w !== 'blank' && !colorOk(w, alive));
         if (!words.length || bad)
           out.push({
             path: [...path, k],
@@ -104,7 +112,10 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
   const lesson = {
     ...raw,
     objects: expandObjects(filled.objects, scope),
-    steps: filled.steps.map((st) => ({ ...st, do: expandActions(st.do, scope) as Record<string, unknown>[] })),
+    steps: filled.steps.map((st) => ({
+      ...st,
+      do: expandActions(st.do, scope) as Record<string, unknown>[],
+    })),
   };
   const objects = lesson.objects ?? [];
   if (!objects.length) out.push({ path: ['objects'], message: '场景模板要在 objects 里摆好零件' });

@@ -34,13 +34,13 @@ objects:
   # 长（圆周长的一半）是绿色，宽（半径）是红色：算式里的“长”“宽”“πr”“r”和它们同色
   - { id: rectbox, type: shape, shape: rect, width: 283, height: 90, at: [300, 190], color: purple, fill: false, hidden: true }
   - { id: wl, type: label, text: 长 = 圆周长的一半, at: [300, 100], color: green, hidden: true }
-  - { id: hl, type: label, text: 宽, at: [72, 190], color: red, hidden: true }
+  - { id: hl, type: label, text: 宽, at: [92, 190], color: red, hidden: true }
   - { id: rv, type: label, text: 'r = {r} 厘米', at: [110, 350], hidden: true }
   - { id: eq1, type: text, text: 'S = [长](green @wl) × [宽](red @hl)', at: [605, 100], size: 36, hidden: true }
   - { id: eq2, type: text, text: '= [πr](green @wl) × [r](red @hl)', at: [605, 160], size: 36, hidden: true }
   - { id: eq3, type: text, text: '= πr²', at: [605, 220], size: 36, hidden: true }
   - { id: num1, type: text, text: '= 3.14 × {r} × {r}', at: [605, 285], size: 32, hidden: true }
-  - { id: num2, type: text, text: '= {S}', at: [605, 340], size: 32, hidden: true }
+  - { id: num2, type: text, text: '= [{S}](blank)', at: [605, 348], size: 32, hidden: true }
 
 steps:
   - title: 提出问题
@@ -104,10 +104,10 @@ steps:
   - title: 算一算
     say: '半径 {r} 厘米，面积是 {S} 平方厘米。'
     do:
-      - show: [rv, num1]
+      - show: [rv, num1, num2] # 题里说了“半径 {r}”和算式：写出算式，只把得数画成空框
       - highlight: num1
       - ask: true
-      - show: num2
+      - set: { target: num2, text: '= {S}', duration: 0.4s } # 答对了，得数填上
       - highlight: num2
     try:
       task: '半径是 {r} 厘米，圆的面积是多少平方厘米？'

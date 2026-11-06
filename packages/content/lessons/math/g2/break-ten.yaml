@@ -63,9 +63,13 @@ steps:
   - title: 拆大数
     say: 从十位破出 1 个 10，把 {a} 拆成 {p} 和 10。
     do:
-      - show: [ten, pnum]
-      - highlight: [ten, pnum]
-      - set: { target: calc, show: 1, duration: 0.8s, together: true }
+      - show: ten # 题里说了“拆成 10 和几”：先画出破出的 10 和算式里的分叉、10，剩下的数等孩子答
+      - highlight: ten
+      - set: { target: calc, show: 1, blank: [p], duration: 0.8s, together: true }
+      - ask: true
+      - set: { target: calc, blank: [], duration: 0.5s }
+      - show: { target: pnum, together: true }
+      - highlight: pnum
     try:
       task: '{a} 拆成 10 和几？'
       choose: { answer: '{p}', min: 10, show: [calc] }
@@ -75,10 +79,12 @@ steps:
     say: 用破出的 10 减 {b}，10 减 {b} 等于 {rest}。
     do:
       - highlight: ten
+      - set: { target: calc, show: 2, blank: [m], duration: 0.8s } # 题里说了“10 减 {b}”：画出括线和减号，只空着差
+      - ask: true
+      - set: { target: calc, blank: [], duration: 0.5s }
       - split: { target: ten, take: '{b}', as: gone, offset: [0, -60] }
       - color: { target: gone, to: gray }
       - hide: { target: gone, duration: 0.6s }
-      - set: { target: calc, show: 2, duration: 0.8s }
     try:
       task: 10 减 {b} 等于几？
       choose: { answer: '{rest}', min: 1, show: [ten] }
@@ -87,9 +93,12 @@ steps:
   - title: 加剩数
     say: 剩下的 {rest} 和 {p} 合起来，是 {res}。
     do:
-      - set: { target: pnum, text: '{p} + {rest}', duration: 0.5s }
-      - set: { target: calc, show: 3, duration: 0.8s }
+      - set: { target: pnum, text: '{p} + {rest}', duration: 0.5s } # 题里说了“{p} 加 {rest}”：写出这个加式，画出括线和加号，只空着得数
+      - set: { target: calc, show: 3, blank: [r], duration: 0.8s }
       - highlight: [ten, pnum, calc]
+      - ask: true
+      - set: { target: pnum, text: '{res}', color: green, duration: 0.5s }
+      - set: { target: calc, show: 4, blank: [], duration: 1.2s, together: true } # 答对了，得数的连线出来，写出得数
     try:
       task: '{p} 加 {rest} 等于几？'
       choose: { answer: '{res}', min: 10, show: [pnum] }
@@ -98,9 +107,7 @@ steps:
   - title: 得出结果
     say: 所以 {a} 减 {b} 等于 {res}。
     do:
-      - set: { target: pnum, text: '{res}', color: green, duration: 0.5s }
-      - set: { target: calc, show: 4, duration: 1.2s }
-      - highlight: calc
+      - highlight: [pnum, calc] # 得数在上一步答对时已经写出
 
 keyPoints:
   - 个位不够减，就从十位破出 1 个 10，把大数拆成 10 和几

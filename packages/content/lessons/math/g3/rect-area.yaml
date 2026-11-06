@@ -46,7 +46,7 @@ objects:
   - { id: colbox, type: shape, shape: rect, width: 44, height: '{rh}', at: ['{x1}', '{cy}'], color: red, fill: false, hidden: true }
   - { id: lenl, type: label, text: '长 {len} 厘米', size: 22, at: ['{cx}', '{ty}'], color: blue }
   - { id: widl, type: label, text: '宽 {wid} 厘米', size: 22, at: ['{lx}', '{cy}'], color: red, rotate: -90 }
-  - { id: eq, type: text, text: '[{len}](blue @rowbox) × [{wid}](red @colbox) = {area}', at: [675, 130], size: 44, hidden: true }
+  - { id: eq, type: text, text: '[{len}](blue @rowbox) × [{wid}](red @colbox) = [{area}](blank)', at: [675, 130], size: 44, hidden: true }
   - { id: res, type: text, text: '面积 = {area} 平方厘米', at: [675, 200], size: 28, hidden: true }
 
 steps:
@@ -65,6 +65,7 @@ steps:
     do:
       - show: rowbox
       - highlight: rowbox
+      - ask: true
     try:
       task: 每行铺了几个小方格？
       choose: { answer: '{len}', min: 1, show: [grid] }
@@ -76,6 +77,7 @@ steps:
       - hide: rowbox
       - show: colbox
       - highlight: colbox
+      - ask: true
     try:
       task: 一共铺了几行？
       choose: { answer: '{wid}', min: 1, show: [grid] }
@@ -85,8 +87,10 @@ steps:
     say: 每行 {len} 个，{wid} 行：{len} × {wid} = {area} 个。
     do:
       - hide: colbox
-      - show: eq
+      - show: eq # 题里说了“{len} × {wid}”：写出算式，只把得数画成空框
       - highlight: eq
+      - ask: true
+      - set: { target: eq, text: '[{len}](blue @rowbox) × [{wid}](red @colbox) = {area}', duration: 0.4s } # 答对了，得数填上
     try:
       task: '{len} × {wid} 等于几？'
       choose: { answer: '{area}', min: 1, show: [grid] }

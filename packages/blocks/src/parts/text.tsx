@@ -4,6 +4,8 @@
 // 而且 r1 高亮时这几个字也一起亮起来（底下衬一块同色的底）；两样都要时写 [3](red @rows)。
 import type { Theme } from '@flow-see/core';
 import { boxAround, color, num, pt, str, textWidth, type PartDef, type Props } from '../base';
+import { BlankBox } from './mark';
+import { markRect } from './markRect';
 
 const RICH = /\[([^\]]*)\]\(([^)]*)\)/g;
 
@@ -28,6 +30,8 @@ interface Span {
   color?: string;
   /** 跟着哪个零件（颜色、高亮） */
   link?: string;
+  /** 要孩子答的数：不写字，画成同宽的虚线空框（颜色标记写 blank） */
+  blank?: boolean;
 }
 
 /** 把文字按颜色标记切成几段 */
@@ -38,8 +42,9 @@ export function richSpans(text: string): Span[] {
     if (m.index > last) out.push({ text: text.slice(last, m.index) });
     const words = m[2].trim().split(/\s+/);
     const link = words.find((w) => w.startsWith('@'))?.slice(1);
-    const c = words.find((w) => !w.startsWith('@'));
-    out.push({ text: m[1], color: c, link });
+    const blank = words.includes('blank');
+    const c = words.find((w) => !w.startsWith('@') && w !== 'blank');
+    out.push({ text: m[1], color: c, link, blank });
     last = m.index + m[0].length;
   }
   if (last < text.length) out.push({ text: text.slice(last) });
@@ -51,7 +56,8 @@ type Refs = Record<string, { color?: unknown; highlight?: number }>;
 
 /**
  * 带颜色标记的一行文字（以 (x, y) 为中心）。被引用的零件高亮时，对应的字底下衬一块同色的底。
- * 每段的宽度按 textWidth 估算（和包围盒一致），底色块的位置也按它算。
+ * 每段的宽度按 textWidth 估算（和包围盒一致）；每一段单独居中画在自己估算出的中心，
+ * 所以底块一定和字对齐，不受真实字体宽度和估算有出入的影响。
  */
 function RichLine({
   p,
@@ -72,58 +78,61 @@ function RichLine({
 }) {
   const spans = richSpans(rawText(p));
   const refs = (p.refs ?? {}) as Refs;
-  const total = spans.reduce((w, sp) => w + textWidth(sp.text, size), 0);
+  const widths = spans.map((sp) => textWidth(sp.text, size));
+  const total = widths.reduce((w, v) => w + v, 0);
   // 每段的起点：前面各段宽度之和（纯计算，不在渲染里改变量）
-  const starts = spans.map((_, i) =>
-    spans.slice(0, i).reduce((w, sp) => w + textWidth(sp.text, size), x - total / 2),
-  );
-  const marks: { x: number; w: number; c: string; hl: number }[] = [];
+  const starts = widths.map((_, i) => widths.slice(0, i).reduce((w, v) => w + v, x - total / 2));
   const parts = spans.map((sp, i) => {
     const ref = sp.link ? refs[sp.link] : undefined;
     const c = sp.color ? color(sp.color, theme) : ref?.color ? color(ref.color, theme) : fill;
-    const w = textWidth(sp.text, size);
-    const hl = Math.max(0, Math.min(1, ref?.highlight ?? 0));
-    if (hl > 0 && sp.text.trim()) marks.push({ x: starts[i], w, c, hl });
-    return { text: sp.text, c, styled: !!(sp.color || sp.link) };
+    // 段首段尾的空格：SVG 会把它们吃掉，所以按去掉空格的字来定中心
+    const body = sp.text.trim();
+    const lead = textWidth(sp.text.slice(0, sp.text.length - sp.text.trimStart().length), size);
+    const bw = textWidth(body, size);
+    return {
+      body,
+      c,
+      cx: starts[i] + lead + bw / 2,
+      bw,
+      hl: Math.max(0, Math.min(1, ref?.highlight ?? 0)),
+      blank: !!sp.blank,
+    };
   });
-  const pad = size * 0.14;
+  const hlWidth = Math.max(2, size / 16);
   return (
     <g>
-      {marks.map((m, i) => (
-        <rect
-          key={i}
-          x={m.x - pad}
-          y={y - size * 0.62}
-          width={m.w + pad * 2}
-          height={size * 1.24}
-          rx={size * 0.22}
-          fill={m.c}
-          fillOpacity={0.16 * m.hl}
-          stroke={m.c}
-          strokeOpacity={m.hl}
-          strokeWidth={Math.max(2, size / 16)}
-        />
-      ))}
-      <text
-        x={x}
-        y={y}
-        textAnchor="middle"
-        dominantBaseline="central"
-        fontSize={size}
-        fontWeight={weight}
-        fill={fill}
-        style={{ fontVariantNumeric: 'tabular-nums' }}
-      >
-        {parts.map((sp, i) =>
-          sp.styled ? (
-            <tspan key={i} fill={sp.c}>
-              {sp.text}
-            </tspan>
-          ) : (
-            sp.text
-          ),
-        )}
-      </text>
+      {parts.map((sp, i) =>
+        sp.blank ? (
+          <BlankBox key={i} cx={sp.cx} cy={y} textW={sp.bw} size={size} stroke={sp.c} />
+        ) : sp.hl > 0 && sp.body ? (
+          <rect
+            key={i}
+            {...markRect(sp.cx, y, sp.bw, size)}
+            fill={sp.c}
+            fillOpacity={0.16 * sp.hl}
+            stroke={sp.c}
+            strokeOpacity={sp.hl}
+            strokeWidth={hlWidth}
+          />
+        ) : null,
+      )}
+      {parts.map((sp, i) =>
+        sp.body && !sp.blank ? (
+          <text
+            key={i}
+            x={sp.cx}
+            y={y}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize={size}
+            fontWeight={weight}
+            fill={sp.c}
+            style={{ fontVariantNumeric: 'tabular-nums' }}
+          >
+            {sp.body}
+          </text>
+        ) : null,
+      )}
     </g>
   );
 }

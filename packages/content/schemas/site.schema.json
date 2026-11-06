@@ -286,9 +286,15 @@
         "highlight": {
           "type": "object",
           "properties": {
-            "padding": {
+            "padX": {
               "type": "number",
-              "minimum": 0
+              "minimum": 0,
+              "description": "高亮框比零件包围盒横向外扩多少（舞台坐标）"
+            },
+            "padY": {
+              "type": "number",
+              "minimum": 0,
+              "description": "高亮框纵向外扩多少（舞台坐标）"
             },
             "strokeWidth": {
               "type": "number",
@@ -302,15 +308,150 @@
             "dash": {
               "type": "string",
               "description": "虚线样式，如 \"10 6\""
+            },
+            "markPadX": {
+              "type": "number",
+              "minimum": 0,
+              "description": "颜色标记底块：左右各比字宽多出字号的几倍"
+            },
+            "markPadY": {
+              "type": "number",
+              "minimum": 0,
+              "description": "颜色标记底块：上下各比字高（= 字号）多出字号的几倍"
+            },
+            "markRadius": {
+              "type": "number",
+              "minimum": 0,
+              "description": "颜色标记底块的圆角（字号的几倍）"
             }
           },
           "required": [
-            "padding",
+            "padX",
+            "padY",
             "strokeWidth",
             "fillOpacity",
-            "dash"
+            "dash",
+            "markPadX",
+            "markPadY",
+            "markRadius"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "高亮框和颜色标记底块的统一间距"
+        },
+        "textMetrics": {
+          "type": "object",
+          "properties": {
+            "digit": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "数字的宽度（字号的倍数）"
+            },
+            "latin": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "拉丁字母和其他半角符号"
+            },
+            "space": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "空格"
+            },
+            "operator": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "运算符 + − × ÷ = 等"
+            },
+            "wide": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "汉字和全角符号"
+            }
+          },
+          "required": [
+            "digit",
+            "latin",
+            "space",
+            "operator",
+            "wide"
+          ],
+          "additionalProperties": false,
+          "description": "文字宽度估算：按最宽的动画主题字体取值，宁宽勿窄"
+        },
+        "fit": {
+          "type": "object",
+          "properties": {
+            "phone": {
+              "type": "boolean",
+              "description": "手机上舞台是否贴合内容（画面范围收到所有零件的包围盒并集）"
+            },
+            "margin": {
+              "type": "number",
+              "minimum": 0,
+              "description": "包围盒外再留多少（舞台坐标）"
+            },
+            "topPx": {
+              "type": "number",
+              "minimum": 0,
+              "description": "顶部给左上角的“时长 · 第几步”留的高度（像素）"
+            },
+            "minRatio": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "贴合后宽高比（宽 ÷ 高）的下限"
+            }
+          },
+          "required": [
+            "phone",
+            "margin",
+            "topPx",
+            "minRatio"
+          ],
+          "additionalProperties": false,
+          "description": "手机上舞台贴合内容：电脑、iPad 不变"
+        },
+        "blank": {
+          "type": "object",
+          "properties": {
+            "strokeWidth": {
+              "type": "number",
+              "minimum": 0
+            },
+            "dash": {
+              "type": "string",
+              "description": "虚线样式，如 \"7 5\""
+            },
+            "fillOpacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "minOpacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "闪烁时最淡的透明度"
+            },
+            "seconds": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "闪一次的时长（秒）"
+            },
+            "padX": {
+              "type": "number",
+              "minimum": 0,
+              "description": "空框比字宽多出字号的几倍（左右各）"
+            }
+          },
+          "required": [
+            "strokeWidth",
+            "dash",
+            "fillOpacity",
+            "minOpacity",
+            "seconds",
+            "padX"
+          ],
+          "additionalProperties": false,
+          "description": "要孩子答的那个数：画成虚线空框并缓慢闪烁，答对后才填上"
         },
         "actionSeconds": {
           "type": "object",
@@ -447,6 +588,9 @@
         "stage",
         "colors",
         "highlight",
+        "textMetrics",
+        "fit",
+        "blank",
         "actionSeconds",
         "splitLift",
         "tenframeGap",
@@ -569,6 +713,39 @@
           ],
           "additionalProperties": false,
           "description": "动手做：跟着做 / 自己做"
+        },
+        "toolbar": {
+          "type": "object",
+          "properties": {
+            "closeOnPick": {
+              "type": "boolean",
+              "description": "点了某个功能后是否自动收起舞台底部的工具条"
+            }
+          },
+          "required": [
+            "closeOnPick"
+          ],
+          "additionalProperties": false,
+          "description": "舞台底部的工具条"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "openOnEnter": {
+              "type": "boolean",
+              "description": "进入自己做时，出题参数面板是否默认展开"
+            },
+            "closeOnStart": {
+              "type": "boolean",
+              "description": "孩子开始作答后是否自动收起参数面板"
+            }
+          },
+          "required": [
+            "openOnEnter",
+            "closeOnStart"
+          ],
+          "additionalProperties": false,
+          "description": "自己做时舞台上方的出题参数面板"
         }
       },
       "required": [
@@ -578,7 +755,9 @@
         "dwell",
         "afterSpeech",
         "maxFrameMs",
-        "handsOn"
+        "handsOn",
+        "toolbar",
+        "params"
       ],
       "additionalProperties": false
     },

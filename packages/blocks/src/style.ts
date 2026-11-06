@@ -6,8 +6,30 @@ export interface SceneStyle {
   stage: { width: number; height: number };
   /** 配置里可以直接写的颜色名 → #RRGGBB */
   colors: Record<string, string>;
-  /** 高亮框 */
-  highlight: { padding: number; strokeWidth: number; fillOpacity: number; dash: string };
+  /** 高亮框和颜色标记底块的统一间距（横向、纵向分开；底块的单位是字号的倍数） */
+  highlight: {
+    padX: number;
+    padY: number;
+    strokeWidth: number;
+    fillOpacity: number;
+    dash: string;
+    markPadX: number;
+    markPadY: number;
+    markRadius: number;
+  };
+  /** 文字宽度估算：各类字符的宽度（字号的倍数） */
+  textMetrics: { digit: number; latin: number; space: number; operator: number; wide: number };
+  /** 手机上舞台贴合内容 */
+  fit: { phone: boolean; margin: number; topPx: number; minRatio: number };
+  /** 要孩子答的数：虚线空框和闪烁 */
+  blank: {
+    strokeWidth: number;
+    dash: string;
+    fillOpacity: number;
+    minOpacity: number;
+    seconds: number;
+    padX: number;
+  };
   /** 各动作没写 duration 时的默认时长（秒） */
   actionSeconds: Record<string, number>;
   /** 拆分出来的计数块默认往上抬多少（相对格子大小） */

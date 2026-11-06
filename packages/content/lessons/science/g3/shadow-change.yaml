@@ -42,6 +42,7 @@ steps:
     say: 上午 {h0} 时，太阳在东边，位置低，影子又长又朝西。
     do:
       - highlight: sun
+      - ask: true
     try:
       task: 上午的影子，朝哪个方向？
       choose: { answer: 西, options: [西, 东, 南], show: [sun] }
@@ -56,6 +57,7 @@ steps:
     say: 中午 12 时，太阳最高，影子最短，朝北。
     do:
       - highlight: sun
+      - ask: true
     try:
       task: 中午的影子，比上午的怎样？
       choose: { answer: 更短, options: [更短, 更长, 一样长], show: [sun] }
@@ -70,6 +72,7 @@ steps:
     say: 下午 {h2} 时，太阳在西边，影子又长又朝东。
     do:
       - highlight: sun
+      - ask: true
     try:
       task: 下午的影子，朝哪个方向？
       choose: { answer: 东, options: [东, 西, 北], show: [sun] }

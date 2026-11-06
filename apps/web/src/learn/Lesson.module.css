@@ -39,50 +39,18 @@
 }
 .stageBox {
   position: relative;
+  overflow: hidden; /* 工具条、参数面板滑入滑出时不超出舞台 */
+  border-radius: var(--radius-lg);
 }
 .stageSvg {
   width: 100%;
   height: 100%;
 }
-/* 自己做：右边是出题控件，画面在它左边 */
-.stage[data-side='true'] {
-  display: flex;
-  gap: 8px;
-}
-.stage[data-side='true'] .stageSvg {
-  flex: 1 1 0;
-  min-width: 0;
-}
-.cornerLeft {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 1;
-}
-.demoBtn {
-  min-height: 28px;
-  padding: 0 12px;
-  border-radius: 999px;
-  border: 1px solid var(--primary);
-  background: var(--surface);
-  color: var(--primary);
-  font-size: var(--fs-sm);
-  font-weight: 600;
-}
-.demoBtn:hover {
-  background: var(--primary-soft);
-}
-.sayActions {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-  padding-top: 2px;
-}
-/* 动画区域右上角：时长、步数；右下角的工具扇形菜单见 ToolFan */
+/* 动画区域左上角：完成状态图标在前，时长和第几步在后；底部工具条见 StageToolbar，上方参数面板见 StageControls */
 .cornerTop {
   position: absolute;
   top: 12px;
-  right: 12px;
+  left: 12px;
   z-index: 1;
   display: flex;
   align-items: center;
@@ -130,8 +98,8 @@
 .captionIcon {
   border: 0;
   padding: 0;
-  width: 40px;
-  height: 40px;
+  width: calc(40px * var(--ui));
+  height: calc(40px * var(--ui));
   flex-shrink: 0;
   border-radius: 12px;
   background: var(--hover);
@@ -139,6 +107,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.captionIcon svg {
+  width: calc(20px * var(--ui));
+  height: calc(20px * var(--ui));
 }
 .captionIcon:is(button):hover {
   background: var(--primary-soft);
@@ -167,8 +139,8 @@
 .badge {
   position: relative;
   flex-shrink: 0;
-  width: 22px;
-  height: 22px;
+  width: calc(22px * var(--ui));
+  height: calc(22px * var(--ui));
   border-radius: 50%;
   border: 0;
   padding: 0;
@@ -177,6 +149,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.badge svg {
+  width: 100%;
+  height: 100%;
+}
+.badge[data-done='true'] svg {
+  width: 60%;
+  height: 60%;
 }
 .badge[data-done='true'] {
   background: var(--success);
@@ -217,10 +197,14 @@
   align-items: center;
   gap: 8px;
 }
+/* 上一步、播放、下一步：电脑上和别的控件排在同一行，手机上单独居中（见下面的手机样式） */
+.transport {
+  display: contents;
+}
 .ctrl {
   min-width: var(--touch, 44px);
   height: var(--touch, 44px);
-  padding: 0 10px;
+  padding: 0 calc(10px * var(--ui));
   border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--surface);
@@ -243,11 +227,15 @@
   background: var(--primary-soft);
 }
 .speed {
-  min-width: 60px;
+  min-width: calc(60px * var(--ui));
+}
+.ctrl svg {
+  width: calc(20px * var(--ui));
+  height: calc(20px * var(--ui));
 }
 .play {
-  width: 56px;
-  height: 56px;
+  width: calc(56px * var(--ui));
+  height: calc(56px * var(--ui));
   border-radius: 50%;
   border: none;
   background: var(--primary);
@@ -256,6 +244,10 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+.play svg {
+  width: calc(24px * var(--ui));
+  height: calc(24px * var(--ui));
 }
 .play:hover {
   background: var(--primary-hover);
@@ -464,30 +456,65 @@
 }
 
 @media (max-width: 767px) {
+  /* 手机：页面左右留 --gutter，舞台贴边（抵消页面的左右边距），字幕和控制条照常留边 */
+  .lessonMain {
+    --gutter: 12px;
+    padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
+    padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
+    gap: 10px;
+  }
+  .player[data-full='false'] .stageBox {
+    margin-left: calc(-1 * max(var(--gutter), env(safe-area-inset-left, 0px)));
+    margin-right: calc(-1 * max(var(--gutter), env(safe-area-inset-right, 0px)));
+    border-radius: 0;
+  }
+  .player[data-full='false'] .stage {
+    border-left-width: 0;
+    border-right-width: 0;
+    border-radius: 0;
+    padding: 4px;
+  }
   .cornerTop {
     top: 6px;
-    right: 6px;
+    left: 8px;
   }
   .stageMeta {
     padding: 1px 8px;
     font-size: var(--fs-xs);
   }
 
-  /* 手机：进度条在上，播放、上一步、下一步居中放在它下面 */
+  /* 手机：进度条在上一行；下一行用三列网格，上一步 / 播放 / 下一步在正中，播放速度靠右 */
   .controls {
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
     gap: 6px 10px;
   }
   .track {
-    order: -1;
-    flex-basis: 100%;
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  .transport {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .speed {
+    grid-column: 3;
+    grid-row: 2;
+    justify-self: end;
   }
   .say {
     font-size: var(--fs-xl);
   }
   .caption[data-large='true'] .say {
     font-size: var(--fs-4xl);
+  }
+  .caption {
+    padding: 8px 10px;
+    gap: 8px;
   }
   .nav {
     grid-template-columns: 1fr;
@@ -507,7 +534,7 @@
 }
 .mode {
   min-height: var(--touch, 44px);
-  padding: 0 18px;
+  padding: 0 calc(18px * var(--ui));
   border-radius: 999px;
   border: 0;
   background: transparent;
@@ -522,7 +549,7 @@
 }
 .yourTurn {
   display: inline-block;
-  margin-right: 8px;
+  margin-left: 8px;
   padding: 2px 10px;
   border-radius: 999px;
   background: var(--primary);
@@ -572,9 +599,9 @@
 }
 /* 选项依次淡入、轻轻上浮，不突然蹦出来 */
 .option {
-  min-width: 64px;
+  min-width: calc(64px * var(--ui));
   min-height: var(--touch, 44px);
-  padding: 0 18px;
+  padding: 0 calc(18px * var(--ui));
   border-radius: 12px;
   border: 2px solid var(--border-strong);
   background: var(--surface);
@@ -621,13 +648,7 @@
     animation: none;
   }
 }
-/* 字幕框里的小按钮（看我做一遍、换一题）：和讲解文字第一行顶部对齐 */
-.capBtn {
-  min-height: 32px;
-  padding: 0 12px;
-  font-size: var(--fs-sm);
-  white-space: nowrap;
-}
+
 .nextMode {
   width: 100%;
   max-width: 1000px;
@@ -647,34 +668,12 @@
   flex: 1 1 220px;
 }
 
+.titleRow svg {
+  width: calc(22px * var(--ui));
+  height: calc(22px * var(--ui));
+}
 @media (max-width: 767px) {
   .mode {
-    padding: 0 12px;
-    font-size: var(--fs-md);
-  }
-}
-
-@media (max-width: 767px) {
-  /* 自己做：右侧控件要放得下，舞台在手机上比平时高一些，画面在里面垂直居中 */
-  .stage[data-side='true'] {
-    aspect-ratio: auto;
-    height: 214px;
-  }
-  .cornerLeft {
-    top: 6px;
-    left: 6px;
-  }
-  .demoBtn {
-    min-height: 24px;
-    padding: 0 10px;
-    font-size: var(--fs-xs);
-  }
-  .sayRow {
-    flex-wrap: wrap;
-  }
-  .sayActions {
-    max-width: none;
-    width: 100%;
-    justify-content: flex-end;
+    padding: 0 calc(12px * var(--ui));
   }
 }

@@ -3,12 +3,14 @@ import { sceneStyle } from '@flow-see/blocks';
 import { createAnimation, createStep, t } from '@flow-see/core';
 import type { Template } from '@flow-see/runtime/template.ts';
 import { checkScene } from './check';
+import { sceneViewBox } from './box';
 import { stepMotionMs } from './evaluate';
 import { sceneOf } from './scene';
 import { SceneStage } from './stage';
 
 export { VERBS, parseDuration, planStep } from './actions';
 export { checkScene } from './check';
+export { contentBox, fitBox, sceneViewBox } from './box';
 export { coveredActions, dragFrame, sceneFrame, stepMotionMs, type SceneDef } from './evaluate';
 export { sceneOf, triesOf } from './scene';
 export { makeSceneStage } from './stage';
@@ -54,6 +56,8 @@ export const sceneTemplate: Template = {
   },
 
   Stage: SceneStage,
+
+  viewBox: sceneViewBox,
 
   motionMs(animation, index, phase) {
     return stepMotionMs(sceneOf(animation), index, phase);

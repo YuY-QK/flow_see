@@ -23,6 +23,14 @@ export interface FieldDef {
   maxCount?: number;
 }
 
+/** 画面范围（舞台坐标） */
+export interface ViewBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export interface StageProps {
   animation: Animation;
   /** 当前播放到第几步（从 0 开始） */
@@ -37,6 +45,8 @@ export interface StageProps {
   progress?: number;
   /** 动手做（跟着做 / 自己做）：这一步由孩子来做；不传时照常播放 */
   tryIt?: StageTry;
+  /** 画面范围：不传时是整个舞台。手机上贴合内容时由播放器传入（见 Template.viewBox） */
+  viewBox?: ViewBox;
 }
 
 /** 动手做的配置（知识点步骤里的 try，已代入参数） */
@@ -119,6 +129,11 @@ export interface Template {
   /** 新增一步时的默认值，可参考上一步 */
   newStep(animation: Animation, prev?: Step): Partial<Step>;
   Stage: ComponentType<StageProps>;
+  /**
+   * 手机上舞台贴合内容：所有步骤里所有零件包围盒的并集（加边距）。
+   * 没有或返回 undefined 时用整个舞台；只有场景类模板需要（site.yaml 的 scene.fit）。
+   */
+  viewBox?(animation: Animation): ViewBox | undefined;
   /**
    * 连续时间模型：第 index 步动画段的时长（毫秒，按 1 倍速）。
    * 没有或返回 0 时，这一步没有动画段，进入即是完整画面。

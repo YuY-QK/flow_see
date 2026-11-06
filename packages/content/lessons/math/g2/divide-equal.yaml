@@ -40,7 +40,7 @@ presets:
   - { label: 18 ÷ 3, params: { per: 6 } }
 
 objects:
-  - { id: pool, type: counters, count: '{total}', layout: grid, cols: '{pcols}', size: 40, at: ['{px}', 20], color: orange }
+  - { id: pool, type: counters, count: '{total}', layout: grid, cols: '{pcols}', size: 40, at: ['{px}', 32], color: orange }
   - { id: pl1, type: counters, count: 0, layout: grid, cols: '{cols}', capacity: '{per}', size: 40, at: ['{x1}', 160], color: orange }
   - { id: pl2, type: counters, count: 0, layout: grid, cols: '{cols}', capacity: '{per}', size: 40, at: ['{x2}', 160], color: orange }
   - { id: pl3, type: counters, count: 0, layout: grid, cols: '{cols}', capacity: '{per}', size: 40, at: ['{x3}', 160], color: orange }
@@ -107,6 +107,7 @@ steps:
     say: 每个盘子里都有一样多。
     do:
       - highlight: { target: [pl1, pl2, pl3], color: red }
+      - ask: true
     try:
       task: 每个盘子里有几个圆片？
       choose: { answer: '{per}', min: 1, show: [pl1, pl2, pl3] }

@@ -116,11 +116,18 @@ export function mixColor(a: string, b: string, t: number): string {
 
 /* ───────────── 文字宽度估算（不依赖浏览器排版，导出和测试都能用） ───────────── */
 
+/** 字符属于哪一类（宽度系数见 site.yaml 的 scene.textMetrics） */
+function charKind(ch: string): 'digit' | 'latin' | 'space' | 'operator' | 'wide' {
+  if (/[0-9]/.test(ch)) return 'digit';
+  if (ch === ' ') return 'space';
+  if (/[+\-−×÷=<>*/·%]/.test(ch)) return 'operator';
+  return ch.charCodeAt(0) < 0x100 ? 'latin' : 'wide';
+}
+
 export function textWidth(text: string, size: number): number {
+  const m = sceneStyle().textMetrics;
   let w = 0;
-  // 数字 0.58、空格 0.3、其他半角字符 0.55、汉字 1（粗体无衬线字体的实际宽度，颜色标记的底块靠它对齐）
-  for (const ch of text)
-    w += ch.charCodeAt(0) < 0x100 ? (/[0-9]/.test(ch) ? 0.58 : ch === ' ' ? 0.3 : 0.55) : 1;
+  for (const ch of text) w += m[charKind(ch)];
   return w * size;
 }
 
