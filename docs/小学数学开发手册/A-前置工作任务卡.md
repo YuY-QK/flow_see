@@ -785,7 +785,7 @@ steps:
 
 **改动文件**：`TrySpec.sort?: { from: string; by: string; bins: Record<string, string> }`；schema；check（`from` 是 item-set；每个物品 `tags[by]` 都在 `bins` 里；筐零件存在）；`evaluate.ts` 新增 `sortFrame()`（类似 `dragFrame`：已放好的物品画在筐里，按筐内顺序排成网格，每行 `floor(筐宽 / 物品格子)` 个）；SceneView 拖动（复用 drag 的指针处理：拖起放大 `liftScale`、`touch-action: none`）；LessonPlayer 判定；`texts.yaml` 的 `try.sort_wrong`；纯函数 `sortResult` 放 `core/src/sort.ts`；`scene.md`；规格 P3。
 
-**判定**：放进的筐 = 物品类别对应的筐 → 留下；否则弹回、做错一次；全部放完 → 做对。`do` 里对应的标准做法：知识点用 `move` 把每个物品移到筐里（或 E1/F5 的 repeat）；“看我做一遍”时按 `bins` 依次放。
+**判定**：落点属于哪个筐：落点在筐的包围盒内（外扩 `scene.tryIt.dropPadding`）；多个筐嵌套时取包含落点的面积最小的那个。放进的筐 = 物品类别对应的筐 → 留下；否则弹回、做错一次；全部放完 → 做对。`do` 里对应的标准做法：知识点用 `move` 把每个物品移到筐里（或 E1/F5 的 repeat）；“看我做一遍”时按 `bins` 依次放。
 
 **测试**：`sortResult` 全对、放错、部分完成；`sortFrame` 中物品在筐里的位置。
 
