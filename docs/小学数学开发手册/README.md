@@ -172,3 +172,25 @@ C 文件里每个知识点一节，格式固定。写配置的人把它**逐项�
 - 颜色未写时按 README 4.2 的语义：第一个数 blue、第二个数 orange、结果 green。
 - 每个知识点的 `status` 先写 `draft`；走查（F10）和自校（开发文档 8.1）通过后改 `reviewed`、`published`。
 - 脚本里如果发现数学错误或者零件做不到的写法：**停下报告**，不要自己改讲法。
+
+---
+
+## 7. 素材清单（C 脚本里用到的全部图片素材）
+
+> 规则见开发文档 5.6：SVG，同一类画风一致，登记在 `packages/content/assets/manifest.yaml`（来源、作者 / 工具、许可证），放在 `packages/content/assets/math/<类别>/`，素材 id = 下表的名字。**在用到它的知识点开工前做好**；`sun` 已有（科学用过），直接复用。人民币不用素材（`money` 零件画）。
+
+| 类别 | 素材 id | 用在 |
+|---|---|---|
+| 水果 | apple、pear、peach、banana、strawberry | count-to-10、classify-count、pictograph、data-collect-1 |
+| 小动物 | rabbit、cat、dog、chick、duck、monkey、bear、squirrel | cardinal-ordinal、compare-size-weight |
+| 人物 | kid（坐着的小朋友，小）、kid-walk、kid-seat、kid-front、kid-back、kid-left、kid-right（四个方向观察的小朋友）、boy、girl（行走侧面） | continuous-add-sub、route-description、coordinate-pairs、observe-directions、meeting-problem、review-word-problems |
+| 生活物品 | gift-box、cube-toy、can、ball（立体图形实物）、tri-block（三棱柱积木）、toy-car、schoolbag、pencil-box、pencil、basketball、stone、paperclip、set-square（三角尺） | solids-intro、shapes-2d-intro、money-shopping-1/2、measure-length、clock-direction、volume-meaning、gram-kilogram、angle-intro |
+| 质量 | rice-bag（100 千克大米袋）、salt-bag（500 克盐袋）、weight-1g（1 克砝码） | ton、gram-kilogram |
+| 交通与场景 | bus、truck、playground-track（400 米跑道）、map-two-cities（虚构两城地图，带比例尺位置留白）、lighthouse | continuous-add-sub、ton、length-units、map-scale、direction-distance |
+| 地点图标 | home、school、shop、park、library、hospital、zoo、cinema、museum | route-description、directions-8 |
+| 观察物体 | car-top（玩具车俯视）、car-view-front、car-view-back、car-view-left、car-view-right、car-view-top | observe-directions |
+| 图形卡片 | para-a、para-b（平行四边形）、trap-a、trap-b（梯形）、rect、square、quad（一般四边形）、tri-acute-a、tri-acute-b、tri-right-a、tri-right-b、tri-obtuse-a、tri-obtuse-b | parallelogram-trapezoid、triangle-classify、review-shapes-relations |
+| 其他 | leaf（树叶，轮廓清楚）、ant（小蚂蚁，做 path 的 marker）、fist-months（拳头记大月小月示意图） | perimeter-meaning、year-month-day |
+
+- 图形卡片（para-a 等）是“画在卡片上的几何图形”，用于分类拖放；几何形状必须准确（平行四边形两组对边严格平行，梯形只有一组），每张卡片 100 × 100，图形居中。
+- 观察物体的五个视图必须和 car-top 是同一辆车（颜色、车型一致）。
