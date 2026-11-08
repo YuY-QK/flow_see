@@ -42,6 +42,10 @@
   --warning: #c25a00;
   --mark: #ffc53d;
   --scrim: rgba(31, 36, 51, 0.4);
+  /* 手机上舞台里的浮动按钮（菜单、齿轮）：平时几乎透明、不挡画面；按下、展开时恢复实色 */
+  --fab-idle-opacity: 0.35;
+  --fab-fade: 0.3s; /* 淡入淡出时长 */
+  --fab-idle-delay: 1.5s; /* 收起后过多久再淡回去 */
 
   /* 阴影 */
   --shadow-card: 0 10px 28px rgba(31, 36, 51, 0.08);

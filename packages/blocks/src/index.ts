@@ -13,6 +13,7 @@ import {
   numberlinePart,
 } from './parts/math';
 import { arrowPart, imagePart, linePart, shapePart } from './parts/shapes';
+import { arcPart } from './parts/arc';
 import { circleCutPart } from './parts/circlecut';
 import { columnCalcPart } from './parts/columncalc';
 import { batteryPart, bulbPart, switchPart, wirePart } from './parts/circuit';
@@ -41,6 +42,7 @@ export {
   parseClockTime,
   type Hop,
 } from './parts/math';
+export { arcLayout, arcPoint } from './parts/arc';
 export { SHAPE_KINDS } from './parts/shapes';
 export { displayText, richSpans } from './parts/text';
 export { blankRect, markRect } from './parts/markRect';
@@ -75,6 +77,7 @@ export const PARTS: readonly PartDef[] = [
   shapePart,
   linePart,
   arrowPart,
+  arcPart,
   imagePart,
   splitCalcPart,
   columnCalcPart,

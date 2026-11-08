@@ -116,6 +116,7 @@ scene:
     shape: { shape: rect, width: 160, height: 100, radius: 70, angle: 90, color: blue }
     line: { color: ink, width: 4, draw: 1 }
     arrow: { color: ink, width: 4, draw: 1 }
+    arc: { radius: 100, start: 0, end: 90, color: ink, width: 4, draw: 1, arrow: true }   # 圆弧/弧形箭头：角度（度）从正上方起顺时针；draw 0–1 从起点画出多少；arrow: false 不画箭头
     image: { width: 160, height: 160 }
     circle-cut: { radius: 100, parts: 1, t: 0, color: blue, color2: orange }
     particles: { width: 300, height: 260, radius: 9, count: 36, phase: 0, t: 0, color: blue }
