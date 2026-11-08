@@ -12,29 +12,33 @@ tags: [种子, 发芽, 萌发, 植物的一生, 幼苗, 开花, 结果, 植物]
 cover: { step: 7, text: 植物的一生 }
 
 template: scene
-stage: { width: 800, height: 395 }
+# 圆形循环：圆心 (400, 265)、半径 200，5 张图从正上方起顺时针每隔 72° 一张（种子 0°、发芽 72°、幼苗 144°、开花 216°、结果 288°）。
+# 图片中心 = (400 + 200·sinθ, 265 − 200·cosθ)；相邻两张图之间的弧形箭头在圆周上，各留 24° 的间隙给图片（θ+24° → θ+48°）。
+# 圆心空着：发芽条件只有种子一张图时放在这里，最后一步放“种子又能长成新的植物”。
+stage: { width: 800, height: 540 }
 
 objects:
-  - { id: cond1, type: label, text: 水分, at: [230, 40], hidden: true }
-  - { id: cond2, type: label, text: 空气, at: [400, 40], hidden: true }
-  - { id: cond3, type: label, text: 适宜的温度, at: [590, 40], hidden: true }
-  - { id: no, type: label, text: 阳光、土壤：多数种子不一定需要, color: gray, at: [400, 116], hidden: true }
-  - { id: i1, type: image, asset: plant-seed, width: 130, height: 130, at: [100, 200] }
-  - { id: i2, type: image, asset: plant-sprout, width: 130, height: 130, at: [250, 200], hidden: true }
-  - { id: i3, type: image, asset: plant-seedling, width: 130, height: 130, at: [400, 200], hidden: true }
-  - { id: i4, type: image, asset: plant-flower, width: 130, height: 130, at: [550, 200], hidden: true }
-  - { id: i5, type: image, asset: plant-fruit, width: 130, height: 130, at: [700, 200], hidden: true }
-  - { id: a1, type: arrow, from: [172, 200], to: [192, 200], width: 4, hidden: true }
-  - { id: a2, type: arrow, from: [322, 200], to: [342, 200], width: 4, hidden: true }
-  - { id: a3, type: arrow, from: [472, 200], to: [492, 200], width: 4, hidden: true }
-  - { id: a4, type: arrow, from: [622, 200], to: [642, 200], width: 4, hidden: true }
-  - { id: t1, type: text, text: 种子, size: 30, at: [100, 308] }
-  - { id: t2, type: text, text: 发芽, size: 30, at: [250, 308], hidden: true }
-  - { id: t3, type: text, text: 幼苗, size: 30, at: [400, 308], hidden: true }
-  - { id: t4, type: text, text: 开花, size: 30, at: [550, 308], hidden: true }
-  - { id: t5, type: text, text: 结果, size: 30, at: [700, 308], hidden: true }
-  - { id: back, type: arrow, from: [700, 358], to: [110, 358], width: 4, color: green, draw: 0, hidden: true }
-  - { id: backl, type: label, text: 种子又能长成新的植物, color: green, at: [400, 358], hidden: true }
+  - { id: cond1, type: label, text: 水分, size: 22, at: [400, 197], hidden: true }
+  - { id: cond2, type: label, text: 空气, size: 22, at: [400, 245], hidden: true }
+  - { id: cond3, type: label, text: 适宜的温度, size: 22, at: [400, 293], hidden: true }
+  - { id: no, type: label, text: 阳光、土壤：多数种子不一定需要, size: 22, color: gray, at: [400, 340], hidden: true }
+  - { id: i1, type: image, asset: plant-seed, width: 120, height: 120, at: [400, 65] }
+  - { id: i2, type: image, asset: plant-sprout, width: 120, height: 120, at: [590, 203], hidden: true }
+  - { id: i3, type: image, asset: plant-seedling, width: 120, height: 120, at: [518, 427], hidden: true }
+  - { id: i4, type: image, asset: plant-flower, width: 120, height: 120, at: [282, 427], hidden: true }
+  - { id: i5, type: image, asset: plant-fruit, width: 120, height: 120, at: [210, 203], hidden: true }
+  - { id: a1, type: arc, at: [400, 265], radius: 200, start: 24, end: 48, hidden: true }
+  - { id: a2, type: arc, at: [400, 265], radius: 200, start: 96, end: 120, hidden: true }
+  - { id: a3, type: arc, at: [400, 265], radius: 200, start: 168, end: 192, hidden: true }
+  - { id: a4, type: arc, at: [400, 265], radius: 200, start: 240, end: 264, hidden: true }
+  - { id: t1, type: text, text: 种子, size: 30, at: [400, 145] }
+  - { id: t2, type: text, text: 发芽, size: 30, at: [705, 203], hidden: true }
+  - { id: t3, type: text, text: 幼苗, size: 30, at: [518, 507], hidden: true }
+  - { id: t4, type: text, text: 开花, size: 30, at: [282, 507], hidden: true }
+  - { id: t5, type: text, text: 结果, size: 30, at: [95, 203], hidden: true }
+  - { id: back, type: arc, at: [400, 265], radius: 200, start: 312, end: 336, color: green, draw: 0, hidden: true }
+  - { id: backl1, type: label, text: 种子又能长成, size: 26, color: green, at: [400, 235], hidden: true }
+  - { id: backl2, type: label, text: 新的植物, size: 26, color: green, at: [400, 297], hidden: true }
 
 steps:
   - title: 一粒种子
@@ -95,9 +99,9 @@ steps:
   - title: 植物的一生
     say: 新种子又能长成新植物，这就是植物的一生。
     do:
-      - show: [back, backl]
+      - show: [back, backl1, backl2]
       - set: { target: back, draw: 1, duration: 1.2s }
-      - highlight: backl
+      - highlight: [backl1, backl2]
 
 keyPoints:
   - 种子发芽需要水分、空气和适宜的温度

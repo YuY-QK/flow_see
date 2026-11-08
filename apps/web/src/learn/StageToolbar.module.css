@@ -104,3 +104,27 @@
     transition: none;
   }
 }
+
+/* 手机：平时半透明（能看见但不挡画面，像 iPhone 的辅助触控小圆点）；按下、获得焦点、展开时恢复实色，收起后稍等再淡回去 */
+@media (max-width: 767px) {
+  .menu {
+    opacity: var(--fab-idle-opacity);
+    box-shadow: none;
+    transition:
+      opacity var(--fab-fade) ease var(--fab-idle-delay),
+      bottom 0.25s ease,
+      background 0.15s;
+  }
+  .menu:active,
+  .menu:focus-visible,
+  .dock[data-open='true'] .menu {
+    opacity: 1;
+    box-shadow: var(--shadow-float);
+    transition-delay: 0s;
+  }
+}
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+  .menu {
+    transition: none;
+  }
+}
