@@ -1,6 +1,6 @@
 /* 自己做时舞台上方的出题参数面板：右上角齿轮，面板从舞台顶部向下滑入、向上滑出 */
 .dock {
-  --btn: max(36px, calc(40px * var(--ui)));
+  --btn: max(28px, calc(32px * var(--ui)));
   position: absolute;
   inset: 0;
   z-index: 4;
@@ -11,7 +11,7 @@
   top: 0;
   left: 0;
   right: 0;
-  padding: 8px calc(var(--btn) + 16px) 8px 8px; /* 右边让开齿轮 */
+  padding: 6px calc(var(--btn) + 12px); /* 左右对称让开齿轮，方便居中 */
   background: color-mix(in srgb, var(--surface) 94%, transparent);
   border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow-float);
@@ -49,8 +49,8 @@
   transition: background 0.15s;
 }
 .gear svg {
-  width: calc(20px * var(--ui));
-  height: calc(20px * var(--ui));
+  width: calc(18px * var(--ui));
+  height: calc(18px * var(--ui));
 }
 .gear:hover {
   background: var(--hover);
@@ -69,6 +69,7 @@
   min-width: 0;
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
 }
 /* 开始做题后锁住：整体变淡 */
@@ -79,15 +80,16 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 2px;
-  padding: 4px 8px 6px;
-  border-radius: 12px;
+  gap: 3px;
+  padding: 4px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--surface-2);
   color: var(--ink);
 }
 .label {
   font-size: var(--fs-xs);
+  line-height: 1.2;
   color: var(--ink-3);
   text-align: center;
   white-space: nowrap;
@@ -96,9 +98,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
 }
-.stepper button,
+.stepper button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--primary);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  padding: 3px 6px;
+  box-sizing: border-box;
+}
 .chips button {
   min-width: var(--btn);
   min-height: var(--btn);
@@ -118,17 +133,17 @@
   opacity: 0.35;
 }
 .num {
-  width: calc(3.2ch + 12px);
-  min-width: 40px;
-  height: var(--btn);
-  padding: 0 4px;
-  border-radius: 10px;
+  width: calc(2.4ch + 8px);
+  line-height: 1.2;
+  padding: 3px 4px;
+  border-radius: 6px;
   border: 1px solid var(--border-strong);
   background: var(--surface);
   color: var(--ink);
-  font-size: var(--fs-2xl);
+  font-size: var(--fs-lg);
   font-weight: 700;
   text-align: center;
+  box-sizing: border-box;
 }
 .chips {
   display: flex;
@@ -146,6 +161,27 @@
 .switch {
   align-self: center;
   margin: 6px 0;
+}
+@media (max-width: 767px) {
+  .block {
+    padding: 2px;
+    gap: 2px;
+  }
+  .label {
+    font-size: 10px;
+  }
+  .stepper {
+    gap: 2px;
+  }
+  .stepper button {
+    font-size: var(--fs-md);
+    padding: 2px;
+  }
+  .num {
+    font-size: var(--fs-md);
+    padding: 2px;
+    width: calc(2.4ch + 6px);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .panel {

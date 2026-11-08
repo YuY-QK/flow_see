@@ -1,6 +1,6 @@
 /* 舞台底部的工具条（StageToolbar.tsx）：从舞台底部向上滑入；颜色都用全局变量 */
 .dock {
-  --btn: max(36px, calc(40px * var(--ui))); /* 按下的范围不小于 36px */
+  --btn: max(28px, calc(32px * var(--ui)));
   --bar-h: calc(var(--btn) + 9px);
   position: absolute;
   inset: 0;
@@ -78,8 +78,8 @@
 }
 .icon svg,
 .menu svg {
-  width: calc(20px * var(--ui));
-  height: calc(20px * var(--ui));
+  width: calc(18px * var(--ui));
+  height: calc(18px * var(--ui));
 }
 /* 菜单按钮：收起时在舞台右下角；展开后移到工具条上方，一直能点 */
 .menu {

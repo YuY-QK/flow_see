@@ -1,7 +1,7 @@
 // 自己做时舞台上方的出题参数面板：右上角一个齿轮，点开后面板从舞台顶部向下滑入，再点向上滑出。
 // 面板里是一排“块”，每块两行：上面是标签（如“大数”），下面是调节（减号、可直接输入的数字、加号）。
 // 控件、范围来自知识点配置的 explore。
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { sliderRange, t, type ExploreControl, type Scope } from '@flow-see/core';
 import { Icon } from '@flow-see/runtime/ui/Icon.tsx';
 import { snapToRange } from './snapToRange';
@@ -65,10 +65,31 @@ function NumberInput({
 }
 
 export function StageControls({ controls, values, onChange, locked, open, onToggle }: Props) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const gearRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (panelRef.current?.contains(target) || gearRef.current?.contains(target)) return;
+      onToggle();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onToggle();
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open, onToggle]);
+
   const title = open ? t('handsOn.params_close') : t('handsOn.params_open');
   return (
     <div className={s.dock} data-open={open}>
-      <div className={s.panel} id="stage-params">
+      <div ref={panelRef} className={s.panel} id="stage-params">
         <fieldset
           className={s.blocks}
           disabled={locked}
@@ -150,6 +171,7 @@ export function StageControls({ controls, values, onChange, locked, open, onTogg
         </fieldset>
       </div>
       <button
+        ref={gearRef}
         className={s.gear}
         aria-label={title}
         aria-expanded={open}
