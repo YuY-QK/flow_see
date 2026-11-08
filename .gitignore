@@ -23,6 +23,7 @@ desktop.ini
 
 # 依赖与构建产物（通用）
 node_modules/
+.pnpm-store/
 dist/
 build/
 out/
