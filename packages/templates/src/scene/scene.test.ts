@@ -888,3 +888,166 @@ describe('绕点旋转（E4）', () => {
     expect(badRef.some((e) => e.message.includes('around 引用的零件 missing 不存在'))).toBe(true);
   });
 });
+
+describe('E7 子项引用（高亮、颜色）', () => {
+  it('highlight: grid1.row.2 时帧里有一个子项高亮且 box 正确', () => {
+    const def: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [{ id: 'grid1', type: 'grid', rows: 3, cols: 4, cell: 20, at: [100, 100] }],
+      steps: [[{ highlight: 'grid1.row.2' }]],
+    };
+    const frame = sceneFrame(def, 0);
+    expect(frame.subHighlights).toHaveLength(1);
+    expect(frame.subHighlights[0].id).toBe('grid1');
+    expect(frame.subHighlights[0].name).toBe('row.2');
+    expect(frame.subHighlights[0].box).toEqual({ x: 100, y: 120, w: 80, h: 20 });
+  });
+
+  it('highlight: grid1.row.* 全部行', () => {
+    const def: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [{ id: 'grid1', type: 'grid', rows: 3, cols: 4, cell: 20, at: [100, 100] }],
+      steps: [[{ highlight: 'grid1.row.*' }]],
+    };
+    const frame = sceneFrame(def, 0);
+    expect(frame.subHighlights).toHaveLength(3);
+    expect(frame.subHighlights.map((s) => s.name)).toEqual(['row.1', 'row.2', 'row.3']);
+    expect(frame.subHighlights[0].box).toEqual({ x: 100, y: 100, w: 80, h: 20 });
+    expect(frame.subHighlights[1].box).toEqual({ x: 100, y: 120, w: 80, h: 20 });
+    expect(frame.subHighlights[2].box).toEqual({ x: 100, y: 140, w: 80, h: 20 });
+  });
+
+  it('highlight: grid1.row.9（只有 3 行）check 报错', () => {
+    const issues = checkScene({
+      params: {},
+      objects: [{ id: 'grid1', type: 'grid', rows: 3, cols: 4, cell: 20, at: [100, 100] }],
+      steps: [{ say: '看', do: [{ highlight: 'grid1.row.9' }] }],
+    });
+    expect(issues.length).toBeGreaterThan(0);
+    expect(issues.map((i) => i.message).join('\n')).toMatch(/零件 grid1 没有子项 row.9/);
+  });
+
+  it('keep: true 跨步保留', () => {
+    const def: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [{ id: 'grid1', type: 'grid', rows: 3, cols: 4, cell: 20, at: [100, 100] }],
+      steps: [
+        [{ highlight: { target: 'grid1.row.2', keep: true } }],
+        [{ wait: '1s' }],
+      ],
+    };
+    const frame0 = sceneFrame(def, 0);
+    expect(frame0.subHighlights).toHaveLength(1);
+    expect(frame0.subHighlights[0].name).toBe('row.2');
+
+    const frame1 = sceneFrame(def, 1);
+    expect(frame1.subHighlights).toHaveLength(1);
+    expect(frame1.subHighlights[0].name).toBe('row.2');
+
+    // 不写 keep: true 时跨步消失
+    const defNoKeep: SceneDef = {
+      ...def,
+      steps: [[{ highlight: 'grid1.row.2' }], [{ wait: '1s' }]],
+    };
+    expect(sceneFrame(defNoKeep, 1).subHighlights).toHaveLength(0);
+  });
+
+  it('unhighlight 取消子项高亮', () => {
+    const def: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [{ id: 'grid1', type: 'grid', rows: 3, cols: 4, cell: 20, at: [100, 100] }],
+      steps: [
+        [{ highlight: { target: 'grid1.row.2', keep: true } }],
+        [{ unhighlight: 'grid1.row.2' }],
+      ],
+    };
+    expect(sceneFrame(def, 0).subHighlights).toHaveLength(1);
+    expect(sceneFrame(def, 1).subHighlights).toHaveLength(0);
+  });
+
+  it('color 改变子项颜色并在帧的 subColors 及对象的 _subColors 中体现', () => {
+    const def: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [{ id: 'grid1', type: 'grid', rows: 3, cols: 4, cell: 20, at: [100, 100] }],
+      steps: [[{ color: { target: 'grid1.row.2', to: 'red' } }]],
+    };
+    const frame = sceneFrame(def, 0);
+    expect(frame.subColors).toEqual([{ id: 'grid1', name: 'row.2', color: 'red' }]);
+    const gridObj = frame.objects.find((o) => o.id === 'grid1');
+    expect(gridObj?.props._subColors).toMatchObject({ 'row.2': 'red' });
+  });
+
+  it('choose.show 允许子项并在 checkScene 中校验', () => {
+    const valid = checkScene({
+      params: {},
+      objects: [{ id: 'grid1', type: 'grid', rows: 3, cols: 4, cell: 20, at: [100, 100] }],
+      steps: [
+        {
+          say: '做',
+          do: [],
+          try: { task: '做', choose: { answer: 1, show: ['grid1.row.2'] } },
+        },
+      ],
+    });
+    expect(valid).toEqual([]);
+
+    const invalid = checkScene({
+      params: {},
+      objects: [{ id: 'grid1', type: 'grid', rows: 3, cols: 4, cell: 20, at: [100, 100] }],
+      steps: [
+        {
+          say: '做',
+          do: [],
+          try: { task: '做', choose: { answer: 1, show: ['grid1.row.9'] } },
+        },
+      ],
+    });
+    expect(invalid.map((i) => i.message).join('\n')).toMatch(/零件 grid1 没有子项 row.9/);
+  });
+
+  it('SceneView 渲染子项高亮框以及 choose.show 子项提示框', () => {
+    const dummyAnim = {
+      id: 'test-anim',
+      title: 'Test',
+      templateId: 'scene',
+      steps: [],
+    } as unknown as Animation;
+    const theme = getTheme('cute');
+
+    const def: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [{ id: 'grid1', type: 'grid', rows: 3, cols: 4, cell: 20, at: [100, 100] }],
+      steps: [[{ highlight: 'grid1.row.2' }]],
+    };
+
+    const html = renderToStaticMarkup(
+      createElement(SceneView, {
+        def,
+        animation: dummyAnim,
+        index: 0,
+        theme,
+      }),
+    );
+    expect(html).toContain('x="82"'); // 100 - padX(18) = 82
+    expect(html).toContain('y="110"'); // 120 - padY(10) = 110
+
+    const defTry: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [{ id: 'grid1', type: 'grid', rows: 3, cols: 4, cell: 20, at: [100, 100] }],
+      steps: [[]],
+      tries: [{ task: '选', choose: { answer: 1, show: ['grid1.row.1'] } }],
+    };
+
+    const htmlHint = renderToStaticMarkup(
+      createElement(SceneView, {
+        def: defTry,
+        animation: dummyAnim,
+        index: 0,
+        theme,
+        tryIt: { phase: 'doing', showTarget: true },
+      }),
+    );
+    expect(htmlHint).toContain('x="82"');
+    expect(htmlHint).toContain('y="90"'); // 100 - padY(10) = 90
+  });
+});

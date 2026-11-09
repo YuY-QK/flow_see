@@ -12,7 +12,15 @@ import {
 } from '@flow-see/blocks';
 import type { StageProps } from '@flow-see/runtime/template.ts';
 import { t } from '@flow-see/core';
-import { dragFrame, dragTargets, sceneFrame, type SceneDef, type SceneObject } from './evaluate';
+import {
+  dragFrame,
+  dragTargets,
+  sceneFrame,
+  type SceneDef,
+  type SceneObject,
+  type SubHighlight,
+} from './evaluate';
+import { parseTargetRef } from './actions';
 
 /**
  * 场景画面：纯函数，画面只由 (场景, 第几步, 步内进度) 决定。
@@ -141,10 +149,36 @@ export function SceneView({
   const turnTarget = turnSpec?.target;
   const turnProp = turnSpec?.prop;
 
+  const subColorsByPart = useMemo(() => {
+    const map = new Map<string, Record<string, string>>();
+    for (const sc of frame.subColors ?? []) {
+      let m = map.get(sc.id);
+      if (!m) {
+        m = {};
+        map.set(sc.id, m);
+      }
+      m[sc.name] = sc.color;
+    }
+    return map;
+  }, [frame.subColors]);
+
   // 做错几次后：拖动高亮目标零件；点选高亮配置里指定的零件
   const hint = new Set(spec?.drag ? dragTargets(spec.drag) : (spec?.choose?.show ?? []));
   const objects = frame.objects.map((o) => {
     let obj = o;
+    const extraColors = subColorsByPart.get(o.id);
+    if (extraColors || obj.props._subColors) {
+      obj = {
+        ...obj,
+        props: {
+          ...obj.props,
+          _subColors: {
+            ...(obj.props._subColors as Record<string, string> | undefined),
+            ...extraColors,
+          },
+        },
+      };
+    }
     if (doing && tryIt?.showTarget && hint.has(o.id)) {
       obj = { ...obj, props: { ...obj.props, highlight: 1 } };
     }
@@ -153,6 +187,29 @@ export function SceneView({
     }
     return obj;
   });
+
+  const subHints = useMemo(() => {
+    if (!doing || !tryIt?.showTarget || !spec?.choose?.show) return [];
+    const res: SubHighlight[] = [];
+    for (const item of spec.choose.show) {
+      const { id, sub } = parseTargetRef(item);
+      if (!sub) continue;
+      const obj = objects.find((o) => o.id === id);
+      const part = obj ? getPart(obj.type) : undefined;
+      if (!part || !obj) continue;
+      const found = findSubitem(part, obj.props, sub);
+      const items = Array.isArray(found) ? found : found ? [found] : [];
+      for (const it of items) {
+        res.push({ id, name: it.name, box: it.box, value: it.value });
+      }
+    }
+    return res;
+  }, [doing, tryIt?.showTarget, spec?.choose?.show, objects]);
+
+  const allSubHighlights = useMemo(
+    () => [...(frame.subHighlights ?? []), ...subHints],
+    [frame.subHighlights, subHints],
+  );
   const targetObjects = turnTarget
     ? objects.filter((o) => o.id === turnTarget)
     : objects.filter((o) => !!getPart(o.type)?.handles);
@@ -192,21 +249,28 @@ export function SceneView({
         <PartView key={o.id} o={o} ctx={ctx} theme={theme} />
       ))}
 
-      {frame.subHighlights?.map((sh, idx) => {
+      {allSubHighlights.map((sh, idx) => {
         const obj = objects.find((o) => o.id === sh.id);
-        const part = obj ? getPart(obj.type) : undefined;
-        if (!part || !obj) return null;
-        const sub = findSubitem(part, obj.props, sh.name);
-        const items = Array.isArray(sub) ? sub : sub ? [sub] : [];
+        const opacity = Math.max(0, Math.min(1, num(obj?.props.opacity, 1)));
+        if (!obj || opacity <= 0.001) return null;
         const { padX, padY, strokeWidth, fillOpacity, dash } = sceneStyle().highlight;
-        const frameColor = color(obj.props.hlColor, theme, 'accent');
-        return items.map((it) => (
+        const frameColor = color(sh.color ?? obj.props.hlColor, theme, 'accent');
+        const box =
+          sh.box ??
+          (() => {
+            const part = getPart(obj.type);
+            if (!part) return undefined;
+            const sub = findSubitem(part, obj.props, sh.name);
+            return Array.isArray(sub) ? sub[0]?.box : sub?.box;
+          })();
+        if (!box) return null;
+        return (
           <rect
-            key={`sh-${idx}-${sh.id}-${it.name}`}
-            x={it.box.x - padX}
-            y={it.box.y - padY}
-            width={it.box.w + padX * 2}
-            height={it.box.h + padY * 2}
+            key={`sh-${idx}-${sh.id}-${sh.name}`}
+            x={box.x - padX}
+            y={box.y - padY}
+            width={box.w + padX * 2}
+            height={box.h + padY * 2}
             rx={Math.min(theme.radius, 18)}
             fill={frameColor}
             fillOpacity={fillOpacity}
@@ -215,7 +279,7 @@ export function SceneView({
             strokeDasharray={dash}
             style={{ pointerEvents: 'none' }}
           />
-        ));
+        );
       })}
 
       {isTapping
