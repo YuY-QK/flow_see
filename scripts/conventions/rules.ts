@@ -94,9 +94,21 @@ export function findTextCalls(sf: ts.SourceFile): TextCall[] {
 /** 源码里的字符串、模板、JSX 文字里写了中文的地方（注释不算） */
 export function chineseIn(sf: ts.SourceFile): { line: number; text: string }[] {
   const out: { line: number; text: string }[] = [];
+  const isPartFile = sf.fileName.includes('packages/blocks/src/parts/');
   const visit = (n: ts.Node) => {
     let text: string | undefined;
-    if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) text = n.text;
+    if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) {
+      // 零件中文名（PartDef 的 name）是面向写配置的人的报错，属于 CLAUDE.md 已知例外；自带文字走 site.yaml 的 labels
+      if (
+        isPartFile &&
+        ts.isPropertyAssignment(n.parent) &&
+        ts.isIdentifier(n.parent.name) &&
+        n.parent.name.text === 'name'
+      ) {
+        return;
+      }
+      text = n.text;
+    }
     else if (ts.isTemplateHead(n) || ts.isTemplateMiddle(n) || ts.isTemplateTail(n)) text = n.text;
     else if (ts.isJsxText(n)) text = n.text;
     if (text !== undefined && CJK.test(text))
@@ -119,7 +131,9 @@ export function noChineseInCode(files = sourceFiles()): Problem[] {
         rule: 'no-chinese-in-code',
         file,
         line,
-        message: `代码里不要直接写中文文案：${text.slice(0, 30)}。放到 packages/content/texts.yaml，用 t('分组.键') 读取`,
+        message: file.includes('packages/blocks/src/parts/')
+          ? `零件代码里不要直接写中文（自带文字放 site.yaml 的 scene.parts.<type>.labels）：${text.slice(0, 30)}`
+          : `代码里不要直接写中文文案：${text.slice(0, 30)}。放到 packages/content/texts.yaml，用 t('分组.键') 读取`,
       })),
     );
 }

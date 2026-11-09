@@ -20,8 +20,8 @@ export const ALLOW_CHINESE: Allow[] = [
     reason: '文案、样式还没注入时给开发者看的报错（此时读不到文案）',
   },
   {
-    path: /^packages\/blocks\//,
-    reason: '零件的中文名和提示，只用于 content:check 的报错，面向写配置的人',
+    path: /^packages\/blocks\/src\/style\.ts$/,
+    reason: '零件样式还没注入时给开发者看的报错（此时读不到配置）',
   },
 ];
 
