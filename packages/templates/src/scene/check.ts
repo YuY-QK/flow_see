@@ -497,6 +497,22 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
           }
           break;
         }
+        case 'follow': {
+          need(
+            'path',
+            (Array.isArray(args.path) && args.path.length >= 2 && args.path.every(isPoint)) ||
+              (typeof args.path === 'string' && alive.has(args.path)),
+            'path 写坐标列表（至少两个点），如 [[100, 100], [200, 100]]，或路径零件 id',
+          );
+          if (args.draw !== undefined) {
+            need(
+              'draw',
+              typeof args.draw === 'string' && alive.has(args.draw),
+              'draw 写要同步画出的路径零件 id',
+            );
+          }
+          break;
+        }
       }
     });
   });

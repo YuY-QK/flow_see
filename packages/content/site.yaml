@@ -95,6 +95,7 @@ scene:
     deal: 0.45                         # 一个一个分：每分一个的时长
     ask: 0
     flip: 0.8
+    followPer100: 0.6                  # 沿路径移动：每 100 舞台像素的时长（秒）
   splitLift: 0.9                       # 拆分出来的计数块默认往上抬多少（相对格子大小）
   tenframeGap: 0.4                     # 十格框之间的间距（相对格子大小）
   counterPlate: { pad: 8, radius: 14 }         # 点阵计数块写了 capacity 时画的盘子：比格子外扩多少、圆角
