@@ -85,6 +85,7 @@ export const COMMON_PROPS = [
   'rotate',
   'color',
   'note',
+  'mirrorAxis',
 ] as const;
 
 /* ───────────── 读取属性 ───────────── */

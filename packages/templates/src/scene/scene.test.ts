@@ -1051,3 +1051,257 @@ describe('E7 子项引用（高亮、颜色）', () => {
     expect(htmlHint).toContain('y="90"'); // 100 - padY(10) = 90
   });
 });
+
+
+describe('翻折（flip）', () => {
+  registerPart({
+    type: 'triangle',
+    name: '三角形',
+    anchor: 'center',
+    props: ['points', 'fill', 'color'],
+    rotatesPoints: true,
+    bbox(p) {
+      const pts = (p.points as Point[]) ?? [];
+      const xs = pts.map((q) => q[0]);
+      const ys = pts.map((q) => q[1]);
+      const minX = Math.min(...xs, 0);
+      const maxX = Math.max(...xs, 0);
+      const minY = Math.min(...ys, 0);
+      const maxY = Math.max(...ys, 0);
+      return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+    },
+    Render() {
+      return null;
+    },
+  });
+
+  it('默认时长来自 site.yaml 的 scene.actionSeconds.flip（0.8s）', () => {
+    const plan = planStep([{ flip: { target: 't', axis: [[200, 0], [200, 450]] } }]);
+    expect(plan.actions[0].dur).toBe(800);
+  });
+
+  it('三角形沿竖直轴 x = 200 翻折后顶点 x 坐标镜像；e = 0.5 时所有顶点到轴的距离为 0', () => {
+    const triDef: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [
+        {
+          id: 'tri',
+          type: 'triangle',
+          points: [
+            [100, 100],
+            [150, 200],
+            [100, 200],
+          ],
+        },
+      ],
+      steps: [
+        [
+          {
+            flip: {
+              target: 'tri',
+              axis: [
+                [200, 0],
+                [200, 450],
+              ],
+              duration: 1,
+              ease: 'linear',
+            },
+          },
+        ],
+      ],
+    };
+
+    // e = 0 时：初始位置
+    expect(obj(triDef, 0, 0, 'tri')?.props.points).toEqual([
+      [100, 100],
+      [150, 200],
+      [100, 200],
+    ]);
+
+    // e = 0.5 时：所有顶点到对称轴 x = 200 的距离为 0
+    const midPoints = obj(triDef, 0, 0.5, 'tri')?.props.points as [number, number][];
+    expect(midPoints).toBeDefined();
+    expect(midPoints.length).toBe(3);
+    for (const [x] of midPoints) {
+      expect(Math.abs(x - 200)).toBeCloseTo(0);
+    }
+
+    // e = 1 时（翻折后）：顶点 x 坐标镜像（100 -> 300, 150 -> 250, 100 -> 300），y 保持不变
+    expect(obj(triDef, 0, 1, 'tri')?.props.points).toEqual([
+      [300, 100],
+      [250, 200],
+      [300, 200],
+    ]);
+  });
+
+  it('矩形（非 points 零件）翻折后 mirrorAxis 被设置，并在后续步骤保持', () => {
+    const axis: [[number, number], [number, number]] = [
+      [200, 0],
+      [200, 450],
+    ];
+    const rectDef: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [
+        { id: 'rect1', type: 'shape', shape: 'rect', width: 100, height: 60, at: [100, 150] },
+      ],
+      steps: [
+        [{ flip: { target: 'rect1', axis, duration: 1, ease: 'linear' } }],
+        [{ wait: '1s' }],
+      ],
+    };
+
+    // 翻折后：mirrorAxis 被设置
+    const rectEnd = obj(rectDef, 0, 1, 'rect1');
+    expect(rectEnd?.props.mirrorAxis).toEqual(axis);
+
+    // 后续步骤：mirrorAxis 依然保留
+    const rectNext = obj(rectDef, 1, 1, 'rect1');
+    expect(rectNext?.props.mirrorAxis).toEqual(axis);
+  });
+
+  it('SceneView 渲染非 points 零件翻折时套用变换矩阵', () => {
+    const axis: [[number, number], [number, number]] = [
+      [200, 0],
+      [200, 450],
+    ];
+    const rectDef: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [
+        { id: 'r1', type: 'shape', shape: 'rect', width: 100, height: 60, at: [100, 150] },
+      ],
+      steps: [[{ flip: { target: 'r1', axis, duration: 1 } }]],
+    };
+    const anim = {
+      id: 'test',
+      title: 'test',
+      summary: '',
+      templateId: 'scene',
+      theme: 'flat',
+      duration: '1s',
+      steps: [{ id: 's1', title: 'step1', desc: '', data: {} }],
+    } as unknown as Animation;
+    const html = renderToStaticMarkup(
+      createElement(SceneView, {
+        def: rectDef,
+        animation: anim,
+        index: 0,
+        progress: 1,
+        theme: getTheme('flat'),
+      }),
+    );
+    expect(html).toContain('matrix(-1 0 0 1 400 0)');
+  });
+
+  it('配置检查：flip 参数与文字零件警告', () => {
+    const lesson = (objects: Record<string, unknown>[], doList: Record<string, unknown>[]) => ({
+      params: {},
+      objects,
+      steps: [{ say: '看', do: doList }],
+    });
+
+    // 正确的 flip 配置
+    expect(
+      checkScene(
+        lesson(
+          [{ id: 's1', type: 'shape' }],
+          [{ flip: { target: 's1', axis: [[200, 0], [200, 450]] } }],
+        ),
+      ),
+    ).toEqual([]);
+
+    // 对 text 零件翻折报警告
+    const textIssues = checkScene(
+      lesson(
+        [{ id: 'txt', type: 'text', text: '123' }],
+        [{ flip: { target: 'txt', axis: [[200, 0], [200, 450]] } }],
+      ),
+    );
+    expect(
+      textIssues.some((i) => i.message.includes('文字零件') && i.message.includes('不要翻折文字')),
+    ).toBe(true);
+
+    // 对 label 零件翻折报警告
+    const labelIssues = checkScene(
+      lesson(
+        [{ id: 'lbl', type: 'label', text: 'A' }],
+        [{ flip: { target: 'lbl', axis: [[200, 0], [200, 450]] } }],
+      ),
+    );
+    expect(
+      labelIssues.some((i) => i.message.includes('文字零件') && i.message.includes('不要翻折文字')),
+    ).toBe(true);
+
+    // 轴坐标格式错误（两点重合）
+    const badAxisIssues = checkScene(
+      lesson(
+        [{ id: 's1', type: 'shape' }],
+        [{ flip: { target: 's1', axis: [[200, 0], [200, 0]] } }],
+      ),
+    );
+    expect(badAxisIssues.some((i) => i.message.includes('axis'))).toBe(true);
+  });
+
+  it('斜向对称轴（y = x）翻折点坐标', () => {
+    const diagDef: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [
+        {
+          id: 'tri',
+          type: 'triangle',
+          points: [
+            [100, 50],
+            [120, 80],
+            [100, 80],
+          ],
+        },
+      ],
+      steps: [
+        [
+          {
+            flip: {
+              target: 'tri',
+              axis: [
+                [0, 0],
+                [100, 100],
+              ],
+              duration: 1,
+              ease: 'linear',
+            },
+          },
+        ],
+      ],
+    };
+
+    // e = 1 时：沿 y = x 翻折，(x, y) 变成 (y, x)
+    const endPts = obj(diagDef, 0, 1, 'tri')?.props.points as [number, number][];
+    expect(endPts[0][0]).toBeCloseTo(50);
+    expect(endPts[0][1]).toBeCloseTo(100);
+    expect(endPts[1][0]).toBeCloseTo(80);
+    expect(endPts[1][1]).toBeCloseTo(120);
+
+    // e = 0.5 时：所有点到 y = x 的距离为 0（即 x = y）
+    const midPts = obj(diagDef, 0, 0.5, 'tri')?.props.points as [number, number][];
+    for (const [x, y] of midPts) {
+      expect(Math.abs(x - y)).toBeCloseTo(0);
+    }
+  });
+
+  it('多目标翻折：同时翻折两个零件', () => {
+    const axis: [[number, number], [number, number]] = [
+      [200, 0],
+      [200, 450],
+    ];
+    const multiDef: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [
+        { id: 'r1', type: 'shape', shape: 'rect', width: 60, height: 40, at: [100, 100] },
+        { id: 'r2', type: 'shape', shape: 'rect', width: 80, height: 50, at: [150, 200] },
+      ],
+      steps: [[{ flip: { target: ['r1', 'r2'], axis, duration: 1 } }]],
+    };
+    const r1 = obj(multiDef, 0, 1, 'r1');
+    const r2 = obj(multiDef, 0, 1, 'r2');
+    expect(r1?.props.mirrorAxis).toEqual(axis);
+    expect(r2?.props.mirrorAxis).toEqual(axis);
+  });
+});

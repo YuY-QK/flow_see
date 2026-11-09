@@ -112,7 +112,6 @@ export function registerPart(part: PartDef): void {
 export function unregisterPart(type: string): void {
   byType.delete(type);
 }
-
 export const PART_TYPES: readonly string[] = [...PARTS.map((p) => p.type), ...Object.keys(ALIASES)];
 
 /** 计数块一类的零件（可以拆分、合并） */

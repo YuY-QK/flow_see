@@ -476,6 +476,27 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
           need('from', typeof args.from === 'number', 'from 写起点数');
           need('to', typeof args.to === 'number', 'to 写终点数');
           break;
+        case 'flip': {
+          need(
+            'axis',
+            Array.isArray(args.axis) &&
+              args.axis.length === 2 &&
+              isPoint(args.axis[0]) &&
+              isPoint(args.axis[1]) &&
+              (args.axis[0][0] !== args.axis[1][0] || args.axis[0][1] !== args.axis[1][1]),
+            'axis 写对称轴的两点坐标 [[x1, y1], [x2, y2]]',
+          );
+          for (const t of targets) {
+            const tt = alive.get(t);
+            if (tt === 'text' || tt === 'label') {
+              out.push({
+                path: [...path, verb, 'target'],
+                message: `${label}：文字零件（${t}）翻折后文字会镜像，知识点里不要翻折文字`,
+              });
+            }
+          }
+          break;
+        }
       }
     });
   });
