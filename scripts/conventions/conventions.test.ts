@@ -37,6 +37,24 @@ describe('检查本身是可靠的', () => {
     ]);
   });
 
+  it('零件代码：允许 PartDef 的 name（零件中文名），其他中文报错（自带文字放 site.yaml 的 labels）', () => {
+    const src = [
+      'export const partDef: PartDef = {',
+      "  type: 'clock',",
+      "  name: '钟面',",
+      '  Render() {',
+      "    const label = '东';",
+      '    return <text>北</text>;',
+      '  },',
+      '};',
+    ].join('\n');
+    const found = chineseIn(parseSource('packages/blocks/src/parts/clock.tsx', src));
+    expect(found.map((f) => [f.line, f.text])).toEqual([
+      [5, '东'],
+      [6, '北'],
+    ]);
+  });
+
   it('能找出 t() 调用的键和代入的变量；键不是字面量时没有 key', () => {
     const src = "t('a.b'); t('a.c', { n, total: 3 }); t(name); t(`x.${y}`);";
     const calls = findTextCalls(parseSource('apps/web/src/x.ts', src));
