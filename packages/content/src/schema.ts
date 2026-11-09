@@ -396,9 +396,15 @@ export const siteSchema = z
         recommendedLimit: z.int().min(0).default(4),
         prevNextCrossGrade: z.boolean().default(false),
         prevNextCrossSubject: z.boolean().default(false),
+        term: z
+          .object({
+            firstFromMonth: z.int().min(1).max(12).describe('上册开始月份 (1–12)'),
+            secondFromMonth: z.int().min(1).max(12).describe('下册开始月份 (1–12)'),
+          })
+          .strict()
+          .describe('年级·学科页默认显示哪一册的月份划分规则'),
       })
-      .strict()
-      .prefault({}),
+      .strict(),
     search: z
       .object({
         hints: z.array(text).default(['分数', '钟表', '凑十', '植物', '水']),
@@ -466,6 +472,17 @@ export const gradesSchema = z
             id: z.string().regex(/^[a-z][a-z0-9-]*$/, '学科 id 用小写英文'),
             name: text,
             color: z.string().regex(/^#[0-9a-fA-F]{6}$/, '颜色写成 #RRGGBB'),
+            domains: z
+              .array(
+                z
+                  .object({
+                    id: z.string().regex(/^[a-z][a-z0-9-]*$/, '领域 id 用小写英文'),
+                    name: text,
+                  })
+                  .strict(),
+              )
+              .optional()
+              .describe('学科的领域划分（如数与代数、图形与几何）'),
           })
           .strict(),
       )
@@ -487,6 +504,14 @@ export const curriculumSchema = z
           .object({
             id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),
             title: text,
+            term: z
+              .union([z.literal(1), z.literal(2)])
+              .optional()
+              .describe('学期：1 = 上册，2 = 下册'),
+            domain: z
+              .string()
+              .optional()
+              .describe('学科领域 id，须在 curriculum/grades.yaml 中对应学科的 domains 列表中'),
             lessons: z.array(
               z.union([
                 lessonId,
@@ -597,6 +622,7 @@ export const lessonSchema = z
     duration: z.string().optional(),
     tags: z.array(text).default([]),
     recommended: z.boolean().default(false),
+    related: z.array(lessonId).max(4).optional().describe('相关知识点 id 列表，最多 4 个'),
     thumbnail: z.string().optional().describe('素材 id'),
     cover: z
       .object({

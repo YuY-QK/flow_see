@@ -43,6 +43,28 @@
           "color": {
             "type": "string",
             "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "domains": {
+            "description": "学科的领域划分（如数与代数、图形与几何）",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [
