@@ -392,6 +392,21 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
             typeof args.to === 'number' || typeof args.by === 'number',
             '写 to（转到多少度）或 by（转多少度）',
           );
+          if (args.around !== undefined) {
+            const around = args.around;
+            const isAroundPoint = isPoint(around);
+            const isAroundStr = typeof around === 'string';
+            need(
+              'around',
+              isAroundPoint || isAroundStr,
+              'around 写成坐标 [x, y] 或子项 "零件id.子项名"',
+            );
+            if (isAroundStr) {
+              const dot = around.indexOf('.');
+              const partId = dot > 0 ? around.slice(0, dot) : around;
+              need('around', alive.has(partId), `around 引用的零件 ${partId} 不存在`);
+            }
+          }
           break;
         case 'scale':
           need('to', typeof args.to === 'number' && args.to >= 0, 'to 写放大倍数，如 1.5');

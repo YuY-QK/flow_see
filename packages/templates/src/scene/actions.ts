@@ -55,7 +55,7 @@ export const VERB_KEYS: Record<Verb, readonly string[]> = {
   split: ['target', 'take', 'as', 'offset'],
   merge: ['target', 'into'],
   set: ['target'],
-  rotate: ['target', 'to', 'by'],
+  rotate: ['target', 'to', 'by', 'around'],
   scale: ['target', 'to'],
   color: ['target', 'to'],
   count: ['target', 'from', 'to'],

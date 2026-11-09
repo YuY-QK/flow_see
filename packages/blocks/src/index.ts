@@ -103,6 +103,16 @@ export function getPart(type: string): ResolvedPart | undefined {
   return part && { ...part, defaults: sceneStyle().parts[part.type] ?? {} };
 }
 
+/** 动态注册零件（测试或后续扩展零件用） */
+export function registerPart(part: PartDef): void {
+  byType.set(part.type, part);
+}
+
+/** 注销动态注册的零件（测试清理用） */
+export function unregisterPart(type: string): void {
+  byType.delete(type);
+}
+
 export const PART_TYPES: readonly string[] = [...PARTS.map((p) => p.type), ...Object.keys(ALIASES)];
 
 /** 计数块一类的零件（可以拆分、合并） */

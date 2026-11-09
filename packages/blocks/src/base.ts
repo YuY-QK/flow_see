@@ -70,6 +70,8 @@ export interface PartDef {
   Render: ComponentType<{ p: Props; ctx: PartContext }>;
   subitems?(p: Props): Subitem[];
   handles?(p: Props): Handle[];
+  /** 顶点是否直接定位（如 polygon、path）：绕点旋转或翻折时直接变换 points 数组，不改 rotate */
+  rotatesPoints?: boolean;
 }
 
 /** 所有零件都有的属性 */
