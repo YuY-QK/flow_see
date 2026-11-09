@@ -1,9 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
   clampParams,
+  dec,
+  digit,
   evalExpr,
   exploreCombos,
   exprNames,
+  gcd,
+  isPrime,
+  lcm,
+  len,
+  pow,
   resolveParams,
   type ExploreControl,
 } from './params';
@@ -25,6 +32,208 @@ describe('算式', () => {
     expect(evalExpr('a $ 2', { a: 1 })).toBeUndefined();
     expect(exprNames('11 - a + {b}')).toEqual(['a', 'b']);
     expect(exprNames('1 +')).toBeUndefined();
+  });
+
+  describe('新增算式函数（E3）', () => {
+    it('digit(n, k)：整数位与小数位、边界与浮点误差', () => {
+      // 整数位（k >= 0）
+      expect(evalExpr('digit(1234, 0)')).toBe(4);
+      expect(evalExpr('digit(1234, 1)')).toBe(3);
+      expect(evalExpr('digit(1234, 2)')).toBe(2);
+      expect(evalExpr('digit(1234, 3)')).toBe(1);
+      expect(evalExpr('digit(1234, 4)')).toBe(0);
+      expect(evalExpr('digit(0, 0)')).toBe(0);
+      expect(evalExpr('digit(-567, 1)')).toBe(6);
+      // 小数位（k < 0）
+      expect(evalExpr('digit(3.45, -1)')).toBe(4);
+      expect(evalExpr('digit(3.45, -2)')).toBe(5);
+      expect(evalExpr('digit(3.45, -3)')).toBe(0);
+      expect(evalExpr('digit(3.45, 0)')).toBe(3);
+      // 浮点误差处理
+      expect(evalExpr('digit(0.1 + 0.2, -1)')).toBe(3);
+      expect(evalExpr('digit(0.7 - 0.6, -1)')).toBe(1);
+      // 直接调用导出函数
+      expect(digit(3.45, -1)).toBe(4);
+      expect(digit(0, 0)).toBe(0);
+    });
+
+    it('len(n)：整数部分位数、边界 0 与负数', () => {
+      expect(evalExpr('len(0)')).toBe(1);
+      expect(evalExpr('len(5)')).toBe(1);
+      expect(evalExpr('len(9)')).toBe(1);
+      expect(evalExpr('len(10)')).toBe(2);
+      expect(evalExpr('len(99)')).toBe(2);
+      expect(evalExpr('len(100)')).toBe(3);
+      expect(evalExpr('len(12345)')).toBe(5);
+      expect(evalExpr('len(-123)')).toBe(3);
+      expect(evalExpr('len(123.45)')).toBe(3);
+      expect(evalExpr('len(0.45)')).toBe(1);
+      // 直接调用导出函数
+      expect(len(0)).toBe(1);
+      expect(len(999999)).toBe(6);
+      // 参数名为 len 时不与函数混淆
+      expect(evalExpr('len * wid', { len: 5, wid: 4 })).toBe(20);
+    });
+
+    it('gcd(a, b)：最大公因数、互质、包含 0 的边界', () => {
+      expect(evalExpr('gcd(12, 18)')).toBe(6);
+      expect(evalExpr('gcd(18, 12)')).toBe(6);
+      expect(evalExpr('gcd(7, 5)')).toBe(1);
+      expect(evalExpr('gcd(24, 60)')).toBe(12);
+      expect(evalExpr('gcd(0, 5)')).toBe(5);
+      expect(evalExpr('gcd(5, 0)')).toBe(5);
+      expect(evalExpr('gcd(0, 0)')).toBe(0);
+      expect(evalExpr('gcd(17, 17)')).toBe(17);
+      // 直接调用导出函数
+      expect(gcd(12, 18)).toBe(6);
+      expect(gcd(0, 7)).toBe(7);
+    });
+
+    it('lcm(a, b)：最小公倍数、包含 0 的边界', () => {
+      expect(evalExpr('lcm(4, 6)')).toBe(12);
+      expect(evalExpr('lcm(6, 4)')).toBe(12);
+      expect(evalExpr('lcm(12, 18)')).toBe(36);
+      expect(evalExpr('lcm(7, 5)')).toBe(35);
+      expect(evalExpr('lcm(5, 0)')).toBe(0);
+      expect(evalExpr('lcm(0, 5)')).toBe(0);
+      expect(evalExpr('lcm(0, 0)')).toBe(0);
+      expect(evalExpr('lcm(8, 8)')).toBe(8);
+      // 直接调用导出函数
+      expect(lcm(4, 6)).toBe(12);
+      expect(lcm(0, 9)).toBe(0);
+    });
+
+    it('isPrime(n)：质数判断、合数、边界 n < 2', () => {
+      expect(evalExpr('isPrime(0)')).toBe(0);
+      expect(evalExpr('isPrime(1)')).toBe(0);
+      expect(evalExpr('isPrime(-7)')).toBe(0);
+      expect(evalExpr('isPrime(2)')).toBe(1);
+      expect(evalExpr('isPrime(3)')).toBe(1);
+      expect(evalExpr('isPrime(4)')).toBe(0);
+      expect(evalExpr('isPrime(5)')).toBe(1);
+      expect(evalExpr('isPrime(9)')).toBe(0);
+      expect(evalExpr('isPrime(13)')).toBe(1);
+      expect(evalExpr('isPrime(25)')).toBe(0);
+      expect(evalExpr('isPrime(97)')).toBe(1);
+      // 直接调用导出函数
+      expect(isPrime(2)).toBe(1);
+      expect(isPrime(1)).toBe(0);
+    });
+
+    it('dec(n, k)：四舍五入保留 k 位、避免 2.345 浮点问题', () => {
+      expect(evalExpr('dec(2.345, 2)')).toBe(2.35);
+      expect(evalExpr('dec(2.344, 2)')).toBe(2.34);
+      expect(evalExpr('dec(2.346, 2)')).toBe(2.35);
+      expect(evalExpr('dec(1.005, 2)')).toBe(1.01);
+      expect(evalExpr('dec(2.5, 0)')).toBe(3);
+      expect(evalExpr('dec(2.4, 0)')).toBe(2);
+      expect(evalExpr('dec(0, 2)')).toBe(0);
+      expect(evalExpr('dec(-2.345, 2)')).toBe(-2.35);
+      expect(evalExpr('dec(3.14159, 3)')).toBe(3.142);
+      expect(evalExpr('dec(3.14159, 1)')).toBe(3.1);
+      // 直接调用导出函数
+      expect(dec(2.345, 2)).toBe(2.35);
+      expect(dec(0, 0)).toBe(0);
+    });
+
+    it('pow(a, b)：整数次幂、0 次幂、负指数与底数', () => {
+      expect(evalExpr('pow(2, 3)')).toBe(8);
+      expect(evalExpr('pow(3, 2)')).toBe(9);
+      expect(evalExpr('pow(10, 0)')).toBe(1);
+      expect(evalExpr('pow(5, 1)')).toBe(5);
+      expect(evalExpr('pow(-2, 3)')).toBe(-8);
+      expect(evalExpr('pow(-2, 2)')).toBe(4);
+      expect(evalExpr('pow(2, -1)')).toBe(0.5);
+      expect(evalExpr('pow(0, 3)')).toBe(0);
+      // 直接调用导出函数
+      expect(pow(2, 3)).toBe(8);
+      expect(pow(4, 0)).toBe(1);
+    });
+
+    it('比较运算符 > < >= <= == != 结果为 1 / 0，优先级低于加减', () => {
+      expect(evalExpr('1 + 2 > 2')).toBe(1);
+      expect(evalExpr('1 + 2 > 3')).toBe(0);
+      expect(evalExpr('3 >= 3')).toBe(1);
+      expect(evalExpr('2 >= 3')).toBe(0);
+      expect(evalExpr('2 < 3')).toBe(1);
+      expect(evalExpr('3 < 3')).toBe(0);
+      expect(evalExpr('3 <= 3')).toBe(1);
+      expect(evalExpr('4 <= 3')).toBe(0);
+      expect(evalExpr('3 == 3')).toBe(1);
+      expect(evalExpr('3 == 4')).toBe(0);
+      expect(evalExpr('3 != 4')).toBe(1);
+      expect(evalExpr('3 != 3')).toBe(0);
+      expect(evalExpr('0.1 + 0.2 == 0.3')).toBe(1);
+      expect(evalExpr('0.1 + 0.2 != 0.3')).toBe(0);
+      expect(evalExpr('5 - 2 < 2 + 2')).toBe(1);
+      expect(evalExpr('1 + 2 == 4 - 1')).toBe(1);
+    });
+
+    it('逻辑运算符 && || ! 结果为 1 / 0', () => {
+      expect(evalExpr('1 < 2 && 3 < 2')).toBe(0);
+      expect(evalExpr('1 < 2 && 2 < 3')).toBe(1);
+      expect(evalExpr('0 && 1')).toBe(0);
+      expect(evalExpr('1 && 1')).toBe(1);
+      expect(evalExpr('1 < 2 || 3 < 2')).toBe(1);
+      expect(evalExpr('2 < 1 || 3 < 2')).toBe(0);
+      expect(evalExpr('!0')).toBe(1);
+      expect(evalExpr('!1')).toBe(0);
+      expect(evalExpr('!(1 > 2)')).toBe(1);
+      expect(evalExpr('!0 && !0')).toBe(1);
+      expect(evalExpr('1 && 0 || 1')).toBe(1);
+      expect(evalExpr('0 || 1 && 0')).toBe(0);
+      expect(evalExpr('!1 + 2')).toBe(2);
+    });
+
+    it('条件运算符 c ? x : y 最低优先级、右结合、短路', () => {
+      expect(evalExpr('a > 1 ? 10 : 20', { a: 2 })).toBe(10);
+      expect(evalExpr('a > 1 ? 10 : 20', { a: 0 })).toBe(20);
+      expect(evalExpr('1 ? 2 : 3')).toBe(2);
+      expect(evalExpr('0 ? 2 : 3')).toBe(3);
+      // 右结合
+      expect(evalExpr('0 ? 1 : 1 ? 2 : 3')).toBe(2);
+      expect(evalExpr('0 ? 1 : 0 ? 2 : 3')).toBe(3);
+      // 短路：不执行未选中的除以 0 分支
+      expect(evalExpr('1 ? 10 : 1 / 0')).toBe(10);
+      expect(evalExpr('0 ? 1 / 0 : 20')).toBe(20);
+      // 嵌套在表达式中
+      expect(evalExpr('(a > 1 ? 10 : 20) + 5', { a: 2 })).toBe(15);
+      expect(evalExpr('min(a > 1 ? 10 : 20, 15)', { a: 2 })).toBe(10);
+    });
+
+    it('运算符和函数写错时返回 undefined', () => {
+      expect(evalExpr('1 >')).toBeUndefined();
+      expect(evalExpr('1 +')).toBeUndefined();
+      expect(evalExpr('1 &&')).toBeUndefined();
+      expect(evalExpr('1 ||')).toBeUndefined();
+      expect(evalExpr('1 ? 2')).toBeUndefined();
+      expect(evalExpr('? 1 : 2')).toBeUndefined();
+      expect(evalExpr('! ')).toBeUndefined();
+      expect(evalExpr('unknown(1)')).toBeUndefined();
+      expect(evalExpr('digit(1)')).toBeUndefined();
+      expect(evalExpr('len()')).toBeUndefined();
+      expect(evalExpr('gcd(1)')).toBeUndefined();
+      expect(evalExpr('min()')).toBeUndefined();
+      expect(evalExpr('1 ==')).toBeUndefined();
+      expect(evalExpr('1 = 2')).toBeUndefined();
+      expect(evalExpr('1 & 2')).toBeUndefined();
+      expect(evalExpr('1 | 2')).toBeUndefined();
+    });
+
+    it('exprNames 支持新运算符与函数，写错时返回 undefined', () => {
+      expect(exprNames('1 + 2 > 2')).toEqual([]);
+      expect(exprNames('a > 1 ? 10 : 20')).toEqual(['a']);
+      expect(exprNames('digit(a, i - 1) > 0')).toEqual(['a', 'i']);
+      expect(exprNames('1 < 2 && 3 < 2')).toEqual([]);
+      expect(exprNames('{carry > 0}')).toEqual(['carry']);
+      expect(exprNames('len * wid')).toEqual(['len', 'wid']);
+      expect(exprNames('len(n)')).toEqual(['n']);
+      expect(exprNames('1 >')).toBeUndefined();
+      expect(exprNames('1 +')).toBeUndefined();
+      expect(exprNames('1 ? 2')).toBeUndefined();
+      expect(exprNames('unknown(a)')).toBeUndefined();
+      expect(exprNames('digit(a)')).toBeUndefined();
+    });
   });
 });
 
