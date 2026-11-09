@@ -11,7 +11,7 @@ import {
   isPoint,
   parseClockTime,
 } from '@flow-see/blocks';
-import { fillParams, resolveParams } from '@flow-see/core';
+import { evalExpr, fillParams, resolveParams } from '@flow-see/core';
 import type { ConfigIssue, LessonLike } from '@flow-see/runtime/template.ts';
 import {
   MULTI_TARGET,
@@ -24,7 +24,7 @@ import {
   parseDuration,
 } from './actions';
 import { coveredActions, dragFrame, dragTargets, type SceneDef } from './evaluate';
-import { expandActions, expandObjects } from './repeat';
+import { MAX_REPEAT, expandActions, expandObjects, isObj, isRepeat } from './repeat';
 
 /** 颜色：颜色名、#RRGGBB，或 "@零件id"（跟着那个零件的颜色） */
 const colorOk = (v: unknown, alive: Map<string, string>) =>
@@ -103,10 +103,117 @@ function checkProps(
   }
 }
 
+/** 检查是否有嵌套的 repeat（元素里不能再写 repeat） */
+function hasNestedRepeat(val: unknown, inRepeat = false): boolean {
+  if (Array.isArray(val)) {
+    for (const item of val) {
+      if (isRepeat(item)) {
+        if (inRepeat) return true;
+        const { repeat: _, ...rest } = item as Record<string, unknown>;
+        if (hasNestedRepeat(rest, true)) return true;
+      } else if (hasNestedRepeat(item, inRepeat)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  if (isObj(val)) {
+    if (isRepeat(val)) {
+      if (inRepeat) return true;
+      const { repeat: _, ...rest } = val as Record<string, unknown>;
+      return hasNestedRepeat(rest, true);
+    }
+    for (const v of Object.values(val)) {
+      if (hasNestedRepeat(v, inRepeat)) return true;
+    }
+    return false;
+  }
+  return false;
+}
+
+/** 检查 repeat 次数是否超出上限 */
+function checkRepeatLimits(
+  val: unknown,
+  path: (string | number)[],
+  scope: Record<string, unknown>,
+  out: ConfigIssue[],
+) {
+  if (Array.isArray(val)) {
+    val.forEach((item, i) => checkRepeatLimits(item, [...path, i], scope, out));
+  } else if (isObj(val)) {
+    if ('repeat' in val) {
+      const v = val.repeat;
+      const n = typeof v === 'number' ? v : typeof v === 'string' ? evalExpr(v, scope) : undefined;
+      if (n !== undefined && n > MAX_REPEAT) {
+        const paramStr =
+          Object.keys(scope).length > 0
+            ? `（当 ${Object.entries(scope).map(([p, val]) => `${p} = ${String(val)}`).join('、')} 时）`
+            : '';
+        out.push({
+          path: [...path, 'repeat'],
+          message: `repeat 次数不能超过 ${MAX_REPEAT}${paramStr}`,
+        });
+      }
+    }
+    for (const [k, v] of Object.entries(val)) {
+      if (k !== 'repeat') checkRepeatLimits(v, [...path, k], scope, out);
+    }
+  }
+}
+
+/** 检查展开后的列表是否为空 */
+function checkEmptyLists(
+  val: unknown,
+  path: (string | number)[],
+  scope: Record<string, unknown>,
+  out: ConfigIssue[],
+) {
+  if (Array.isArray(val)) {
+    if (val.length === 0) {
+      const paramStr =
+        Object.keys(scope).length > 0
+          ? `（当 ${Object.entries(scope).map(([p, val]) => `${p} = ${String(val)}`).join('、')} 时）`
+          : '';
+      const name = path[path.length - 1];
+      out.push({
+        path,
+        message: `${name} 列表展开后为空${paramStr}`,
+      });
+    } else {
+      val.forEach((item, i) => checkEmptyLists(item, [...path, i], scope, out));
+    }
+  } else if (isObj(val)) {
+    for (const [k, v] of Object.entries(val)) {
+      checkEmptyLists(v, [...path, k], scope, out);
+    }
+  }
+}
+
 export function checkScene(raw: LessonLike): ConfigIssue[] {
   const out: ConfigIssue[] = [];
-  // 参数和派生值先代入，再检查（配置里的 count: "{a}" 要按代入后的数字检查）
   const scope = resolveParams(raw.params, raw.derived);
+
+  // repeat 不能嵌套
+  (raw.objects ?? []).forEach((o, i) => {
+    if (hasNestedRepeat(o)) {
+      out.push({ path: ['objects', i], message: 'repeat 不能嵌套' });
+    }
+  });
+  (raw.steps ?? []).forEach((st, si) => {
+    if (hasNestedRepeat(st.do)) {
+      out.push({ path: ['steps', si, 'do'], message: 'repeat 不能嵌套' });
+    }
+  });
+
+  // repeat 次数上限检查
+  (raw.objects ?? []).forEach((o, i) => {
+    checkRepeatLimits(o, ['objects', i], scope, out);
+  });
+  (raw.steps ?? []).forEach((st, si) => {
+    checkRepeatLimits(st.do, ['steps', si, 'do'], scope, out);
+  });
+
+  // 参数和派生值先代入，再检查（配置里的 count: "{a}" 要按代入后的数字检查）
   const filled = fillParams({ objects: raw.objects ?? [], steps: raw.steps }, scope);
   // 重复（repeat）先展开，再按展开后的零件和动作检查
   const lesson = {
@@ -119,6 +226,15 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
   };
   const objects = lesson.objects ?? [];
   if (!objects.length) out.push({ path: ['objects'], message: '场景模板要在 objects 里摆好零件' });
+
+  // 展开后的列表为空时报错
+  objects.forEach((o, i) => {
+    for (const [k, v] of Object.entries(o)) {
+      if (k !== 'id' && k !== 'type') {
+        checkEmptyLists(v, ['objects', i, k], scope, out);
+      }
+    }
+  });
 
   /** 当前存在的零件：id → 类型 */
   const alive = new Map<string, string>();

@@ -210,6 +210,22 @@ steps:
           - show: 'sub{i + 2}'
 ```
 
+零件内部的列表也可以按出题参数生成（如 `item-set` 的 `items`、`chart` 的 `values`）：
+- 列表元素写 `repeat`：按次数展开，元素内的 `{i}` 从 1 开始，次数为 0 的项会被去掉。
+- 数值序列用 `'{range(from, to, step)}'`：返回从 `from` 到 `to`、步长为 `step` 的数字列表（包含两端），只能作为整个属性值使用。
+
+```yaml
+- id: fruits
+  type: item-set
+  items:
+    - { repeat: '{a}', asset: apple, tags: { kind: apple } }
+    - { repeat: '{b}', asset: pear, tags: { kind: pear } }
+- id: bars
+  type: chart
+  kind: bar
+  values: '{range(2, 2 * n, 2)}' # n = 4 时为 [2, 4, 6, 8]
+```
+
 ## 多选（choose）
 
 `choose.answer` 写成列表就是多选，`options` 最多 6 个：
