@@ -5,6 +5,7 @@ import {
   counterItems,
   counterSlot,
   getPart,
+  isColor,
   isCounters,
   isPoint,
   mixColor,
@@ -56,14 +57,29 @@ export function initialObject(raw: Props): SceneObject | undefined {
 
 type World = Map<string, SceneObject>;
 
-/** 两个值之间插值：数字、坐标、颜色可以连续变化，其他值过半时切换 */
-function blend(from: unknown, to: unknown, t: number, key: string): unknown {
+/** 两个值之间插值：数字、坐标、颜色、数组可以连续变化，其他值过半时切换 */
+export function blend(from: unknown, to: unknown, t: number, key = '', depth = 0): unknown {
   if (t >= 1) return to;
-  if (typeof from === 'number' && typeof to === 'number') return lerp(from, to, t);
+  if (
+    typeof from === 'number' &&
+    Number.isFinite(from) &&
+    typeof to === 'number' &&
+    Number.isFinite(to)
+  )
+    return lerp(from, to, t);
   if (isPoint(from) && isPoint(to)) return lerpPt(from, to, t);
-  if (key === 'color' && typeof from === 'string' && typeof to === 'string') {
+  const isCol =
+    (key === 'color' && typeof from === 'string' && typeof to === 'string') ||
+    (isColor(from) && isColor(to));
+  if (isCol && typeof from === 'string' && typeof to === 'string') {
     const hex = (c: string) => namedColors()[c] ?? c;
     return mixColor(hex(from), hex(to), t);
+  }
+  if (Array.isArray(from) && Array.isArray(to)) {
+    if (depth < 3 && from.length === to.length) {
+      return from.map((v, i) => blend(v, to[i], t, key, depth + 1));
+    }
+    return t < 0.5 ? from : to;
   }
   return t < 0.5 ? from : to;
 }

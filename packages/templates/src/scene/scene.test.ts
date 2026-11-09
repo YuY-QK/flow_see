@@ -3,6 +3,7 @@ import { counterSlot } from '@flow-see/blocks';
 import { parseDuration, planStep } from './actions';
 import { checkScene } from './check';
 import {
+  blend,
   coveredActions,
   dragEach,
   dragFrame,
@@ -396,5 +397,71 @@ describe('动手做：多目标拖动', () => {
       ],
     });
     expect(issues).toEqual([]);
+  });
+});
+
+describe('顶层属性与数组插值（blend）', () => {
+  it('[1, 2, 3] → [3, 4, 5]，t = 0.5 得 [2, 3, 4]', () => {
+    expect(blend([1, 2, 3], [3, 4, 5], 0.5)).toEqual([2, 3, 4]);
+  });
+
+  it('坐标数组 [[0,0],[10,0]] → [[0,10],[10,10]]，t = 0.5 得 [[0,5],[10,5]]', () => {
+    expect(
+      blend(
+        [
+          [0, 0],
+          [10, 0],
+        ],
+        [
+          [0, 10],
+          [10, 10],
+        ],
+        0.5,
+      ),
+    ).toEqual([
+      [0, 5],
+      [10, 5],
+    ]);
+  });
+
+  it('二维数组 [[1,1],[2]] → [[3,3],[4]]，t = 0.5 得 [[2,2],[3]]', () => {
+    expect(blend([[1, 1], [2]], [[3, 3], [4]], 0.5)).toEqual([[2, 2], [3]]);
+  });
+
+  it('长度不同 [1,2] → [1,2,3]：t = 0.4 得 from，t = 0.6 得 to', () => {
+    expect(blend([1, 2], [1, 2, 3], 0.4)).toEqual([1, 2]);
+    expect(blend([1, 2], [1, 2, 3], 0.6)).toEqual([1, 2, 3]);
+  });
+
+  it('对象 { a: 1 } → { a: 3 }：t = 0.4 得 from（不插值）', () => {
+    expect(blend({ a: 1 }, { a: 3 }, 0.4)).toEqual({ a: 1 });
+    expect(blend({ a: 1 }, { a: 3 }, 0.6)).toEqual({ a: 3 });
+  });
+
+  it('递归深度超过 3 层时按其他处理', () => {
+    expect(blend([[[[1]]]], [[[[3]]]], 0.4)).toEqual([[[[1]]]]);
+    expect(blend([[[[1]]]], [[[[3]]]], 0.6)).toEqual([[[[3]]]]);
+  });
+
+  it('回归：现有零件 set 数字属性仍正常（如 grid 的 filled: 6）', () => {
+    const gridDef: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [{ id: 'g', type: 'grid', rows: 3, cols: 3, cell: 40, filled: 0, at: [100, 100] }],
+      steps: [[{ set: { target: 'g', filled: 6, duration: 2, ease: 'linear' } }]],
+    };
+    expect(obj(gridDef, 0, 0, 'g')?.props.filled).toBe(0);
+    expect(obj(gridDef, 0, 0.5, 'g')?.props.filled).toBeCloseTo(3);
+    expect(obj(gridDef, 0, 1, 'g')?.props.filled).toBe(6);
+  });
+
+  it('零件 set 数组属性平滑变化（如 wire 的 points）', () => {
+    const wireDef: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [{ id: 'w', type: 'wire', points: [[0, 0], [10, 0]], at: [0, 0] }],
+      steps: [[{ set: { target: 'w', points: [[0, 10], [10, 10]], duration: 2, ease: 'linear' } }]],
+    };
+    expect(obj(wireDef, 0, 0, 'w')?.props.points).toEqual([[0, 0], [10, 0]]);
+    expect(obj(wireDef, 0, 0.5, 'w')?.props.points).toEqual([[0, 5], [10, 5]]);
+    expect(obj(wireDef, 0, 1, 'w')?.props.points).toEqual([[0, 10], [10, 10]]);
   });
 });
