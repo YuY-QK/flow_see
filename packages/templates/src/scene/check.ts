@@ -78,12 +78,20 @@ function checkProps(
     if (k === 'text' && typeof v === 'string')
       for (const m of v.matchAll(RICH)) {
         const words = m[2].trim().split(/\s+/).filter(Boolean);
-        const bad = words.find((w) => w !== 'blank' && !colorOk(w, alive));
+        const bad = words.find(
+          (w) => w !== 'blank' && w !== 'sup' && w !== 'frac' && !colorOk(w, alive),
+        );
         if (!words.length || bad)
           out.push({
             path: [...path, k],
-            message: `文字里的 [${m[1]}](${m[2]})：括号里写颜色名、#RRGGBB、"@零件id"，或“颜色 @零件id”${bad ? `（${bad} 不认识）` : ''}`,
+            message: `文字里的 [${m[1]}](${m[2]})：括号里写颜色名、#RRGGBB、"@零件id"、blank、sup 或 frac${bad ? `（${bad} 不认识）` : ''}`,
           });
+        if (words.includes('frac') && !/^(?:-?\d+\s+)?-?\d+\/\d+$/.test(m[1].trim())) {
+          out.push({
+            path: [...path, k],
+            message: `文字里的 [${m[1]}](${m[2]})：frac 的内容必须是 a/b 或 w a/b（整数）`,
+          });
+        }
       }
     if (k === 'layout' && !(COUNTER_LAYOUTS as readonly unknown[]).includes(v))
       out.push({ path: [...path, k], message: `layout 只能是 ${COUNTER_LAYOUTS.join('、')}` });

@@ -3,7 +3,16 @@
 // 颜色标记（强对应）：文字里写 [4](blue) 这几个字就是蓝色；写 [4](@r1) 颜色跟着零件 r1，
 // 而且 r1 高亮时这几个字也一起亮起来（底下衬一块同色的底）；两样都要时写 [3](red @rows)。
 import type { Theme } from '@flow-see/core';
-import { boxAround, color, num, pt, str, textWidth, type PartDef, type Props } from '../base';
+import {
+  boxAround,
+  color,
+  num,
+  pt,
+  str,
+  textWidth as baseTextWidth,
+  type PartDef,
+  type Props,
+} from '../base';
 import { BlankBox } from './mark';
 import { markRect } from './markRect';
 
@@ -24,7 +33,7 @@ function rawText(p: Props): string {
   return t ? t.replaceAll('{value}', v) : v;
 }
 
-interface Span {
+export interface Span {
   text: string;
   /** 写死的颜色 */
   color?: string;
@@ -32,6 +41,20 @@ interface Span {
   link?: string;
   /** 要孩子答的数：不写字，画成同宽的虚线空框（颜色标记写 blank） */
   blank?: boolean;
+  /** 上标 */
+  sup?: boolean;
+  /** 分数 */
+  frac?: { whole?: string; num: string; den: string };
+}
+
+function parseFrac(raw: string): { whole?: string; num: string; den: string } | undefined {
+  const m = raw.trim().match(/^(?:(-?\d+)\s+)?(-?\d+)\/(-?\d+)$/);
+  if (!m) return undefined;
+  return {
+    ...(m[1] !== undefined ? { whole: m[1] } : {}),
+    num: m[2],
+    den: m[3],
+  };
 }
 
 /** 把文字按颜色标记切成几段 */
@@ -43,12 +66,46 @@ export function richSpans(text: string): Span[] {
     const words = m[2].trim().split(/\s+/);
     const link = words.find((w) => w.startsWith('@'))?.slice(1);
     const blank = words.includes('blank');
-    const c = words.find((w) => !w.startsWith('@') && w !== 'blank');
-    out.push({ text: m[1], color: c, link, blank });
+    const sup = words.includes('sup');
+    const isFrac = words.includes('frac');
+    const frac = isFrac ? parseFrac(m[1]) : undefined;
+    const c = words.find(
+      (w) => !w.startsWith('@') && w !== 'blank' && w !== 'sup' && w !== 'frac',
+    );
+    const span: Span = { text: m[1], color: c, link, blank };
+    if (sup) span.sup = true;
+    if (frac) span.frac = frac;
+    out.push(span);
     last = m.index + m[0].length;
   }
   if (last < text.length) out.push({ text: text.slice(last) });
   return out;
+}
+
+/** 估算单个 span 的宽度 */
+export function spanWidth(sp: Span, size: number): number {
+  if (sp.frac) {
+    const numSize = size * 0.7;
+    const denSize = size * 0.7;
+    const numW = baseTextWidth(sp.frac.num, numSize);
+    const denW = baseTextWidth(sp.frac.den, denSize);
+    const lineWidth = Math.max(numW, denW) + size * 0.2;
+    if (sp.frac.whole) {
+      const wholeW = baseTextWidth(sp.frac.whole, size);
+      return wholeW + size * 0.1 + lineWidth;
+    }
+    return lineWidth;
+  }
+  if (sp.sup) {
+    return baseTextWidth(sp.text, size * 0.6);
+  }
+  return baseTextWidth(sp.text, size);
+}
+
+/** 文字宽度估算：支持排版标记（sup、frac），未带标记的文字沿用基准字符估算 */
+export function textWidth(text: string, size: number): number {
+  const spans = richSpans(text);
+  return spans.reduce((w, sp) => w + spanWidth(sp, size), 0);
 }
 
 /** 场景求值时记下的被引用零件的颜色、高亮程度（见 templates/scene/evaluate 的 linkRefs） */
@@ -78,61 +135,271 @@ function RichLine({
 }) {
   const spans = richSpans(rawText(p));
   const refs = (p.refs ?? {}) as Refs;
-  const widths = spans.map((sp) => textWidth(sp.text, size));
+  const widths = spans.map((sp) => spanWidth(sp, size));
   const total = widths.reduce((w, v) => w + v, 0);
   // 每段的起点：前面各段宽度之和（纯计算，不在渲染里改变量）
   const starts = widths.map((_, i) => widths.slice(0, i).reduce((w, v) => w + v, x - total / 2));
   const parts = spans.map((sp, i) => {
     const ref = sp.link ? refs[sp.link] : undefined;
     const c = sp.color ? color(sp.color, theme) : ref?.color ? color(ref.color, theme) : fill;
-    // 段首段尾的空格：SVG 会把它们吃掉，所以按去掉空格的字来定中心
+    const hl = Math.max(0, Math.min(1, ref?.highlight ?? 0));
+    const blank = !!sp.blank;
+
+    if (sp.frac) {
+      const frac = sp.frac;
+      const numSize = size * 0.7;
+      const denSize = size * 0.7;
+      const numW = baseTextWidth(frac.num, numSize);
+      const denW = baseTextWidth(frac.den, denSize);
+      const lineWidth = Math.max(numW, denW) + size * 0.2;
+      const lineStrokeWidth = Math.max(1.5, size * 0.06);
+
+      let wholeW = 0;
+      let wholeX: number | undefined;
+      let fracCenterX: number;
+      const startX = starts[i];
+
+      if (frac.whole) {
+        wholeW = baseTextWidth(frac.whole, size);
+        const gap = size * 0.1;
+        wholeX = startX + wholeW / 2;
+        fracCenterX = startX + wholeW + gap + lineWidth / 2;
+      } else {
+        fracCenterX = startX + lineWidth / 2;
+      }
+
+      const totalW = widths[i];
+      const cx = startX + totalW / 2;
+
+      return {
+        type: 'frac' as const,
+        c,
+        hl,
+        blank,
+        cx,
+        cy: y,
+        bw: totalW,
+        frac,
+        numSize,
+        denSize,
+        numW,
+        denW,
+        lineWidth,
+        lineStrokeWidth,
+        wholeW,
+        wholeX,
+        fracCenterX,
+      };
+    }
+
+    if (sp.sup) {
+      const body = sp.text.trim();
+      const lead = baseTextWidth(
+        sp.text.slice(0, sp.text.length - sp.text.trimStart().length),
+        size * 0.6,
+      );
+      const bw = baseTextWidth(body, size * 0.6);
+      return {
+        type: 'sup' as const,
+        body,
+        c,
+        hl,
+        blank,
+        cx: starts[i] + lead + bw / 2,
+        cy: y - size * 0.4,
+        bw,
+        fontSize: size * 0.6,
+      };
+    }
+
     const body = sp.text.trim();
-    const lead = textWidth(sp.text.slice(0, sp.text.length - sp.text.trimStart().length), size);
-    const bw = textWidth(body, size);
+    const lead = baseTextWidth(
+      sp.text.slice(0, sp.text.length - sp.text.trimStart().length),
+      size,
+    );
+    const bw = baseTextWidth(body, size);
     return {
+      type: 'text' as const,
       body,
       c,
+      hl,
+      blank,
       cx: starts[i] + lead + bw / 2,
+      cy: y,
       bw,
-      hl: Math.max(0, Math.min(1, ref?.highlight ?? 0)),
-      blank: !!sp.blank,
+      fontSize: size,
     };
   });
+
   const hlWidth = Math.max(2, size / 16);
   return (
     <g>
-      {parts.map((sp, i) =>
-        sp.blank ? (
-          <BlankBox key={i} cx={sp.cx} cy={y} textW={sp.bw} size={size} stroke={sp.c} />
-        ) : sp.hl > 0 && sp.body ? (
-          <rect
-            key={i}
-            {...markRect(sp.cx, y, sp.bw, size)}
-            fill={sp.c}
-            fillOpacity={0.16 * sp.hl}
-            stroke={sp.c}
-            strokeOpacity={sp.hl}
-            strokeWidth={hlWidth}
-          />
-        ) : null,
-      )}
-      {parts.map((sp, i) =>
-        sp.body && !sp.blank ? (
+      {parts.map((sp, i) => {
+        if (sp.type === 'frac') {
+          if (sp.blank) {
+            return (
+              <g key={i}>
+                {sp.hl > 0 ? (
+                  <rect
+                    {...markRect(sp.cx, sp.cy, sp.bw, size, size * 1.6)}
+                    fill={sp.c}
+                    fillOpacity={0.16 * sp.hl}
+                    stroke={sp.c}
+                    strokeOpacity={sp.hl}
+                    strokeWidth={hlWidth}
+                  />
+                ) : null}
+                {sp.wholeX !== undefined ? (
+                  <BlankBox
+                    cx={sp.wholeX}
+                    cy={sp.cy}
+                    textW={sp.wholeW}
+                    size={size}
+                    stroke={sp.c}
+                  />
+                ) : null}
+                <BlankBox
+                  cx={sp.fracCenterX}
+                  cy={sp.cy - size * 0.35}
+                  textW={sp.numW}
+                  size={sp.numSize}
+                  stroke={sp.c}
+                />
+                <line
+                  x1={sp.fracCenterX - sp.lineWidth / 2}
+                  x2={sp.fracCenterX + sp.lineWidth / 2}
+                  y1={sp.cy}
+                  y2={sp.cy}
+                  stroke={sp.c}
+                  strokeWidth={sp.lineStrokeWidth}
+                  strokeLinecap="round"
+                />
+                <BlankBox
+                  cx={sp.fracCenterX}
+                  cy={sp.cy + size * 0.35}
+                  textW={sp.denW}
+                  size={sp.denSize}
+                  stroke={sp.c}
+                />
+              </g>
+            );
+          }
+          if (sp.hl > 0) {
+            return (
+              <rect
+                key={i}
+                {...markRect(sp.cx, sp.cy, sp.bw, size, size * 1.6)}
+                fill={sp.c}
+                fillOpacity={0.16 * sp.hl}
+                stroke={sp.c}
+                strokeOpacity={sp.hl}
+                strokeWidth={hlWidth}
+              />
+            );
+          }
+          return null;
+        }
+
+        if (sp.blank) {
+          return (
+            <BlankBox
+              key={i}
+              cx={sp.cx}
+              cy={sp.cy}
+              textW={sp.bw}
+              size={sp.fontSize}
+              stroke={sp.c}
+            />
+          );
+        }
+        if (sp.hl > 0 && sp.body) {
+          return (
+            <rect
+              key={i}
+              {...markRect(sp.cx, sp.cy, sp.bw, sp.fontSize)}
+              fill={sp.c}
+              fillOpacity={0.16 * sp.hl}
+              stroke={sp.c}
+              strokeOpacity={sp.hl}
+              strokeWidth={hlWidth}
+            />
+          );
+        }
+        return null;
+      })}
+      {parts.map((sp, i) => {
+        if (sp.blank) return null;
+
+        if (sp.type === 'frac') {
+          return (
+            <g key={i}>
+              {sp.wholeX !== undefined ? (
+                <text
+                  x={sp.wholeX}
+                  y={sp.cy}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize={size}
+                  fontWeight={weight}
+                  fill={sp.c}
+                  style={{ fontVariantNumeric: 'tabular-nums' }}
+                >
+                  {sp.frac.whole}
+                </text>
+              ) : null}
+              <line
+                x1={sp.fracCenterX - sp.lineWidth / 2}
+                x2={sp.fracCenterX + sp.lineWidth / 2}
+                y1={sp.cy}
+                y2={sp.cy}
+                stroke={sp.c}
+                strokeWidth={sp.lineStrokeWidth}
+                strokeLinecap="round"
+              />
+              <text
+                x={sp.fracCenterX}
+                y={sp.cy - size * 0.35}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize={sp.numSize}
+                fontWeight={weight}
+                fill={sp.c}
+                style={{ fontVariantNumeric: 'tabular-nums' }}
+              >
+                {sp.frac.num}
+              </text>
+              <text
+                x={sp.fracCenterX}
+                y={sp.cy + size * 0.35}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize={sp.denSize}
+                fontWeight={weight}
+                fill={sp.c}
+                style={{ fontVariantNumeric: 'tabular-nums' }}
+              >
+                {sp.frac.den}
+              </text>
+            </g>
+          );
+        }
+
+        return sp.body ? (
           <text
             key={i}
             x={sp.cx}
-            y={y}
+            y={sp.cy}
             textAnchor="middle"
             dominantBaseline="central"
-            fontSize={size}
+            fontSize={sp.fontSize}
             fontWeight={weight}
             fill={sp.c}
             style={{ fontVariantNumeric: 'tabular-nums' }}
           >
             {sp.body}
           </text>
-        ) : null,
-      )}
+        ) : null;
+      })}
     </g>
   );
 }
@@ -145,7 +412,12 @@ export const textPart: PartDef = {
   bbox(p) {
     const [x, y] = pt(p.at);
     const size = num(p.size, 0);
-    return boxAround(x, y, Math.max(textWidth(displayText(p), size), size * 0.6), size * 1.25);
+    const raw = rawText(p);
+    const spans = richSpans(raw);
+    const hasFrac = spans.some((s) => !!s.frac);
+    const w = Math.max(textWidth(raw, size), size * 0.6);
+    const h = size * (hasFrac ? 1.6 : 1.25);
+    return boxAround(x, y, w, h);
   },
   Render({ p, ctx }) {
     const [x, y] = pt(p.at);
@@ -213,7 +485,10 @@ export const labelPart: PartDef = {
   bbox(p) {
     const [x, y] = pt(p.at);
     const size = num(p.size, 0);
-    return boxAround(x, y, textWidth(displayText(p), size) + size * 1.2, size * 1.9);
+    const raw = rawText(p);
+    const spans = richSpans(raw);
+    const hasFrac = spans.some((s) => !!s.frac);
+    return boxAround(x, y, textWidth(raw, size) + size * 1.2, size * (hasFrac ? 2.25 : 1.9));
   },
   Render({ p, ctx }) {
     const b = labelPart.bbox(p);
