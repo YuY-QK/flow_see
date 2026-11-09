@@ -138,6 +138,58 @@ describe('内容配置校验', () => {
     expect(msgs.some((m) => m.includes('参数 zzz'))).toBe(true);
   });
 
+  it('E1/E2: 步骤重复与条件检查（展开后步数上限、0 步、算式报错）', () => {
+    // 展开后超过 20 步报错
+    const over20 = LESSON.replace(
+      'steps:\n  - say: 这是一个完整的饼。\n  - say: 把它平均分成 {parts} 份。',
+      'steps:\n  - repeat: 25\n    say: 步骤 {i}',
+    );
+    const msgsOver = errors(sandbox({ 'lessons/math/g3/fraction-intro.yaml': over20 })).map(
+      (e) => e.message,
+    );
+    expect(msgsOver.some((m) => m.includes('超过了上限 20 步'))).toBe(true);
+
+    // 展开后步数为 0 报错
+    const zeroSteps = LESSON.replace(
+      'steps:\n  - say: 这是一个完整的饼。\n  - say: 把它平均分成 {parts} 份。',
+      'steps:\n  - repeat: 0\n    say: 步骤消失',
+    );
+    const msgsZero = errors(sandbox({ 'lessons/math/g3/fraction-intro.yaml': zeroSteps })).map(
+      (e) => e.message,
+    );
+    expect(msgsZero.some((m) => m.includes('展开后步数为 0'))).toBe(true);
+
+    // repeat 算式写错
+    const badRepeat = LESSON.replace(
+      'steps:\n  - say: 这是一个完整的饼。\n  - say: 把它平均分成 {parts} 份。',
+      'steps:\n  - repeat: "1 >+"\n    say: 步骤',
+    );
+    const msgsBadRepeat = errors(sandbox({ 'lessons/math/g3/fraction-intro.yaml': badRepeat })).map(
+      (e) => e.message,
+    );
+    expect(msgsBadRepeat.some((m) => m.includes('repeat 算式写错了'))).toBe(true);
+
+    // when 算式写错
+    const badWhen = LESSON.replace(
+      'steps:\n  - say: 这是一个完整的饼。\n  - say: 把它平均分成 {parts} 份。',
+      'steps:\n  - when: "1 >+"\n    say: 步骤',
+    );
+    const msgsBadWhen = errors(sandbox({ 'lessons/math/g3/fraction-intro.yaml': badWhen })).map(
+      (e) => e.message,
+    );
+    expect(msgsBadWhen.some((m) => m.includes('when 算式写错了'))).toBe(true);
+
+    // repeat / when 引用不存在的参数
+    const badVar = LESSON.replace(
+      'steps:\n  - say: 这是一个完整的饼。\n  - say: 把它平均分成 {parts} 份。',
+      'steps:\n  - repeat: "{unknown_var}"\n    say: 步骤',
+    );
+    const msgsBadVar = errors(sandbox({ 'lessons/math/g3/fraction-intro.yaml': badVar })).map(
+      (e) => e.message,
+    );
+    expect(msgsBadVar.some((m) => m.includes('不存在的参数：unknown_var'))).toBe(true);
+  });
+
   it('创作示例：引用的元素名、分类、列表都要对得上', () => {
     const ex = (file: string, edit: (s: string) => string) =>
       sandbox({

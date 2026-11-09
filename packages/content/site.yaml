@@ -36,6 +36,7 @@ style: style.yaml        # 动画主题（配色、圆角、字体）和导出�
 
 # ───────── 知识点动画：场景零件的外观和默认值（packages/blocks 读取）─────────
 scene:
+  maxSteps: 20                         # 步骤展开后的数量上限
   stage: { width: 800, height: 450 }   # 没有写 stage 的知识点用这个舞台大小
   colors:                              # 配置里可以直接写的颜色名；也可以写 #RRGGBB，或 ink / dim / accent / line（跟随动画主题）
     blue: "#2F6FE4"

@@ -24,6 +24,7 @@ const nonNeg = z.number().min(0);
 /** 场景零件的外观与默认值（blocks 的 SceneStyle） */
 const sceneStyleSchema = z
   .object({
+    maxSteps: z.number().int().positive().describe('步骤展开后的数量上限'),
     stage: z
       .object({ width: z.number().positive(), height: z.number().positive() })
       .strict()
@@ -599,6 +600,14 @@ const trySchema = z
 
 const stepSchema = z
   .object({
+    repeat: z
+      .union([z.number().int(), z.string()])
+      .optional()
+      .describe('按次数复制这一步，代入 {i}（从 1 开始）'),
+    when: z
+      .string()
+      .optional()
+      .describe('这一步出现的条件：{算式}，结果为 0 时跳过'),
     say: text.describe('这一步的讲解，会朗读；可以用 {参数名} 代入参数'),
     title: z.string().optional(),
     show: z.string().optional().describe('模板约定的画面状态'),
@@ -775,6 +784,7 @@ export type ExampleConfig = z.output<typeof exampleSchema>;
 export type ExamplesConfig = ExamplesIndexConfig & { list: ExampleConfig[] };
 export type GradesConfig = z.output<typeof gradesSchema>;
 export type CurriculumConfig = z.output<typeof curriculumSchema>;
+export type StepConfig = z.output<typeof stepSchema>;
 export type LessonConfig = z.output<typeof lessonSchema>;
 export type AssetEntry = z.output<typeof assetSchema>;
 export type LessonStatus = (typeof LESSON_STATUSES)[number];

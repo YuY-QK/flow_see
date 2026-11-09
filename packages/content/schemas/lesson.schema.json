@@ -264,6 +264,23 @@
       "items": {
         "type": "object",
         "properties": {
+          "repeat": {
+            "description": "按次数复制这一步，代入 {i}（从 1 开始）",
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "when": {
+            "description": "这一步出现的条件：{算式}，结果为 0 时跳过",
+            "type": "string"
+          },
           "say": {
             "type": "string",
             "minLength": 1,

@@ -277,6 +277,12 @@
     "scene": {
       "type": "object",
       "properties": {
+        "maxSteps": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "description": "步骤展开后的数量上限"
+        },
         "stage": {
           "type": "object",
           "properties": {
@@ -640,6 +646,7 @@
         }
       },
       "required": [
+        "maxSteps",
         "stage",
         "colors",
         "highlight",

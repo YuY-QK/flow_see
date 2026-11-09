@@ -4,6 +4,7 @@ import { join, relative, sep } from 'node:path';
 import { LineCounter, parseDocument, type Document } from 'yaml';
 import {
   clampParams,
+  evalExpr,
   exploreCombos,
   exprNames,
   resolveParams,
@@ -11,6 +12,7 @@ import {
 } from '@flow-see/core/params.ts';
 import { chooseAnswers, chooseOptions, type ChooseSpec } from '@flow-see/core/choose.ts';
 import { fillParams } from '@flow-see/core/fill.ts';
+import { expandSteps } from './steps.ts';
 import type { z } from 'zod';
 import {
   SCHEMAS,
@@ -304,7 +306,49 @@ export function loadContent(
     for (const n of used)
       if (!known.has(n) && n !== 'i')
         err(name, `配置里的 {${n}} 不是 params 或 derived 中的参数`);
-    lesson.steps.forEach((st, i) => {
+    lesson.steps.forEach((st, si) => {
+      if (st.repeat !== undefined) {
+        if (typeof st.repeat === 'string') {
+          const names = exprNames(st.repeat);
+          if (!names) {
+            err(
+              name,
+              `第 ${si + 1} 步的 repeat 算式写错了：${st.repeat}`,
+              read.line(['steps', si, 'repeat']),
+            );
+          } else {
+            for (const n of names) {
+              if (!known.has(n)) {
+                err(
+                  name,
+                  `第 ${si + 1} 步的 repeat 引用了不存在的参数：${n}`,
+                  read.line(['steps', si, 'repeat']),
+                );
+              }
+            }
+          }
+        }
+      }
+      if (st.when !== undefined) {
+        const names = exprNames(st.when);
+        if (!names) {
+          err(
+            name,
+            `第 ${si + 1} 步的 when 算式写错了：${st.when}`,
+            read.line(['steps', si, 'when']),
+          );
+        } else {
+          for (const n of names) {
+            if (!known.has(n) && (st.repeat === undefined || n !== 'i')) {
+              err(
+                name,
+                `第 ${si + 1} 步的 when 引用了不存在的参数：${n}`,
+                read.line(['steps', si, 'when']),
+              );
+            }
+          }
+        }
+      }
       const lines: [string, string][] = [['讲解', st.say]];
       if (st.try) {
         lines.push(['任务提示', st.try.task]);
@@ -315,7 +359,7 @@ export function loadContent(
         if (opts.sayWarnLength && len > opts.sayWarnLength)
           warn(
             name,
-            `第 ${i + 1} 步${what}有 ${len} 个字，自校清单建议一句不超过约 ${opts.sayWarnLength} 字`,
+            `第 ${si + 1} 步${what}有 ${len} 个字，自校清单建议一句不超过约 ${opts.sayWarnLength} 字`,
           );
       }
     });
@@ -350,35 +394,119 @@ export function loadContent(
           label: '',
           params: p as Record<string, unknown>,
         });
-    if (!opts.templateIds || opts.templateIds.includes(lesson.template)) {
-      const seen = new Set<string>();
-      for (const v of variants)
+    const maxSteps = site?.scene?.maxSteps ?? 20;
+    const seen = new Set<string>();
+    for (const v of variants) {
+      const vScope = resolveParams(v.params, derived);
+      const std0 = v.params === lesson.params;
+      const whenSuffix = std0
+        ? ''
+        : `（${
+            v.label ||
+            '当 ' +
+              Object.entries(v.params)
+                .filter(([k, x]) => x !== lesson.params[k])
+                .map(([k, x]) => `${k}=${String(x)}`)
+                .join('、') +
+              ' 时'
+          }）`;
+
+      for (let si = 0; si < lesson.steps.length; si++) {
+        const st = lesson.steps[si];
+        if (st.repeat !== undefined && typeof st.repeat === 'string') {
+          const val = evalExpr(st.repeat, vScope);
+          if (val === undefined) {
+            const key = `repeat-eval-${si}-${whenSuffix}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              err(
+                name,
+                `第 ${si + 1} 步的 repeat 算式写错了：${st.repeat}${whenSuffix}`,
+                read.line(['steps', si, 'repeat']),
+              );
+            }
+          }
+        }
+        if (st.when !== undefined) {
+          if (st.repeat !== undefined) {
+            const countVal =
+              typeof st.repeat === 'number'
+                ? st.repeat
+                : evalExpr(st.repeat, vScope);
+            const count =
+              countVal !== undefined && Number.isFinite(countVal)
+                ? Math.floor(countVal)
+                : 0;
+            for (let i = 1; i <= count; i++) {
+              const cond = evalExpr(st.when, { ...vScope, i });
+              if (cond === undefined) {
+                const key = `when-eval-${si}-${whenSuffix}`;
+                if (!seen.has(key)) {
+                  seen.add(key);
+                  err(
+                    name,
+                    `第 ${si + 1} 步的 when 算式写错了：${st.when}${whenSuffix}`,
+                    read.line(['steps', si, 'when']),
+                  );
+                }
+                break;
+              }
+            }
+          } else {
+            const cond = evalExpr(st.when, vScope);
+            if (cond === undefined) {
+              const key = `when-eval-${si}-${whenSuffix}`;
+              if (!seen.has(key)) {
+                seen.add(key);
+                err(
+                  name,
+                  `第 ${si + 1} 步的 when 算式写错了：${st.when}${whenSuffix}`,
+                  read.line(['steps', si, 'when']),
+                );
+              }
+            }
+          }
+        }
+      }
+
+      const expandedSteps = expandSteps(lesson.steps, vScope);
+      if (expandedSteps.length === 0) {
+        const key = `steps-zero-${whenSuffix}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          err(name, `步骤展开后步数为 0${whenSuffix}`);
+        }
+      } else if (expandedSteps.length > maxSteps) {
+        const key = `steps-max-${whenSuffix}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          err(
+            name,
+            `步骤展开后有 ${expandedSteps.length} 步，超过了上限 ${maxSteps} 步${whenSuffix}`,
+          );
+        }
+      }
+
+      if (!opts.templateIds || opts.templateIds.includes(lesson.template)) {
+        const expandedLesson = {
+          ...lesson,
+          params: v.params,
+          steps: expandedSteps as unknown as typeof lesson.steps,
+        };
         for (const i of [
-          ...(opts.checkLesson?.({ ...lesson, params: v.params }) ?? []),
-          ...checkChooseTries(lesson, v.params),
+          ...(opts.checkLesson?.(expandedLesson) ?? []),
+          ...checkChooseTries(expandedLesson, v.params),
         ]) {
           const key = formatPath(i.path) + i.message;
           if (seen.has(key)) continue;
           seen.add(key);
-          // 只有换了参数才出的问题，写明是哪组参数
-          const std0 = v.params === lesson.params;
-          const when = std0
-            ? ''
-            : `（${
-                v.label ||
-                '当 ' +
-                  Object.entries(v.params)
-                    .filter(([k, x]) => x !== lesson.params[k])
-                    .map(([k, x]) => `${k}=${String(x)}`)
-                    .join('、') +
-                  ' 时'
-              }）`;
           err(
             name,
-            (i.path.length ? `${formatPath(i.path)}：` : '') + i.message + when,
+            (i.path.length ? `${formatPath(i.path)}：` : '') + i.message + whenSuffix,
             read.line(i.path),
           );
         }
+      }
     }
     if (lesson.template !== 'scene' && lesson.steps.some((st) => st.try?.drag))
       err(
@@ -386,8 +514,13 @@ export function loadContent(
         '拖动（try.drag）目前只有场景模板（template: scene）支持；其他模板用点选（try.choose）',
       );
 
-    if (lesson.cover?.step && lesson.cover.step > lesson.steps.length)
-      err(name, `cover.step 超出了步骤数（共 ${lesson.steps.length} 步）`);
+    const coverScope = resolveParams(
+      { ...lesson.params, ...(lesson.cover?.params ?? {}) },
+      derived,
+    );
+    const coverSteps = expandSteps(lesson.steps, coverScope);
+    if (lesson.cover?.step && lesson.cover.step > coverSteps.length)
+      err(name, `cover.step 超出了步骤数（共 ${coverSteps.length} 步）`);
     for (const k of Object.keys(lesson.cover?.params ?? {}))
       if (!Object.hasOwn(lesson.params, k))
         err(name, `cover.params 里的参数 ${k} 没有在 params 中给出标准取值`);

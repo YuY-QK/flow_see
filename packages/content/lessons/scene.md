@@ -244,6 +244,29 @@ steps:
   values: '{range(2, 2 * n, 2)}' # n = 4 时为 [2, 4, 6, 8]
 ```
 
+## 步骤复制与条件
+
+步骤可以按次数复制，也可以根据条件决定是否出现。在步骤上写 `repeat` 或 `when`：
+
+```yaml
+steps:
+  - repeat: '{len(a)}'           # a 有几位就复制几步
+    title: 第 {i} 位
+    say: '{digit(a, i - 1)} 加 {digit(b, i - 1)}……'
+    do:
+      - set: { target: calc, show: '{i}' }
+```
+
+- **`repeat`**：整数或 `'{算式}'`。
+  - 按次数复制这一步，每份的作用域中包含 `{i}`（从 1 开始）。
+  - 步骤里的 `title`、`say`、`do`、`try` 均可代入 `{i}`。
+  - `repeat: 0`（或算式结果 ≤ 0）时，这一步消失。
+  - 展开后步数不能为 0，且不能超过 `scene.maxSteps`（`site.yaml` 中配置，默认 20 步）。
+- **`when`**：条件算式 `'{算式}'`。
+  - 结果为 0 时跳过这一步；结果非 0 时保留。
+  - 和 `repeat` 同时写时，每份根据其 `{i}` 单独判断；例如 `repeat: '{len(a)}'` 配 `when: '{digit(a, i - 1) > 0}'` 只保留非零位。
+  - 算式写错在 `content:check` 时会报错。
+
 ## 多选（choose）
 
 `choose.answer` 写成列表就是多选，`options` 最多 6 个：

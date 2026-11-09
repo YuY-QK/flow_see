@@ -6,7 +6,8 @@ import {
   type Animation,
   type ThemeId,
 } from '@flow-see/core';
-import type { LessonContent } from './index';
+import type { LessonConfig } from './schema';
+import { expandSteps, type ExpandedStep } from './steps';
 
 export interface LessonAnimationOptions {
   /** “动手试一试”调过的参数；不传时用配置里的标准取值 */
@@ -15,18 +16,27 @@ export interface LessonAnimationOptions {
   themeId?: ThemeId;
 }
 
+export { expandSteps, type ExpandedStep };
+
+export type LessonAnimationInput = LessonConfig & {
+  subject?: string;
+  grade?: number;
+};
+
 /**
  * 讲解、零件、动作里的 {参数名} 都会代入参数值。
  * 每一步：desc = 讲解（朗读）；data.show = 模板约定的画面状态；data.do = 场景模板的动作；
  * data.try = 动手做（跟着做 / 自己做时由孩子来做）。
  */
 export function lessonToAnimation(
-  lesson: LessonContent,
+  lesson: LessonAnimationInput,
   opts: LessonAnimationOptions = {},
 ): Animation {
   // 派生值（如 gap = 10 - a）随参数一起算出来，讲解和零件里都能用
   const params = resolveParams({ ...lesson.params, ...opts.params }, lesson.derived);
-  const filled = fillParams({ objects: lesson.objects ?? [], steps: lesson.steps }, params);
+  const steps = expandSteps(lesson.steps, params);
+  const objects = fillParams(lesson.objects ?? [], params);
+
   return {
     id: `lesson-${lesson.id}`,
     schemaVersion: SCHEMA_VERSION,
@@ -34,14 +44,14 @@ export function lessonToAnimation(
     templateId: lesson.template,
     themeId: lesson.theme ?? opts.themeId ?? 'flat',
     elements: [],
-    steps: filled.steps.map((st, i) => ({
+    steps: steps.map((st, i) => ({
       id: `${lesson.id}-${i + 1}`,
       title: st.title ?? '',
-      desc: st.say,
+      desc: String(st.say ?? ''),
       data: { show: st.show, do: st.do ?? [], ...(st.try ? { try: st.try } : {}) },
     })),
     params,
-    config: { stage: lesson.stage, objects: filled.objects },
+    config: { stage: lesson.stage, objects },
     settings: { autoNarrate: true, allowParamEdit: false },
     createdAt: 0,
     updatedAt: 0,

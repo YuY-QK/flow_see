@@ -2,6 +2,8 @@
 // 网站启动时调用 configureScene() 注入；测试和 content:check 也要先注入（见 vitest.setup.ts）。
 
 export interface SceneStyle {
+  /** 步骤展开后的数量上限 */
+  maxSteps?: number;
   /** 没有写 stage 的知识点用这个舞台大小 */
   stage: { width: number; height: number };
   /** 配置里可以直接写的颜色名 → #RRGGBB */
