@@ -4,6 +4,7 @@ import {
   counterColors,
   counterItems,
   counterSlot,
+  findSubitem,
   getPart,
   isColor,
   isCounters,
@@ -12,11 +13,19 @@ import {
   namedColors,
   sceneStyle,
   num,
+  type Box,
   type Point,
   type Props,
 } from '@flow-see/blocks';
 import type { StageTry, TrySpec } from '@flow-see/runtime/template.ts';
-import { dealCount, parseAction, planStep, type SceneAction, type StepPlan } from './actions';
+import {
+  dealCount,
+  parseAction,
+  parseTargetRef,
+  planStep,
+  type SceneAction,
+  type StepPlan,
+} from './actions';
 
 export interface SceneDef {
   stage: { width: number; height: number };
@@ -37,12 +46,21 @@ export interface SceneObject {
 export interface SubHighlight {
   id: string;
   name: string;
+  box: Box;
+  color?: string;
   value?: number;
+}
+
+export interface SubColor {
+  id: string;
+  name: string;
+  color: string;
 }
 
 export interface SceneFrame {
   objects: SceneObject[];
   subHighlights: SubHighlight[];
+  subColors?: SubColor[];
 }
 
 /** 先快后慢（进出都平滑） */
@@ -138,15 +156,62 @@ function apply(world: World, a: SceneAction, p: number, current: boolean) {
     case 'highlight':
       // 高亮只在这一步有效；keep: true 时一直保留
       if (!current && args.keep !== true) return;
-      for (const o of objs) {
-        o.props.highlight = Math.max(num(o.props.highlight, 0), e);
-        // color：这一次高亮框的颜色（不写用动画主题的强调色）
-        if (typeof args.color === 'string') o.props.hlColor = args.color;
-        else delete o.props.hlColor;
+      for (const t of a.targets) {
+        const { id, sub } = parseTargetRef(t);
+        const o = world.get(id);
+        if (!o) continue;
+        if (sub) {
+          const part = getPart(o.type);
+          if (!part) continue;
+          const found = findSubitem(part, o.props, sub);
+          const items = Array.isArray(found) ? found : found ? [found] : [];
+          const shMap = ((o.props._subHighlights as Record<
+            string,
+            { color?: string; hl: number }
+          >) ??= {});
+          const hlColor = typeof args.color === 'string' ? args.color : undefined;
+          for (const it of items) {
+            const prev = shMap[it.name]?.hl ?? 0;
+            shMap[it.name] = {
+              hl: Math.max(prev, e),
+              color: hlColor,
+            };
+          }
+        } else {
+          o.props.highlight = Math.max(num(o.props.highlight, 0), e);
+          // color：这一次高亮框的颜色（不写用动画主题的强调色）
+          if (typeof args.color === 'string') o.props.hlColor = args.color;
+          else delete o.props.hlColor;
+        }
       }
       return;
     case 'unhighlight':
-      for (const o of objs) o.props.highlight = num(o.props.highlight, 0) * (1 - e);
+      for (const t of a.targets) {
+        const { id, sub } = parseTargetRef(t);
+        const o = world.get(id);
+        if (!o) continue;
+        if (sub) {
+          const part = getPart(o.type);
+          if (!part) continue;
+          const found = findSubitem(part, o.props, sub);
+          const items = Array.isArray(found) ? found : found ? [found] : [];
+          const shMap = o.props._subHighlights as
+            | Record<string, { color?: string; hl: number }>
+            | undefined;
+          if (shMap) {
+            for (const it of items) {
+              if (shMap[it.name]) {
+                shMap[it.name].hl = (shMap[it.name].hl ?? 1) * (1 - e);
+                if (shMap[it.name].hl <= 0.001) {
+                  delete shMap[it.name];
+                }
+              }
+            }
+          }
+        } else {
+          o.props.highlight = num(o.props.highlight, 0) * (1 - e);
+        }
+      }
       return;
     case 'merge':
     case 'move': {
@@ -221,9 +286,25 @@ function apply(world: World, a: SceneAction, p: number, current: boolean) {
       return;
     }
     case 'color':
-      for (const o of objs) {
-        o.props.color = blend(o.props.color, args.to, e, 'color');
-        if (e >= 1) delete o.props.colors;
+      for (const t of a.targets) {
+        const { id, sub } = parseTargetRef(t);
+        const o = world.get(id);
+        if (!o) continue;
+        if (sub) {
+          const part = getPart(o.type);
+          if (!part) continue;
+          const found = findSubitem(part, o.props, sub);
+          const items = Array.isArray(found) ? found : found ? [found] : [];
+          const scMap = ((o.props._subColors as Record<string, string>) ??= {});
+          for (const it of items) {
+            const fromCol = scMap[it.name] ?? o.props.color;
+            scMap[it.name] = blend(fromCol, args.to, e, 'color') as string;
+            if (e >= 1) scMap[it.name] = String(args.to);
+          }
+        } else {
+          o.props.color = blend(o.props.color, args.to, e, 'color');
+          if (e >= 1) delete o.props.colors;
+        }
       }
       return;
     case 'count': {
@@ -460,7 +541,58 @@ function linkRefs(world: World) {
     o.props = { ...o.props, refs };
     if (typeof o.props.color === 'string' && o.props.color.startsWith('@'))
       o.props.color = colorOf(o.props.color.slice(1));
+    if (o.props._subColors && typeof o.props._subColors === 'object') {
+      const sc = o.props._subColors as Record<string, string>;
+      for (const [k, v] of Object.entries(sc)) {
+        if (typeof v === 'string' && v.startsWith('@')) {
+          sc[k] = String(colorOf(v.slice(1)) ?? v);
+        }
+      }
+    }
   }
+}
+
+export function extractSubHighlights(world: World): SubHighlight[] {
+  const subHighlights: SubHighlight[] = [];
+  for (const o of world.values()) {
+    const shMap = o.props._subHighlights as
+      | Record<string, { color?: string; hl?: number }>
+      | undefined;
+    if (!shMap) continue;
+    const part = getPart(o.type);
+    if (!part) continue;
+    for (const [subName, info] of Object.entries(shMap)) {
+      if (info.hl !== undefined && info.hl <= 0.001) continue;
+      const sub = findSubitem(part, o.props, subName);
+      const item = Array.isArray(sub) ? sub[0] : sub;
+      if (item) {
+        subHighlights.push({
+          id: o.id,
+          name: item.name,
+          box: item.box,
+          color: info.color,
+          value: item.value,
+        });
+      }
+    }
+  }
+  return subHighlights;
+}
+
+export function extractSubColors(world: World): SubColor[] {
+  const subColors: SubColor[] = [];
+  for (const o of world.values()) {
+    const scMap = o.props._subColors as Record<string, string> | undefined;
+    if (!scMap) continue;
+    for (const [name, colorVal] of Object.entries(scMap)) {
+      subColors.push({
+        id: o.id,
+        name,
+        color: String(colorVal),
+      });
+    }
+  }
+  return subColors;
 }
 
 /** 求第 index 步、步内进度 progress（0–1）时的画面；phase 见 StageTry */
@@ -471,7 +603,11 @@ export function sceneFrame(
   phase?: StageTry['phase'],
 ): SceneFrame {
   // Map 保持插入顺序：配置里靠后的、拆分出来的零件画在上面
-  return { objects: [...buildWorld(def, index, progress, phase).values()], subHighlights: [] };
+  const world = buildWorld(def, index, progress, phase);
+  const objects = [...world.values()];
+  const subHighlights = extractSubHighlights(world);
+  const subColors = extractSubColors(world);
+  return { objects, subHighlights, subColors };
 }
 
 /** 动手做（拖动）时的画面：能拖的计数块和目标零件 */
@@ -498,12 +634,14 @@ export function dragFrame(
   placed?: readonly string[],
 ): DragFrame {
   const world = buildWorld(def, index, 1, 'doing');
+  const subHighlights = extractSubHighlights(world);
+  const subColors = extractSubColors(world);
   const drag = def.tries?.[index]?.drag;
   const src = drag ? world.get(drag.from) : undefined;
   const ids = drag ? dragTargets(drag) : [];
   const dests = ids.map((id) => world.get(id)).filter((o): o is SceneObject => !!o);
   if (!drag || !src || !isCounters(src.type))
-    return { objects: [...world.values()], subHighlights: [], items: [], colors: [], to: dests };
+    return { objects: [...world.values()], subHighlights, subColors, items: [], colors: [], to: dests };
   const at = counterItems(src.props);
   const colors = counterColors(src.props);
   const gone = new Set(moved);
@@ -522,5 +660,5 @@ export function dragFrame(
   src.props.items = items.map((it) => it.at);
   src.props.colors = items.map((it) => it.color);
   src.props.count = items.length;
-  return { objects: [...world.values()], subHighlights: [], items, colors, from: src, to: dests };
+  return { objects: [...world.values()], subHighlights, subColors, items, colors, from: src, to: dests };
 }

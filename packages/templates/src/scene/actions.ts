@@ -111,6 +111,13 @@ export function isVerb(k: string): k is Verb {
   return Object.hasOwn(VERBS, k);
 }
 
+/** 解析目标引用：如果是 "id.subitem"，拆出零件 id 和子项名（或通配模式）；否则只有 id */
+export function parseTargetRef(target: string): { id: string; sub?: string } {
+  const dot = target.indexOf('.');
+  if (dot === -1) return { id: target };
+  return { id: target.slice(0, dot), sub: target.slice(dot + 1) };
+}
+
 /** 把一条配置解析成动作；格式不对时返回 undefined（由检查工具报错） */
 export function parseAction(
   raw: unknown,

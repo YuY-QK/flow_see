@@ -5,11 +5,13 @@ import {
   COUNTER_SHAPES,
   PART_TYPES,
   SHAPE_KINDS,
+  findSubitem,
   getPart,
   isColor,
   isCounters,
   isPoint,
   parseClockTime,
+  type Props,
 } from '@flow-see/blocks';
 import { evalExpr, fillParams, resolveParams } from '@flow-see/core';
 import type { ConfigIssue, LessonLike } from '@flow-see/runtime/template.ts';
@@ -22,6 +24,7 @@ import {
   isVerb,
   parseAction,
   parseDuration,
+  parseTargetRef,
 } from './actions';
 import { coveredActions, dragFrame, dragTargets, type SceneDef } from './evaluate';
 import { MAX_REPEAT, expandActions, expandObjects, isObj, isRepeat } from './repeat';
@@ -279,6 +282,7 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
 
   lesson.steps.forEach((step, si) => {
     if (step.try?.drag) checkTry(def, si, alive, out);
+    if (step.try?.choose?.show) checkChooseShow(step.try.choose.show, si, alive, objects, out);
     (step.do ?? []).forEach((raw, ai) => {
       const path = ['steps', si, 'do', ai];
       const keys = Object.keys(raw ?? {});
@@ -323,8 +327,35 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
       }
       if (targets.length > 1 && !MULTI_TARGET.has(verb))
         need('target', false, '这个动作一次只能作用于一个零件');
-      for (const t of targets) need('target', alive.has(t), `零件 ${t} 不存在（或已经被合并掉了）`);
-      const type = alive.get(targets[0]);
+
+      const allowsSubitem = verb === 'highlight' || verb === 'unhighlight' || verb === 'color';
+      for (const t of targets) {
+        const { id, sub } = parseTargetRef(t);
+        if (sub) {
+          if (!allowsSubitem) {
+            need('target', false, `${label} 不能以子项作为目标`);
+          } else if (!alive.has(id)) {
+            need('target', false, `零件 ${id} 不存在（或已经被合并掉了）`);
+          } else {
+            const partType = alive.get(id);
+            const part = partType ? getPart(partType) : undefined;
+            if (!part?.subitems) {
+              need('target', false, `${part?.name ?? id} 没有子项`);
+            } else {
+              const obj = objects.find((o) => o.id === id);
+              const props: Props = obj ? { ...part.defaults, ...(part.normalize?.(obj) ?? obj) } : {};
+              const found = findSubitem(part, props, sub);
+              if (!found || (Array.isArray(found) && found.length === 0)) {
+                need('target', false, `零件 ${id} 没有子项 ${sub}`);
+              }
+            }
+          }
+        } else {
+          need('target', alive.has(t), `零件 ${t} 不存在（或已经被合并掉了）`);
+        }
+      }
+      const firstId = parseTargetRef(targets[0]).id;
+      const type = alive.get(firstId);
 
       switch (verb) {
         case 'move': {
@@ -492,4 +523,42 @@ function checkTry(def: SceneDef, si: number, alive: Map<string, string>, out: Co
       path: [...p, 'count'],
       message: `要孩子拖 ${count} 个，但 do 里的标准做法移过去的是 ${standard} 个`,
     });
+}
+
+/** 点选（choose）做错提示：检查 show 里引用的零件或子项是否存在 */
+function checkChooseShow(
+  show: unknown,
+  si: number,
+  alive: Map<string, string>,
+  objects: Props[],
+  out: ConfigIssue[],
+) {
+  if (!Array.isArray(show)) return;
+  const path = ['steps', si, 'try', 'choose', 'show'];
+  show.forEach((item, idx) => {
+    if (typeof item !== 'string') return;
+    const { id, sub } = parseTargetRef(item);
+    if (sub) {
+      if (!alive.has(id)) {
+        out.push({ path: [...path, idx], message: `零件 ${id} 不存在（或已经被合并掉了）` });
+      } else {
+        const type = alive.get(id);
+        const part = type ? getPart(type) : undefined;
+        if (!part?.subitems) {
+          out.push({ path: [...path, idx], message: `${part?.name ?? id} 没有子项` });
+        } else {
+          const obj = objects.find((o) => o.id === id);
+          const props: Props = obj ? { ...part.defaults, ...(part.normalize?.(obj) ?? obj) } : {};
+          const found = findSubitem(part, props, sub);
+          if (!found || (Array.isArray(found) && found.length === 0)) {
+            out.push({ path: [...path, idx], message: `零件 ${id} 没有子项 ${sub}` });
+          }
+        }
+      }
+    } else {
+      if (!alive.has(id)) {
+        out.push({ path: [...path, idx], message: `零件 ${id} 不存在（或已经被合并掉了）` });
+      }
+    }
+  });
 }
