@@ -11,7 +11,7 @@ import {
   stepMotionMs,
   type SceneDef,
 } from './evaluate';
-import { expandActions, expandObjects } from './repeat';
+import { expandActions, expandLists, expandObjects } from './repeat';
 
 const makeTen: SceneDef = {
   stage: { width: 800, height: 450 },
@@ -293,6 +293,116 @@ describe('重复（repeat）', () => {
   it('次数为 0 或有上限，不会卡死', () => {
     expect(expandObjects([{ repeat: 0, id: 'x{i}' }], {})).toEqual([]);
     expect(expandObjects([{ repeat: 9999, id: 'x{i}' }], {}).length).toBeLessThanOrEqual(50);
+  });
+
+  it('零件内列表按参数展开：a = 3、b = 2 时 items 展开成 5 项，{i} 在每组内从 1 开始', () => {
+    const list = expandObjects(
+      [
+        {
+          id: 'fruits',
+          type: 'item-set',
+          items: [
+            { repeat: '{a}', asset: 'apple', tags: { kind: 'apple' }, idx: '{i}' },
+            { repeat: '{b}', asset: 'pear', tags: { kind: 'pear' }, idx: '{i}' },
+          ],
+        },
+      ],
+      { a: 3, b: 2 },
+    );
+    const items = list[0].items as Array<{
+      asset: string;
+      tags: { kind: string };
+      idx: number;
+      repeat?: unknown;
+    }>;
+    expect(items).toHaveLength(5);
+    expect(items.map((it) => it.asset)).toEqual(['apple', 'apple', 'apple', 'pear', 'pear']);
+    expect(items.map((it) => it.idx)).toEqual([1, 2, 3, 1, 2]);
+    expect(items.every((it) => it.repeat === undefined)).toBe(true);
+
+    const direct = expandLists(
+      {
+        items: [
+          { repeat: '{a}', asset: 'apple', idx: '{i}' },
+          { repeat: '{b}', asset: 'pear', idx: '{i}' },
+        ],
+      },
+      { a: 3, b: 2 },
+    );
+    const directItems = direct.items as Array<{ idx: number }>;
+    expect(directItems).toHaveLength(5);
+    expect(directItems.map((it) => it.idx)).toEqual([1, 2, 3, 1, 2]);
+  });
+
+  it('次数为 0 的元素被去掉；整个列表为空时 check 报错', () => {
+    const list = expandObjects(
+      [
+        {
+          id: 'fruits',
+          type: 'item-set',
+          items: [
+            { repeat: '{a}', asset: 'apple' },
+            { repeat: '{b}', asset: 'pear' },
+          ],
+        },
+      ],
+      { a: 0, b: 2 },
+    );
+    const items = list[0].items as Array<{ asset: string }>;
+    expect(items).toHaveLength(2);
+    expect(items.map((it) => it.asset)).toEqual(['pear', 'pear']);
+
+    const issues = checkScene({
+      params: { a: 0, b: 0 },
+      objects: [
+        {
+          id: 'fruits',
+          type: 'counters',
+          items: [
+            { repeat: '{a}', asset: 'apple' },
+            { repeat: '{b}', asset: 'pear' },
+          ],
+        },
+      ],
+      steps: [],
+    });
+    expect(issues.some((i) => i.path.includes('items') && i.message.includes('为空'))).toBe(true);
+    expect(issues.some((i) => i.message.includes('当 a = 0、b = 0 时'))).toBe(true);
+  });
+
+  it('嵌套 repeat（元素里再写 repeat）时 check 报错“不能嵌套”', () => {
+    const issues = checkScene({
+      params: {},
+      objects: [
+        {
+          id: 'fruits',
+          type: 'counters',
+          items: [
+            {
+              repeat: 3,
+              sub: [{ repeat: 2, asset: 'apple' }],
+            },
+          ],
+        },
+      ],
+      steps: [],
+    });
+    expect(issues.some((i) => i.message.includes('不能嵌套'))).toBe(true);
+  });
+
+  it('零件属性 values 通过 range 生成列表', () => {
+    const list = expandObjects(
+      [
+        {
+          id: 'bars',
+          type: 'chart',
+          kind: 'bar',
+          values: '{range(2, 2 * n, 2)}',
+        },
+      ],
+      { n: 4 },
+    );
+    expect(list[0].values).toEqual([2, 4, 6, 8]);
   });
 });
 

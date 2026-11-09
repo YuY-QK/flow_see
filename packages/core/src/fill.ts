@@ -1,9 +1,38 @@
 // 参数代入：把文字里的 {参数名} 换成参数值。纯函数，浏览器和 Node 都能用。
 // 也可以写算式：{total - 3 * i}（四则运算、括号、min/max/floor/ceil/round/abs，见 params.ts）。
-import { evalExpr } from './params.ts';
+import { evalExpr, range } from './params.ts';
 
 const PLACEHOLDER = /\{([^{}]+)\}/g;
 const IDENT = /^[A-Za-z_]\w*$/;
+
+function splitArgs(inner: string): string[] {
+  const args: string[] = [];
+  let depth = 0;
+  let cur = '';
+  for (let i = 0; i < inner.length; i++) {
+    const ch = inner[i];
+    if (ch === '(') depth++;
+    else if (ch === ')') depth--;
+    else if (ch === ',' && depth === 0) {
+      args.push(cur.trim());
+      cur = '';
+      continue;
+    }
+    cur += ch;
+  }
+  if (cur.trim()) args.push(cur.trim());
+  return args;
+}
+
+function evalRange(inner: string, params: Record<string, unknown>): number[] | undefined {
+  const args = splitArgs(inner);
+  if (args.length !== 2 && args.length !== 3) return undefined;
+  const from = evalExpr(args[0], params);
+  const to = evalExpr(args[1], params);
+  const step = args.length === 3 ? evalExpr(args[2], params) : 1;
+  if (from === undefined || to === undefined || step === undefined) return undefined;
+  return range(from, to, step);
+}
 
 /** 一个 {…} 的值：参数名直接取值；算式算出来；算不出来（如用到还没有的参数）时为 undefined */
 function valueOf(src: string, params: Record<string, unknown>): unknown {
@@ -29,8 +58,14 @@ export function fillText(text: string, params: Record<string, unknown>): string 
  */
 export function fillParams<T>(value: T, params: Record<string, unknown>): T {
   if (typeof value === 'string') {
-    const whole = value.match(/^\{([^{}]+)\}$/);
+    const whole = value.trim().match(/^\{([^{}]+)\}$/);
     if (whole) {
+      const k = whole[1].trim();
+      const mRange = k.match(/^range\((.*)\)$/);
+      if (mRange) {
+        const arr = evalRange(mRange[1], params);
+        if (arr !== undefined) return arr as T;
+      }
       const v = valueOf(whole[1], params);
       if (v !== undefined) return v as T;
     }

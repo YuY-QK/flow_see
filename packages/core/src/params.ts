@@ -110,6 +110,21 @@ export function evalExpr(src: string | number, scope: Scope = {}): number | unde
   return evalTokens(toks, (k) => (typeof scope[k] === 'number' ? (scope[k] as number) : undefined));
 }
 
+/**
+ * 由起点、终点、步长生成数字列表（包含两端，步长为正且 from > to 时返回空列表）。
+ * 只能作为整个属性值 '{range(1, n, 1)}' 使用。
+ */
+export function range(from: number, to: number, step = 1): number[] {
+  if (!Number.isFinite(from) || !Number.isFinite(to) || !Number.isFinite(step)) return [];
+  if (step <= 0) return [];
+  if (from > to) return [];
+  const out: number[] = [];
+  for (let v = from; v <= to + 1e-9 && out.length < 1000; v += step) {
+    out.push(Number(v.toFixed(6)));
+  }
+  return out;
+}
+
 /** 派生值：由参数算出来的值，按写的顺序计算，后面的可以用前面的 */
 export type Derived = Record<string, number | string>;
 

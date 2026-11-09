@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { fillParams } from './fill';
 import {
   clampParams,
   evalExpr,
   exploreCombos,
   exprNames,
+  range,
   resolveParams,
   type ExploreControl,
 } from './params';
@@ -64,5 +66,21 @@ describe('派生值与动手试一试', () => {
     // a = 6..9，b = (11-a)..9：5 + 6 + 7 + 8 = 26 组，且都在范围内
     expect(all).toHaveLength(26);
     expect(all.every((p) => (p.b as number) >= 11 - (p.a as number))).toBe(true);
+  });
+});
+
+describe('列表生成（range）', () => {
+  it('range(from, to, step) 生成包含两端的数组；步长正且 from > to 时为空', () => {
+    expect(range(1, 5, 1)).toEqual([1, 2, 3, 4, 5]);
+    expect(range(2, 8, 2)).toEqual([2, 4, 6, 8]);
+    expect(range(5, 1, 1)).toEqual([]);
+  });
+
+  it('fillParams 识别整个字符串是 {range(...)} 时返回数组', () => {
+    expect(fillParams('{range(2, 2 * n, 2)}', { n: 4 })).toEqual([2, 4, 6, 8]);
+    expect(fillParams('{range(1, 5, 1)}', {})).toEqual([1, 2, 3, 4, 5]);
+    expect(fillParams('{range(5, 1, 1)}', {})).toEqual([]);
+    // 不是整个字符串时保持原样
+    expect(fillParams('prefix {range(1, 5, 1)} suffix', {})).toBe('prefix {range(1, 5, 1)} suffix');
   });
 });

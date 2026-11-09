@@ -11,22 +11,60 @@
 import { evalExpr, fillParams } from '@flow-see/core';
 
 /** 重复次数的上限（防止写错时卡死） */
-const MAX_REPEAT = 50;
+export const MAX_REPEAT = 50;
 
-function times(v: unknown, scope: Record<string, unknown>): number {
+export function times(v: unknown, scope: Record<string, unknown>): number {
   const n = typeof v === 'number' ? v : typeof v === 'string' ? evalExpr(v, scope) : undefined;
   return n === undefined ? 0 : Math.max(0, Math.min(MAX_REPEAT, Math.floor(n)));
 }
 
-const isObj = (v: unknown): v is Record<string, unknown> =>
+export const isObj = (v: unknown): v is Record<string, unknown> =>
   !!v && typeof v === 'object' && !Array.isArray(v);
+
+/** 展开数组里的 repeat */
+function expandArray(arr: readonly unknown[], scope: Record<string, unknown>): unknown[] {
+  return arr.flatMap((raw) => {
+    if (isObj(raw) && 'repeat' in raw) {
+      const { repeat, ...rest } = raw;
+      const n = times(repeat, scope);
+      return Array.from({ length: n }, (_, k) => {
+        const inner = { ...scope, i: k + 1 };
+        const filled = fillParams(rest, inner);
+        return isObj(filled) ? expandLists(filled, inner) : filled;
+      });
+    }
+    if (isObj(raw)) return [expandLists(raw, scope)];
+    if (Array.isArray(raw)) return [expandArray(raw, scope)];
+    return [raw];
+  });
+}
+
+/** 展开零件属性里的列表 repeat */
+export function expandLists(
+  props: Record<string, unknown>,
+  scope: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(props)) {
+    if (typeof v === 'string') {
+      out[k] = fillParams(v, scope);
+    } else if (Array.isArray(v)) {
+      out[k] = expandArray(v, scope);
+    } else if (isObj(v)) {
+      out[k] = expandLists(v, scope);
+    } else {
+      out[k] = v;
+    }
+  }
+  return out;
+}
 
 /** 展开零件列表里的 repeat */
 export function expandObjects(
   list: readonly unknown[],
   scope: Record<string, unknown>,
 ): Record<string, unknown>[] {
-  return list.flatMap((raw) => {
+  const objs = list.flatMap((raw) => {
     if (!isObj(raw)) return [];
     if (!('repeat' in raw)) return [raw];
     const { repeat, ...rest } = raw;
@@ -34,6 +72,7 @@ export function expandObjects(
       fillParams(rest, { ...scope, i: k + 1 }),
     );
   });
+  return objs.map((o) => expandLists(o, scope));
 }
 
 /** 展开动作列表里的 repeat（不要嵌套：里面一层的 {i} 会被外面一层先代入） */
