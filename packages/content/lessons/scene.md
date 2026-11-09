@@ -87,7 +87,7 @@ steps:
 | `split`                     | 拆分：从一组计数块末尾拿出几个，成为新的一组                   | `target`、`take`（默认 1）、`as`（新一组的 id）、`offset`     | 0.5s     |
 | `merge`                     | 合并：一组计数块飞进另一组                                     | `target`、`into`                                              | 0.8s     |
 | `set`                       | 改文字或数值：可以改零件的任意属性，数字、坐标、颜色、数组按元素连续变化 | `target` + 要改的属性，如 `text: 10 + 3 = 13`、`time: "4:00"` | 0.6s     |
-| `rotate`                    | 旋转                                                           | `target`、`to`（转到多少度）或 `by`                           | 0.8s     |
+| `rotate`                    | 旋转。支持绕指定点旋转：`around: [x, y]` 或子项 `'tri1.v2'`（按动作开始时的位置取）；多边形等顶点定位零件（`rotatesPoints`）直接旋转每个顶点，不改 `rotate` | `target`、`to`（转到多少度）或 `by`、`around`（坐标或子项） | 0.8s     |
 | `scale`                     | 缩放                                                           | `target`、`to`（倍数）                                        | 0.5s     |
 | `color`                     | 颜色变化                                                       | `target`、`to`                                                | 0.5s     |
 | `count`                     | 数字递增（文字零件的 `value`）                                 | `target`、`from`、`to`                                        | 1s       |
@@ -98,6 +98,15 @@ steps:
 
 ```yaml
 - set: { target: clock, time: '4:00', duration: 6s, ease: linear }
+```
+
+绕点旋转的例子（绕顶点或指定坐标旋转）：
+
+```yaml
+# 矩形绕指定坐标转 180°
+- rotate: { target: rect1, by: 180, around: [0, 100], duration: 1s }
+# 三角形绕自己的第一个顶点转 90°
+- rotate: { target: tri1, by: 90, around: 'tri1.v1', duration: 1s }
 ```
 
 ## 颜色强对应（数字和图形同色）

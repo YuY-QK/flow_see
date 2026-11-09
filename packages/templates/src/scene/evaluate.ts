@@ -4,6 +4,7 @@ import {
   counterColors,
   counterItems,
   counterSlot,
+  findSubitem,
   getPart,
   isColor,
   isCounters,
@@ -123,7 +124,68 @@ function flyInto(world: World, src: SceneObject, dest: SceneObject, e: number) {
   }
 }
 
-function apply(world: World, a: SceneAction, p: number, current: boolean) {
+/** 将点 p 绕 center 顺时针旋转 deg 度 */
+function rotatePoint(p: Point, center: Point, deg: number): Point {
+  if (deg === 0) return [p[0], p[1]];
+  const rad = (deg * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+  const dx = p[0] - center[0];
+  const dy = p[1] - center[1];
+  const rx = center[0] + dx * cos - dy * sin;
+  const ry = center[1] + dx * sin + dy * cos;
+  return [Number(rx.toFixed(6)), Number(ry.toFixed(6))];
+}
+
+/** 旋转中心：坐标，或子项（'tri1.v2'），或另一个零件的位置 */
+function resolveAround(world: World, around: unknown): Point | undefined {
+  if (isPoint(around)) return around;
+  if (typeof around !== 'string') return undefined;
+  const dot = around.indexOf('.');
+  if (dot > 0) {
+    const targetId = around.slice(0, dot);
+    const subName = around.slice(dot + 1);
+    const targetObj = world.get(targetId);
+    if (!targetObj) return undefined;
+    const partDef = getPart(targetObj.type);
+    if (partDef) {
+      const sub = findSubitem(partDef, targetObj.props, subName);
+      if (sub && !Array.isArray(sub)) {
+        return [sub.box.x + sub.box.w / 2, sub.box.y + sub.box.h / 2];
+      }
+    }
+    const m = subName.match(/^v(\d+)$/);
+    if (m && Array.isArray(targetObj.props.points)) {
+      const idx = parseInt(m[1], 10) - 1;
+      const pt = targetObj.props.points[idx];
+      if (isPoint(pt)) return pt;
+    }
+    return undefined;
+  }
+  const targetObj = world.get(around);
+  if (!targetObj) return undefined;
+  if (isPoint(targetObj.props.at)) return targetObj.props.at;
+  const partDef = getPart(targetObj.type);
+  if (partDef) {
+    const box = partDef.bbox(targetObj.props);
+    return [box.x + box.w / 2, box.y + box.h / 2];
+  }
+  return undefined;
+}
+
+function cloneWorld(world: World): World {
+  const next: World = new Map();
+  for (const [id, o] of world.entries()) {
+    next.set(id, {
+      id: o.id,
+      type: o.type,
+      props: structuredClone(o.props),
+    });
+  }
+  return next;
+}
+
+function apply(world: World, a: SceneAction, p: number, current: boolean, startWorld?: World) {
   const e = a.linear ? p : smooth(p);
   const objs = a.targets.map((id) => world.get(id)).filter((o): o is SceneObject => !!o);
   const one = objs[0];
@@ -209,14 +271,43 @@ function apply(world: World, a: SceneAction, p: number, current: boolean) {
         if ('color' in next && e >= 1) delete o.props.colors;
       }
       return;
-    case 'rotate':
-    case 'scale': {
-      const key = a.verb;
-      const base = key === 'scale' ? 1 : 0;
+    case 'rotate': {
+      const aroundPt = resolveAround(startWorld ?? world, args.around);
       for (const o of objs) {
-        const from = num(o.props[key], base);
+        const part = getPart(o.type);
+        const startObj = startWorld?.get(o.id);
+        const from = num(startObj?.props.rotate ?? o.props.rotate, 0);
         const to = typeof args.to === 'number' ? args.to : from + num(args.by, 0);
-        o.props[key] = lerp(from, to, e);
+        const delta = to - from;
+        const currentDelta = delta * e;
+
+        if (part?.rotatesPoints) {
+          // 对 polygon、path 等用 points 定位的零件，直接把每个顶点绕 around 转（不改 rotate）
+          let center = aroundPt;
+          if (!center) {
+            const box = part.bbox(startObj?.props ?? o.props);
+            center = [box.x + box.w / 2, box.y + box.h / 2];
+          }
+          const basePts = (startObj?.props.points ?? o.props.points) as unknown[];
+          if (Array.isArray(basePts) && basePts.every(isPoint)) {
+            o.props.points = basePts.map((pt) => rotatePoint(pt, center, currentDelta));
+          }
+        } else {
+          // 普通零件：rotate 属性照常变化（绕自身中心转），同时把 at 绕 around 转同样的角度
+          o.props.rotate = lerp(from, to, e);
+          if (aroundPt) {
+            const at = (startObj?.props.at ?? o.props.at ?? [0, 0]) as Point;
+            o.props.at = rotatePoint(at, aroundPt, currentDelta);
+          }
+        }
+      }
+      return;
+    }
+    case 'scale': {
+      for (const o of objs) {
+        const from = num(o.props.scale, 1);
+        const to = typeof args.to === 'number' ? args.to : from;
+        o.props.scale = lerp(from, to, e);
       }
       return;
     }
@@ -419,10 +510,14 @@ function buildWorld(
     const actions = doing ? plan.actions.slice(0, plan.askAt) : plan.actions;
     const total = doing ? preludeMs(plan) : plan.total;
     const t = current ? Math.max(0, Math.min(1, progress)) * total : total;
+    const startSnapshots = new Map<number, World>();
     for (const a of actions) {
+      if (!startSnapshots.has(a.start)) {
+        startSnapshots.set(a.start, cloneWorld(world));
+      }
       let p = 1;
       if (current && total > 0) p = a.dur > 0 ? (t - a.start) / a.dur : t >= a.start ? 1 : 0;
-      apply(world, a, Math.max(0, Math.min(1, p)), current);
+      apply(world, a, Math.max(0, Math.min(1, p)), current, startSnapshots.get(a.start));
     }
   }
   linkRefs(world);

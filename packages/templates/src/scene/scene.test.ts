@@ -1,7 +1,13 @@
 import { createRequire } from 'node:module';
 import { createElement } from 'react';
 import { describe, expect, it } from 'vitest';
-import { counterSlot } from '@flow-see/blocks';
+import {
+  counterSlot,
+  registerPart,
+  unregisterPart,
+  type PartDef,
+  type Point,
+} from '@flow-see/blocks';
 import { getTheme, type Animation } from '@flow-see/core';
 import { parseDuration, planStep } from './actions';
 import { checkScene } from './check';
@@ -669,5 +675,216 @@ describe('顶层属性与数组插值（blend）', () => {
     expect(obj(wireDef, 0, 0, 'w')?.props.points).toEqual([[0, 0], [10, 0]]);
     expect(obj(wireDef, 0, 0.5, 'w')?.props.points).toEqual([[0, 5], [10, 5]]);
     expect(obj(wireDef, 0, 1, 'w')?.props.points).toEqual([[0, 10], [10, 10]]);
+  });
+});
+
+describe('绕点旋转（E4）', () => {
+  it('矩形 at: [100, 100] 绕 [0, 100] 转 180° 后 at = [−100, 100]、rotate = 180；t = 0.5 时在中间位置', () => {
+    const rectDef: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [{ id: 'rect1', type: 'shape', shape: 'rect', width: 40, height: 40, at: [100, 100] }],
+      steps: [
+        [
+          {
+            rotate: {
+              target: 'rect1',
+              by: 180,
+              around: [0, 100],
+              duration: 1,
+              ease: 'linear',
+            },
+          },
+        ],
+      ],
+    };
+
+    // t = 0: 初始位置
+    const o0 = obj(rectDef, 0, 0, 'rect1');
+    expect(o0?.props.at).toEqual([100, 100]);
+    expect(o0?.props.rotate).toBe(0);
+
+    // t = 0.5: 中间位置（顺时针转 90°，at 到达 [0, 200]，rotate 到达 90）
+    const oHalf = obj(rectDef, 0, 0.5, 'rect1');
+    expect(oHalf?.props.at).toEqual([0, 200]);
+    expect(oHalf?.props.rotate).toBe(90);
+
+    // t = 1: 转完 180°，at 到达 [-100, 100]，rotate 到达 180
+    const o1 = obj(rectDef, 0, 1, 'rect1');
+    expect(o1?.props.at).toEqual([-100, 100]);
+    expect(o1?.props.rotate).toBe(180);
+  });
+
+  it('三角形绕自己的 v1 转 90° 后顶点坐标正确；t = 0.5 时在中间位置', () => {
+    const triPartDef: PartDef = {
+      type: 'test-triangle-poly',
+      name: '多边形三角形',
+      anchor: 'start',
+      rotatesPoints: true,
+      props: ['points'],
+      bbox(p) {
+        const pts = (p.points as Point[]) ?? [];
+        const xs = pts.map((pt) => pt[0]);
+        const ys = pts.map((pt) => pt[1]);
+        const minX = Math.min(...xs);
+        const maxX = Math.max(...xs);
+        const minY = Math.min(...ys);
+        const maxY = Math.max(...ys);
+        return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+      },
+      subitems(p) {
+        const pts = (p.points as Point[]) ?? [];
+        return pts.map((pt, i) => ({
+          name: `v${i + 1}`,
+          box: { x: pt[0] - 12, y: pt[1] - 12, w: 24, h: 24 },
+        }));
+      },
+      Render: () => null,
+    };
+    registerPart(triPartDef);
+
+    try {
+      const triDef: SceneDef = {
+        stage: { width: 800, height: 450 },
+        objects: [
+          {
+            id: 'tri1',
+            type: 'test-triangle-poly',
+            points: [
+              [100, 100],
+              [200, 100],
+              [100, 200],
+            ],
+            at: [0, 0],
+          },
+        ],
+        steps: [
+          [
+            {
+              rotate: {
+                target: 'tri1',
+                by: 90,
+                around: 'tri1.v1',
+                duration: 1,
+                ease: 'linear',
+              },
+            },
+          ],
+        ],
+      };
+
+      // t = 0: 初始坐标
+      const p0 = obj(triDef, 0, 0, 'tri1')?.props.points as Point[];
+      expect(p0).toEqual([
+        [100, 100],
+        [200, 100],
+        [100, 200],
+      ]);
+      expect(obj(triDef, 0, 0, 'tri1')?.props.rotate).toBeUndefined();
+
+      // t = 0.5: 转 45° 的中间位置，绕 [100, 100] 转 45°
+      const pHalf = obj(triDef, 0, 0.5, 'tri1')?.props.points as Point[];
+      // v1 在旋转中心，保持不变
+      expect(pHalf[0]).toEqual([100, 100]);
+      // v2 [200, 100] 绕 [100, 100] 转 45°: x = 100 + 100*cos(45°), y = 100 + 100*sin(45°)
+      expect(pHalf[1][0]).toBeCloseTo(100 + 100 * Math.cos(Math.PI / 4), 4);
+      expect(pHalf[1][1]).toBeCloseTo(100 + 100 * Math.sin(Math.PI / 4), 4);
+      // v3 [100, 200] 绕 [100, 100] 转 45°: x = 100 - 100*sin(45°), y = 100 + 100*cos(45°)
+      expect(pHalf[2][0]).toBeCloseTo(100 - 100 * Math.sin(Math.PI / 4), 4);
+      expect(pHalf[2][1]).toBeCloseTo(100 + 100 * Math.cos(Math.PI / 4), 4);
+      // rotatesPoints 零件不设置 props.rotate
+      expect(obj(triDef, 0, 0.5, 'tri1')?.props.rotate).toBeUndefined();
+
+      // t = 1: 转完 90°
+      const p1 = obj(triDef, 0, 1, 'tri1')?.props.points as Point[];
+      expect(p1).toEqual([
+        [100, 100],
+        [100, 200],
+        [0, 100],
+      ]);
+      expect(obj(triDef, 0, 1, 'tri1')?.props.rotate).toBeUndefined();
+    } finally {
+      unregisterPart('test-triangle-poly');
+    }
+  });
+
+  it('跨步累积旋转：多边形转完 90° 后的顶点坐标作为下一步的起点', () => {
+    const triPartDef: PartDef = {
+      type: 'test-poly-step',
+      name: '测试多边形',
+      anchor: 'start',
+      rotatesPoints: true,
+      props: ['points'],
+      bbox: () => ({ x: 0, y: 0, w: 100, h: 100 }),
+      subitems(p) {
+        const pts = (p.points as Point[]) ?? [];
+        return pts.map((pt, i) => ({
+          name: `v${i + 1}`,
+          box: { x: pt[0] - 12, y: pt[1] - 12, w: 24, h: 24 },
+        }));
+      },
+      Render: () => null,
+    };
+    registerPart(triPartDef);
+
+    try {
+      const def: SceneDef = {
+        stage: { width: 800, height: 450 },
+        objects: [
+          {
+            id: 't',
+            type: 'test-poly-step',
+            points: [
+              [0, 0],
+              [10, 0],
+            ],
+          },
+        ],
+        steps: [
+          [{ rotate: { target: 't', by: 90, around: [0, 0] } }],
+          [{ rotate: { target: 't', by: 90, around: [0, 0] } }],
+        ],
+      };
+      // 第 0 步后：[0, 0], [0, 10]
+      expect(obj(def, 0, 1, 't')?.props.points).toEqual([
+        [0, 0],
+        [0, 10],
+      ]);
+      // 第 1 步后：[0, 0], [-10, 0]
+      expect(obj(def, 1, 1, 't')?.props.points).toEqual([
+        [0, 0],
+        [-10, 0],
+      ]);
+    } finally {
+      unregisterPart('test-poly-step');
+    }
+  });
+
+  it('配置检查：around 参数校验', () => {
+    // 正确写法
+    const ok = checkScene({
+      params: {},
+      objects: [{ id: 'r', type: 'shape', shape: 'rect', at: [100, 100] }],
+      steps: [
+        { say: '转', do: [{ rotate: { target: 'r', by: 90, around: [0, 0] } }] },
+        { say: '转', do: [{ rotate: { target: 'r', by: 90, around: 'r' } }] },
+      ],
+    });
+    expect(ok).toHaveLength(0);
+
+    // around 格式不对
+    const badCoord = checkScene({
+      params: {},
+      objects: [{ id: 'r', type: 'shape', shape: 'rect', at: [100, 100] }],
+      steps: [{ say: '转', do: [{ rotate: { target: 'r', by: 90, around: 123 } }] }],
+    });
+    expect(badCoord.some((e) => e.message.includes('around 写成坐标'))).toBe(true);
+
+    // around 引用不存在的零件
+    const badRef = checkScene({
+      params: {},
+      objects: [{ id: 'r', type: 'shape', shape: 'rect', at: [100, 100] }],
+      steps: [{ say: '转', do: [{ rotate: { target: 'r', by: 90, around: 'missing.v1' } }] }],
+    });
+    expect(badRef.some((e) => e.message.includes('around 引用的零件 missing 不存在'))).toBe(true);
   });
 });
