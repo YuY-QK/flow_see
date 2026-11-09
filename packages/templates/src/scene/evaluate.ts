@@ -101,6 +101,52 @@ function resolvePoint(world: World, v: unknown): Point | undefined {
   return undefined;
 }
 
+/** 按折线总长度参数化，取进度 e（0–1）处的坐标 */
+export function pointOnPolyline(pts: Point[], e: number): Point {
+  if (pts.length === 0) return [0, 0];
+  if (pts.length === 1 || e <= 0) return pts[0];
+  if (e >= 1) return pts[pts.length - 1];
+
+  let total = 0;
+  const lens: number[] = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const d = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]);
+    lens.push(d);
+    total += d;
+  }
+  if (total <= 0) return pts[0];
+
+  let targetDist = e * total;
+  for (let i = 0; i < lens.length; i++) {
+    const d = lens[i];
+    if (targetDist <= d || i === lens.length - 1) {
+      const t = d > 0 ? Math.min(1, Math.max(0, targetDist / d)) : 0;
+      return [
+        pts[i][0] + (pts[i + 1][0] - pts[i][0]) * t,
+        pts[i][1] + (pts[i + 1][1] - pts[i][1]) * t,
+      ];
+    }
+    targetDist -= d;
+  }
+  return pts[pts.length - 1];
+}
+
+/** 路径点列表：坐标列表，或引用的路径零件的 points */
+function resolvePath(world: World, v: unknown): Point[] | undefined {
+  if (Array.isArray(v) && v.every(isPoint)) return v;
+  if (typeof v === 'string') {
+    const o = world.get(v);
+    const pts = o?.props.points;
+    if (Array.isArray(pts) && pts.every(isPoint)) {
+      if (o?.props.closed && pts.length > 0) {
+        return [...pts, pts[0]];
+      }
+      return pts;
+    }
+  }
+  return undefined;
+}
+
 /** 整体平移一个零件（线段、箭头的两端，计数块的每一块也一起动） */
 function translate(o: SceneObject, d: Point) {
   const add = (q: unknown) => (isPoint(q) ? ([q[0] + d[0], q[1] + d[1]] as Point) : q);
@@ -243,6 +289,20 @@ function apply(world: World, a: SceneAction, p: number, current: boolean) {
     }
     case 'deal':
       return deal(world, a, p);
+    case 'follow': {
+      if (!one) return;
+      const pts = resolvePath(world, args.path);
+      if (pts && pts.length >= 1) {
+        const pt = pointOnPolyline(pts, e);
+        const cur = (one.props.at ?? [0, 0]) as Point;
+        translate(one, [pt[0] - cur[0], pt[1] - cur[1]]);
+      }
+      if (typeof args.draw === 'string') {
+        const target = world.get(args.draw);
+        if (target) target.props.draw = e;
+      }
+      return;
+    }
     case 'wait':
     case 'ask':
       return;

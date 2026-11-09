@@ -1,4 +1,4 @@
-import { sceneStyle } from '@flow-see/blocks';
+import { isPoint, sceneStyle } from '@flow-see/blocks';
 // 场景模板的动作：解析配置里的 do 列表，排出每个动作在这一步里的起止时间。
 //
 // 写法（需求设计 5.5）：
@@ -24,12 +24,32 @@ export const VERBS = {
   wait: { name: '停一会儿' },
   deal: { name: '一个一个分' },
   ask: { name: '在这里提问' },
+  follow: { name: '沿路径移动' },
 } as const;
 
 export type Verb = keyof typeof VERBS;
 
+/** 折线总长度（舞台坐标） */
+export function polylineLength(path: unknown): number {
+  if (!Array.isArray(path) || path.length < 2) return 0;
+  let total = 0;
+  for (let i = 0; i < path.length - 1; i++) {
+    const p1 = path[i];
+    const p2 = path[i + 1];
+    if (isPoint(p1) && isPoint(p2)) {
+      total += Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
+    }
+  }
+  return total;
+}
+
 /** 动作没写 duration 时的默认时长（毫秒）：site.yaml 的 scene.actionSeconds */
 export function defaultMs(verb: Verb, args: Record<string, unknown> = {}): number {
+  if (verb === 'follow') {
+    const per100 = sceneStyle().actionSeconds.followPer100 ?? 0.6;
+    const len = polylineLength(args.path);
+    return (len / 100) * per100 * 1000;
+  }
   const ms = (sceneStyle().actionSeconds[verb] ?? 0) * 1000;
   // 一个一个分：默认时长是每一个的时长 × 个数
   return verb === 'deal' ? ms * dealCount(args) : ms;
@@ -63,6 +83,7 @@ export const VERB_KEYS: Record<Verb, readonly string[]> = {
   wait: [],
   deal: ['target', 'into', 'count'],
   ask: [],
+  follow: ['target', 'path', 'draw'],
 };
 
 /** 一个动作可以同时作用于多个零件（列表写法） */
@@ -155,7 +176,8 @@ export function planStep(list: readonly unknown[] | undefined): StepPlan {
     const dur = parseDuration(a.args.duration) ?? defaultMs(a.verb, a.args);
     const delay = parseDuration(a.args.delay) ?? 0;
     const start = (a.args.together === true ? prevStart : cursor) + delay;
-    actions.push({ ...a, start, dur, linear: a.args.ease === 'linear' });
+    const linear = a.args.ease ? a.args.ease === 'linear' : a.verb === 'follow';
+    actions.push({ ...a, start, dur, linear });
     cursor = Math.max(cursor, start + dur);
     prevStart = start;
   }

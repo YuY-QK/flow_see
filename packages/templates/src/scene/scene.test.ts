@@ -3,7 +3,7 @@ import { createElement } from 'react';
 import { describe, expect, it } from 'vitest';
 import { counterSlot } from '@flow-see/blocks';
 import { getTheme, type Animation } from '@flow-see/core';
-import { parseDuration, planStep } from './actions';
+import { defaultMs, parseDuration, planStep, polylineLength } from './actions';
 import { checkScene } from './check';
 import {
   blend,
@@ -11,6 +11,7 @@ import {
   dragEach,
   dragFrame,
   dragTargets,
+  pointOnPolyline,
   sceneFrame,
   stepMotionMs,
   type SceneDef,
@@ -669,5 +670,194 @@ describe('顶层属性与数组插值（blend）', () => {
     expect(obj(wireDef, 0, 0, 'w')?.props.points).toEqual([[0, 0], [10, 0]]);
     expect(obj(wireDef, 0, 0.5, 'w')?.props.points).toEqual([[0, 5], [10, 5]]);
     expect(obj(wireDef, 0, 1, 'w')?.props.points).toEqual([[0, 10], [10, 10]]);
+  });
+});
+
+describe('沿路径移动（follow）', () => {
+  const path100_300 = [
+    [0, 0],
+    [100, 0],
+    [100, 300],
+  ] as [number, number][];
+
+  it('折线长度与默认时长计算正确（路径长 400，默认时长 2.4s）', () => {
+    expect(polylineLength(path100_300)).toBe(400);
+    // site.yaml 中 followPer100: 0.6，所以 400 像素对应 4 * 0.6s = 2.4s = 2400ms
+    expect(defaultMs('follow', { path: path100_300 })).toBe(2400);
+  });
+
+  it('planStep 对 follow 默认 ease: linear，并采用路径计算出的默认时长', () => {
+    const plan = planStep([{ follow: { target: 'kid', path: path100_300 } }]);
+    expect(plan.actions[0].dur).toBe(2400);
+    expect(plan.actions[0].linear).toBe(true);
+  });
+
+  it('planStep 支持覆盖 duration 与 ease', () => {
+    const plan = planStep([
+      { follow: { target: 'kid', path: path100_300, duration: '1s', ease: 'smooth' } },
+    ]);
+    expect(plan.actions[0].dur).toBe(1000);
+    expect(plan.actions[0].linear).toBe(false);
+  });
+
+  it('两段折线（长 100 和 300）在 e = 0.25 时位于第一段终点', () => {
+    expect(pointOnPolyline(path100_300, 0)).toEqual([0, 0]);
+    expect(pointOnPolyline(path100_300, 0.25)).toEqual([100, 0]);
+    expect(pointOnPolyline(path100_300, 0.625)).toEqual([100, 150]);
+    expect(pointOnPolyline(path100_300, 1)).toEqual([100, 300]);
+  });
+
+  it('画面求值：e = 0.25 时位于第一段终点，且 draw 同步', () => {
+    const def: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [
+        { id: 'kid', type: 'image', at: [0, 0] },
+        { id: 'route1', type: 'line', draw: 0, from: [0, 0], to: [100, 300] },
+      ],
+      steps: [
+        [
+          {
+            follow: {
+              target: 'kid',
+              path: path100_300,
+              draw: 'route1',
+            },
+          },
+        ],
+      ],
+    };
+
+    // t = 0 时，起点
+    const frame0 = sceneFrame(def, 0, 0);
+    expect(frame0.objects.find((o) => o.id === 'kid')?.props.at).toEqual([0, 0]);
+    expect(frame0.objects.find((o) => o.id === 'route1')?.props.draw).toBe(0);
+
+    // t = 0.25 时，位于第一段终点 [100, 0]，route1 的 draw 同步为 0.25
+    const frameMid = sceneFrame(def, 0, 0.25);
+    expect(frameMid.objects.find((o) => o.id === 'kid')?.props.at).toEqual([100, 0]);
+    expect(frameMid.objects.find((o) => o.id === 'route1')?.props.draw).toBe(0.25);
+
+    // t = 1 时，终点 [100, 300]，route1 的 draw 为 1
+    const frameEnd = sceneFrame(def, 0, 1);
+    expect(frameEnd.objects.find((o) => o.id === 'kid')?.props.at).toEqual([100, 300]);
+    expect(frameEnd.objects.find((o) => o.id === 'route1')?.props.draw).toBe(1);
+  });
+
+  it('配置检查（checkScene）校验 follow 动作的 target、path 和 draw', () => {
+    // 正常配置：无报错
+    const okIssues = checkScene({
+      params: {},
+      objects: [
+        { id: 'kid', type: 'image', asset: 'kid', at: [0, 0] },
+        { id: 'route1', type: 'line', from: [0, 0], to: [100, 100] },
+      ],
+      steps: [
+        {
+          say: '走',
+          do: [
+            {
+              follow: {
+                target: 'kid',
+                path: [
+                  [0, 0],
+                  [100, 100],
+                ],
+                draw: 'route1',
+              },
+            },
+          ],
+        },
+      ],
+    });
+    expect(okIssues).toEqual([]);
+
+    // 缺少 target
+    const noTargetIssues = checkScene({
+      params: {},
+      objects: [{ id: 'kid', type: 'image', asset: 'kid', at: [0, 0] }],
+      steps: [
+        {
+          say: '走',
+          do: [
+            {
+              follow: {
+                path: [
+                  [0, 0],
+                  [100, 100],
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
+    expect(noTargetIssues.some((issue) => issue.message.includes('要写 target'))).toBe(true);
+
+    // 零件不存在
+    const badTargetIssues = checkScene({
+      params: {},
+      objects: [{ id: 'kid', type: 'image', asset: 'kid', at: [0, 0] }],
+      steps: [
+        {
+          say: '走',
+          do: [
+            {
+              follow: {
+                target: 'ghost',
+                path: [
+                  [0, 0],
+                  [100, 100],
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
+    expect(badTargetIssues.some((issue) => issue.message.includes('ghost 不存在'))).toBe(true);
+
+    // 路径点少于 2 个
+    const badPathIssues = checkScene({
+      params: {},
+      objects: [{ id: 'kid', type: 'image', asset: 'kid', at: [0, 0] }],
+      steps: [
+        {
+          say: '走',
+          do: [
+            {
+              follow: {
+                target: 'kid',
+                path: [[0, 0]],
+              },
+            },
+          ],
+        },
+      ],
+    });
+    expect(badPathIssues.some((issue) => issue.message.includes('至少两个点'))).toBe(true);
+
+    // draw 零件不存在
+    const badDrawIssues = checkScene({
+      params: {},
+      objects: [{ id: 'kid', type: 'image', asset: 'kid', at: [0, 0] }],
+      steps: [
+        {
+          say: '走',
+          do: [
+            {
+              follow: {
+                target: 'kid',
+                path: [
+                  [0, 0],
+                  [100, 100],
+                ],
+                draw: 'non-existent-route',
+              },
+            },
+          ],
+        },
+      ],
+    });
+    expect(badDrawIssues.some((issue) => issue.message.includes('draw'))).toBe(true);
   });
 });
