@@ -188,6 +188,16 @@ describe('内容配置校验', () => {
       (e) => e.message,
     );
     expect(msgsBadVar.some((m) => m.includes('不存在的参数：unknown_var'))).toBe(true);
+
+    // F2: 文字函数不在最外层（{cn(a) + 1}）时 content:check 报错
+    const badTextFunc = LESSON.replace(
+      'steps:\n  - say: 这是一个完整的饼。\n  - say: 把它平均分成 {parts} 份。',
+      'steps:\n  - say: "{cn(parts) + 1}"',
+    );
+    const msgsBadFunc = errors(sandbox({ 'lessons/math/g3/fraction-intro.yaml': badTextFunc })).map(
+      (e) => e.message,
+    );
+    expect(msgsBadFunc.some((m) => m.includes('文字函数只能单独写在 {} 里'))).toBe(true);
   });
 
   it('创作示例：引用的元素名、分类、列表都要对得上', () => {
