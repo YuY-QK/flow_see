@@ -2,7 +2,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { buildIndex, findLesson, highlightParts, searchLessons } from './catalog';
+import { buildIndex, findEntry, findLesson, highlightParts, searchLessons } from './catalog';
 import { generateSchemas, CONTENT_ROOT } from './json-schema';
 import { loadContent } from './load';
 import { TEMPLATE_IDS } from '@flow-see/templates';
@@ -245,5 +245,133 @@ describe('搜索高亮', () => {
     expect(highlightParts('钟表', ['分数'])).toEqual([{ text: '钟表', hit: false }]);
     expect(highlightParts('钟表', [])).toEqual([{ text: '钟表', hit: false }]);
     expect(highlightParts('', ['分'])).toEqual([]);
+  });
+});
+
+describe('3.0 新字段校验与索引（D1）', () => {
+  it('目录里一个单元写 term、另一个没写 → 报错，指出文件和单元', () => {
+    const raw = readFileSync(join(CONTENT_ROOT, 'curriculum/math/grade1.yaml'), 'utf8');
+    // 在第一个单元加 term: 1，第二个单元不加
+    const bad = raw.replace('id: add-within-20', 'id: add-within-20\n    term: 1');
+    const errs = errors(sandbox({ 'curriculum/math/grade1.yaml': bad }));
+    expect(
+      errs.some(
+        (e) =>
+          e.file === 'curriculum/math/grade1.yaml' &&
+          e.message.includes('单元 clock 缺少 term') &&
+          e.message.includes('全写 term，要么全不写'),
+      ),
+    ).toBe(true);
+  });
+
+  it('domain: algebra（不在 domains 里）→ 报错', () => {
+    const raw = readFileSync(join(CONTENT_ROOT, 'curriculum/math/grade1.yaml'), 'utf8');
+    // 给所有单元都加上 domain，但其中一个写 algebra
+    const bad = raw
+      .replace('id: add-within-20', 'id: add-within-20\n    domain: algebra')
+      .replace('id: clock', 'id: clock\n    domain: number');
+    const errs = errors(sandbox({ 'curriculum/math/grade1.yaml': bad }));
+    expect(
+      errs.some(
+        (e) =>
+          e.file === 'curriculum/math/grade1.yaml' &&
+          e.message.includes('algebra') &&
+          e.message.includes('不在学科 math 的 domains 里'),
+      ),
+    ).toBe(true);
+  });
+
+  it('科学目录写 domain → 报错（科学没有 domains）', () => {
+    const raw = readFileSync(join(CONTENT_ROOT, 'curriculum/science/grade3.yaml'), 'utf8');
+    const bad = raw.replace('id: plant', 'id: plant\n    domain: biology');
+    const errs = errors(sandbox({ 'curriculum/science/grade3.yaml': bad }));
+    expect(
+      errs.some(
+        (e) =>
+          e.file === 'curriculum/science/grade3.yaml' &&
+          e.message.includes('学科 science 没有定义 domains') &&
+          e.message.includes('plant'),
+      ),
+    ).toBe(true);
+  });
+
+  it('related: [make-ten, make-ten] 报重复；[自己] 报错；[not-exist] 报不存在；引用目录中 { id, title } 形式的 id 通过', () => {
+    // 1. 重复
+    const dup = LESSON.replace(
+      'tags: [分数, 平均分]',
+      'tags: [分数, 平均分]\nrelated: [make-ten, make-ten]',
+    );
+    const dupErrs = errors(sandbox({ 'lessons/math/g3/fraction-intro.yaml': dup }));
+    expect(dupErrs.some((e) => e.message.includes('related 里的知识点 id 重复：make-ten'))).toBe(true);
+
+    // 2. 包含自己
+    const self = LESSON.replace(
+      'tags: [分数, 平均分]',
+      'tags: [分数, 平均分]\nrelated: [fraction-intro]',
+    );
+    const selfErrs = errors(sandbox({ 'lessons/math/g3/fraction-intro.yaml': self }));
+    expect(selfErrs.some((e) => e.message.includes('related 不能包含自己：fraction-intro'))).toBe(true);
+
+    // 3. 不存在
+    const notExist = LESSON.replace(
+      'tags: [分数, 平均分]',
+      'tags: [分数, 平均分]\nrelated: [not-exist]',
+    );
+    const notExistErrs = errors(sandbox({ 'lessons/math/g3/fraction-intro.yaml': notExist }));
+    expect(notExistErrs.some((e) => e.message.includes('related 引用的知识点不存在：not-exist'))).toBe(
+      true,
+    );
+
+    // 4. 引用目录中 { id, title } 形式的 id：通过
+    const mathG1 = readFileSync(join(CONTENT_ROOT, 'curriculum/math/grade1.yaml'), 'utf8').replace(
+      '- make-ten',
+      '- make-ten\n      - { id: placeholder-id, title: 预留知识点 }',
+    );
+    const validRelated = LESSON.replace(
+      'tags: [分数, 平均分]',
+      'tags: [分数, 平均分]\nrelated: [make-ten, placeholder-id]',
+    );
+    const ok = errors(
+      sandbox({
+        'curriculum/math/grade1.yaml': mathG1,
+        'lessons/math/g3/fraction-intro.yaml': validRelated,
+      }),
+    );
+    expect(ok.filter((e) => e.message.includes('related'))).toEqual([]);
+  });
+
+  it('索引里能读到 term、domain、related、domains', () => {
+    const mathG1 = readFileSync(join(CONTENT_ROOT, 'curriculum/math/grade1.yaml'), 'utf8')
+      .replace('id: add-within-20', 'id: add-within-20\n    term: 1\n    domain: number')
+      .replace('id: subtract-within-20', 'id: subtract-within-20\n    term: 2\n    domain: number')
+      .replace('id: clock', 'id: clock\n    term: 1\n    domain: number');
+    const withRelated = LESSON.replace(
+      'tags: [分数, 平均分]',
+      'tags: [分数, 平均分]\nrelated: [make-ten]',
+    );
+    const r = sandbox({
+      'curriculum/math/grade1.yaml': mathG1,
+      'lessons/math/g3/fraction-intro.yaml': withRelated,
+    });
+    const { bundle, issues } = loadContent(r);
+    expect(issues.filter((i) => i.level === 'error')).toEqual([]);
+    const index = buildIndex(bundle!, true);
+
+    // term, domain
+    const g1 = findEntry(index, 1, 'math');
+    expect(g1?.units[0].term).toBe(1);
+    expect(g1?.units[0].domain).toBe('number');
+
+    // related
+    const lesson = findLesson(index, 'fraction-intro');
+    expect(lesson?.lesson.meta?.related).toEqual(['make-ten']);
+
+    // domains
+    const math = index.subjects.find((s) => s.id === 'math');
+    expect(math?.domains).toEqual([
+      { id: 'number', name: '数与代数' },
+      { id: 'geometry', name: '图形与几何' },
+      { id: 'stats', name: '统计与概率' },
+    ]);
   });
 });

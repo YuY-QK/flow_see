@@ -453,6 +453,7 @@ export function loadContent(
   // 课程目录
   const curricula: ContentBundle['curricula'] = [];
   const listed = new Map<string, string>();
+  const knownLessonTargets = new Set<string>(lessonById.keys());
   for (const file of walk(join(root, 'curriculum'))) {
     const name = rel(root, file);
     if (name === 'curriculum/grades.yaml') continue;
@@ -468,12 +469,45 @@ export function loadContent(
     if (grades && !subjectIds.has(data.subject))
       err(name, `学科 ${data.subject} 不在 grades.yaml 里`);
     if (grades && !gradeIds.has(data.grade)) err(name, `年级 ${data.grade} 不在 grades.yaml 里`);
+
+    // term: 同一文件里全写或全不写
+    const terms = data.units.map((u) => u.term !== undefined);
+    if (terms.some(Boolean) && !terms.every(Boolean)) {
+      for (const u of data.units)
+        if (u.term === undefined)
+          err(name, `单元 ${u.id} 缺少 term：同一目录文件里的单元要么全写 term，要么全不写`);
+    }
+
+    // domain: 同一文件里全写或全不写
+    const domains = data.units.map((u) => u.domain !== undefined);
+    if (domains.some(Boolean) && !domains.every(Boolean)) {
+      for (const u of data.units)
+        if (u.domain === undefined)
+          err(name, `单元 ${u.id} 缺少 domain：同一目录文件里的单元要么全写 domain，要么全不写`);
+    }
+
+    const currentSubject = grades?.subjects.find((s) => s.id === data.subject);
+    const allowedDomains = new Set(currentSubject?.domains?.map((d) => d.id) ?? []);
+
     const unitIds = new Set<string>();
     for (const unit of data.units) {
       if (unitIds.has(unit.id)) err(name, `单元 id 重复：${unit.id}`);
       unitIds.add(unit.id);
+
+      if (unit.domain !== undefined) {
+        if (!currentSubject?.domains || currentSubject.domains.length === 0) {
+          err(name, `学科 ${data.subject} 没有定义 domains，单元 ${unit.id} 不能写 domain`);
+        } else if (!allowedDomains.has(unit.domain)) {
+          err(
+            name,
+            `单元 ${unit.id} 的 domain “${unit.domain}” 不在学科 ${data.subject} 的 domains 里（已有：${[...allowedDomains].join('、')}）`,
+          );
+        }
+      }
+
       for (const entry of unit.lessons) {
         const id = typeof entry === 'string' ? entry : entry.id;
+        if (typeof entry !== 'string') knownLessonTargets.add(entry.id);
         if (listed.has(id))
           err(name, `知识点 ${id} 在目录里出现了两次（另一处：${listed.get(id)}）`);
         listed.set(id, name);
@@ -490,6 +524,19 @@ export function loadContent(
       }
     }
     curricula.push({ file: name, data });
+  }
+
+  // 知识点 related 检查：每个 id 存在、不等于自己、不重复
+  for (const lf of lessons) {
+    const related = lf.lesson.related;
+    if (!related) continue;
+    const seen = new Set<string>();
+    for (const rid of related) {
+      if (rid === lf.lesson.id) err(lf.file, `related 不能包含自己：${rid}`);
+      if (seen.has(rid)) err(lf.file, `related 里的知识点 id 重复：${rid}`);
+      seen.add(rid);
+      if (!knownLessonTargets.has(rid)) err(lf.file, `related 引用的知识点不存在：${rid}`);
+    }
   }
   for (const lf of lessons)
     if (!listed.has(lf.lesson.id))

@@ -44,6 +44,15 @@
       "default": false,
       "type": "boolean"
     },
+    "related": {
+      "description": "相关知识点 id 列表，最多 4 个",
+      "maxItems": 4,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      }
+    },
     "thumbnail": {
       "description": "素材 id",
       "type": "string"

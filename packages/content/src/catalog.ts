@@ -18,6 +18,7 @@ export interface LessonMeta {
   tags: string[];
   recommended: boolean;
   status: LessonStatus;
+  related?: string[];
   /** 缩略图素材 id */
   thumbnail?: string;
   /** 缩略图画面加载出来之前显示的文字（cover.text） */
@@ -39,6 +40,8 @@ export interface CatalogLesson {
 export interface CatalogUnit {
   id: string;
   title: string;
+  term?: 1 | 2;
+  domain?: string;
   lessons: CatalogLesson[];
 }
 
@@ -75,7 +78,13 @@ export interface IndexSource {
     data: {
       subject: string;
       grade: number;
-      units: { id: string; title: string; lessons: (string | { id: string; title: string })[] }[];
+      units: {
+        id: string;
+        title: string;
+        term?: 1 | 2;
+        domain?: string;
+        lessons: (string | { id: string; title: string })[];
+      }[];
     };
   }[];
   lessons: {
@@ -87,6 +96,7 @@ export interface IndexSource {
       tags: string[];
       recommended: boolean;
       status: LessonStatus;
+      related?: string[];
       thumbnail?: string;
       cover?: { text?: string };
       template: string;
@@ -112,6 +122,7 @@ export function buildIndex(src: IndexSource, dev: boolean): ContentIndex {
         tags: l.tags,
         recommended: l.recommended,
         status: l.status,
+        related: l.related,
         thumbnail: l.thumbnail,
         coverText: l.cover?.text,
         template: l.template,
@@ -126,6 +137,8 @@ export function buildIndex(src: IndexSource, dev: boolean): ContentIndex {
     units: data.units.map((u) => ({
       id: u.id,
       title: u.title,
+      term: u.term,
+      domain: u.domain,
       lessons: u.lessons.flatMap((entry): CatalogLesson[] => {
         const id = typeof entry === 'string' ? entry : entry.id;
         const meta = metas.get(id);

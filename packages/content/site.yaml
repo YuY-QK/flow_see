@@ -23,6 +23,7 @@ learning:
   recommendedLimit: 4
   prevNextCrossGrade: false
   prevNextCrossSubject: false
+  term: { firstFromMonth: 9, secondFromMonth: 2 }
 search:
   hints: [分数, 钟表, 凑十, 植物, 水]
   maxResults: 50

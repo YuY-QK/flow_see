@@ -11,6 +11,10 @@ subjects:
   - id: math
     name: 数学
     color: "#2F5FE0"
+    domains:
+      - { id: number, name: 数与代数 }
+      - { id: geometry, name: 图形与几何 }
+      - { id: stats, name: 统计与概率 }
   - id: science
     name: 科学
     color: "#1E7F4F"
