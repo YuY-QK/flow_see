@@ -103,6 +103,10 @@ export function getPart(type: string): ResolvedPart | undefined {
   return part && { ...part, defaults: sceneStyle().parts[part.type] ?? {} };
 }
 
+export function registerPart(part: PartDef): void {
+  byType.set(part.type, part);
+}
+
 export const PART_TYPES: readonly string[] = [...PARTS.map((p) => p.type), ...Object.keys(ALIASES)];
 
 /** 计数块一类的零件（可以拆分、合并） */

@@ -91,6 +91,65 @@ export function blend(from: unknown, to: unknown, t: number, key = '', depth = 0
   return t < 0.5 ? from : to;
 }
 
+/** 判定是否是对称轴（两点确定的直线，两点不能重合） */
+export function isAxis(v: unknown): v is [Point, Point] {
+  return (
+    Array.isArray(v) &&
+    v.length === 2 &&
+    isPoint(v[0]) &&
+    isPoint(v[1]) &&
+    (v[0][0] !== v[1][0] || v[0][1] !== v[1][1])
+  );
+}
+
+/**
+ * 沿两点确定的对称轴变换点坐标
+ * s = cos(πe)：
+ * e = 0 时 s = 1（原样）；
+ * e = 0.5 时 s = 0（垂直于轴的方向压扁到 0，投影在轴上）；
+ * e = 1 时 s = -1（镜像）。
+ */
+export function transformPointByAxis(p: Point, axis: [Point, Point], s: number): Point {
+  const [[x1, y1], [x2, y2]] = axis;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.hypot(dx, dy);
+  if (len === 0) return p;
+  const C = dx / len;
+  const S = dy / len;
+  const m11 = C * C + s * S * S;
+  const m12 = (1 - s) * C * S;
+  const m21 = m12;
+  const m22 = S * S + s * C * C;
+  const px = p[0] - x1;
+  const py = p[1] - y1;
+  return [x1 + m11 * px + m12 * py, y1 + m21 * px + m22 * py];
+}
+
+/**
+ * 沿两点确定的对称轴生成仿射变换矩阵参数 [a, b, c, d, e, f]
+ * 满足 SVG matrix(a, b, c, d, e, f)
+ */
+export function axisTransformMatrix(
+  axis: [Point, Point],
+  s: number,
+): [number, number, number, number, number, number] {
+  const [[x1, y1], [x2, y2]] = axis;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.hypot(dx, dy);
+  if (len === 0) return [1, 0, 0, 1, 0, 0];
+  const C = dx / len;
+  const S = dy / len;
+  const a = C * C + s * S * S;
+  const b = (1 - s) * C * S;
+  const c = b;
+  const d = S * S + s * C * C;
+  const e = x1 - a * x1 - c * y1;
+  const f = y1 - b * x1 - d * y1;
+  return [a, b, c, d, e, f];
+}
+
 /** 目标位置：坐标，或另一个零件的位置 */
 function resolvePoint(world: World, v: unknown): Point | undefined {
   if (isPoint(v)) return v;
@@ -243,6 +302,27 @@ function apply(world: World, a: SceneAction, p: number, current: boolean) {
     }
     case 'deal':
       return deal(world, a, p);
+    case 'flip': {
+      if (!isAxis(args.axis)) return;
+      const axis = args.axis;
+      const s = Math.cos(Math.PI * e);
+      for (const o of objs) {
+        const part = getPart(o.type);
+        if (part?.rotatesPoints && Array.isArray(o.props.points)) {
+          o.props.points = (o.props.points as Point[]).map((pt) =>
+            transformPointByAxis(pt, axis, s),
+          );
+        } else {
+          o.props.mirrorAxis = axis;
+          if (e < 1) {
+            o.props.flipScale = s;
+          } else {
+            delete o.props.flipScale;
+          }
+        }
+      }
+      return;
+    }
     case 'wait':
     case 'ask':
       return;

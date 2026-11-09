@@ -24,6 +24,7 @@ export const VERBS = {
   wait: { name: '停一会儿' },
   deal: { name: '一个一个分' },
   ask: { name: '在这里提问' },
+  flip: { name: '翻折' },
 } as const;
 
 export type Verb = keyof typeof VERBS;
@@ -63,6 +64,7 @@ export const VERB_KEYS: Record<Verb, readonly string[]> = {
   wait: [],
   deal: ['target', 'into', 'count'],
   ask: [],
+  flip: ['target', 'axis'],
 };
 
 /** 一个动作可以同时作用于多个零件（列表写法） */
@@ -74,6 +76,7 @@ export const MULTI_TARGET: ReadonlySet<Verb> = new Set([
   'rotate',
   'scale',
   'color',
+  'flip',
 ]);
 
 export interface SceneAction {

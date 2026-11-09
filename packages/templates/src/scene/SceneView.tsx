@@ -12,7 +12,15 @@ import {
 } from '@flow-see/blocks';
 import type { StageProps } from '@flow-see/runtime/template.ts';
 import { t } from '@flow-see/core';
-import { dragFrame, dragTargets, sceneFrame, type SceneDef, type SceneObject } from './evaluate';
+import {
+  axisTransformMatrix,
+  dragFrame,
+  dragTargets,
+  isAxis,
+  sceneFrame,
+  type SceneDef,
+  type SceneObject,
+} from './evaluate';
 
 /**
  * 场景画面：纯函数，画面只由 (场景, 第几步, 步内进度) 决定。
@@ -398,6 +406,10 @@ export function SceneView({
   );
 }
 
+function round6(v: number): number {
+  return Math.abs(v) < 1e-9 ? 0 : Number(v.toFixed(6));
+}
+
 function PartView({
   o,
   ctx,
@@ -416,10 +428,19 @@ function PartView({
   const scale = num(o.props.scale, 1);
   const rotate = num(o.props.rotate, 0);
   const hl = Math.max(0, Math.min(1, num(o.props.highlight, 0)));
-  const transform =
+  const selfTransform =
     scale !== 1 || rotate !== 0
       ? `translate(${cx} ${cy}) rotate(${rotate}) scale(${scale}) translate(${-cx} ${-cy})`
       : undefined;
+
+  let flipTransform: string | undefined;
+  if (!part.rotatesPoints && isAxis(o.props.mirrorAxis)) {
+    const s = typeof o.props.flipScale === 'number' ? o.props.flipScale : -1;
+    const [a, b, c, d, e, f] = axisTransformMatrix(o.props.mirrorAxis as [Point, Point], s);
+    flipTransform = `matrix(${round6(a)} ${round6(b)} ${round6(c)} ${round6(d)} ${round6(e)} ${round6(f)})`;
+  }
+
+  const transform = [flipTransform, selfTransform].filter(Boolean).join(' ') || undefined;
   const { padX, padY, strokeWidth, fillOpacity, dash } = sceneStyle().highlight;
   // 高亮框的颜色：highlight 动作写了 color 就用它，否则用动画主题的强调色
   const frame = color(o.props.hlColor, theme, 'accent');

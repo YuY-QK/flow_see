@@ -70,6 +70,7 @@ export interface PartDef {
   Render: ComponentType<{ p: Props; ctx: PartContext }>;
   subitems?(p: Props): Subitem[];
   handles?(p: Props): Handle[];
+  rotatesPoints?: boolean;
 }
 
 /** 所有零件都有的属性 */
@@ -83,6 +84,7 @@ export const COMMON_PROPS = [
   'rotate',
   'color',
   'note',
+  'mirrorAxis',
 ] as const;
 
 /* ───────────── 读取属性 ───────────── */
