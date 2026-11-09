@@ -12,6 +12,11 @@ import {
 } from '@flow-see/core/params.ts';
 import { chooseAnswers, chooseOptions, type ChooseSpec } from '@flow-see/core/choose.ts';
 import { fillParams } from '@flow-see/core/fill.ts';
+import {
+  isValidTextFunc,
+  textFuncParamNames,
+  TEXT_FUNC_RE,
+} from '@flow-see/core/format.ts';
 import { expandSteps } from './steps.ts';
 import type { z } from 'zod';
 import {
@@ -296,10 +301,26 @@ export function loadContent(
           for (const n of names) if (!known.has(n)) err(name, `explore 引用了不存在的参数：${n}`);
       }
     }
-    // 讲解、零件、动作里的 {参数名}
+    // 讲解、零件、动作里的 {参数名} / {文字函数}
     const used = new Set<string>();
-    JSON.stringify([lesson.objects, lesson.steps, lesson.keyPoints], (_k, v) => {
-      if (typeof v === 'string') for (const [, n] of v.matchAll(PLACEHOLDER)) used.add(n);
+    const IDENT = /^[A-Za-z_]\w*$/;
+    JSON.stringify([lesson.objects, lesson.steps, lesson.keyPoints, lesson.cover], (_k, v) => {
+      if (typeof v === 'string') {
+        for (const m of v.matchAll(/\{([^{}]+)\}/g)) {
+          const inner = m[1].trim();
+          if (TEXT_FUNC_RE.test(inner)) {
+            if (!isValidTextFunc(inner)) {
+              err(name, '文字函数只能单独写在 {} 里');
+            } else {
+              for (const p of textFuncParamNames(inner)) {
+                used.add(p);
+              }
+            }
+          } else if (IDENT.test(inner)) {
+            used.add(inner);
+          }
+        }
+      }
       return v;
     });
     // {i} 是重复（repeat）里的第几份，由场景模板展开时代入

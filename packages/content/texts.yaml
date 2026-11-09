@@ -398,6 +398,15 @@ minePage:
 notFound:
   zhe_ge_ye_mian: 这个页面不存在，可能是链接写错了，或者内容还没上线。
   zhao_bu_dao_ye: 找不到页面
+num:
+  digits: 零一二三四五六七八九
+  units: 十百千
+  groups: 万亿
+  point: 点
+  minus: 负
+  hour: 时
+  minute: 分
+  two: 两
 officialCard:
   jing_xuan: 精选
   watch_aria: 观看「{title}」
