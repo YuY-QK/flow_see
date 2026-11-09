@@ -54,8 +54,18 @@ export function createApp({ store, fallback, cors = true }) {
       return res.end(JSON.stringify({ error: 'not_found' }));
     }
     const headers = Object.fromEntries(response.headers);
-    // 请求体没有读完就返回时关闭连接，避免同一连接上的后续请求卡住
-    if (!req.complete) headers.connection = 'close';
+    // 请求体没有读完就返回时关闭连接，避免同一连接上的后续请求卡住；同时消费剩余数据，避免 Node 26 / TCP RST 导致客户端 write EPIPE
+    if (!req.complete) {
+      headers.connection = 'close';
+      req.removeAllListeners('data');
+      req.on('data', () => {});
+      req.resume();
+      await new Promise((r) => {
+        req.on('end', r);
+        req.on('error', r);
+        setTimeout(r, 100);
+      });
+    }
     res.writeHead(response.status, headers);
     res.end(Buffer.from(await response.arrayBuffer()));
   };
