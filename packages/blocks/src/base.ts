@@ -19,6 +19,38 @@ export interface PartContext {
   assetUrl?(id: string): string | undefined;
 }
 
+export interface Subitem {
+  /** 子项名（不含零件 id），如 'bar.2'、'v1'、'd0' */
+  name: string;
+  /** 舞台坐标的包围盒（点中判定、高亮框都用它） */
+  box: Box;
+  /** 读屏名称的参数（如序号、数值），名称模板在 texts.yaml 的 a11y.subitem */
+  label?: string;
+  /** 数值（tap 按条件点时的 {n}；money 的面值；item-set 的 value） */
+  value?: number;
+  /** 类别（sort 用，来自 item-set 的 tags） */
+  tags?: Record<string, string>;
+}
+
+export interface Handle {
+  /** 改哪个属性（顶层属性名） */
+  prop: string;
+  /** 把手当前位置（舞台坐标） */
+  at: Point;
+  /** 拖动方式：rotate 绕 center 转；drag 跟手移动 */
+  kind: 'rotate' | 'drag';
+  center?: Point;
+  /** 由指针位置算出属性的新值（不负责吸附，吸附由播放器按 step 做） */
+  valueAt(pointer: Point): number;
+  /** 属性的取值范围 */
+  min: number;
+  max: number;
+  /** 改数组属性时的下标（polygon 顶点，见 B12） */
+  index?: number;
+  /** 由指针位置直接算出新的属性集合（polygon 顶点、protractor 整体拖动）；有它时不调用 valueAt，turn（T2）不使用这类把手 */
+  apply?(p: Props, pointer: Point): Props;
+}
+
 /** 零件定义。默认属性不在这里写死：来自 site.yaml 的 scene.parts.<type>，由 getPart() 补上。 */
 export interface PartDef {
   /** 配置里写的 type */
@@ -36,6 +68,8 @@ export interface PartDef {
   /** 包围盒（舞台坐标），高亮框和旋转/缩放中心用 */
   bbox(p: Props): Box;
   Render: ComponentType<{ p: Props; ctx: PartContext }>;
+  subitems?(p: Props): Subitem[];
+  handles?(p: Props): Handle[];
 }
 
 /** 所有零件都有的属性 */

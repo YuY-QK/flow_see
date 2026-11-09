@@ -1,5 +1,8 @@
+import { createRequire } from 'node:module';
+import { createElement } from 'react';
 import { describe, expect, it } from 'vitest';
 import { counterSlot } from '@flow-see/blocks';
+import { getTheme, type Animation } from '@flow-see/core';
 import { parseDuration, planStep } from './actions';
 import { checkScene } from './check';
 import {
@@ -12,6 +15,10 @@ import {
   type SceneDef,
 } from './evaluate';
 import { expandActions, expandObjects } from './repeat';
+import { SceneView } from './SceneView';
+
+const req = createRequire(process.cwd() + '/apps/web/package.json');
+const { renderToStaticMarkup } = req('react-dom/server') as typeof import('react-dom/server');
 
 const makeTen: SceneDef = {
   stage: { width: 800, height: 450 },
@@ -396,5 +403,94 @@ describe('动手做：多目标拖动', () => {
       ],
     });
     expect(issues).toEqual([]);
+  });
+});
+
+describe('SceneView subitems tap and handles turn', () => {
+  const dummyAnim = {
+    id: 'test-anim',
+    title: 'Test Animation',
+    templateId: 'scene',
+    steps: [],
+  } as unknown as Animation;
+  const theme = getTheme('cute');
+
+  const gridScene: SceneDef = {
+    stage: { width: 800, height: 450 },
+    objects: [{ id: 'my-grid', type: 'grid', rows: 2, cols: 3, cell: 30, at: [50, 50] }],
+    steps: [[]],
+  };
+
+  const clockScene: SceneDef = {
+    stage: { width: 800, height: 450 },
+    objects: [{ id: 'my-clock', type: 'clock', radius: 100, time: '3:00', at: [200, 200] }],
+    steps: [[]],
+  };
+
+  it('renders hit rects when tryIt.tap is present and no hit layer when absent', () => {
+    // 3. SceneView 渲染：tryIt.tap 存在时有命中矩形，个数 = 可点子项数；没有 tap 时没有命中层
+    // When tap is present with among: ['cell.*'], only 6 cells are clickable
+    const htmlWithAmong = renderToStaticMarkup(
+      createElement(SceneView, {
+        def: gridScene,
+        animation: dummyAnim,
+        index: 0,
+        theme,
+        tryIt: { phase: 'doing', tap: { among: ['cell.*'] } },
+      }),
+    );
+    const amongHits = (htmlWithAmong.match(/data-tap-sub/g) || []).length;
+    expect(amongHits).toBe(6);
+
+    // When tap is present without among, all 11 subitems (2 rows + 3 cols + 6 cells) are clickable
+    const htmlAll = renderToStaticMarkup(
+      createElement(SceneView, {
+        def: gridScene,
+        animation: dummyAnim,
+        index: 0,
+        theme,
+        tryIt: { phase: 'doing', tap: true },
+      }),
+    );
+    const allHits = (htmlAll.match(/data-tap-sub/g) || []).length;
+    expect(allHits).toBe(11);
+
+    // When tap is absent, no hit layer is rendered (count = 0)
+    const htmlNoTap = renderToStaticMarkup(
+      createElement(SceneView, {
+        def: gridScene,
+        animation: dummyAnim,
+        index: 0,
+        theme,
+      }),
+    );
+    const noHits = (htmlNoTap.match(/data-tap-sub/g) || []).length;
+    expect(noHits).toBe(0);
+    expect(htmlNoTap).not.toContain('data-tap-sub');
+  });
+
+  it('renders turn handle when tryIt.turn is present', () => {
+    const htmlWithTurn = renderToStaticMarkup(
+      createElement(SceneView, {
+        def: clockScene,
+        animation: dummyAnim,
+        index: 0,
+        theme,
+        tryIt: { phase: 'doing', turn: { target: 'my-clock', prop: 'time' }, turnValue: 180 },
+      }),
+    );
+    expect(htmlWithTurn).toContain('role="slider"');
+    expect(htmlWithTurn).toContain('data-handle-prop="time"');
+    expect(htmlWithTurn).toContain('aria-valuenow="180"');
+
+    const htmlNoTurn = renderToStaticMarkup(
+      createElement(SceneView, {
+        def: clockScene,
+        animation: dummyAnim,
+        index: 0,
+        theme,
+      }),
+    );
+    expect(htmlNoTurn).not.toContain('role="slider"');
   });
 });

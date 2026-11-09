@@ -101,6 +101,11 @@ scene:
     dropPadding: 30                    # 放到目标零件外面这么远以内也算放进去（舞台坐标）
     hitScale: 1.6                      # 能拖的零件，按下的范围是它本身的几倍（手指好按；手机上零件会缩小）
     liftScale: 1.15                    # 拖起来时放大一点
+    tapPadding: 12                     # 点选子项外扩判定范围
+    turnHandle: 22                     # 转动把手半径
+    snapMs: 200                        # 吸附时长
+    placeTolerance: 24                 # 放置容差
+    rotateStep: 45                     # 旋转步进角度
   parts:                               # 各零件的默认属性；知识点里写了就用知识点的
     text: { size: 36, color: ink, weight: bold }
     fraction: { size: 40, color: ink }

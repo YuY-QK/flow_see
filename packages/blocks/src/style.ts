@@ -42,8 +42,17 @@ export interface SceneStyle {
   counterBorder: { width: number; darken: number };
   /** 计数块的阴影：偏移（舞台坐标）和深浅（0–1），用一个错开的深色块画出，导出视频里也有 */
   counterShadow: { dx: number; dy: number; opacity: number };
-  /** 动手做时的拖动：放下的容差、按下范围、拖起来放大的倍数 */
-  tryIt: { dropPadding: number; hitScale: number; liftScale: number };
+  /** 动手做时的拖动与交互：放下的容差、按下范围、拖起来放大的倍数、点选外扩、把手半径、吸附时长、放置容差、旋转步长 */
+  tryIt: {
+    dropPadding: number;
+    hitScale: number;
+    liftScale: number;
+    tapPadding: number;
+    turnHandle: number;
+    snapMs: number;
+    placeTolerance: number;
+    rotateStep: number;
+  };
   /** 各零件的默认属性：零件 type → 属性 */
   parts: Record<string, Record<string, unknown>>;
 }

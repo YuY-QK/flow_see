@@ -559,15 +559,45 @@
               "type": "number",
               "minimum": 1,
               "description": "拖起来时放大的倍数"
+            },
+            "tapPadding": {
+              "type": "number",
+              "minimum": 0,
+              "description": "点选子项时的外扩判定范围（舞台坐标）"
+            },
+            "turnHandle": {
+              "type": "number",
+              "minimum": 0,
+              "description": "转动把手的半径（舞台坐标）"
+            },
+            "snapMs": {
+              "type": "number",
+              "minimum": 0,
+              "description": "把手吸附动画的时长（毫秒）"
+            },
+            "placeTolerance": {
+              "type": "number",
+              "minimum": 0,
+              "description": "放置零件时的容差（舞台坐标）"
+            },
+            "rotateStep": {
+              "type": "number",
+              "minimum": 0,
+              "description": "旋转步长（度）"
             }
           },
           "required": [
             "dropPadding",
             "hitScale",
-            "liftScale"
+            "liftScale",
+            "tapPadding",
+            "turnHandle",
+            "snapMs",
+            "placeTolerance",
+            "rotateStep"
           ],
           "additionalProperties": false,
-          "description": "动手做时舞台上的拖动"
+          "description": "动手做时舞台上的拖动与交互"
         },
         "parts": {
           "type": "object",

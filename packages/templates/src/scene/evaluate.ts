@@ -33,8 +33,15 @@ export interface SceneObject {
   props: Props;
 }
 
+export interface SubHighlight {
+  id: string;
+  name: string;
+  value?: number;
+}
+
 export interface SceneFrame {
   objects: SceneObject[];
+  subHighlights: SubHighlight[];
 }
 
 /** 先快后慢（进出都平滑） */
@@ -448,7 +455,7 @@ export function sceneFrame(
   phase?: StageTry['phase'],
 ): SceneFrame {
   // Map 保持插入顺序：配置里靠后的、拆分出来的零件画在上面
-  return { objects: [...buildWorld(def, index, progress, phase).values()] };
+  return { objects: [...buildWorld(def, index, progress, phase).values()], subHighlights: [] };
 }
 
 /** 动手做（拖动）时的画面：能拖的计数块和目标零件 */
@@ -480,7 +487,7 @@ export function dragFrame(
   const ids = drag ? dragTargets(drag) : [];
   const dests = ids.map((id) => world.get(id)).filter((o): o is SceneObject => !!o);
   if (!drag || !src || !isCounters(src.type))
-    return { objects: [...world.values()], items: [], colors: [], to: dests };
+    return { objects: [...world.values()], subHighlights: [], items: [], colors: [], to: dests };
   const at = counterItems(src.props);
   const colors = counterColors(src.props);
   const gone = new Set(moved);
@@ -499,5 +506,5 @@ export function dragFrame(
   src.props.items = items.map((it) => it.at);
   src.props.colors = items.map((it) => it.color);
   src.props.count = items.length;
-  return { objects: [...world.values()], items, colors, from: src, to: dests };
+  return { objects: [...world.values()], subHighlights: [], items, colors, from: src, to: dests };
 }

@@ -1,5 +1,17 @@
 // 数学零件：数轴、钟面、分数圆、分数条、方格。
-import { color, num, numList, pt, str, boxAround, type PartDef, type Props } from '../base';
+import {
+  color,
+  num,
+  numList,
+  pt,
+  str,
+  boxAround,
+  type Handle,
+  type PartDef,
+  type Point,
+  type Props,
+  type Subitem,
+} from '../base';
 
 /* ───────────── 数轴 ───────────── */
 
@@ -152,6 +164,35 @@ export const clockPart: PartDef = {
     const [x, y] = pt(p.at);
     const r = num(p.radius, 0);
     return boxAround(x, y, r * 2 + 12, r * 2 + 12);
+  },
+  handles(p): Handle[] {
+    const [x, y] = pt(p.at);
+    const r = num(p.radius, 0);
+    const minutes = num(parseClockTime(p.time), 0);
+    const { minute } = clockAngles(minutes);
+    const rad = (minute * Math.PI) / 180;
+    const len = r * 0.78;
+    const at: Point = [x + Math.sin(rad) * len, y - Math.cos(rad) * len];
+    return [
+      {
+        prop: 'time',
+        at,
+        kind: 'rotate',
+        center: [x, y],
+        min: 0,
+        max: 720,
+        valueAt(pointer: Point): number {
+          const dx = pointer[0] - x;
+          const dy = pointer[1] - y;
+          if (dx === 0 && dy === 0) return minutes;
+          let deg = (Math.atan2(dx, -dy) * 180) / Math.PI;
+          if (deg < 0) deg += 360;
+          const minuteOffset = deg / 6;
+          const currentHour = Math.floor(minutes / 60);
+          return currentHour * 60 + minuteOffset;
+        },
+      },
+    ];
   },
   Render({ p, ctx }) {
     const [x, y] = pt(p.at);
@@ -406,6 +447,34 @@ export const gridPart: PartDef = {
     const [x, y] = pt(p.at);
     const cell = num(p.cell, 0);
     return { x, y, w: num(p.cols, 0) * cell, h: num(p.rows, 0) * cell };
+  },
+  subitems(p) {
+    const [x, y] = pt(p.at);
+    const rows = Math.max(1, Math.round(num(p.rows, 0)));
+    const cols = Math.max(1, Math.round(num(p.cols, 0)));
+    const cell = num(p.cell, 0);
+    const items: Subitem[] = [];
+    for (let r = 1; r <= rows; r++) {
+      items.push({
+        name: `row.${r}`,
+        box: { x, y: y + (r - 1) * cell, w: cols * cell, h: cell },
+      });
+    }
+    for (let c = 1; c <= cols; c++) {
+      items.push({
+        name: `col.${c}`,
+        box: { x: x + (c - 1) * cell, y, w: cell, h: rows * cell },
+      });
+    }
+    for (let r = 1; r <= rows; r++) {
+      for (let c = 1; c <= cols; c++) {
+        items.push({
+          name: `cell.${r}.${c}`,
+          box: { x: x + (c - 1) * cell, y: y + (r - 1) * cell, w: cell, h: cell },
+        });
+      }
+    }
+    return items;
   },
   Render({ p, ctx }) {
     const [x, y] = pt(p.at);

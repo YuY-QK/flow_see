@@ -1,7 +1,7 @@
 // 积木层：可复用的画面零件（计数块、数轴、钟面、分数圆……）。
 // 依赖方向：templates → blocks → runtime → core。
 // 每个零件是一个 PartDef：默认属性 + 包围盒 + 渲染。零件都是纯函数：同样的属性画出同样的画面。
-import type { PartDef, ResolvedPart } from './base';
+import type { PartDef, Props, ResolvedPart, Subitem } from './base';
 import { sceneStyle } from './style';
 import { countersPart, tenframePart } from './parts/counters';
 import {
@@ -36,7 +36,9 @@ export {
 } from './parts/counters';
 export {
   clockAngles,
+  clockPart,
   formatClockTime,
+  gridPart,
   hopsOf,
   numberlineX,
   parseClockTime,
@@ -44,7 +46,7 @@ export {
 } from './parts/math';
 export { arcLayout, arcPoint } from './parts/arc';
 export { SHAPE_KINDS } from './parts/shapes';
-export { displayText, richSpans } from './parts/text';
+export { displayText, richSpans, textPart } from './parts/text';
 export { blankRect, markRect } from './parts/markRect';
 export { circleCutLayout, type CircleCutLayout } from './parts/circlecut';
 export {
@@ -106,4 +108,32 @@ export const PART_TYPES: readonly string[] = [...PARTS.map((p) => p.type), ...Ob
 /** 计数块一类的零件（可以拆分、合并） */
 export function isCounters(type: string): boolean {
   return type === 'counters' || type === 'tenframe';
+}
+
+/** 查找子项；支持 '*' 通配（如 'bar.*'、'row.*'），匹配到 '*' 时返回数组；无 subitems 时返回 undefined */
+export function findSubitem(
+  def: PartDef,
+  props: Props,
+  name: `${string}*${string}`,
+): Subitem[] | undefined;
+export function findSubitem(def: PartDef, props: Props, name: string): Subitem | Subitem[] | undefined;
+export function findSubitem(
+  def: PartDef,
+  props: Props,
+  name: string,
+): Subitem | Subitem[] | undefined {
+  if (!def.subitems) return undefined;
+  const items = def.subitems(props);
+  if (name.includes('*')) {
+    const pattern =
+      '^' +
+      name
+        .split('*')
+        .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+        .join('.*') +
+      '$';
+    const re = new RegExp(pattern);
+    return items.filter((it) => re.test(it.name));
+  }
+  return items.find((it) => it.name === name);
 }

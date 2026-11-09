@@ -58,6 +58,14 @@ export interface TrySpec {
    */
   drag?: { from: string; to: string | string[]; count: number | string; each?: number | string };
   choose?: ChooseSpec;
+  tap?: { answer?: string[] | string; among?: string[]; pick?: number | string; valid?: string };
+  turn?: {
+    target: string;
+    prop: string;
+    answer: number | string;
+    tolerance?: number | string;
+    step?: number | string;
+  };
   hints?: string[];
 }
 
@@ -77,6 +85,14 @@ export interface StageTry {
   showTarget?: boolean;
   /** 孩子放下一个计数块：target = 放进了哪个目标（零件 id），放在外面时为 undefined */
   onDrop?(index: number, target: string | undefined): void;
+  tap?: { among?: string[] } | boolean;
+  turn?: { target: string; prop?: string; step?: number } | boolean;
+  onTap?(id: string, sub?: string): void;
+  onTurn?(value: number, done: boolean): void;
+  /** 已点对的子项，画成保持描边 */
+  tapped?: string[];
+  /** 把手当前的转动数值 */
+  turnValue?: number;
 }
 
 /** 知识点配置里与模板有关的部分（结构与 packages/content 的 lesson 一致，这里不依赖 content） */

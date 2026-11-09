@@ -106,9 +106,14 @@ const sceneStyleSchema = z
         dropPadding: nonNeg.describe('放到目标零件外面这么远以内也算放进去（舞台坐标）'),
         hitScale: z.number().min(1).describe('能拖的零件，按下的范围是它本身的几倍'),
         liftScale: z.number().min(1).describe('拖起来时放大的倍数'),
+        tapPadding: nonNeg.describe('点选子项时的外扩判定范围（舞台坐标）'),
+        turnHandle: nonNeg.describe('转动把手的半径（舞台坐标）'),
+        snapMs: nonNeg.describe('把手吸附动画的时长（毫秒）'),
+        placeTolerance: nonNeg.describe('放置零件时的容差（舞台坐标）'),
+        rotateStep: nonNeg.describe('旋转步长（度）'),
       })
       .strict()
-      .describe('动手做时舞台上的拖动'),
+      .describe('动手做时舞台上的拖动与交互'),
     parts: z
       .record(z.string(), z.record(z.string(), z.unknown()))
       .describe('各零件的默认属性，键是零件 type'),

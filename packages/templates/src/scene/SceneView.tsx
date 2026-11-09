@@ -2,9 +2,11 @@ import { useContext, useMemo, useRef, useState, type PointerEvent } from 'react'
 import {
   AssetUrlContext,
   color,
+  findSubitem,
   getPart,
   num,
   sceneStyle,
+  type Handle,
   type PartContext,
   type Point,
 } from '@flow-see/blocks';
@@ -32,9 +34,13 @@ export function SceneView({
   const spec = def.tries?.[index];
   const doing = tryIt?.phase === 'doing' && !!spec;
   const dragging = doing && !!spec?.drag;
+  const isTapping = Boolean(tryIt?.tap || (doing && spec?.tap));
+  const isTurning = Boolean(tryIt?.turn || (doing && spec?.turn));
   const svgRef = useRef<SVGSVGElement>(null);
   // 正在拖的计数块：原来的序号、手指位置
   const [lift, setLift] = useState<{ index: number; at: Point; pointer: number } | undefined>();
+  // 正在转动的把手
+  const [turning, setTurning] = useState<{ handle: Handle; pointer: number } | undefined>();
 
   const moved = tryIt?.moved;
   const placed = tryIt?.placed;
@@ -95,17 +101,66 @@ export function SceneView({
     tryIt?.onDrop?.(lift.index, onTarget(at));
   };
 
+  const onHandleDown = (e: PointerEvent, handle: Handle) => {
+    const at = toStage(e);
+    if (!at) return;
+    e.preventDefault();
+    svgRef.current?.setPointerCapture(e.pointerId);
+    setTurning({ handle, pointer: e.pointerId });
+  };
+  const onHandleMove = (e: PointerEvent) => {
+    if (!turning || e.pointerId !== turning.pointer) return;
+    const at = toStage(e);
+    if (at) {
+      const val = turning.handle.valueAt(at);
+      tryIt?.onTurn?.(val, false);
+    }
+  };
+  const onHandleUp = (e: PointerEvent) => {
+    if (!turning || e.pointerId !== turning.pointer) return;
+    const at = toStage(e);
+    const val = at ? turning.handle.valueAt(at) : turning.handle.min;
+    setTurning(undefined);
+    tryIt?.onTurn?.(val, true);
+  };
+
+  const handlePointerMove = (e: PointerEvent) => {
+    if (lift && e.pointerId === lift.pointer) onMove(e);
+    else if (turning && e.pointerId === turning.pointer) onHandleMove(e);
+  };
+  const handlePointerUp = (e: PointerEvent) => {
+    if (lift && e.pointerId === lift.pointer) onUp(e);
+    else if (turning && e.pointerId === turning.pointer) onHandleUp(e);
+  };
+  const handlePointerCancel = () => {
+    setLift(undefined);
+    setTurning(undefined);
+  };
+
+  const turnSpec = typeof tryIt?.turn === 'object' ? tryIt.turn : spec?.turn;
+  const turnTarget = turnSpec?.target;
+  const turnProp = turnSpec?.prop;
+
   // 做错几次后：拖动高亮目标零件；点选高亮配置里指定的零件
   const hint = new Set(spec?.drag ? dragTargets(spec.drag) : (spec?.choose?.show ?? []));
-  const objects = frame.objects.map((o) =>
-    doing && tryIt?.showTarget && hint.has(o.id)
-      ? { ...o, props: { ...o.props, highlight: 1 } }
-      : o,
-  );
+  const objects = frame.objects.map((o) => {
+    let obj = o;
+    if (doing && tryIt?.showTarget && hint.has(o.id)) {
+      obj = { ...obj, props: { ...obj.props, highlight: 1 } };
+    }
+    if (isTurning && tryIt?.turnValue !== undefined && turnProp && o.id === turnTarget) {
+      obj = { ...obj, props: { ...obj.props, [turnProp]: tryIt.turnValue } };
+    }
+    return obj;
+  });
+  const targetObjects = turnTarget
+    ? objects.filter((o) => o.id === turnTarget)
+    : objects.filter((o) => !!getPart(o.type)?.handles);
   const src = drag?.from;
   const size = num(src?.props.size, 44);
   const { hitScale, liftScale } = sceneStyle().tryIt;
   const liftedColor = lift ? drag?.colors[lift.index] : undefined;
+  const isInteracting = dragging || isTurning;
 
   return (
     <svg
@@ -119,17 +174,178 @@ export function SceneView({
       style={{
         fontFamily: theme.font,
         display: 'block', // 拖动时不滚动页面、不选中文字
-        touchAction: dragging ? 'none' : undefined,
-        userSelect: dragging ? 'none' : undefined,
-        WebkitUserSelect: dragging ? 'none' : undefined,
+        touchAction: isInteracting ? 'none' : undefined,
+        userSelect: isInteracting ? 'none' : undefined,
+        WebkitUserSelect: isInteracting ? 'none' : undefined,
       }}
-      onPointerMove={dragging ? onMove : undefined}
-      onPointerUp={dragging ? onUp : undefined}
-      onPointerCancel={dragging ? () => setLift(undefined) : undefined}
+      onPointerMove={isInteracting ? handlePointerMove : undefined}
+      onPointerUp={isInteracting ? handlePointerUp : undefined}
+      onPointerCancel={isInteracting ? handlePointerCancel : undefined}
     >
+      <defs>
+        <filter id="turn-handle-shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="3" stdDeviation="3" floodOpacity="0.25" />
+        </filter>
+      </defs>
+
       {objects.map((o) => (
         <PartView key={o.id} o={o} ctx={ctx} theme={theme} />
       ))}
+
+      {frame.subHighlights?.map((sh, idx) => {
+        const obj = objects.find((o) => o.id === sh.id);
+        const part = obj ? getPart(obj.type) : undefined;
+        if (!part || !obj) return null;
+        const sub = findSubitem(part, obj.props, sh.name);
+        const items = Array.isArray(sub) ? sub : sub ? [sub] : [];
+        const { padX, padY, strokeWidth, fillOpacity, dash } = sceneStyle().highlight;
+        const frameColor = color(obj.props.hlColor, theme, 'accent');
+        return items.map((it) => (
+          <rect
+            key={`sh-${idx}-${sh.id}-${it.name}`}
+            x={it.box.x - padX}
+            y={it.box.y - padY}
+            width={it.box.w + padX * 2}
+            height={it.box.h + padY * 2}
+            rx={Math.min(theme.radius, 18)}
+            fill={frameColor}
+            fillOpacity={fillOpacity}
+            stroke={frameColor}
+            strokeWidth={strokeWidth}
+            strokeDasharray={dash}
+            style={{ pointerEvents: 'none' }}
+          />
+        ));
+      })}
+
+      {isTapping
+        ? objects.map((o) => {
+            const part = getPart(o.type);
+            if (!part?.subitems) return null;
+            const subs = part.subitems(o.props);
+            const tapSpec = typeof tryIt?.tap === 'object' ? tryIt.tap : spec?.tap;
+            const among = tapSpec?.among;
+            const pad = sceneStyle().tryIt.tapPadding;
+            return subs.map((sub) => {
+              const fullName = `${o.id}.${sub.name}`;
+              const clickable =
+                !among ||
+                among.some((pat) => {
+                  if (pat === sub.name || pat === fullName || pat === o.id) return true;
+                  if (pat.includes('*')) {
+                    const re = new RegExp(
+                      '^' +
+                        pat
+                          .split('*')
+                          .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+                          .join('.*') +
+                        '$',
+                    );
+                    return re.test(sub.name) || re.test(fullName);
+                  }
+                  return false;
+                });
+              if (!clickable) return null;
+              const isTapped = Boolean(
+                tryIt?.tapped?.includes(`${o.id}.${sub.name}`) ||
+                  tryIt?.tapped?.includes(sub.name),
+              );
+              return (
+                <g
+                  key={`tap-${o.id}-${sub.name}`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={t('a11y.subitem', { name: sub.label ?? sub.name })}
+                  style={{ cursor: 'pointer' }}
+                  data-tap-part={o.id}
+                  data-tap-sub={sub.name}
+                  onClick={() => tryIt?.onTap?.(o.id, sub.name)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      tryIt?.onTap?.(o.id, sub.name);
+                    }
+                  }}
+                >
+                  <rect
+                    x={sub.box.x - pad}
+                    y={sub.box.y - pad}
+                    width={sub.box.w + pad * 2}
+                    height={sub.box.h + pad * 2}
+                    fill="transparent"
+                  />
+                  {isTapped ? (
+                    <rect
+                      x={sub.box.x}
+                      y={sub.box.y}
+                      width={sub.box.w}
+                      height={sub.box.h}
+                      rx={Math.min(theme.radius, 8)}
+                      fill="none"
+                      stroke={color('accent', theme)}
+                      strokeWidth={sceneStyle().highlight.strokeWidth}
+                    />
+                  ) : null}
+                </g>
+              );
+            });
+          })
+        : null}
+
+      {isTurning
+        ? targetObjects.map((targetObj) => {
+            const part = getPart(targetObj.type);
+            if (!part?.handles) return null;
+            const handles = part.handles(targetObj.props);
+            const activeHandles = turnProp
+              ? handles.filter((h) => h.prop === turnProp)
+              : handles;
+            const hr = sceneStyle().tryIt.turnHandle;
+            return activeHandles.map((handle) => {
+              const currentVal =
+                tryIt?.turnValue ?? num(targetObj.props[handle.prop], handle.min);
+              return (
+                <g
+                  key={`handle-${targetObj.id}-${handle.prop}`}
+                  role="slider"
+                  tabIndex={0}
+                  aria-label={t('a11y.handle', { name: handle.prop })}
+                  aria-valuemin={handle.min}
+                  aria-valuemax={handle.max}
+                  aria-valuenow={currentVal}
+                  style={{ cursor: 'grab' }}
+                  data-handle-prop={handle.prop}
+                  onPointerDown={(e) => onHandleDown(e, handle)}
+                  onKeyDown={(e) => {
+                    const step = num(turnSpec?.step, 1);
+                    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      const next = Math.max(handle.min, currentVal - step);
+                      tryIt?.onTurn?.(next, false);
+                    } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      const next = Math.min(handle.max, currentVal + step);
+                      tryIt?.onTurn?.(next, false);
+                    } else if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      tryIt?.onTurn?.(currentVal, true);
+                    }
+                  }}
+                >
+                  <circle
+                    cx={handle.at[0]}
+                    cy={handle.at[1]}
+                    r={hr}
+                    fill={color('accent', theme)}
+                    stroke={color('white', theme)}
+                    strokeWidth={3}
+                    filter="url(#turn-handle-shadow)"
+                  />
+                </g>
+              );
+            });
+          })
+        : null}
 
       {doing && drag
         ? drag.items.map((it) => (
