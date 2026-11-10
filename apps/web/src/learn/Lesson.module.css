@@ -645,6 +645,11 @@
   flex: 1 1 0;
   min-width: 0;
 }
+.sumPaid {
+  margin-left: 8px;
+  color: var(--primary);
+  font-weight: 500;
+}
 .options {
   display: flex;
   flex-wrap: wrap;

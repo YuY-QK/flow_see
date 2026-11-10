@@ -11,6 +11,7 @@ import {
   isPoint,
   itemSetLayout,
   mixColor,
+  moneyLayout,
   namedColors,
   num,
   numList,
@@ -390,43 +391,75 @@ function apply(world: World, a: SceneAction, p: number, current: boolean, startW
           const parent = world.get(id);
           const destId = a.verb === 'merge' ? args.into : args.to;
           const dest = typeof destId === 'string' ? world.get(destId) : undefined;
-          if (parent && parent.type === 'item-set' && sub && dest) {
+          if (parent && (parent.type === 'item-set' || parent.type === 'money') && sub && dest) {
             const subIdx = Number(sub);
             if (Number.isFinite(subIdx) && subIdx >= 1) {
               const destPart = getPart(dest.type);
               const binBox = destPart ? destPart.bbox(dest.props) : { x: 0, y: 0, w: 200, h: 200 };
-              const itemSize = Math.max(1, num(parent.props.size, 56));
               const binMovedList: number[] = ((dest.props._binItems as number[] | undefined) ??= []);
               let idxInBin = binMovedList.indexOf(subIdx);
               if (idxInBin === -1) {
                 idxInBin = binMovedList.length;
                 binMovedList.push(subIdx);
               }
-              const targetPos = binItemPosition(binBox, itemSize, idxInBin);
-              const layout = itemSetLayout(parent.props);
-              const slot = layout.slots.find((s) => s.index === subIdx);
-              if (slot) {
-                const startBox = slot.box;
-                const curX = startBox.x + (targetPos.box.x - startBox.x) * e;
-                const curY = startBox.y + (targetPos.box.y - startBox.y) * e;
-                const hidden = numList(parent.props.hiddenItems);
-                if (!hidden.includes(subIdx)) {
-                  parent.props.hiddenItems = [...hidden, subIdx];
+              const hidden = numList(parent.props.hiddenItems);
+              if (!hidden.includes(subIdx)) {
+                parent.props.hiddenItems = [...hidden, subIdx];
+              }
+              if (parent.type === 'item-set') {
+                const itemSize = Math.max(1, num(parent.props.size, 56));
+                const targetPos = binItemPosition(binBox, itemSize, idxInBin);
+                const layout = itemSetLayout(parent.props);
+                const slot = layout.slots.find((s) => s.index === subIdx);
+                if (slot) {
+                  const startBox = slot.box;
+                  const curX = startBox.x + (targetPos.box.x - startBox.x) * e;
+                  const curY = startBox.y + (targetPos.box.y - startBox.y) * e;
+                  world.set(`${id}__moved_${sub}`, {
+                    id: `${id}__moved_${sub}`,
+                    type: 'item-set',
+                    props: {
+                      ...parent.props,
+                      items: [slot.item],
+                      layout: 'row',
+                      cols: 1,
+                      size: itemSize,
+                      at: [curX, curY],
+                      show: 1,
+                      hiddenItems: [],
+                    },
+                  });
                 }
-                world.set(`${id}__moved_${sub}`, {
-                  id: `${id}__moved_${sub}`,
-                  type: 'item-set',
-                  props: {
-                    ...parent.props,
-                    items: [slot.item],
-                    layout: 'row',
-                    cols: 1,
-                    size: itemSize,
-                    at: [curX, curY],
-                    show: 1,
-                    hiddenItems: [],
-                  },
-                });
+              } else if (parent.type === 'money') {
+                const layout = moneyLayout(parent.props);
+                const slot = layout.slots.find((s) => s.index === subIdx);
+                if (slot) {
+                  const itemW = slot.box.w;
+                  const itemH = slot.box.h;
+                  const cols = Math.max(1, Math.floor(binBox.w / (itemW + 10)));
+                  const padX = (binBox.w - cols * (itemW + 10)) / 2;
+                  const c = idxInBin % cols;
+                  const r = Math.floor(idxInBin / cols);
+                  const targetX = binBox.x + Math.max(10, padX) + c * (itemW + 10);
+                  const targetY = binBox.y + 12 + r * (itemH + 10);
+                  const startX = slot.box.x;
+                  const startY = slot.box.y;
+                  const curX = startX + (targetX - startX) * e;
+                  const curY = startY + (targetY - startY) * e;
+                  world.set(`${id}__moved_${sub}`, {
+                    id: `${id}__moved_${sub}`,
+                    type: 'money',
+                    props: {
+                      ...parent.props,
+                      items: [slot.rawItem],
+                      layout: 'row',
+                      cols: 1,
+                      at: [curX, curY],
+                      show: 1,
+                      hiddenItems: [],
+                    },
+                  });
+                }
               }
               return;
             }
@@ -752,7 +785,13 @@ export function coveredActions(list: readonly unknown[] | undefined, spec?: TryS
   };
   (list ?? []).forEach((raw, i) => {
     const a = parseAction(raw);
-    if (!a || !ids.has(a.targets[0] ?? '')) return;
+    if (!a) return;
+    const targetStr =
+      typeof (a.args.target ?? a.targets[0]) === 'string'
+        ? ((a.args.target ?? a.targets[0]) as string)
+        : '';
+    const { id } = parseTargetRef(targetStr);
+    if (!ids.has(id) && !ids.has(targetStr)) return;
     if (a.verb === 'split' && typeof a.args.as === 'string') {
       ids.add(a.args.as);
       out.add(i);
@@ -945,10 +984,22 @@ export function sceneFrame(
   return { objects, subHighlights, subColors };
 }
 
+export interface DragItemInfo {
+  index: number;
+  at: Point;
+  box?: Box;
+  color?: string;
+  item?: unknown;
+  value?: number;
+  toId?: string;
+}
+
 /** 动手做（拖动）时的画面：能拖的计数块和目标零件 */
 export interface DragFrame extends SceneFrame {
-  /** 还能拖的计数块：原来的序号、位置、颜色 */
-  items: { index: number; at: Point; color: string }[];
+  /** 还能拖的计数块/面额：原来的序号、位置、颜色/box */
+  items: DragItemInfo[];
+  /** 已经拖进目标零件的面额/物品（可拖回） */
+  placedItems?: DragItemInfo[];
   /** 被拖那一组原来每一块的颜色（按原来的序号） */
   colors: string[];
   /** 被拖的那一组（已去掉拖走的）、目标零件（一个或几个） */
@@ -975,8 +1026,169 @@ export function dragFrame(
   const src = drag ? world.get(drag.from) : undefined;
   const ids = drag ? dragTargets(drag) : [];
   const dests = ids.map((id) => world.get(id)).filter((o): o is SceneObject => !!o);
-  if (!drag || !src || !isCounters(src.type))
+
+  if (!drag || !src) {
     return { objects: [...world.values()], subHighlights, subColors, items: [], colors: [], to: dests };
+  }
+
+  // 按面值凑数（drag sum）：from 为 money 或带 value 的 item-set
+  if (drag.sum !== undefined && (src.type === 'money' || src.type === 'item-set')) {
+    const dest = dests[0];
+    const gone = new Set(moved);
+
+    if (src.type === 'money') {
+      const layout = moneyLayout(src.props);
+      const slots = layout.slots;
+
+      const keepSlots = slots.filter((s) => !gone.has(s.index));
+      const items: DragItemInfo[] = keepSlots
+        .filter((s) => s.index !== lifted)
+        .map((s) => ({
+          index: s.index,
+          at: [s.box.x + s.box.w / 2, s.box.y + s.box.h / 2] as Point,
+          box: s.box,
+          item: s.rawItem,
+          value: s.value,
+        }));
+
+      const existingHidden = numList(src.props.hiddenItems);
+      src.props.hiddenItems = [
+        ...existingHidden,
+        ...moved,
+        ...(lifted !== undefined && !gone.has(lifted) ? [lifted] : []),
+      ];
+
+      const placedItems: DragItemInfo[] = [];
+      const destMoved = moved.filter((idx) => idx !== lifted);
+      const placedSlots = destMoved
+        .map((idx) => slots.find((s) => s.index === idx))
+        .filter((s): s is NonNullable<typeof s> => !!s);
+
+      if (dest && placedSlots.length > 0) {
+        const destPart = getPart(dest.type);
+        const destBox = destPart ? destPart.bbox(dest.props) : { x: 0, y: 0, w: 200, h: 200 };
+        const size = num(src.props.size, 1);
+        const gap = num(src.props.gap, 10);
+        const cols = destBox.w >= 300 && placedSlots.length > 4 ? 4 : Math.max(1, placedSlots.length);
+        const destProps: Props = {
+          ...src.props,
+          items: placedSlots.map((s) => s.rawItem),
+          layout: destBox.h > 150 && placedSlots.length > 4 ? 'grid' : 'row',
+          cols,
+          size,
+          gap,
+          at: [destBox.x + 12, destBox.y + 12],
+          show: placedSlots.length,
+          hiddenItems: [],
+        };
+        world.set(`${dest.id}__items`, {
+          id: `${dest.id}__items`,
+          type: 'money',
+          props: destProps,
+        });
+        const destLayout = moneyLayout(destProps);
+        destLayout.slots.forEach((ds, k) => {
+          placedItems.push({
+            index: placedSlots[k].index,
+            at: [ds.box.x + ds.box.w / 2, ds.box.y + ds.box.h / 2] as Point,
+            box: ds.box,
+            item: placedSlots[k].rawItem,
+            value: placedSlots[k].value,
+            toId: dest.id,
+          });
+        });
+      }
+
+      return {
+        objects: [...world.values()],
+        subHighlights,
+        subColors,
+        items,
+        placedItems,
+        colors: [],
+        from: src,
+        to: dests,
+      };
+    }
+
+    if (src.type === 'item-set') {
+      const layout = itemSetLayout(src.props);
+      const slots = layout.slots;
+
+      const keepSlots = slots.filter((s) => !gone.has(s.index));
+      const items: DragItemInfo[] = keepSlots
+        .filter((s) => s.index !== lifted)
+        .map((s) => ({
+          index: s.index,
+          at: [s.box.x + s.box.w / 2, s.box.y + s.box.h / 2] as Point,
+          box: s.box,
+          item: s.item,
+          value: typeof s.item.value === 'number' ? s.item.value : 0,
+        }));
+
+      const existingHidden = numList(src.props.hiddenItems);
+      src.props.hiddenItems = [
+        ...existingHidden,
+        ...moved,
+        ...(lifted !== undefined && !gone.has(lifted) ? [lifted] : []),
+      ];
+
+      const placedItems: DragItemInfo[] = [];
+      const destMoved = moved.filter((idx) => idx !== lifted);
+      const placedSlots = destMoved
+        .map((idx) => slots.find((s) => s.index === idx))
+        .filter((s): s is NonNullable<typeof s> => !!s);
+
+      if (dest && placedSlots.length > 0) {
+        const destPart = getPart(dest.type);
+        const destBox = destPart ? destPart.bbox(dest.props) : { x: 0, y: 0, w: 200, h: 200 };
+        const itemSize = Math.max(1, num(src.props.size, 56));
+        const cols = Math.max(1, Math.floor(destBox.w / itemSize));
+        const destProps: Props = {
+          ...src.props,
+          items: placedSlots.map((s) => s.item),
+          layout: 'grid',
+          cols,
+          size: itemSize,
+          gap: num(src.props.gap, 8),
+          at: [destBox.x + 8, destBox.y + 8],
+          show: placedSlots.length,
+          hiddenItems: [],
+        };
+        world.set(`${dest.id}__items`, {
+          id: `${dest.id}__items`,
+          type: 'item-set',
+          props: destProps,
+        });
+        const destLayout = itemSetLayout(destProps);
+        destLayout.slots.forEach((ds, k) => {
+          placedItems.push({
+            index: placedSlots[k].index,
+            at: [ds.box.x + ds.box.w / 2, ds.box.y + ds.box.h / 2] as Point,
+            box: ds.box,
+            item: placedSlots[k].item,
+            value: typeof placedSlots[k].item.value === 'number' ? placedSlots[k].item.value : 0,
+            toId: dest.id,
+          });
+        });
+      }
+
+      return {
+        objects: [...world.values()],
+        subHighlights,
+        subColors,
+        items,
+        placedItems,
+        colors: [],
+        from: src,
+        to: dests,
+      };
+    }
+  }
+
+  if (!isCounters(src.type)) {
+    return { objects: [...world.values()], subHighlights, subColors, items: [], colors: [], to: dests };
+  }
   const at = counterItems(src.props);
   const colors = counterColors(src.props);
   const gone = new Set(moved);

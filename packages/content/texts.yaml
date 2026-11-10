@@ -360,6 +360,9 @@ try:
   sort_wrong: 它不属于这一类哦。
   place_rotate: 转一转再放。
   place_wrong: 再找找它该放在哪里。
+  sum_over: 多了，拿回来一些。
+  sum_left: 还差 {n} 元。
+  sum_paid: 已付 {n} 元
 mePage:
   ge_ren_zhong_xin: 个人中心
   zi_liao: 资料

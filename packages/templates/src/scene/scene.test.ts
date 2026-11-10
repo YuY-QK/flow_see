@@ -2492,4 +2492,190 @@ describe('沿路径移动（follow）', () => {
       expect(ok).toEqual([]);
     });
   });
+
+  describe('动手做：按面值凑数（drag sum）配置检查、画面求值与 coveredActions（任务卡 T5）', () => {
+    const moneyDef: SceneDef = {
+      stage: { width: 800, height: 420 },
+      objects: [
+        {
+          id: 'wallet',
+          type: 'money',
+          items: [5, 1, 1, 1, 1, 1],
+          at: [50, 200],
+        },
+        {
+          id: 'tray',
+          type: 'shape',
+          shape: 'rect',
+          width: 260,
+          height: 120,
+          at: [500, 200],
+        },
+      ],
+      steps: [
+        [
+          { move: { target: 'wallet.1', to: 'tray' } },
+          { move: { target: 'wallet.2', to: 'tray' } },
+          { move: { target: 'wallet.3', to: 'tray' } },
+          { move: { target: 'wallet.4', to: 'tray' } },
+        ],
+      ],
+      tries: [
+        {
+          task: '凑出 8 元',
+          drag: { from: 'wallet', to: 'tray', sum: 8 },
+        },
+      ],
+    };
+
+    it('合法 money 凑数配置通过检查', () => {
+      const ok = checkScene({
+        params: {},
+        objects: moneyDef.objects as Record<string, unknown>[],
+        steps: [
+          {
+            say: '付钱',
+            do: moneyDef.steps[0] as Record<string, unknown>[],
+            try: moneyDef.tries![0] as never,
+          },
+        ],
+      });
+      expect(ok).toEqual([]);
+    });
+
+    it('凑不出时 check 报错', () => {
+      const bad = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'wallet',
+            type: 'money',
+            items: [5, 1],
+            at: [50, 200],
+          },
+          { id: 'tray', type: 'shape', shape: 'rect', width: 260, height: 120, at: [500, 200] },
+        ],
+        steps: [
+          {
+            say: '付钱',
+            do: [{ move: { target: 'wallet.1', to: 'tray' } }],
+            try: {
+              task: '凑出 8 元',
+              drag: { from: 'wallet', to: 'tray', sum: 8 },
+            },
+          },
+        ],
+      });
+      expect(bad.some((i) => i.message.includes('面值组合无法凑出 8'))).toBe(true);
+    });
+
+    it('from 既非 money 也非 item-set 时报错', () => {
+      const bad = checkScene({
+        params: {},
+        objects: [
+          { id: 'box', type: 'shape', shape: 'rect', width: 100, height: 100, at: [50, 200] },
+          { id: 'tray', type: 'shape', shape: 'rect', width: 260, height: 120, at: [500, 200] },
+        ],
+        steps: [
+          {
+            say: '付钱',
+            do: [{ move: { target: 'box', to: 'tray' } }],
+            try: {
+              task: '凑出 8 元',
+              drag: { from: 'box', to: 'tray', sum: 8 },
+            },
+          },
+        ],
+      });
+      expect(bad.some((i) => i.message.includes('from 必须是 money 或带 value 的 item-set'))).toBe(true);
+    });
+
+    it('item-set 物品缺少 value 属性时报错', () => {
+      const bad = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'items',
+            type: 'item-set',
+            items: [{ shape: 'circle', color: 'red' }],
+            at: [50, 200],
+          },
+          { id: 'tray', type: 'shape', shape: 'rect', width: 260, height: 120, at: [500, 200] },
+        ],
+        steps: [
+          {
+            say: '付钱',
+            do: [{ move: { target: 'items.1', to: 'tray' } }],
+            try: {
+              task: '凑出 1 元',
+              drag: { from: 'items', to: 'tray', sum: 1 },
+            },
+          },
+        ],
+      });
+      expect(bad.some((i) => i.message.includes('必须包含数值属性 value'))).toBe(true);
+    });
+
+    it('合法带 value 的 item-set 检查通过', () => {
+      const ok = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'items',
+            type: 'item-set',
+            items: [
+              { shape: 'circle', color: 'red', value: 5 },
+              { shape: 'circle', color: 'blue', value: 3 },
+            ],
+            at: [50, 200],
+          },
+          { id: 'tray', type: 'shape', shape: 'rect', width: 260, height: 120, at: [500, 200] },
+        ],
+        steps: [
+          {
+            say: '凑数',
+            do: [
+              { move: { target: 'items.1', to: 'tray' } },
+              { move: { target: 'items.2', to: 'tray' } },
+            ],
+            try: {
+              task: '凑出 8',
+              drag: { from: 'items', to: 'tray', sum: 8 },
+            },
+          },
+        ],
+      });
+      expect(ok).toEqual([]);
+    });
+
+    it('dragFrame: 未拖动时全部在钱包，拖动后部分在托盘且 placedItems 记录正确', () => {
+      const frame0 = dragFrame(moneyDef, 0, []);
+      expect(frame0.items).toHaveLength(6);
+      expect(frame0.placedItems ?? []).toHaveLength(0);
+
+      // 拖入 5元 (index 1) 与 1元 (index 2)
+      const frame1 = dragFrame(moneyDef, 0, [1, 2]);
+      expect(frame1.items).toHaveLength(4);
+      expect(frame1.placedItems).toHaveLength(2);
+      expect(frame1.placedItems?.[0].index).toBe(1);
+      expect(frame1.placedItems?.[0].value).toBe(5);
+      expect(frame1.placedItems?.[1].index).toBe(2);
+      expect(frame1.placedItems?.[1].value).toBe(1);
+
+      // lifted 正在拖起的面额在钱包和托盘中均隐藏
+      const frameLiftedFrom = dragFrame(moneyDef, 0, [1], 3);
+      expect(frameLiftedFrom.items).toHaveLength(4); // 6 - 1 (moved) - 1 (lifted)
+      const frameLiftedPlaced = dragFrame(moneyDef, 0, [1, 2], 1);
+      expect(frameLiftedPlaced.placedItems).toHaveLength(1); // 2 - 1 (lifted)
+    });
+
+    it('coveredActions 覆盖钱包子项的移动动作', () => {
+      const covered = coveredActions(moneyDef.steps[0], moneyDef.tries![0]);
+      expect(covered.size).toBe(4);
+      expect(covered.has(0)).toBe(true);
+      expect(covered.has(1)).toBe(true);
+      expect(covered.has(2)).toBe(true);
+      expect(covered.has(3)).toBe(true);
+    });
+  });
 });

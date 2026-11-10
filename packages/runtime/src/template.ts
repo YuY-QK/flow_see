@@ -53,10 +53,16 @@ export interface StageProps {
 export interface TrySpec {
   task: string;
   /**
-   * 拖动：把 from 这组计数块拖 count 个到 to 上。to 写成列表时是“一个一个分”：
-   * 每个目标最多放 each 个（不写时平均：count ÷ 目标个数）。
+   * 拖动：把 from 这组计数块拖 count 个到 to 上，或按面值凑数（sum）。
+   * to 写成列表时是“一个一个分”：每个目标最多放 each 个（不写时平均：count ÷ 目标个数）。
    */
-  drag?: { from: string; to: string | string[]; count: number | string; each?: number | string };
+  drag?: {
+    from: string;
+    to: string | string[];
+    count?: number | string;
+    each?: number | string;
+    sum?: number | string;
+  };
   choose?: ChooseSpec;
   tap?: { answer?: (string | number)[] | string | number; among?: string[]; pick?: number | string; valid?: string };
   turn?: {

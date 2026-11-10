@@ -5,6 +5,8 @@ import {
   chooseAnswers,
   chooseLabel,
   chooseOptions,
+  evalExpr,
+  greedySumSequence,
   isMultiChoose,
   getTheme,
   isAnswer,
@@ -15,16 +17,18 @@ import {
   snapToStep,
   sortResult,
   stepDurationMs,
+  sumResult,
   turnResult,
   type Animation,
   type ChooseValue,
+  type SumItem,
   type TurnSpec,
   t,
   tapDemoAnswers,
   tapResult,
   type TapSubitem,
 } from '@flow-see/core';
-import { getPart, itemSetLayout } from '@flow-see/blocks';
+import { getPart, itemSetLayout, moneyLayout } from '@flow-see/blocks';
 import { sceneOf, sceneFrame } from '@flow-see/templates';
 import { useTimeline } from '@flow-see/runtime/player/useTimeline.ts';
 import { isSpeechSupported, speak } from '@flow-see/runtime/services/speech.ts';
@@ -318,6 +322,47 @@ export function LessonPlayer({
         ? Math.round(Number(spec?.drag?.each))
         : Math.ceil(need / targets.length)
       : need;
+
+  const isDragSum = Boolean(spec?.drag && spec.drag.sum !== undefined);
+
+  const targetSum = useMemo(() => {
+    if (!spec?.drag || spec.drag.sum === undefined) return 0;
+    const s = spec.drag.sum;
+    const val =
+      typeof s === 'number'
+        ? s
+        : Number(evalExpr(s, (animation.params ?? {}) as Record<string, number>) ?? s);
+    return Number.isFinite(val) ? Math.round(val * 100) / 100 : 0;
+  }, [spec?.drag, animation.params]);
+
+  const dragSumItems = useMemo<SumItem[]>(() => {
+    if (!isDragSum || !spec?.drag) return [];
+    const def = sceneOf(animation);
+    const fromObj = def.objects.find((o) => o.id === spec.drag!.from);
+    if (!fromObj) return [];
+    if (fromObj.type === 'money') {
+      const layout = moneyLayout(fromObj.props as Record<string, unknown>);
+      return layout.slots.map((s) => ({ index: s.index, value: s.value }));
+    }
+    if (fromObj.type === 'item-set') {
+      const layout = itemSetLayout(fromObj.props as Record<string, unknown>);
+      return layout.slots.map((s) => ({
+        index: s.index,
+        value: typeof s.item.value === 'number' ? s.item.value : 0,
+      }));
+    }
+    return [];
+  }, [isDragSum, spec?.drag, animation]);
+
+  const currentPaidSum = useMemo(() => {
+    if (!isDragSum) return 0;
+    const itemMap = new Map<number, number>();
+    for (const it of dragSumItems) itemMap.set(it.index, it.value);
+    let total = 0;
+    for (const idx of tp.moved) total += itemMap.get(idx) ?? 0;
+    return Math.round(total * 100) / 100;
+  }, [isDragSum, tp.moved, dragSumItems]);
+
   const demoFromVal = useRef(initialTurn ?? 0);
   const startDemo = (misses: number) => {
     const fromVal = tp.turnValue ?? initialTurn ?? 0;
@@ -371,6 +416,53 @@ export function LessonPlayer({
   const onDrop = (i: number, target: string | undefined) => {
     if (!spec) return;
     begin();
+    if (isDragSum && spec.drag) {
+      const fromId = spec.drag.from;
+      const toId = Array.isArray(spec.drag.to) ? spec.drag.to[0] : spec.drag.to;
+      const isCurrentlyMoved = tp.moved.includes(i);
+
+      // 从钱包拖到柜台
+      if (!isCurrentlyMoved && target === toId) {
+        const nextMoved = [...tp.moved, i];
+        const nextPlaced = [...tp.placed, target];
+        const res = sumResult(targetSum, { items: dragSumItems, moved: nextMoved });
+        if (res.solved) {
+          setTp({ ...tp, moved: nextMoved, placed: nextPlaced, note: '', wrong: undefined });
+          dispatch({ type: 'solve' });
+          return;
+        }
+        if (res.over) {
+          const text = spec.hints?.[tp.misses] ?? t('try.sum_over');
+          setTp({ ...tp, moved: nextMoved, placed: nextPlaced, note: text, wrong: undefined });
+          say(text);
+          return;
+        }
+        setTp({ ...tp, moved: nextMoved, placed: nextPlaced, note: '', wrong: undefined });
+        return;
+      }
+
+      // 从柜台拖回钱包
+      if (isCurrentlyMoved && target === fromId) {
+        const nextMoved = tp.moved.filter((x) => x !== i);
+        const nextPlaced = tp.placed.filter((_, idx) => tp.moved[idx] !== i);
+        const res = sumResult(targetSum, { items: dragSumItems, moved: nextMoved });
+        if (res.solved) {
+          setTp({ ...tp, moved: nextMoved, placed: nextPlaced, note: '', wrong: undefined });
+          dispatch({ type: 'solve' });
+          return;
+        }
+        if (res.over) {
+          const text = spec.hints?.[tp.misses] ?? t('try.sum_over');
+          setTp({ ...tp, moved: nextMoved, placed: nextPlaced, note: text, wrong: undefined });
+          say(text);
+          return;
+        }
+        setTp({ ...tp, moved: nextMoved, placed: nextPlaced, note: '', wrong: undefined });
+        return;
+      }
+
+      return;
+    }
     if (spec.sort) {
       const def = sceneOf(animation);
       const fromObj = def.objects.find((o) => o.id === spec.sort!.from);
@@ -528,7 +620,7 @@ export function LessonPlayer({
     return itemSetLayout(fromObj.props as Record<string, unknown>).slots.length;
   }, [spec?.sort, animation]);
 
-  // 多选、一个一个分、tap点选、sort分类拖放：孩子停下来太久还没做完，提示还差几个（每次操作后重新计时）
+  // 多选、一个一个分、tap点选、sort分类拖放、drag按面值凑数：孩子停下来太久还没做完，提示还差几个/还差多少（每次操作后重新计时）
   const doingNow = !!spec && state.waiting && tp.demo === null;
   const left = multi
     ? answerCount - tp.picked.length
@@ -538,13 +630,19 @@ export function LessonPlayer({
         ? tapTotalNeed - tp.tapped.length
         : spec?.sort
           ? sortTotalNeed - tp.moved.length
-          : 0;
-  const remindKey = `${tryKey}:${tp.picked.length}:${tp.moved.length}:${tp.tapped.length}:${tp.misses}`;
+          : isDragSum
+            ? Math.round((targetSum - currentPaidSum) * 100) / 100
+            : 0;
+  const remindKey = `${tryKey}:${tp.picked.length}:${tp.moved.length}:${tp.tapped.length}:${tp.misses}:${currentPaidSum}`;
   useEffect(() => {
     if (
       !doingNow ||
       left <= 0 ||
-      (!multi && targets.length < 2 && (!tapSpec || tapTotalNeed < 2) && (!spec?.sort || sortTotalNeed < 2))
+      (!multi &&
+        targets.length < 2 &&
+        (!tapSpec || tapTotalNeed < 2) &&
+        (!spec?.sort || sortTotalNeed < 2) &&
+        !isDragSum)
     )
       return;
     const timer = window.setTimeout(() => {
@@ -552,7 +650,9 @@ export function LessonPlayer({
         ? t('handsOn.multi_remind', { left })
         : tapSpec
           ? t('try.tap_more', { n: left })
-          : t('handsOn.deal_remind', { left });
+          : isDragSum
+            ? t('try.sum_left', { n: left })
+            : t('handsOn.deal_remind', { left });
       setTp((x) => (x.key === tryKey ? { ...x, note } : x));
       say(note);
     }, handsOn.remindMs);
@@ -612,12 +712,53 @@ export function LessonPlayer({
     return demoSortSequence.slice(0, count).map((x) => x.bin);
   }, [demoing, spec?.sort, demoSortSequence, tp.demo]);
 
+  const demoSumSequence = useMemo(() => {
+    if (!isDragSum || !spec?.drag || dragSumItems.length === 0) return [];
+    return greedySumSequence(targetSum, dragSumItems) ?? [];
+  }, [isDragSum, spec?.drag, targetSum, dragSumItems]);
+
+  const demoSumMoved = useMemo(() => {
+    if (!demoing || !isDragSum || demoSumSequence.length === 0) return [];
+    const p = tp.demo ?? 0;
+    const count = Math.min(
+      demoSumSequence.length,
+      Math.floor(p * (demoSumSequence.length + 0.5)),
+    );
+    return demoSumSequence.slice(0, count);
+  }, [demoing, isDragSum, demoSumSequence, tp.demo]);
+
+  const demoSumPlaced = useMemo(() => {
+    if (!demoing || !isDragSum || demoSumMoved.length === 0 || !spec?.drag) return [];
+    const toId = Array.isArray(spec.drag.to) ? spec.drag.to[0] : spec.drag.to;
+    return Array(demoSumMoved.length).fill(toId);
+  }, [demoing, isDragSum, demoSumMoved, spec?.drag]);
+
+  const demoPaidSum = useMemo(() => {
+    if (!isDragSum || !demoing) return 0;
+    const itemMap = new Map<number, number>();
+    for (const it of dragSumItems) itemMap.set(it.index, it.value);
+    let total = 0;
+    for (const idx of demoSumMoved) total += itemMap.get(idx) ?? 0;
+    return Math.round(total * 100) / 100;
+  }, [isDragSum, demoing, demoSumMoved, dragSumItems]);
+
+  const displayedPaidSum = demoing ? demoPaidSum : currentPaidSum;
+
   useEffect(() => {
     if (!demoing) return;
     const baseMs = template.motionMs?.(animation, state.index) ?? 0;
     const ms =
-      (baseMs > 0 ? baseMs : spec?.turn ? 1000 : spec?.sort ? 1500 : spec?.place ? 1200 : 0) /
-      state.speed;
+      (baseMs > 0
+        ? baseMs
+        : spec?.turn
+          ? 1000
+          : spec?.sort
+            ? 1500
+            : spec?.place
+              ? 1200
+              : isDragSum
+                ? 1500
+                : 0) / state.speed;
     const start = performance.now();
     const fromVal = demoFromVal.current;
     let raf = 0;
@@ -847,6 +988,12 @@ export function LessonPlayer({
               ? {
                   phase: 'doing',
                   place: spec.place,
+                }
+            : isDragSum
+              ? {
+                  phase: 'doing',
+                  moved: demoSumMoved,
+                  placed: demoSumPlaced,
                 }
               : undefined
         : state.waiting
@@ -1083,7 +1230,12 @@ export function LessonPlayer({
             </div>
           ) : null}
           <div className={s.sayRow}>
-            <div className={s.say}>{doing || demoing ? spec?.task : step?.desc}</div>
+            <div className={s.say}>
+              {doing || demoing ? spec?.task : step?.desc}
+              {(doing || demoing) && isDragSum ? (
+                <span className={s.sumPaid}>{t('try.sum_paid', { n: displayedPaidSum })}</span>
+              ) : null}
+            </div>
           </div>
           {doing && choose && !demoing ? (
             <div className={s.options} role="group" aria-label={t('handsOn.choose_aria')}>

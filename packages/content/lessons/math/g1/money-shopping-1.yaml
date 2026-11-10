@@ -1,0 +1,104 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: money-shopping-1
+title: 简单的购物计算
+summary: 付的钱减价格，就是找回的钱
+status: draft
+duration: 1分钟
+tags: [购物, 付钱, 找零, 人民币]
+recommended: true
+cover: { text: 找零 }
+related: [money-intro, money-shopping-2]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  p: 8
+derived:
+  back: 10 - p
+
+explore:
+  - { param: p, control: slider, label: 价格, min: 1, max: 9 }
+
+objects:
+  - id: toy
+    type: image
+    asset: toy-car
+    width: 140
+    height: 100
+    at: [140, 110]
+  - id: tag
+    type: label
+    text: '{p} 元'
+    at: [140, 200]
+  - id: wallet
+    type: money
+    items: [5, 1, 1, 1, 1, 1, '10n']
+    layout: row
+    size: 0.8
+    at: [40, 290]
+  - id: tray
+    type: shape
+    shape: rect
+    width: 260
+    height: 110
+    fill: false
+    color: line
+    at: [620, 150]
+  - id: eq
+    type: text
+    text: '10 − {p} = [{back}](blank)（元）'
+    size: 36
+    at: [580, 330]
+    hidden: true
+
+steps:
+  - title: 看价格
+    say: 小汽车 {p} 元。
+    do:
+      - highlight: tag
+  - when: '{p >= 5}'
+    title: 正好付钱
+    say: 正好付 {p} 元：一张 5 元，再加 {p - 5} 个 1 元。
+    do:
+      - move: { target: wallet.1, to: tray }
+      - repeat: '{p - 5}'
+        do:
+          - move: { target: 'wallet.{i + 1}', to: tray }
+    try:
+      task: 付出正好 {p} 元。
+      drag:
+        from: wallet
+        to: tray
+        sum: '{p}'
+      hints:
+        - 先放一张 5 元。
+  - when: '{p < 5}'
+    title: 正好付钱
+    say: 正好付 {p} 元：{p} 个 1 元。
+    do:
+      - repeat: '{p}'
+        do:
+          - move: { target: 'wallet.{i + 1}', to: tray }
+    try:
+      task: 付出正好 {p} 元。
+      drag:
+        from: wallet
+        to: tray
+        sum: '{p}'
+  - title: 付 10 元找零
+    say: 付 10 元，找回 {back} 元。
+    do:
+      - show: eq
+      - ask: true
+      - set: { target: eq, text: '10 − {p} = [{back}](green)（元）' }
+    try:
+      task: 付 10 元，找回几元？
+      choose:
+        answer: '{back}'
+        min: 1
+        max: 9
+
+keyPoints:
+  - 付钱可以有不同的付法
+  - 找回的钱 = 付的钱 − 价格

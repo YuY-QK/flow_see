@@ -569,16 +569,21 @@ const trySchema = z
     ),
     drag: z
       .object({
-        from: z.string().describe('从哪一组计数块里拖（零件 id）'),
+        from: z.string().describe('从哪一组计数块/人民币/物品里拖（零件 id）'),
         to: z
           .union([z.string(), z.array(z.string()).min(2)])
           .describe('拖到哪个零件上（零件 id）；写成列表是“一个一个分”，每个目标放 each 个'),
-        count: paramRef.describe('要拖几个，可以写参数，如 "{gap}"'),
+        count: paramRef.optional().describe('要拖几个，可以写参数，如 "{gap}"；按面值凑数（sum）时不写'),
         each: paramRef.optional().describe('拖到多个目标时，每个目标放几个；不写时平均分'),
+        sum: paramRef.optional().describe('按面值凑数（T5）：目标面值之和，可以写参数，如 "{p}"'),
       })
       .strict()
+      .refine(
+        (v) => (v.sum !== undefined ? v.count === undefined : v.count !== undefined),
+        'drag 必须且只能写 count 或 sum 之一',
+      )
       .optional()
-      .describe('拖动：把计数块一个一个拖到目标零件上（只有场景模板支持）'),
+      .describe('拖动：把计数块一个一个拖到目标零件上，或按面值凑数（T5）'),
     choose: z
       .object({
         answer: z

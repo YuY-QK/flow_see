@@ -7,6 +7,7 @@ import {
   getPart,
   isPoint,
   itemSetLayout,
+  moneyLayout,
   num,
   sceneStyle,
   type Handle,
@@ -65,6 +66,7 @@ export function SceneView({
   const spec = def.tries?.[index];
   const doing = tryIt?.phase === 'doing' && !!spec;
   const dragging = doing && !!spec?.drag;
+  const isDragSum = dragging && spec?.drag?.sum !== undefined;
   const isSorting = doing && !!spec?.sort;
   const isTapping = Boolean(tryIt?.tap || (doing && spec?.tap));
   const isTurning = Boolean(tryIt?.turn || (doing && spec?.turn));
@@ -129,7 +131,9 @@ export function SceneView({
       });
       return findDropBin(at, binBoxes, pad);
     }
-    return drag?.to.find((to) => {
+    const targetObjs =
+      isDragSum && drag?.from ? [...(drag.to ?? []), drag.from] : (drag?.to ?? []);
+    return targetObjs.find((to) => {
       const part = getPart(to.type);
       if (!part) return false;
       const b = part.bbox(to.props);
@@ -151,6 +155,14 @@ export function SceneView({
       }
       const binIds = Object.values(spec.sort.bins);
       return binIds[(moved?.length ?? 0) % Math.max(1, binIds.length)];
+    }
+    if (isDragSum && spec?.drag) {
+      const isMoved = itemIdx !== undefined && (moved ?? []).includes(itemIdx);
+      if (isMoved) {
+        return spec.drag.from;
+      }
+      const ids = dragTargets(spec.drag);
+      return ids[0];
     }
     const ids = spec?.drag ? dragTargets(spec.drag) : [];
     return ids[(moved?.length ?? 0) % Math.max(1, ids.length)];
@@ -802,7 +814,7 @@ export function SceneView({
               key={it.index}
               cx={it.at[0]}
               cy={it.at[1]}
-              r={(size / 2) * hitScale}
+              r={(it.box ? Math.max(it.box.w, it.box.h) / 2 : size / 2) * hitScale}
               fill="transparent"
               style={{ cursor: 'grab' }}
               role="button"
@@ -814,7 +826,32 @@ export function SceneView({
                 // 键盘：回车或空格直接放进目标
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  tryIt?.onDrop?.(it.index, nextTarget());
+                  tryIt?.onDrop?.(it.index, nextTarget(it.index));
+                }
+              }}
+            />
+          ))
+        : null}
+
+      {doing && isDragSum && drag?.placedItems
+        ? drag.placedItems.map((it) => (
+            <circle
+              key={`placed-${it.index}`}
+              cx={it.at[0]}
+              cy={it.at[1]}
+              r={(it.box ? Math.max(it.box.w, it.box.h) / 2 : size / 2) * hitScale}
+              fill="transparent"
+              style={{ cursor: 'grab' }}
+              role="button"
+              tabIndex={0}
+              aria-label={t('handsOn.drag_item_aria')}
+              data-try-placed-item={it.index}
+              onPointerDown={(e) => onDown(e, it.index)}
+              onKeyDown={(e) => {
+                // 键盘：回车或空格放回钱包
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  tryIt?.onDrop?.(it.index, nextTarget(it.index));
                 }
               }}
             />
@@ -846,7 +883,7 @@ export function SceneView({
           ))
         : null}
 
-      {doing && lift && src ? (
+      {doing && lift && src && !isDragSum ? (
         <g
           transform={`translate(${lift.at[0]} ${lift.at[1]}) scale(${liftScale}) translate(${-lift.at[0]} ${-lift.at[1]})`}
           style={{ pointerEvents: 'none' }}
@@ -868,6 +905,72 @@ export function SceneView({
           />
         </g>
       ) : null}
+
+      {doing && lift && isDragSum && src && src.type === 'money' ? (() => {
+        const layout = moneyLayout(src.props);
+        const slot = layout.slots.find((s) => s.index === lift.index);
+        const itemW = slot ? slot.box.w : 50;
+        const itemH = slot ? slot.box.h : 50;
+        return (
+          <g
+            transform={`translate(${lift.at[0]} ${lift.at[1]}) scale(${liftScale}) translate(${-lift.at[0]} ${-lift.at[1]})`}
+            style={{ pointerEvents: 'none' }}
+          >
+            <PartView
+              o={{
+                id: `${src.id}__lifted`,
+                type: 'money',
+                props: {
+                  ...src.props,
+                  items: slot ? [slot.rawItem] : [],
+                  layout: 'row',
+                  cols: 1,
+                  at: [lift.at[0] - itemW / 2, lift.at[1] - itemH / 2],
+                  show: 1,
+                  hiddenItems: [],
+                  highlight: 0,
+                  opacity: 1,
+                },
+              }}
+              ctx={ctx}
+              theme={theme}
+            />
+          </g>
+        );
+      })() : null}
+
+      {doing && lift && isDragSum && src && src.type === 'item-set' ? (() => {
+        const layout = itemSetLayout(src.props);
+        const slot = layout.slots.find((s) => s.index === lift.index);
+        const itemSize = num(src.props.size, 56);
+        return (
+          <g
+            transform={`translate(${lift.at[0]} ${lift.at[1]}) scale(${liftScale}) translate(${-lift.at[0]} ${-lift.at[1]})`}
+            style={{ pointerEvents: 'none' }}
+          >
+            <PartView
+              o={{
+                id: `${src.id}__lifted`,
+                type: 'item-set',
+                props: {
+                  ...src.props,
+                  items: slot ? [slot.item] : [],
+                  layout: 'row',
+                  cols: 1,
+                  size: itemSize,
+                  at: [lift.at[0] - itemSize / 2, lift.at[1] - itemSize / 2],
+                  show: 1,
+                  hiddenItems: [],
+                  highlight: 0,
+                  opacity: 1,
+                },
+              }}
+              ctx={ctx}
+              theme={theme}
+            />
+          </g>
+        );
+      })() : null}
 
       {doing && lift && sort && sort.from ? (
         <g

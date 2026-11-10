@@ -319,12 +319,12 @@
                 "description": "任务提示：轮到孩子时显示并朗读，如“把 1 个圆片拖进十格框。”“十格框还空着几格？”"
               },
               "drag": {
-                "description": "拖动：把计数块一个一个拖到目标零件上（只有场景模板支持）",
+                "description": "拖动：把计数块一个一个拖到目标零件上，或按面值凑数（T5）",
                 "type": "object",
                 "properties": {
                   "from": {
                     "type": "string",
-                    "description": "从哪一组计数块里拖（零件 id）"
+                    "description": "从哪一组计数块/人民币/物品里拖（零件 id）"
                   },
                   "to": {
                     "anyOf": [
@@ -342,6 +342,7 @@
                     "description": "拖到哪个零件上（零件 id）；写成列表是“一个一个分”，每个目标放 each 个"
                   },
                   "count": {
+                    "description": "要拖几个，可以写参数，如 \"{gap}\"；按面值凑数（sum）时不写",
                     "anyOf": [
                       {
                         "type": "number"
@@ -350,11 +351,22 @@
                         "type": "string",
                         "minLength": 1
                       }
-                    ],
-                    "description": "要拖几个，可以写参数，如 \"{gap}\""
+                    ]
                   },
                   "each": {
                     "description": "拖到多个目标时，每个目标放几个；不写时平均分",
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    ]
+                  },
+                  "sum": {
+                    "description": "按面值凑数（T5）：目标面值之和，可以写参数，如 \"{p}\"",
                     "anyOf": [
                       {
                         "type": "number"
@@ -368,8 +380,7 @@
                 },
                 "required": [
                   "from",
-                  "to",
-                  "count"
+                  "to"
                 ],
                 "additionalProperties": false
               },

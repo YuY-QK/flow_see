@@ -53,3 +53,7 @@
   file: math/fruits/apple.svg
   source: 自绘
   createdAt: 2026-11-10
+- id: toy-car
+  file: math/life/toy-car.svg
+  source: 自绘
+  createdAt: 2026-11-10

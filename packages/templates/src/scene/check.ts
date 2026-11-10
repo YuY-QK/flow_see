@@ -14,9 +14,11 @@ import {
   isCounters,
   isPoint,
   parseClockTime,
+  parseDenomination,
   type Props,
 } from '@flow-see/blocks';
 import {
+  canMakeSum,
   evalExpr,
   fillParams,
   isAngleEqual,
@@ -686,14 +688,21 @@ function checkTry(
     out.push({ path, message: 'try 要写一种动手方式，如 drag（拖动）或 tap（点选）' });
     return;
   }
-  if (spec.drag) checkDrag(def, si, alive, out);
+  if (spec.drag) checkDrag(def, si, alive, objects, scope, out);
   if (spec.tap) checkTap(spec.tap, si, alive, objects, scope, out);
   if (spec.turn) checkTurn(def, si, alive, objects, out);
   if (spec.sort) checkSort(spec.sort, si, alive, objects, out);
   if (spec.place) checkPlace(def, si, alive, objects, out);
 }
 
-function checkDrag(def: SceneDef, si: number, alive: Map<string, string>, out: ConfigIssue[]) {
+function checkDrag(
+  def: SceneDef,
+  si: number,
+  alive: Map<string, string>,
+  objects: Props[],
+  scope: Record<string, unknown>,
+  out: ConfigIssue[],
+) {
   const spec = def.tries?.[si];
   const drag = spec?.drag;
   if (!drag) return;
@@ -703,22 +712,11 @@ function checkDrag(def: SceneDef, si: number, alive: Map<string, string>, out: C
     out.push({ path: [...p, 'from'], message: `零件 ${drag.from} 在这一步开头不存在` });
     return;
   }
-  if (!isCounters(fromType))
-    out.push({ path: [...p, 'from'], message: 'from 要写一组计数块（只有计数块可以一个一个拖）' });
-  for (const to of dragTargets(drag))
+  for (const to of dragTargets(drag)) {
     if (!alive.has(to)) out.push({ path: [...p, 'to'], message: `零件 ${to} 在这一步开头不存在` });
-  const count = drag.count;
-  if (typeof count !== 'number' || !Number.isInteger(count) || count < 1) {
-    out.push({ path: [...p, 'count'], message: 'count 写要拖几个（正整数，可以写 "{参数}"）' });
-    return;
   }
-  const have = dragFrame(def, si, []).items.length;
-  if (count > have)
-    out.push({
-      path: [...p, 'count'],
-      message: `要拖 ${count} 个，但 ${drag.from} 在这一步开头只有 ${have} 个`,
-    });
-  // do 是标准做法：演示和做对后的画面都由它给出，所以要有对应的拆分/移动，个数也要一样
+
+  // do 是标准做法：演示和做对后的画面都由它给出，所以要有对应的拆分/移动动作
   const list = def.steps[si] ?? [];
   const covered = coveredActions(list, spec);
   const moves = [...covered]
@@ -732,6 +730,78 @@ function checkDrag(def: SceneDef, si: number, alive: Map<string, string>, out: C
     });
     return;
   }
+
+  // 按面值凑数（T5）
+  if (drag.sum !== undefined) {
+    if (fromType !== 'money' && fromType !== 'item-set') {
+      out.push({
+        path: [...p, 'from'],
+        message: 'from 必须是 money 或带 value 的 item-set',
+      });
+      return;
+    }
+    const fromObj =
+      objects.find((o) => o.id === drag.from) ??
+      def.objects.find((o) => o.id === drag.from);
+    const rawItems = Array.isArray(fromObj?.items) ? fromObj.items : [];
+    let denoms: number[] = [];
+    if (fromType === 'money') {
+      denoms = rawItems.map(parseDenomination).map((d) => d.value);
+    } else if (fromType === 'item-set') {
+      const hasValues =
+        rawItems.length > 0 &&
+        rawItems.every(
+          (it) => it && typeof it === 'object' && typeof (it as { value?: unknown }).value === 'number',
+        );
+      if (!hasValues) {
+        out.push({
+          path: [...p, 'from'],
+          message: 'item-set 的每个物品必须包含数值属性 value',
+        });
+        return;
+      }
+      denoms = rawItems.map((it) => Number((it as { value: number }).value));
+    }
+
+    let sumVal: number | undefined;
+    if (typeof drag.sum === 'number') {
+      sumVal = drag.sum;
+    } else if (typeof drag.sum === 'string') {
+      sumVal = evalExpr(drag.sum, scope as Record<string, number>) ?? Number(drag.sum);
+    }
+    if (sumVal === undefined || !Number.isFinite(sumVal) || sumVal <= 0) {
+      out.push({
+        path: [...p, 'sum'],
+        message: 'sum 必须是正数（可以写 "{参数}"）',
+      });
+      return;
+    }
+    sumVal = Math.round(sumVal * 100) / 100;
+    if (!canMakeSum(sumVal, denoms)) {
+      out.push({
+        path: [...p, 'sum'],
+        message: `${drag.from} 的面值组合无法凑出 ${sumVal}`,
+      });
+      return;
+    }
+    return;
+  }
+
+  // 计数块计数拖动
+  if (!isCounters(fromType)) {
+    out.push({ path: [...p, 'from'], message: 'from 要写一组计数块（只有计数块可以一个一个拖）' });
+  }
+  const count = drag.count;
+  if (typeof count !== 'number' || !Number.isInteger(count) || count < 1) {
+    out.push({ path: [...p, 'count'], message: 'count 写要拖几个（正整数，可以写 "{参数}"）' });
+    return;
+  }
+  const have = dragFrame(def, si, []).items.length;
+  if (count > have)
+    out.push({
+      path: [...p, 'count'],
+      message: `要拖 ${count} 个，但 ${drag.from} 在这一步开头只有 ${have} 个`,
+    });
   const split = [...covered].map((i) => parseAction(list[i])).find((a) => a?.verb === 'split');
   const deals = moves.filter((a) => a?.verb === 'deal');
   const standard = deals.length
