@@ -622,15 +622,15 @@ const trySchema = z
       .describe('点选零件：点选画面上的零件或子项'),
     turn: z
       .object({
-        target: z.string().describe('改哪个零件的属性'),
-        prop: z.string().describe('改哪个属性'),
-        answer: paramRef.describe('正确答案'),
-        tolerance: paramRef.optional().describe('容差'),
-        step: paramRef.optional().describe('步长'),
+        target: z.string().describe('转动哪个零件（零件 id）'),
+        prop: z.string().describe('转动修改哪个属性（顶层属性名）'),
+        answer: paramRef.describe('目标数值或字符串（如 "3:30"），可以写参数'),
+        tolerance: paramRef.optional().describe('容差，默认 0'),
+        step: paramRef.optional().describe('步长，吸附到 step 的整数倍'),
       })
       .strict()
       .optional()
-      .describe('转动把手（T2）'),
+      .describe('转动把手：拖动把手改变零件属性'),
     sort: z.record(z.string(), z.unknown()).optional().describe('分类拖放（T3）'),
     place: z.record(z.string(), z.unknown()).optional().describe('拖到位（T4）'),
     hints: z

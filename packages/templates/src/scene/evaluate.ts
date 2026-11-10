@@ -641,6 +641,16 @@ export function plans(def: SceneDef): StepPlan[] {
  */
 export function coveredActions(list: readonly unknown[] | undefined, spec?: TrySpec): Set<number> {
   const out = new Set<number>();
+  if (spec?.turn) {
+    const turn = spec.turn;
+    (list ?? []).forEach((raw, i) => {
+      const a = parseAction(raw);
+      if (!a) return;
+      if (a.verb === 'set' && a.args.target === turn.target && a.args[turn.prop] !== undefined) {
+        out.add(i);
+      }
+    });
+  }
   const drag = spec?.drag;
   if (!drag) return out;
   const ids = new Set([drag.from]);

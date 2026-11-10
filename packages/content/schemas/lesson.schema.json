@@ -508,16 +508,16 @@
                 "additionalProperties": false
               },
               "turn": {
-                "description": "转动把手（T2）",
+                "description": "转动把手：拖动把手改变零件属性",
                 "type": "object",
                 "properties": {
                   "target": {
                     "type": "string",
-                    "description": "改哪个零件的属性"
+                    "description": "转动哪个零件（零件 id）"
                   },
                   "prop": {
                     "type": "string",
-                    "description": "改哪个属性"
+                    "description": "转动修改哪个属性（顶层属性名）"
                   },
                   "answer": {
                     "anyOf": [
@@ -529,10 +529,10 @@
                         "minLength": 1
                       }
                     ],
-                    "description": "正确答案"
+                    "description": "目标数值或字符串（如 \"3:30\"），可以写参数"
                   },
                   "tolerance": {
-                    "description": "容差",
+                    "description": "容差，默认 0",
                     "anyOf": [
                       {
                         "type": "number"
@@ -544,7 +544,7 @@
                     ]
                   },
                   "step": {
-                    "description": "步长",
+                    "description": "步长，吸附到 step 的整数倍",
                     "anyOf": [
                       {
                         "type": "number"

@@ -1673,4 +1673,134 @@ describe('沿路径移动（follow）', () => {
       expect(issues.some((i) => i.message.includes('少于 pick 要求的 5 个'))).toBe(true);
     });
   });
+
+  describe('动手做：转动把手（turn）配置检查与 coveredActions（任务卡 T2）', () => {
+    it('正确配置的 turn 检查通过', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [{ id: 'clk', type: 'clock', time: '3:00', at: [400, 220] }],
+        steps: [
+          {
+            say: '拨到 3:30',
+            do: [{ set: { target: 'clk', time: '3:30' } }],
+            try: {
+              task: '把钟面拨到 3:30。',
+              turn: {
+                target: 'clk',
+                prop: 'time',
+                answer: '3:30',
+                tolerance: 5,
+                step: 5,
+              },
+            },
+          },
+        ],
+      });
+      expect(issues).toHaveLength(0);
+    });
+
+    it('校验目标零件存在', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [],
+        steps: [
+          {
+            say: '拨钟',
+            try: {
+              task: '拨钟',
+              turn: {
+                target: 'ghost',
+                prop: 'time',
+                answer: '3:30',
+              },
+            },
+          },
+        ],
+      });
+      expect(issues.some((i) => i.message.includes('ghost 在这一步开头不存在'))).toBe(true);
+    });
+
+    it('校验零件支持 handles', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [{ id: 'txt', type: 'text', text: 'Hello', at: [0, 0] }],
+        steps: [
+          {
+            say: '转文字',
+            try: {
+              task: '转文字',
+              turn: {
+                target: 'txt',
+                prop: 'text',
+                answer: 'World',
+              },
+            },
+          },
+        ],
+      });
+      expect(issues.some((i) => i.message.includes('未定义 handles'))).toBe(true);
+    });
+
+    it('校验把手包含该 prop', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [{ id: 'clk', type: 'clock', time: '3:00', at: [0, 0] }],
+        steps: [
+          {
+            say: '拨钟',
+            try: {
+              task: '拨钟',
+              turn: {
+                target: 'clk',
+                prop: 'unknownProp',
+                answer: 10,
+              },
+            },
+          },
+        ],
+      });
+      expect(issues.some((i) => i.message.includes('不包含属性 unknownProp'))).toBe(true);
+    });
+
+    it('校验 answer 在属性范围 [min, max] 内', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [{ id: 'clk', type: 'clock', time: '3:00', at: [0, 0] }],
+        steps: [
+          {
+            say: '拨钟',
+            try: {
+              task: '拨钟',
+              turn: {
+                target: 'clk',
+                prop: 'time',
+                answer: 800, // clock handles min: 0, max: 720
+              },
+            },
+          },
+        ],
+      });
+      expect(issues.some((i) => i.message.includes('超出属性 time 的取值范围'))).toBe(true);
+    });
+
+    it('coveredActions 覆盖对 turn.target 和 turn.prop 的 set 动作', () => {
+      const spec = {
+        task: '拨钟',
+        turn: {
+          target: 'clk',
+          prop: 'time',
+          answer: '3:30',
+        },
+      };
+      const actions = [
+        { highlight: 'clk' },
+        { set: { target: 'clk', time: '3:30' } },
+        { set: { target: 'other', time: '3:30' } },
+      ];
+      const covered = coveredActions(actions, spec);
+      expect(covered.has(1)).toBe(true);
+      expect(covered.has(0)).toBe(false);
+      expect(covered.has(2)).toBe(false);
+    });
+  });
 });

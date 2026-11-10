@@ -355,6 +355,8 @@ handsOn:
 try:
   tap_wrong: 不是这个，再看看。
   tap_more: 还差 {n} 个没点出来。
+  turn_close: 快对了，再转一点。
+  turn_wrong: 再看看，转到哪里才对？
 mePage:
   ge_ren_zhong_xin: 个人中心
   zi_liao: 资料

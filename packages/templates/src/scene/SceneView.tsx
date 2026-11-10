@@ -3,6 +3,7 @@ import {
   AssetUrlContext,
   color,
   findSubitem,
+  formatClockTime,
   getPart,
   num,
   sceneStyle,
@@ -24,6 +25,16 @@ import {
   type SubHighlight,
 } from './evaluate';
 import { parseTargetRef } from './actions';
+
+function formatHandleValue(val: number, prop: string, type: string): string {
+  if (type === 'clock' || prop === 'time') {
+    return formatClockTime(val);
+  }
+  if (prop === 'angle' || prop === 'rotate' || prop === 'size') {
+    return `${Math.round(val)}°`;
+  }
+  return String(Math.round(val * 10) / 10);
+}
 
 /**
  * 场景画面：纯函数，画面只由 (场景, 第几步, 步内进度) 决定。
@@ -52,6 +63,7 @@ export function SceneView({
   const [lift, setLift] = useState<{ index: number; at: Point; pointer: number } | undefined>();
   // 正在转动的把手
   const [turning, setTurning] = useState<{ handle: Handle; pointer: number } | undefined>();
+  const [focusedProp, setFocusedProp] = useState<string | undefined>();
 
   const moved = tryIt?.moved;
   const placed = tryIt?.placed;
@@ -185,8 +197,8 @@ export function SceneView({
     if (doing && tryIt?.showTarget && hint.has(o.id)) {
       obj = { ...obj, props: { ...obj.props, highlight: 1 } };
     }
-    if (isTurning && tryIt?.turnValue !== undefined && turnProp && o.id === turnTarget) {
-      obj = { ...obj, props: { ...obj.props, [turnProp]: tryIt.turnValue } };
+    if ((isTurning || tryIt?.turnValue !== undefined) && turnProp && o.id === turnTarget) {
+      obj = { ...obj, props: { ...obj.props, [turnProp]: tryIt?.turnValue ?? o.props[turnProp] } };
     }
     return obj;
   });
@@ -433,7 +445,7 @@ export function SceneView({
           })
         : null}
 
-      {isTurning
+      {isTurning && tryIt?.phase !== 'solved'
         ? targetObjects.map((targetObj) => {
             const part = getPart(targetObj.type);
             if (!part?.handles) return null;
@@ -445,6 +457,9 @@ export function SceneView({
             return activeHandles.map((handle) => {
               const currentVal =
                 tryIt?.turnValue ?? num(targetObj.props[handle.prop], handle.min);
+              const showBadge = turning?.handle.prop === handle.prop || focusedProp === handle.prop;
+              const displayStr = formatHandleValue(currentVal, handle.prop, targetObj.type);
+              const pillW = Math.max(48, displayStr.length * 9 + 18);
               return (
                 <g
                   key={`handle-${targetObj.id}-${handle.prop}`}
@@ -456,6 +471,8 @@ export function SceneView({
                   aria-valuenow={currentVal}
                   style={{ cursor: 'grab' }}
                   data-handle-prop={handle.prop}
+                  onFocus={() => setFocusedProp(handle.prop)}
+                  onBlur={() => setFocusedProp(undefined)}
                   onPointerDown={(e) => onHandleDown(e, handle)}
                   onKeyDown={(e) => {
                     const step = num(turnSpec?.step, 1);
@@ -476,12 +493,45 @@ export function SceneView({
                   <circle
                     cx={handle.at[0]}
                     cy={handle.at[1]}
+                    r={Math.max(hr, 22)}
+                    fill="transparent"
+                  />
+                  <circle
+                    cx={handle.at[0]}
+                    cy={handle.at[1]}
                     r={hr}
                     fill={color('accent', theme)}
                     stroke={color('white', theme)}
                     strokeWidth={3}
                     filter="url(#turn-handle-shadow)"
                   />
+                  {showBadge ? (
+                    <g
+                      transform={`translate(${handle.at[0]} ${handle.at[1] - hr - 14})`}
+                      style={{ pointerEvents: 'none' }}
+                    >
+                      <rect
+                        x={-pillW / 2}
+                        y={-14}
+                        width={pillW}
+                        height={24}
+                        rx={6}
+                        fill={color('ink', theme)}
+                        fillOpacity={0.88}
+                      />
+                      <text
+                        x={0}
+                        y={3}
+                        textAnchor="middle"
+                        fill={color('white', theme)}
+                        fontSize={14}
+                        fontWeight="bold"
+                        fontFamily={theme.font}
+                      >
+                        {displayStr}
+                      </text>
+                    </g>
+                  ) : null}
                 </g>
               );
             });

@@ -15,7 +15,7 @@ import {
   parseClockTime,
   type Props,
 } from '@flow-see/blocks';
-import { evalExpr, fillParams, matchPattern, resolveParams } from '@flow-see/core';
+import { evalExpr, fillParams, matchPattern, parseTurnAnswer, resolveParams } from '@flow-see/core';
 import type { ConfigIssue, LessonLike, TrySpec } from '@flow-see/runtime/template.ts';
 import {
   MULTI_TARGET,
@@ -583,6 +583,7 @@ function checkTry(
   }
   if (spec.drag) checkDrag(def, si, alive, out);
   if (spec.tap) checkTap(spec.tap, si, alive, objects, scope, out);
+  if (spec.turn) checkTurn(def, si, alive, objects, out);
 }
 
 function checkDrag(def: SceneDef, si: number, alive: Map<string, string>, out: ConfigIssue[]) {
@@ -814,4 +815,106 @@ function checkChooseShow(
       }
     }
   });
+}
+
+/** 动手做（turn）：转动把手，检查目标零件在这一步开头存在、handles() 包含该 prop、answer 在取值范围内 */
+function checkTurn(
+  def: SceneDef,
+  si: number,
+  alive: Map<string, string>,
+  objects: Props[],
+  out: ConfigIssue[],
+) {
+  const spec = def.tries?.[si];
+  const turn = spec?.turn;
+  if (!turn) return;
+  const p = ['steps', si, 'try', 'turn'];
+
+  if (!turn.target) {
+    out.push({ path: [...p, 'target'], message: 'turn 要写 target（转动哪个零件）' });
+    return;
+  }
+  if (!alive.has(turn.target)) {
+    out.push({ path: [...p, 'target'], message: `零件 ${turn.target} 在这一步开头不存在` });
+    return;
+  }
+
+  const obj = objects.find((o) => o.id === turn.target);
+  if (!obj) return;
+  const part = getPart(String(obj.type));
+  if (!part) {
+    out.push({ path: [...p, 'target'], message: `未知的零件类型：${obj.type}` });
+    return;
+  }
+
+  if (!part.handles) {
+    out.push({
+      path: [...p, 'target'],
+      message: `零件 ${turn.target}（${part.name}）不支持转动把手（未定义 handles）`,
+    });
+    return;
+  }
+
+  if (!turn.prop) {
+    out.push({ path: [...p, 'prop'], message: 'turn 要写 prop（修改哪个属性）' });
+    return;
+  }
+
+  const props: Props = { ...part.defaults, ...(part.normalize?.(obj) ?? obj) };
+  const handles = part.handles(props);
+  const handle = handles.find((h) => h.prop === turn.prop);
+  if (!handle) {
+    const available = handles.map((h) => h.prop).join('、');
+    out.push({
+      path: [...p, 'prop'],
+      message: `零件 ${turn.target}（${part.name}）的把手不包含属性 ${turn.prop}${available ? `（可选属性：${available}）` : ''}`,
+    });
+    return;
+  }
+
+  if (turn.answer === undefined || turn.answer === '') {
+    out.push({ path: [...p, 'answer'], message: 'turn 要写 answer（目标数值）' });
+    return;
+  }
+
+  let normalizedVal: number | undefined;
+  if (part.normalize) {
+    const norm = part.normalize({ ...props, [turn.prop]: turn.answer });
+    if (norm && norm[turn.prop] !== undefined) {
+      const n = Number(norm[turn.prop]);
+      if (Number.isFinite(n)) normalizedVal = n;
+    }
+  }
+  if (normalizedVal === undefined) {
+    normalizedVal = parseTurnAnswer(turn.answer);
+  }
+
+  if (!Number.isFinite(normalizedVal)) {
+    out.push({
+      path: [...p, 'answer'],
+      message: `answer（${turn.answer}）无法解析为有效数值`,
+    });
+    return;
+  }
+
+  if (normalizedVal < handle.min || normalizedVal > handle.max) {
+    out.push({
+      path: [...p, 'answer'],
+      message: `answer（${normalizedVal}）超出属性 ${turn.prop} 的取值范围 [${handle.min}, ${handle.max}]`,
+    });
+  }
+
+  if (turn.tolerance !== undefined) {
+    const tol = Number(turn.tolerance);
+    if (!Number.isFinite(tol) || tol < 0) {
+      out.push({ path: [...p, 'tolerance'], message: 'tolerance 必须为非负数' });
+    }
+  }
+
+  if (turn.step !== undefined) {
+    const st = Number(turn.step);
+    if (!Number.isFinite(st) || st <= 0) {
+      out.push({ path: [...p, 'step'], message: 'step 必须为正数' });
+    }
+  }
 }

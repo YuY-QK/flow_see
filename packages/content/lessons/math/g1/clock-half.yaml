@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+# 认识半点：用 scene 模板，拨动钟面分针到 3:30
+# 样板知识点（status: draft）
+id: clock-half
+title: 认识半点
+summary: 认识半点，会拨动钟表的分针
+status: draft
+duration: 1分钟
+tags: [钟表, 半点, 分针, 时间]
+cover: { text: '3:30' }
+
+template: scene
+stage: { width: 800, height: 420 }
+
+objects:
+  - id: clk
+    type: clock
+    time: '3:00'
+    radius: 140
+    at: [400, 210]
+
+steps:
+  - title: 钟面
+    say: 这是钟面，现在是 3 时整。
+    do:
+      - highlight: clk
+  - title: 认识半点
+    say: 分针走半圈指到 6，就是 3 时半。
+    do:
+      - ask: true
+      - set: { target: clk, time: '3:30', duration: 1s }
+    try:
+      task: 把钟面拨到 3:30。
+      turn:
+        target: clk
+        prop: time
+        answer: '3:30'
+        tolerance: 5
+        step: 5
+      hints:
+        - 拖动分针末端的把手。
+        - 分针指到 6 就是 30 分。
+
+keyPoints:
+  - 分针指着 6 是半点（30 分）
+  - 3 时半，时针在 3 和 4 的正中间

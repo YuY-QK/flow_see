@@ -9,16 +9,21 @@ import {
   getTheme,
   isAnswer,
   narrationText,
+  parseTurnAnswer,
   shuffled,
+  snapToStep,
   stepDurationMs,
+  turnResult,
   type Animation,
   type ChooseValue,
+  type TurnSpec,
   t,
   tapDemoAnswers,
   tapResult,
   type TapSubitem,
 } from '@flow-see/core';
 import { getPart } from '@flow-see/blocks';
+import { sceneOf, sceneFrame } from '@flow-see/templates';
 import { useTimeline } from '@flow-see/runtime/player/useTimeline.ts';
 import { isSpeechSupported, speak } from '@flow-see/runtime/services/speech.ts';
 import { useSettings } from '@flow-see/runtime/store/settings.ts';
@@ -57,8 +62,12 @@ interface TryProgress {
   wrong?: string;
   /** 点选零件（tap）：刚点错的那一项（抖动） */
   wrongTap?: string;
+  /** 转动把手：当前数值 */
+  turnValue?: number;
+  /** 转动把手：这一步开头的初始数值 */
+  turnInitial?: number;
 }
-const freshTry = (key: string): TryProgress => ({
+const freshTry = (key: string, initialTurn?: number): TryProgress => ({
   moved: [],
   placed: [],
   picked: [],
@@ -68,7 +77,27 @@ const freshTry = (key: string): TryProgress => ({
   demo: null,
   key,
   reveal: false,
+  turnValue: initialTurn,
+  turnInitial: initialTurn,
 });
+
+function getInitialTurnValue(animation: Animation, stepIndex: number, turn: TurnSpec): number {
+  try {
+    const def = sceneOf(animation);
+    const frame = sceneFrame(def, stepIndex, 0, 'doing');
+    const obj = frame.objects.find((o) => o.id === turn.target);
+    if (!obj) return 0;
+    const part = getPart(obj.type);
+    let val = obj.props[turn.prop];
+    if (part?.normalize) {
+      const norm = part.normalize(obj.props);
+      if (norm[turn.prop] !== undefined) val = norm[turn.prop];
+    }
+    return parseTurnAnswer(val as number | string);
+  } catch {
+    return 0;
+  }
+}
 
 interface Props {
   animation: Animation;
@@ -200,14 +229,42 @@ export function LessonPlayer({
   const engaged = touched || state.index !== (self ? firstStep : startIndex) || state.finishes > 0;
 
   // ───── 动手做：拖对、做错后的逐级引导（提示 → 高亮目标 → 看我做一遍）─────
+  const spec = hands ? tries[state.index] : undefined;
+  const turnSpec = spec?.turn;
+  const initialTurn = useMemo(() => {
+    if (!turnSpec) return undefined;
+    return getInitialTurnValue(animation, state.index, turnSpec);
+  }, [turnSpec, animation, state.index]);
+
+  const targetAnswer = useMemo(() => {
+    if (!turnSpec) return 0;
+    try {
+      const def = sceneOf(animation);
+      const obj = def.objects.find((o) => o.id === turnSpec.target);
+      const part = obj ? getPart(String(obj.type)) : undefined;
+      const normalizer = (v: number | string) => {
+        if (part?.normalize) {
+          const norm = part.normalize({ [turnSpec.prop]: v });
+          if (norm[turnSpec.prop] !== undefined) {
+            const n = Number(norm[turnSpec.prop]);
+            if (Number.isFinite(n)) return n;
+          }
+        }
+        return parseTurnAnswer(v);
+      };
+      return parseTurnAnswer(turnSpec.answer, normalizer);
+    } catch {
+      return parseTurnAnswer(turnSpec.answer);
+    }
+  }, [turnSpec, animation]);
+
   const tryKey = `${state.index}:${state.waiting}`;
-  const [saved, setTp] = useState<TryProgress>(() => freshTry(tryKey));
-  const tp = saved.key === tryKey ? saved : freshTry(tryKey);
+  const [saved, setTp] = useState<TryProgress>(() => freshTry(tryKey, initialTurn));
+  const tp = saved.key === tryKey ? saved : freshTry(tryKey, initialTurn);
   const say = (text: string) => {
     if (narrate)
       speak(text, { rate: state.speed * settings.speechRate, voiceURI: settings.voiceURI });
   };
-  const spec = hands ? tries[state.index] : undefined;
   const need = Math.max(1, Math.round(Number(spec?.drag?.count ?? 1)));
   // 拖到几个目标（一个一个分）时，每个目标最多放几个
   const targets = spec?.drag ? (Array.isArray(spec.drag.to) ? spec.drag.to : [spec.drag.to]) : [];
@@ -217,8 +274,17 @@ export function LessonPlayer({
         ? Math.round(Number(spec?.drag?.each))
         : Math.ceil(need / targets.length)
       : need;
+  const demoFromVal = useRef(initialTurn ?? 0);
   const startDemo = (misses: number) => {
-    setTp({ ...freshTry(tryKey), misses, note: t('handsOn.watch_me'), demo: 0 });
+    const fromVal = tp.turnValue ?? initialTurn ?? 0;
+    demoFromVal.current = fromVal;
+    setTp({
+      ...freshTry(tryKey, initialTurn),
+      misses,
+      note: t('handsOn.watch_me'),
+      demo: 0,
+      turnValue: fromVal,
+    });
     say(`${t('handsOn.watch_me')} ${steps[state.index] ? narrationText(steps[state.index]) : ''}`);
   };
   const started = useRef(false);
@@ -237,9 +303,10 @@ export function LessonPlayer({
     if (misses >= handsOn.demoAfterMisses) return startDemo(misses);
     const choosing = !!spec.choose;
     const tapping = !!spec.tap;
+    const isTurn = !!spec.turn;
     const text =
-      note ??
       spec.hints?.[misses - 1] ??
+      note ??
       (misses >= handsOn.targetAfterMisses
         ? choosing
           ? t('handsOn.choose_target')
@@ -248,6 +315,8 @@ export function LessonPlayer({
           ? t('handsOn.choose_miss')
           : tapping
             ? t('try.tap_wrong')
+            : isTurn
+              ? t('try.turn_wrong')
             : t('handsOn.miss'));
     setTp({ ...tp, ...extra, misses, note: text });
     say(text);
@@ -420,18 +489,28 @@ export function LessonPlayer({
 
   useEffect(() => {
     if (!demoing) return;
-    const ms = (template.motionMs?.(animation, state.index) ?? 0) / state.speed;
+    const baseMs = template.motionMs?.(animation, state.index) ?? 0;
+    const ms = (baseMs > 0 ? baseMs : (spec?.turn ? 1000 : 0)) / state.speed;
     const start = performance.now();
+    const fromVal = demoFromVal.current;
     let raf = 0;
     let timer = 0;
     const loop = (now: number) => {
       const p = ms > 0 ? Math.min(1, (now - start) / ms) : 1;
-      setTp((x) => (x.demo === null ? x : { ...x, demo: p }));
+      let tv: number | undefined;
+      if (spec?.turn) {
+        tv = fromVal + (targetAnswer - fromVal) * p;
+      }
+      setTp((x) =>
+        x.demo === null
+          ? x
+          : { ...x, demo: p, ...(tv !== undefined ? { turnValue: tv } : {}) },
+      );
       if (p < 1) raf = requestAnimationFrame(loop);
       else
         timer = window.setTimeout(() => {
           setTp({
-            ...freshTry(tryKey),
+            ...freshTry(tryKey, initialTurn),
             note: t('handsOn.you_try'),
             reveal: !!tries[state.index]?.choose,
           });
@@ -451,6 +530,94 @@ export function LessonPlayer({
     // 只在开始演示时启动一次
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demoing]);
+
+  const onTurn = (val: number, done: boolean) => {
+    if (!spec || !spec.turn) return;
+    begin();
+    if (!done) {
+      setTp((prev) => ({ ...prev, turnValue: val, note: '' }));
+      return;
+    }
+
+    const turn = spec.turn;
+    const step = turn.step !== undefined ? Number(turn.step) : 0;
+    const snapped = snapToStep(val, step);
+
+    const normalizer = (v: number | string) => {
+      try {
+        const def = sceneOf(animation);
+        const obj = def.objects.find((o) => o.id === turn.target);
+        const part = obj ? getPart(String(obj.type)) : undefined;
+        if (part?.normalize) {
+          const norm = part.normalize({ [turn.prop]: v });
+          if (norm[turn.prop] !== undefined) {
+            const n = Number(norm[turn.prop]);
+            if (Number.isFinite(n)) return n;
+          }
+        }
+      } catch {
+        // ignore
+      }
+      return parseTurnAnswer(v);
+    };
+    const res = turnResult(turn, snapped, normalizer);
+
+    const snapMs = site.scene.tryIt.snapMs ?? 200;
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const animMs = prefersReducedMotion ? 0 : snapMs;
+
+    const afterSnap = () => {
+      if (res.correct) {
+        setTp((prev) => ({ ...prev, turnValue: snapped, note: '' }));
+        dispatch({ type: 'solve' });
+        return;
+      }
+
+      if (res.close) {
+        const text = t('try.turn_close');
+        setTp((prev) => ({ ...prev, turnValue: snapped, note: text }));
+        say(text);
+        return;
+      }
+
+      // 否则做错一次，属性弹回到这一步开头的值
+      const initVal = tp.turnInitial ?? initialTurn ?? 0;
+      const wrongText = spec.hints?.[tp.misses] ?? t('try.turn_wrong');
+      const bounceMs = prefersReducedMotion ? 0 : 250;
+      if (bounceMs > 0 && snapped !== initVal) {
+        const bounceStart = performance.now();
+        const bounceLoop = (now: number) => {
+          const bp = Math.min(1, (now - bounceStart) / bounceMs);
+          const current = snapped + (initVal - snapped) * bp;
+          setTp((prev) => ({ ...prev, turnValue: current }));
+          if (bp < 1) requestAnimationFrame(bounceLoop);
+          else {
+            miss({ turnValue: initVal }, wrongText);
+          }
+        };
+        requestAnimationFrame(bounceLoop);
+      } else {
+        miss({ turnValue: initVal }, wrongText);
+      }
+    };
+
+    if (animMs > 0 && val !== snapped) {
+      const snapStart = performance.now();
+      const snapLoop = (now: number) => {
+        const sp = Math.min(1, (now - snapStart) / animMs);
+        const current = val + (snapped - val) * sp;
+        setTp((prev) => ({ ...prev, turnValue: current }));
+        if (sp < 1) requestAnimationFrame(snapLoop);
+        else afterSnap();
+      };
+      requestAnimationFrame(snapLoop);
+    } else {
+      afterSnap();
+    }
+  };
+
   const tryIt: StageTry | undefined =
     !spec
       ? undefined
@@ -461,6 +628,12 @@ export function LessonPlayer({
               tap: spec.tap,
               tapped: demoTapped,
             }
+          : spec.turn
+            ? {
+                phase: 'doing',
+                turnValue: tp.turnValue,
+                turn: spec.turn,
+              }
           : undefined
         : state.waiting
           ? {
@@ -474,8 +647,11 @@ export function LessonPlayer({
               progress: state.progress,
               showTarget: tp.misses >= handsOn.targetAfterMisses,
               onDrop,
+              turn: spec.turn,
+              onTurn,
+              turnValue: tp.turnValue,
             }
-          : { phase: 'solved' };
+          : { phase: 'solved', turnValue: tp.turnValue ?? targetAnswer };
   const doing = !!spec && state.waiting;
   // 字幕下方的一行反馈（提示、已放好几个）；没有就不占地方
   const noteText =

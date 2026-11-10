@@ -37,6 +37,7 @@ units:
     domain: number
     lessons:
       - clock-basics
+      - clock-half
   - id: compare-quantity
     title: 比一比
     term: 1

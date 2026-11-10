@@ -88,7 +88,7 @@ export interface StageTry {
   /** 孩子放下一个计数块：target = 放进了哪个目标（零件 id），放在外面时为 undefined */
   onDrop?(index: number, target: string | undefined): void;
   tap?: { among?: string[] } | boolean;
-  turn?: { target: string; prop?: string; step?: number } | boolean;
+  turn?: { target: string; prop?: string; step?: number | string } | boolean;
   onTap?(id: string, sub?: string): void;
   onTurn?(value: number, done: boolean): void;
   /** 已点对的子项，画成保持描边 */
