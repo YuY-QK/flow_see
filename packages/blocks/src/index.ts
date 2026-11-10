@@ -119,6 +119,20 @@ export function getPart(type: string): ResolvedPart | undefined {
   return part && { ...part, defaults: sceneStyle().parts[part.type] ?? {} };
 }
 
+/** 已注册零件列表（带默认属性） */
+export function allParts(): ResolvedPart[] {
+  let defaultsMap: Record<string, Props> = {};
+  try {
+    defaultsMap = sceneStyle().parts;
+  } catch {
+    // sceneStyle() 未注入时的保底
+  }
+  return Array.from(byType.values()).map((part) => ({
+    ...part,
+    defaults: defaultsMap[part.type] ?? {},
+  }));
+}
+
 /** 动态注册零件（测试或后续扩展零件用） */
 export function registerPart(part: PartDef): void {
   byType.set(part.type, part);

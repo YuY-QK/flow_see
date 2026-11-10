@@ -563,3 +563,22 @@ clockTemplate:
   sample_face: 这是钟面，上面有 1 到 12 这 12 个数。
   sample_read: 分针指着 12，时针指着 3，就是 3 时。
   sample_run: 分针走一圈，时针走一大格，过了 1 小时。
+dev:
+  title: 零件试验场
+  parts_list: 零件列表
+  theme: 主题
+  ui_theme: 界面
+  theme_light: 浅色
+  theme_dark: 深色
+  show_bbox: 包围盒
+  show_subitems: 子项
+  show_handles: 把手
+  copy_config: 复制配置
+  copied: 已复制
+  props_title: 属性编辑
+  common_props: 公共属性
+  no_props: 无专属属性
+  reset_props: 重置属性
+  yaml_invalid: YAML 格式错误
+  stage_size: 舞台
+

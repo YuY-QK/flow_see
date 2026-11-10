@@ -36,6 +36,9 @@ const SharedPage = lazy(() =>
   import('./pages/SharedPage').then((m) => ({ default: m.SharedPage })),
 );
 const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })));
+const DevPartsPage = import.meta.env.DEV
+  ? lazy(() => import('./pages/DevPartsPage').then((m) => ({ default: m.DevPartsPage })))
+  : null;
 
 const page = (el: ReactNode) => <Suspense fallback={null}>{el}</Suspense>;
 
@@ -56,6 +59,9 @@ const routes = [
   { path: '/edit/:id', element: page(<EditorPage />) },
   { path: '/play/:id', element: page(<PlayPage />) },
   { path: '/s/:id', element: page(<SharedPage />) },
+  ...(import.meta.env.DEV && DevPartsPage
+    ? [{ path: '/dev/parts', element: page(<DevPartsPage />) }]
+    : []),
   { path: '*', element: page(<NotFound />) },
 ];
 
