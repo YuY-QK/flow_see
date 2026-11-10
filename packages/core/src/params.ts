@@ -565,13 +565,20 @@ export function clampParams(
   return cur;
 }
 
-/** 列出所有控件取值的组合（检查配置用）；组合太多时只取两端和中间，最多 limit 个 */
-export function exploreCombos(
+/**
+ * 列出所有控件取值的全部组合（不抽样）。
+ * 超过 maxLimit（默认 20000）时返回 overflow: true 和总数估算，避免内存暴涨。
+ */
+export function allExploreCombos(
   controls: readonly ExploreControl[],
   params: Scope,
   derived: Derived = {},
-  limit = 400,
-): Scope[] {
+  maxLimit = 20000,
+): { combos: Scope[]; total: number; overflow: boolean } {
+  if (controls.length === 0) {
+    return { combos: [clampParams(controls, params, derived)], total: 1, overflow: false };
+  }
+
   let combos: Scope[] = [clampParams(controls, params, derived)];
   for (const c of controls) {
     const next: Scope[] = [];
@@ -579,22 +586,230 @@ export function exploreCombos(
       let values: unknown[];
       if (c.control === 'slider') {
         const { min, max, step } = sliderRange(c, resolveParams(base, derived));
-        values = [];
-        for (let v = min; v <= max + 1e-9 && values.length < 200; v += step) values.push(v);
-      } else if (c.control === 'buttons') values = (c.options ?? []).map((o) => o.value);
-      else values = [false, true];
-      for (const v of values) next.push(clampParams(controls, { ...base, [c.param]: v }, derived));
+        if (step <= 0 || min > max) {
+          values = [min];
+        } else {
+          const count = Math.floor((max - min) / step + 1e-9) + 1;
+          if (count > maxLimit) {
+            return { combos: [], total: count, overflow: true };
+          }
+          values = [];
+          for (let v = min; v <= max + 1e-9; v += step) {
+            values.push(Math.round(v * 1e6) / 1e6);
+          }
+        }
+      } else if (c.control === 'buttons') {
+        values = (c.options ?? []).map((o) => o.value);
+      } else {
+        values = [false, true];
+      }
+
+      for (const v of values) {
+        next.push(clampParams(controls, { ...base, [c.param]: v }, derived));
+      }
+      if (next.length > maxLimit) {
+        const estTotal = combos.length * values.length;
+        return { combos: [], total: Math.max(estTotal, next.length), overflow: true };
+      }
     }
-    // 去重；太多时抽样
+
+    // 去重
     const seen = new Set<string>();
     combos = next.filter((p) => {
       const k = JSON.stringify(p);
       return seen.has(k) ? false : (seen.add(k), true);
     });
-    if (combos.length > limit) {
-      const stride = Math.ceil(combos.length / limit);
-      combos = combos.filter((_, i) => i % stride === 0);
+
+    if (combos.length > maxLimit) {
+      return { combos: [], total: combos.length, overflow: true };
     }
   }
-  return combos;
+
+  return { combos, total: combos.length, overflow: false };
+}
+
+/**
+ * 列出所有控件取值的组合（检查配置用）；超过 limit 时按规则抽样，最多 limit 个。
+ * 抽样规则：
+ * ① 先放入“每个参数取最小值 / 最大值，其他参数取标准值”的组合；
+ * ② 放入全部参数都取最小、都取最大的组合；
+ * ③ 其余按间隔抽样补到 limit。
+ */
+export function exploreCombos(
+  controls: readonly ExploreControl[],
+  params: Scope,
+  derived: Derived = {},
+  limit = 400,
+): Scope[] {
+  if (limit <= 0) return [];
+  if (controls.length === 0) return [clampParams(controls, params, derived)];
+
+  const { combos: all, overflow } = allExploreCombos(controls, params, derived, 20000);
+  const standard = clampParams(controls, params, derived);
+
+  const chosen: Scope[] = [];
+  const chosenKeys = new Set<string>();
+  const add = (p: Scope) => {
+    const k = JSON.stringify(p);
+    if (!chosenKeys.has(k)) {
+      chosenKeys.add(k);
+      chosen.push(p);
+    }
+  };
+
+  // ① 先放入“每个参数取最小值 / 最大值，其他参数取标准值”的组合
+  for (const c of controls) {
+    const stdScope = resolveParams(standard, derived);
+    if (c.control === 'slider') {
+      const { min, max } = sliderRange(c, stdScope);
+      add(clampParams(controls, { ...standard, [c.param]: min }, derived));
+      add(clampParams(controls, { ...standard, [c.param]: max }, derived));
+    } else if (c.control === 'buttons') {
+      const opts = c.options ?? [];
+      if (opts.length > 0) {
+        add(clampParams(controls, { ...standard, [c.param]: opts[0].value }, derived));
+        add(clampParams(controls, { ...standard, [c.param]: opts[opts.length - 1].value }, derived));
+      }
+    } else {
+      add(clampParams(controls, { ...standard, [c.param]: false }, derived));
+      add(clampParams(controls, { ...standard, [c.param]: true }, derived));
+    }
+  }
+
+  // ② 放入全部参数都取最小、都取最大的组合
+  const curMin: Scope = { ...standard };
+  const curMax: Scope = { ...standard };
+  for (const c of controls) {
+    if (c.control === 'slider') {
+      const rMin = sliderRange(c, resolveParams(curMin, derived));
+      curMin[c.param] = rMin.min;
+      const rMax = sliderRange(c, resolveParams(curMax, derived));
+      curMax[c.param] = rMax.max;
+    } else if (c.control === 'buttons') {
+      const optsMin = c.options ?? [];
+      if (optsMin.length > 0) curMin[c.param] = optsMin[0].value;
+      const optsMax = c.options ?? [];
+      if (optsMax.length > 0) curMax[c.param] = optsMax[optsMax.length - 1].value;
+    } else {
+      curMin[c.param] = false;
+      curMax[c.param] = true;
+    }
+  }
+  add(clampParams(controls, curMin, derived));
+  add(clampParams(controls, curMax, derived));
+
+  if (!overflow && all.length <= limit) {
+    return all;
+  }
+
+  // ③ 其余按间隔抽样补到 limit
+  const remaining = all.filter((p) => !chosenKeys.has(JSON.stringify(p)));
+  const needed = limit - chosen.length;
+  if (needed > 0 && remaining.length > 0) {
+    if (remaining.length <= needed) {
+      for (const p of remaining) add(p);
+    } else {
+      const stride = remaining.length / needed;
+      for (let i = 0; i < needed; i++) {
+        const idx = Math.min(remaining.length - 1, Math.floor(i * stride));
+        add(remaining[idx]);
+      }
+    }
+  }
+
+  return chosen.slice(0, limit);
+}
+
+export interface LessonForWhenCoverage {
+  steps?: Array<{
+    when?: string;
+    repeat?: number | string;
+    [key: string]: unknown;
+  }>;
+  derived?: Derived;
+  params?: Scope;
+}
+
+export interface WhenStepCoverage {
+  stepIndex: number;
+  when: string;
+  trueCount: number;
+  falseCount: number;
+  trueCombo?: Scope;
+  falseCombo?: Scope;
+}
+
+/**
+ * 统计每个带 when 的步骤在 combos 中的真 / 假出现次数，
+ * 并记录一个真组合和一个假组合（若存在）。
+ */
+export function whenCoverage(
+  lesson: LessonForWhenCoverage,
+  combos: readonly Scope[],
+): WhenStepCoverage[] {
+  const steps = lesson.steps ?? [];
+  const result: WhenStepCoverage[] = [];
+
+  for (let si = 0; si < steps.length; si++) {
+    const st = steps[si];
+    if (st.when === undefined) continue;
+
+    const cov: WhenStepCoverage = {
+      stepIndex: si,
+      when: st.when,
+      trueCount: 0,
+      falseCount: 0,
+    };
+
+    for (const combo of combos) {
+      const scope = resolveParams(combo, lesson.derived);
+      if (st.repeat !== undefined) {
+        const countVal =
+          typeof st.repeat === 'number'
+            ? st.repeat
+            : evalExpr(st.repeat, scope);
+        const count =
+          countVal !== undefined && Number.isFinite(countVal)
+            ? Math.floor(countVal)
+            : 0;
+
+        if (count <= 0) {
+          cov.falseCount++;
+          if (!cov.falseCombo) cov.falseCombo = combo;
+        } else {
+          let hasTrue = false;
+          let hasFalse = false;
+          for (let i = 1; i <= count; i++) {
+            const cond = evalExpr(st.when, { ...scope, i });
+            if (cond !== undefined && Math.abs(cond) >= 1e-9) {
+              hasTrue = true;
+            } else {
+              hasFalse = true;
+            }
+          }
+          if (hasTrue) {
+            cov.trueCount++;
+            if (!cov.trueCombo) cov.trueCombo = combo;
+          }
+          if (hasFalse) {
+            cov.falseCount++;
+            if (!cov.falseCombo) cov.falseCombo = combo;
+          }
+        }
+      } else {
+        const cond = evalExpr(st.when, scope);
+        if (cond !== undefined && Math.abs(cond) >= 1e-9) {
+          cov.trueCount++;
+          if (!cov.trueCombo) cov.trueCombo = combo;
+        } else {
+          cov.falseCount++;
+          if (!cov.falseCombo) cov.falseCombo = combo;
+        }
+      }
+    }
+
+    result.push(cov);
+  }
+
+  return result;
 }

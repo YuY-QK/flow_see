@@ -4,7 +4,8 @@ import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { buildIndex, findEntry, findLesson, highlightParts, searchLessons } from './catalog';
 import { generateSchemas, CONTENT_ROOT } from './json-schema';
-import { loadContent } from './load';
+import { loadContent, sampleLessonCombos } from './load';
+import { evalExpr } from '@flow-see/core/params.ts';
 import { TEMPLATE_IDS } from '@flow-see/templates';
 
 const roots: string[] = [];
@@ -198,6 +199,116 @@ describe('内容配置校验', () => {
       (e) => e.message,
     );
     expect(msgsBadFunc.some((m) => m.includes('文字函数只能单独写在 {} 里'))).toBe(true);
+  });
+
+  it('F8: 检查覆盖所有分支（when 正反抽样、恒真/恒假报错、超过 20000 报错）', () => {
+    // 2. 步骤 when: '{a % 10 + b % 10 >= 10}'：抽样集合里至少有一个使它为真、一个为假的组合
+    const carryLesson = `
+id: fraction-intro
+title: 认识分数
+summary: 进位加法演示
+status: published
+reviewedAt: 2026-11-10
+tags: [加法, 进位]
+template: message
+params: { a: 8, b: 6 }
+explore:
+  - { param: a, control: slider, label: a, min: 1, max: 99 }
+  - { param: b, control: slider, label: b, min: 1, max: 99 }
+steps:
+  - say: 开始计算。
+  - when: "{a % 10 + b % 10 >= 10}"
+    say: 个位满十进一。
+keyPoints: [个位满十向十位进一, 算得数]
+`;
+    const checkedVariants: Record<string, unknown>[] = [];
+    const root2 = sandbox({ 'lessons/math/g3/fraction-intro.yaml': carryLesson });
+    const { issues: issues2 } = loadContent(root2, {
+      templateIds: TEMPLATE_IDS,
+      checkLesson: (l) => {
+        checkedVariants.push(l.params);
+        return [];
+      },
+    });
+    expect(issues2.filter((i) => i.level === 'error')).toEqual([]);
+    const hasTrue = checkedVariants.some(
+      (p) => evalExpr('{a % 10 + b % 10 >= 10}', p) === 1,
+    );
+    const hasFalse = checkedVariants.some(
+      (p) => evalExpr('{a % 10 + b % 10 >= 10}', p) === 0,
+    );
+    expect(hasTrue).toBe(true);
+    expect(hasFalse).toBe(true);
+
+    const directSample = sampleLessonCombos({
+      id: 'fraction-intro',
+      title: '认识分数',
+      summary: '进位加法演示',
+      template: 'message',
+      params: { a: 8, b: 6 },
+      explore: [
+        { param: 'a', control: 'slider', label: 'a', min: 1, max: 99 },
+        { param: 'b', control: 'slider', label: 'b', min: 1, max: 99 },
+      ],
+      steps: [
+        { say: '开始计算。' },
+        { when: '{a % 10 + b % 10 >= 10}', say: '个位满十进一。' },
+      ],
+      keyPoints: ['个位满十向十位进一', '算得数'],
+    });
+    expect(
+      directSample.combos.some((p) => evalExpr('{a % 10 + b % 10 >= 10}', p) === 1),
+    ).toBe(true);
+    expect(
+      directSample.combos.some((p) => evalExpr('{a % 10 + b % 10 >= 10}', p) === 0),
+    ).toBe(true);
+
+    // 3. when: '{a > 100}'（a 最大 99）报“恒为假”
+    const alwaysFalse = carryLesson.replace(
+      'when: "{a % 10 + b % 10 >= 10}"',
+      'when: "{a > 100}"',
+    );
+    const errsFalse = errors(sandbox({ 'lessons/math/g3/fraction-intro.yaml': alwaysFalse }));
+    expect(
+      errsFalse.some(
+        (e) =>
+          e.message.includes('在所有参数组合下都为假') ||
+          e.message.includes('第 2 步的 when 在所有参数组合下都为假'),
+      ),
+    ).toBe(true);
+
+    // 恒为真报错
+    const alwaysTrue = carryLesson.replace(
+      'when: "{a % 10 + b % 10 >= 10}"',
+      'when: "{a > 0}"',
+    );
+    const errsTrue = errors(sandbox({ 'lessons/math/g3/fraction-intro.yaml': alwaysTrue }));
+    expect(
+      errsTrue.some(
+        (e) =>
+          e.message.includes('在所有参数组合下都为真') ||
+          e.message.includes('第 2 步的 when 在所有参数组合下都为真'),
+      ),
+    ).toBe(true);
+
+    // 4. 组合超过 20000 报错并给出参数名
+    const over20000 = carryLesson.replace(
+      'min: 1, max: 99',
+      'min: 1, max: 200',
+    ).replace(
+      'min: 1, max: 99',
+      'min: 1, max: 150',
+    );
+    const errsOver = errors(sandbox({ 'lessons/math/g3/fraction-intro.yaml': over20000 }));
+    expect(
+      errsOver.some(
+        (e) =>
+          e.message.includes('20000') &&
+          e.message.includes('a') &&
+          e.message.includes('b') &&
+          (e.message.includes('缩小') || e.message.includes('范围')),
+      ),
+    ).toBe(true);
   });
 
   it('创作示例：引用的元素名、分类、列表都要对得上', () => {

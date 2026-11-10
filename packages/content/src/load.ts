@@ -3,12 +3,18 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { LineCounter, parseDocument, type Document } from 'yaml';
 import {
+  allExploreCombos,
   clampParams,
   evalExpr,
   exploreCombos,
   exprNames,
   resolveParams,
+  whenCoverage,
+  type Derived,
   type ExploreControl,
+  type LessonForWhenCoverage,
+  type Scope,
+  type WhenStepCoverage,
 } from '@flow-see/core/params.ts';
 import { chooseAnswers, chooseOptions, type ChooseSpec } from '@flow-see/core/choose.ts';
 import { fillParams } from '@flow-see/core/fill.ts';
@@ -97,6 +103,65 @@ function checkChooseTries(
       out.push({ path: [...path, 'options'], message: '多选时选项要比答案多（至少有一个不对的）' });
   });
   return out;
+}
+
+export interface LessonForSample extends LessonForWhenCoverage {
+  explore?: readonly ExploreControl[];
+  params: Scope;
+  derived?: Derived;
+  [key: string]: unknown;
+}
+
+/** 抽样知识点的参数组合，保证边界组合与 when 的正反组合都在抽样集合里 */
+export function sampleLessonCombos(
+  lesson: LessonForSample,
+  limit = 400,
+): {
+  combos: Record<string, unknown>[];
+  allCombos: Record<string, unknown>[];
+  overflow?: boolean;
+  total?: number;
+  whenCov?: WhenStepCoverage[];
+} {
+  const explore = (lesson.explore ?? []) as ExploreControl[];
+  if (!explore.length) {
+    const combos = [lesson.params];
+    const whenCov = whenCoverage(lesson, combos);
+    return { combos, allCombos: combos, overflow: false, total: 1, whenCov };
+  }
+
+  const { combos: allCombos, overflow, total } = allExploreCombos(
+    explore,
+    lesson.params,
+    lesson.derived,
+    20000,
+  );
+  if (overflow) {
+    return { combos: [], allCombos: [], overflow: true, total };
+  }
+
+  const sampled = exploreCombos(explore, lesson.params, lesson.derived, limit);
+  const sampledKeys = new Set(sampled.map((p) => JSON.stringify(p)));
+  const whenCov = whenCoverage(lesson, allCombos);
+
+  for (const cov of whenCov) {
+    if (cov.trueCombo) {
+      const k = JSON.stringify(cov.trueCombo);
+      if (!sampledKeys.has(k)) {
+        sampledKeys.add(k);
+        sampled.push(cov.trueCombo);
+      }
+    }
+    if (cov.falseCombo) {
+      const k = JSON.stringify(cov.falseCombo);
+      if (!sampledKeys.has(k)) {
+        sampledKeys.add(k);
+        sampled.push(cov.falseCombo);
+      }
+    }
+  }
+
+  return { combos: sampled, allCombos, overflow: false, total, whenCov };
 }
 
 export interface LoadOptions {
@@ -409,12 +474,61 @@ export function loadContent(
           );
       variants.push({ label: `例子“${pr.label}”`, params: merged });
     }
-    if (explore.length)
-      for (const p of exploreCombos(explore, lesson.params, derived))
-        variants.push({
-          label: '',
-          params: p as Record<string, unknown>,
-        });
+    if (explore.length) {
+      const sampleRes = sampleLessonCombos(lesson);
+      if (sampleRes.overflow) {
+        err(
+          name,
+          `explore 参数组合超过 20000 种（共 ${sampleRes.total} 种），请缩小 explore 范围：${explore.map((e) => e.param).join('、')}`,
+          read.line(['explore']),
+        );
+      } else {
+        for (const cov of sampleRes.whenCov ?? []) {
+          const names = exprNames(cov.when);
+          if (names && names.every((n) => known.has(n) || n === 'i')) {
+            if (cov.falseCount === 0) {
+              err(
+                name,
+                `第 ${cov.stepIndex + 1} 步的 when 在所有参数组合下都为真，这一步要么去掉 when，要么检查条件`,
+                read.line(['steps', cov.stepIndex, 'when']),
+              );
+            } else if (cov.trueCount === 0) {
+              err(
+                name,
+                `第 ${cov.stepIndex + 1} 步的 when 在所有参数组合下都为假，这一步要么去掉 when，要么检查条件`,
+                read.line(['steps', cov.stepIndex, 'when']),
+              );
+            }
+          }
+        }
+        for (const p of sampleRes.combos) {
+          variants.push({
+            label: '',
+            params: p as Record<string, unknown>,
+          });
+        }
+      }
+    } else {
+      const sampleRes = sampleLessonCombos(lesson);
+      for (const cov of sampleRes.whenCov ?? []) {
+        const names = exprNames(cov.when);
+        if (names && names.every((n) => known.has(n) || n === 'i')) {
+          if (cov.falseCount === 0) {
+            err(
+              name,
+              `第 ${cov.stepIndex + 1} 步的 when 在所有参数组合下都为真，这一步要么去掉 when，要么检查条件`,
+              read.line(['steps', cov.stepIndex, 'when']),
+            );
+          } else if (cov.trueCount === 0) {
+            err(
+              name,
+              `第 ${cov.stepIndex + 1} 步的 when 在所有参数组合下都为假，这一步要么去掉 when，要么检查条件`,
+              read.line(['steps', cov.stepIndex, 'when']),
+            );
+          }
+        }
+      }
+    }
     const maxSteps = site?.scene?.maxSteps ?? 20;
     const seen = new Set<string>();
     for (const v of variants) {
