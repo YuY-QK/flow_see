@@ -3,7 +3,7 @@ import { getTemplate, TEMPLATE_IDS } from '@flow-see/templates';
 import { sceneFrame, sceneOf } from '@flow-see/templates/scene/index.ts';
 import { clampParams, exploreCombos, type ExploreControl } from '@flow-see/core';
 import { lessonToAnimation } from './animation';
-import { buildIndex, lessonNeighbors, type ContentIndex } from './catalog';
+import { buildIndex, lessonNeighbors, relatedOf, type ContentIndex } from './catalog';
 import { CONTENT_ROOT } from './json-schema';
 import { loadContent } from './load';
 
@@ -217,6 +217,178 @@ describe('上一个 / 下一个（规格 3.5）', () => {
   it('默认不跨年级；配置允许时跨', () => {
     expect(ids('c')).toEqual(['b', undefined]);
     expect(ids('c', true)).toEqual(['b', 'd']);
+  });
+});
+
+describe('relatedOf 相关知识点（任务卡 D3、开发文档 6.4）', () => {
+  const lesson = (
+    id: string,
+    opts: {
+      title?: string;
+      status?: 'published' | 'draft' | 'reviewed';
+      related?: string[];
+    } = {},
+  ) => ({
+    id,
+    title: opts.title ?? id,
+    summary: '',
+    tags: [],
+    recommended: false,
+    status: opts.status ?? ('published' as const),
+    related: opts.related,
+    template: 'scene',
+    steps: [{}],
+  });
+
+  const makeIndex = (dev: boolean) =>
+    buildIndex(
+      {
+        ...load().bundle!,
+        curricula: [
+          {
+            data: {
+              subject: 'math',
+              grade: 1,
+              units: [
+                {
+                  id: 'u1',
+                  title: '单元一',
+                  lessons: [
+                    'count-on',
+                    'make-ten',
+                    'commute-add',
+                    { id: 'soon', title: '即将上线' },
+                  ],
+                },
+              ],
+            },
+          },
+          {
+            data: {
+              subject: 'math',
+              grade: 2,
+              units: [{ id: 'u2', title: '单元二', lessons: ['clock'] }],
+            },
+          },
+          {
+            data: {
+              subject: 'science',
+              grade: 3,
+              units: [{ id: 'u3', title: '单元三', lessons: ['water'] }],
+            },
+          },
+        ],
+        lessons: [
+          {
+            lesson: lesson('count-on', {
+              title: '数一数',
+              related: ['make-ten', 'commute-add', 'clock', 'water', 'soon'],
+            }),
+          },
+          { lesson: lesson('make-ten', { title: '凑十法' }) },
+          { lesson: lesson('commute-add', { title: '交换加数的位置' }) },
+          { lesson: lesson('clock', { title: '认识钟表' }) },
+          { lesson: lesson('water', { title: '水的三态变化' }) },
+        ],
+      },
+      dev,
+    );
+
+  it('按 related 顺序返回，且跨年级跨学科带后缀', () => {
+    const index = makeIndex(false);
+    const rels = relatedOf(index, 'count-on');
+    // 应该按照 related 顺序返回已上线的项，跳过未上线的 soon
+    expect(rels.map((r) => r.id)).toEqual(['make-ten', 'commute-add', 'clock', 'water']);
+    // 同年级同数学：不带后缀
+    expect(rels[0].title).toBe('凑十法');
+    expect(rels[1].title).toBe('交换加数的位置');
+    // 跨年级同数学：带（二年级）
+    expect(rels[2].title).toBe('认识钟表（二年级）');
+    // 跨年级跨学科：带（三年级科学）
+    expect(rels[3].title).toBe('水的三态变化（三年级科学）');
+  });
+
+  it('过滤未发布：线上模式过滤 draft，本地开发模式保留 draft', () => {
+    // 验收场景 1 & 2：count-on 相关 make-ten 和 commute-add
+    const makeIndexWithDraft = (dev: boolean) =>
+      buildIndex(
+        {
+          ...load().bundle!,
+          curricula: [
+            {
+              data: {
+                subject: 'math',
+                grade: 1,
+                units: [
+                  {
+                    id: 'u1',
+                    title: '单元一',
+                    lessons: ['count-on', 'make-ten', 'commute-add'],
+                  },
+                ],
+              },
+            },
+          ],
+          lessons: [
+            {
+              lesson: lesson('count-on', {
+                title: '数一数',
+                related: ['make-ten', 'commute-add'],
+              }),
+            },
+            { lesson: lesson('make-ten', { title: '凑十法', status: 'published' }) },
+            { lesson: lesson('commute-add', { title: '交换加数的位置', status: 'draft' }) },
+          ],
+        },
+        dev,
+      );
+
+    // 线上环境（dev: false）：commute-add 为 draft，只显示 make-ten
+    const onlineIndex = makeIndexWithDraft(false);
+    const onlineRels = relatedOf(onlineIndex, 'count-on');
+    expect(onlineRels.map((r) => r.id)).toEqual(['make-ten']);
+    expect(onlineRels[0].title).toBe('凑十法');
+
+    // 本地开发环境（dev: true）：commute-add 也会显示
+    const devIndex = makeIndexWithDraft(true);
+    const devRels = relatedOf(devIndex, 'count-on');
+    expect(devRels.map((r) => r.id)).toEqual(['make-ten', 'commute-add']);
+
+    // 两个都未上线（或都不存在/draft）：整行不出现（返回空数组）
+    const makeAllDraft = buildIndex(
+      {
+        ...load().bundle!,
+        curricula: [
+          {
+            data: {
+              subject: 'math',
+              grade: 1,
+              units: [
+                { id: 'u1', title: '单元一', lessons: ['count-on', 'make-ten', 'commute-add'] },
+              ],
+            },
+          },
+        ],
+        lessons: [
+          {
+            lesson: lesson('count-on', {
+              title: '数一数',
+              related: ['make-ten', 'commute-add'],
+            }),
+          },
+          { lesson: lesson('make-ten', { title: '凑十法', status: 'draft' }) },
+          { lesson: lesson('commute-add', { title: '交换加数的位置', status: 'draft' }) },
+        ],
+      },
+      false,
+    );
+    expect(relatedOf(makeAllDraft, 'count-on')).toEqual([]);
+  });
+
+  it('related 为空或未设置时返回空数组', () => {
+    const index = makeIndex(false);
+    expect(relatedOf(index, 'make-ten')).toEqual([]);
+    expect(relatedOf(index, 'non-existent')).toEqual([]);
   });
 });
 

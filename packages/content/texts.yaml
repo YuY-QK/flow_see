@@ -281,6 +281,8 @@ homePage:
 lesson:
   term_1: 上册
   term_2: 下册
+  related: 相关
+  related_grade: '{title}（{grade}）'
 lessonCard:
   dai_fa_bu: 待发布
   ji_jiang_shang_xian: 即将上线

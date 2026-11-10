@@ -294,3 +294,89 @@ export function lessonNeighbors(
   const i = list.findIndex((p) => p.lesson.id === id);
   return { prev: list[i - 1], next: list[i + 1] };
 }
+
+export interface RelatedLesson {
+  id: string;
+  title: string;
+  grade: number;
+  subject: string;
+  available: boolean;
+  rawTitle?: string;
+}
+
+/**
+ * 相关知识点（开发文档 6.4、任务卡 D3）：
+ * 按 related 顺序返回 { id, title, grade, subject, available }，过滤掉不可见的（线上未发布）。
+ * 跨年级、跨学科时名称后带年级/学科名。
+ */
+export function relatedOf(index: ContentIndex, lessonId: string): RelatedLesson[] {
+  let currentMeta: LessonMeta | undefined;
+  let currentGrade: number | undefined;
+  let currentSubject: string | undefined;
+
+  for (const entry of index.catalog) {
+    for (const unit of entry.units) {
+      for (const lesson of unit.lessons) {
+        if (lesson.id === lessonId) {
+          currentMeta = lesson.meta;
+          currentGrade = entry.grade;
+          currentSubject = entry.subject;
+          break;
+        }
+      }
+      if (currentMeta) break;
+    }
+    if (currentMeta) break;
+  }
+
+  const relatedIds = currentMeta?.related;
+  if (!relatedIds || relatedIds.length === 0) return [];
+
+  const gradeName = (g: number) => index.grades?.find((x) => x.id === g)?.name ?? String(g);
+  const subjectName = (s: string) => index.subjects?.find((x) => x.id === s)?.name ?? s;
+
+  const result: RelatedLesson[] = [];
+  for (const id of relatedIds) {
+    for (const entry of index.catalog) {
+      let found = false;
+      for (const unit of entry.units) {
+        for (const lesson of unit.lessons) {
+          if (lesson.id === id) {
+            if (!lesson.available) continue;
+            if (lesson.meta && !isVisible(lesson.meta.status, index.dev)) continue;
+
+            const diffGrade = currentGrade !== undefined && entry.grade !== currentGrade;
+            const diffSubject = currentSubject !== undefined && entry.subject !== currentSubject;
+
+            let title = lesson.title;
+            if (diffGrade || diffSubject) {
+              const extra =
+                diffGrade && diffSubject
+                  ? `${gradeName(entry.grade)}${subjectName(entry.subject)}`
+                  : diffGrade
+                    ? gradeName(entry.grade)
+                    : subjectName(entry.subject);
+              const tmpl = index.texts?.lesson?.related_grade ?? '{title}（{grade}）';
+              title = tmpl.replace('{title}', lesson.title).replace('{grade}', extra);
+            }
+
+            result.push({
+              id: lesson.id,
+              title,
+              grade: entry.grade,
+              subject: entry.subject,
+              available: lesson.available,
+              rawTitle: lesson.title,
+            });
+            found = true;
+            break;
+          }
+        }
+        if (found) break;
+      }
+      if (found) break;
+    }
+  }
+
+  return result;
+}
