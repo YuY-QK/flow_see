@@ -14,8 +14,10 @@ import {
   findLesson,
   lessonNeighbors,
   lessonToAnimation,
+  relatedOf,
   type LessonContent,
   type LessonPlace,
+  type RelatedLesson,
 } from '@flow-see/content';
 import { useSettings } from '@flow-see/runtime/store/settings.ts';
 import ui from '@flow-see/runtime/ui/ui.module.css';
@@ -246,6 +248,7 @@ function LessonReady({
   };
   // 要点里的 {参数名} 跟着当前参数变
   const keyPoints = fillParams(lesson.keyPoints, values);
+  const related = useMemo(() => relatedOf(content, lesson.id), [lesson.id]);
   const record = useLearning((st) => st.records[lesson.id]);
   const visit = useLearning((st) => st.visit);
   const setStar = useLearning((st) => st.setStar);
@@ -393,6 +396,8 @@ function LessonReady({
           </ul>
         </section>
 
+        <RelatedLessons related={related} />
+
         <nav className={s.nav} aria-label={t('lessonPage.shang_yi_ge_he')}>
           {prev ? (
             <Link className={s.navLink} to={navTo(prev)}>
@@ -461,4 +466,30 @@ function LessonReady({
       ) : null}
     </AssetUrlContext.Provider>
   );
+}
+
+export function RelatedLessons({ related }: { related: RelatedLesson[] }) {
+  if (!related.length) return null;
+  return (
+    <div className={s.related}>
+      <span className={s.relatedLabel}>{t('lesson.related')}</span>
+      {related.map((item, i) => (
+        <span key={item.id} className={s.relatedItem}>
+          {i > 0 && (
+            <span className={s.relatedSep} aria-hidden="true">
+              {' · '}
+            </span>
+          )}
+          <Link to={lessonPath(item.grade, item.subject, item.id)} className={s.relatedLink}>
+            {item.title}
+          </Link>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** 跨年级跨学科标题格式化 */
+export function formatRelatedGrade(title: string, grade: string): string {
+  return t('lesson.related_grade', { title, grade });
 }

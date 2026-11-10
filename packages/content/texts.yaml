@@ -278,6 +278,9 @@ homePage:
   progress_aria: 已学完 {done} / {total}
   done_count: 已学完 {n} 个
   recommended: "{grade}推荐"
+lesson:
+  related: 相关
+  related_grade: '{title}（{grade}）'
 lessonCard:
   dai_fa_bu: 待发布
   ji_jiang_shang_xian: 即将上线

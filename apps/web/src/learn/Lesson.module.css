@@ -379,6 +379,38 @@
   font-size: var(--fs-lg);
   line-height: 1.6;
 }
+
+/* 相关知识点 */
+.related {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.relatedLabel {
+  color: var(--ink-3);
+}
+.relatedLabel::after {
+  content: '：';
+}
+.relatedItem {
+  display: inline;
+}
+.relatedSep {
+  color: var(--ink-4);
+  margin: 0 4px;
+}
+.relatedLink {
+  color: var(--primary);
+  text-decoration: none;
+}
+.relatedLink:hover {
+  text-decoration: underline;
+  color: var(--primary-hover);
+}
+
 .nav {
   display: grid;
   grid-template-columns: 1fr 1fr;
