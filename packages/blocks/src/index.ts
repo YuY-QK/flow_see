@@ -67,7 +67,13 @@ export {
 } from './parts/circuit';
 export { sunShadowLayout, sunShadowState, type SunShadowState } from './parts/sunshadow';
 export { particleLayout, particlePosition, type ParticleLayout } from './parts/particles';
-export { COLUMN_CALC_OPS, columnCalcPlan, type ColumnCalcPlan } from './parts/columncalc';
+export {
+  COLUMN_CALC_OPS,
+  columnCalcPlan,
+  subtractionSteps,
+  type ColumnCalcPlan,
+  type SubtractionStep,
+} from './parts/columncalc';
 export { splitCalcLayout } from './parts/splitcalc';
 export { thermometerFill, thermometerLayout, thermometerMix } from './parts/thermometer';
 export {
