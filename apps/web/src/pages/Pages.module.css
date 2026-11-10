@@ -567,3 +567,91 @@
     min-height: 160px;
   }
 }
+
+/* 年级·学科页：上下册切换分段按钮与领域标签（规格 P2） */
+.termSwitcher {
+  display: inline-flex;
+  align-self: flex-start;
+  background: var(--surface-3);
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+  animation: termFadeIn 0.25s ease both;
+}
+
+.termTab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.termTab:hover {
+  color: var(--ink);
+}
+
+.termTab[aria-selected='true'] {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--border);
+}
+
+.domainTag {
+  display: inline-flex;
+  align-items: center;
+  background: color-mix(in srgb, var(--subject-color) var(--domain-tag-mix), transparent);
+  color: var(--ink);
+  font-size: var(--fs-xs);
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+@keyframes termFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 767px) {
+  .termSwitcher {
+    display: flex;
+    width: 100%;
+    align-self: stretch;
+  }
+  .termTab {
+    flex: 1 1 0;
+    min-height: var(--touch, 44px);
+    font-size: var(--fs-base);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .termSwitcher {
+    animation: none;
+  }
+  .termTab {
+    transition: none;
+  }
+}
+
