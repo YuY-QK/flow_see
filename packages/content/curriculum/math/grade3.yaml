@@ -1,16 +1,124 @@
 # yaml-language-server: $schema=../../schemas/curriculum.schema.json
+# 三年级数学。单元和知识点的顺序就是页面上的顺序；已有单元 id 不改。
 subject: math
 grade: 3
 units:
-  - id: fraction
+  # ───── 上册 ─────
+  - id: mult-one-digit
+    title: 多位数乘一位数
+    term: 1
+    domain: number
+    lessons:
+      - { id: mult-oral, title: 口算乘法（整十、整百乘一位数） }
+      - { id: mult-column-1, title: 笔算乘法（进位、连续进位、中间或末尾有 0） }
+      - { id: mult-estimate, title: 估算 }
+  - id: div-one-digit
+    title: 多位数除以一位数
+    term: 1
+    domain: number
+    lessons:
+      - { id: div-oral, title: 口算除法 }
+      - { id: div-column-1, title: 笔算除法：从高位除起 }
+      - { id: div-check, title: 除法的验算 }
+  - id: times-concept
+    title: 倍的认识
+    term: 1
+    domain: number
+    lessons:
+      - { id: times-concept, title: 倍的认识与应用 }
+  - id: fraction            # 已有
     title: 分数的初步认识
+    term: 1
+    domain: number
     lessons:
       - fraction-intro
-  - id: multiplication-2
+      - { id: fraction-compare, title: 分数的大小比较（分子都是 1、同分母） }
+      - { id: fraction-add-sub-same, title: 同分母分数加减、1 减几分之几 }
+  - id: mass-2
+    title: 吨的认识
+    term: 1
+    domain: number
+    lessons:
+      - { id: ton, title: 吨与千克的换算 }
+  - id: time-2
+    title: 时间的计算
+    term: 1
+    domain: number
+    lessons:
+      - { id: elapsed-time, title: 秒的认识与经过时间 }
+  - id: lines-angles-1
+    title: 线与角
+    term: 1
+    domain: geometry
+    lessons:
+      - { id: line-ray-segment, title: 直线、射线、线段 }
+      - { id: angle-measure-1, title: 角的初步度量（认识度） }
+  - id: perimeter
+    title: 周长
+    term: 1
+    domain: geometry
+    lessons:
+      - { id: perimeter-meaning, title: 周长的含义 }
+      - { id: rect-perimeter, title: 长方形、正方形的周长 }
+      - { id: perimeter-on-grid, title: 在方格纸上数周长 }
+  - id: div-word-unit
+    title: 除法解决问题
+    term: 1
+    domain: number
+    lessons:
+      - { id: div-word, title: 除法解决问题（平均分的实际问题） }
+  # ───── 下册 ─────
+  - id: multiplication-2            # 已有
     title: 两位数乘两位数
+    term: 2
+    domain: number
     lessons:
+      - { id: mult-2x2-oral, title: 口算与估算（整十乘整十、两位数乘整十） }
       - mult-column
-  - id: area
-    title: 面积
+      - { id: mult-2x2-area, title: 为什么竖式第二行要错一位 }
+  - id: div-one-digit-2
+    title: 除数是一位数的除法
+    term: 2
+    domain: number
     lessons:
+      - { id: div-column-zero, title: 商中间或末尾有 0 }
+      - { id: div-estimate, title: 除法的估算 }
+  - id: ymd
+    title: 年、月、日
+    term: 2
+    domain: number
+    lessons:
+      - { id: year-month-day, title: 年、月、日（大月、小月） }
+      - { id: leap-year, title: 平年和闰年 }
+      - { id: 24-hour, title: 24 时计时法 }
+      - { id: elapsed-days, title: 经过的天数、计算年龄 }
+  - id: decimal-intro
+    title: 小数的初步认识
+    term: 2
+    domain: number
+    lessons:
+      - { id: decimal-intro, title: 一位小数的意义、读写 }
+      - { id: decimal-add-sub-1, title: 简单小数加减 }
+  - id: directions-8
+    title: 位置与方向（一）
+    term: 2
+    domain: geometry
+    lessons:
+      - { id: directions-8, title: 东、南、西、北与八个方向 }
+      - { id: route-description, title: 描述简单路线 }
+  - id: area            # 已有
+    title: 面积
+    term: 2
+    domain: geometry
+    lessons:
+      - { id: area-meaning, title: 面积的含义与比较 }
+      - { id: area-units, title: 常用面积单位 }
       - rect-area
+      - { id: area-unit-convert, title: 面积单位换算 }
+  - id: average
+    title: 数据分析与平均数
+    term: 2
+    domain: stats
+    lessons:
+      - { id: data-analysis-1, title: 复式统计表 }
+      - { id: average-meaning, title: 平均数的意义与计算 }

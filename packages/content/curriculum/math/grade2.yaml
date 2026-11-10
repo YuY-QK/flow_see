@@ -1,17 +1,125 @@
 # yaml-language-server: $schema=../../schemas/curriculum.schema.json
-# 二年级数学。单元和知识点的顺序就是页面上的顺序。
+# 二年级数学。单元和知识点的顺序就是页面上的顺序；已有单元 id 不改。
 subject: math
 grade: 2
 units:
-  - id: multiplication-1
-    title: 表内乘法（一）
+  # ───── 上册 ─────
+  - id: add-within-100
+    title: 100 以内的加法（二）
+    term: 1
+    domain: number
     lessons:
-      - mult-meaning
-  - id: subtract-within-100
+      - { id: column-add-100, title: 进位加法竖式 }
+  - id: subtract-within-100            # 已有
     title: 100 以内的退位减法
+    term: 1
+    domain: number
     lessons:
       - break-ten
-  - id: division-1
+      - { id: column-sub-100, title: 退位减法竖式 }
+  - id: multiplication-1            # 已有
+    title: 表内乘法（一）
+    term: 1
+    domain: number
+    lessons:
+      - mult-meaning
+      - { id: times-table-2-5, title: 2～5 的乘法口诀 }
+  - id: multiplication-2-table
+    title: 表内乘法（二）
+    term: 1
+    domain: number
+    lessons:
+      - { id: times-table-6-9, title: 6～9 的乘法口诀 }
+      - { id: times-table-map, title: 乘法口诀表的规律 }
+  - id: division-1            # 已有
     title: 表内除法（一）
+    term: 1
+    domain: number
     lessons:
       - divide-equal
+      - { id: divide-by-table, title: 用乘法口诀求商 }
+      - { id: division-two-meanings, title: 除法的两种分法 }
+  - id: money-2
+    title: 人民币的应用
+    term: 1
+    domain: number
+    lessons:
+      - { id: money-shopping-2, title: 复杂购物（总价、够不够、怎样付） }
+  - id: angle-intro
+    title: 角的初步认识
+    term: 1
+    domain: geometry
+    lessons:
+      - { id: angle-intro, title: 角的初步认识（直角、锐角、钝角） }
+  - id: tangram-shapes
+    title: 七巧板
+    term: 1
+    domain: geometry
+    lessons:
+      - { id: tangram, title: 七巧板与平面图形拼组 }
+  - id: observe-1
+    title: 观察物体（一）
+    term: 1
+    domain: geometry
+    lessons:
+      - { id: observe-directions, title: 从不同方向观察物体 }
+  - id: pictograph
+    title: 数据收集整理
+    term: 1
+    domain: stats
+    lessons:
+      - { id: pictograph, title: 象形统计 }
+  # ───── 下册 ─────
+  - id: numbers-10000
+    title: 万以内数的认识
+    term: 2
+    domain: number
+    lessons:
+      - { id: count-to-10000, title: 千和万：计数单位 }
+      - { id: read-write-10000, title: 读数和写数（中间、末尾有 0） }
+      - { id: compare-10000, title: 大小比较与近似数 }
+  - id: division-remainder
+    title: 有余数的除法
+    term: 2
+    domain: number
+    lessons:
+      - { id: remainder-meaning, title: 有余数的除法（余数比除数小） }
+      - { id: remainder-column, title: 有余数除法的竖式 }
+  - id: add-sub-10000
+    title: 万以内的加法和减法
+    term: 2
+    domain: number
+    lessons:
+      - { id: oral-add-sub-1000, title: 整百、整千数加减 }
+      - { id: column-add-sub-10000, title: 三位数加减（连续进位、连续退位、中间有 0 的退位） }
+  - id: mass-1
+    title: 克和千克
+    term: 2
+    domain: number
+    lessons:
+      - { id: gram-kilogram, title: 认识克和千克 }
+  - id: time-hms
+    title: 时、分、秒
+    term: 2
+    domain: number
+    lessons:
+      - { id: hour-minute-second, title: 时、分、秒的关系与换算 }
+  - id: rect-square
+    title: 长方形和正方形的特征
+    term: 2
+    domain: geometry
+    lessons:
+      - { id: rect-square-features, title: 长方形、正方形的特征 }
+  - id: length-units
+    title: 长度单位
+    term: 2
+    domain: geometry
+    lessons:
+      - { id: length-units, title: 分米、毫米、千米 }
+      - { id: measure-length, title: 简单的长度测量 }
+  - id: survey-1
+    title: 数据的收集和整理
+    term: 2
+    domain: stats
+    lessons:
+      - { id: survey-table, title: 简单的数据调查与整理 }
