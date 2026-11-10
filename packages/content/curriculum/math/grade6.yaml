@@ -1,9 +1,108 @@
 # yaml-language-server: $schema=../../schemas/curriculum.schema.json
-# 六年级数学。单元和知识点的顺序就是页面上的顺序。
+# 六年级数学。单元和知识点的顺序就是页面上的顺序；已有单元 id 不改。
 subject: math
 grade: 6
 units:
-  - id: circle
-    title: 圆
+  # ───── 上册 ─────
+  - id: fraction-apply
+    title: 分数乘除法解决问题
+    term: 1
+    domain: number
     lessons:
+      - { id: fraction-word-mult, title: 求一个数的几分之几是多少 }
+      - { id: fraction-word-div, title: 已知一个数的几分之几是多少，求这个数 }
+      - { id: fraction-more-less, title: 比一个数多（少）几分之几 }
+      - { id: work-problem, title: 工程问题 }
+  - id: ratio
+    title: 比
+    term: 1
+    domain: number
+    lessons:
+      - { id: ratio-meaning, title: 比的意义 }
+      - { id: ratio-simplify, title: 比的基本性质、化简与按比分配 }
+  - id: proportion-1
+    title: 比例与正比例
+    term: 1
+    domain: number
+    lessons:
+      - { id: proportion-meaning, title: 比例的意义和基本性质 }
+      - { id: direct-proportion, title: 正比例 }
+  - id: percent
+    title: 百分数
+    term: 1
+    domain: number
+    lessons:
+      - { id: percent-meaning, title: 百分数的意义与读写 }
+      - { id: percent-convert, title: 百分数与分数、小数的互化 }
+      - { id: percent-apply, title: 百分数的简单应用 }
+  - id: position-pairs
+    title: 位置
+    term: 1
+    domain: geometry
+    lessons:
+      - { id: coordinate-pairs, title: 用数对表示位置 }
+  - id: circle            # 已有
+    title: 圆
+    term: 1
+    domain: geometry
+    lessons:
+      - { id: circle-parts, title: 圆的认识（圆心、半径、直径） }
+      - { id: circle-circumference, title: 圆的周长与圆周率 }
       - circle-area
+      - { id: sector-intro, title: 扇形的初步认识 }
+      - { id: ring-area, title: 圆环的面积 }
+  - id: pie-chart
+    title: 扇形统计图
+    term: 1
+    domain: stats
+    lessons:
+      - { id: pie-chart, title: 扇形统计图 }
+  # ───── 下册 ─────
+  - id: negative-numbers
+    title: 负数
+    term: 2
+    domain: number
+    lessons:
+      - { id: negative-meaning, title: 负数的意义与读写 }
+      - { id: negative-numberline, title: 在数轴上表示正负数与比较大小 }
+  - id: proportion-2
+    title: 比例（二）
+    term: 2
+    domain: number
+    lessons:
+      - { id: inverse-proportion, title: 反比例 }
+      - { id: map-scale, title: 比例尺 }
+      - { id: proportion-solve, title: 用正、反比例解决问题 }
+  - id: position-distance
+    title: 位置与方向（二）
+    term: 2
+    domain: geometry
+    lessons:
+      - { id: direction-distance, title: 用方向和距离确定位置 }
+  - id: cylinder-cone
+    title: 圆柱与圆锥
+    term: 2
+    domain: geometry
+    lessons:
+      - { id: cylinder-cone-features, title: 圆柱、圆锥的特征 }
+      - { id: cylinder-surface, title: 圆柱的表面积 }
+      - { id: cylinder-volume, title: 圆柱的体积 }
+      - { id: cone-volume, title: 圆锥的体积 }
+  - id: review-number
+    title: 总复习·数与代数
+    term: 2
+    domain: number
+    lessons:
+      - { id: review-number-system, title: 数的认识整理 }
+      - { id: review-operations, title: 四则运算的意义与关系 }
+      - { id: review-ratio-family, title: 比、分数、除法、百分数的关系 }
+      - { id: review-word-problems, title: 典型问题的线段图 }
+  - id: review-geometry
+    title: 总复习·图形与几何
+    term: 2
+    domain: geometry
+    lessons:
+      - { id: review-area-formulas, title: 平面图形面积公式的推导关系 }
+      - { id: review-volume-formulas, title: 立体图形体积公式的统一 }
+      - { id: review-measure-units, title: 计量单位整理 }
+      - { id: review-shapes-relations, title: 图形的特征与关系 }

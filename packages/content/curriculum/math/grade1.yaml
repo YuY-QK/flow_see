@@ -1,19 +1,107 @@
 # yaml-language-server: $schema=../../schemas/curriculum.schema.json
-# 一年级数学。单元和知识点的顺序就是页面上的顺序。
-# 知识点文件还没写时写成 { id, title }，页面上显示为“即将上线”。
+# 一年级数学。单元和知识点的顺序就是页面上的顺序；已有单元 id 不改。
 subject: math
 grade: 1
 units:
-  - id: add-within-20
+  # ───── 上册 ─────
+  - id: numbers-10
+    title: 10 以内数的认识
+    term: 1
+    domain: number
+    lessons:
+      - { id: count-to-10, title: 数一数 }
+      - { id: compare-within-10, title: 比大小 }
+      - { id: cardinal-ordinal, title: 几个和第几个 }
+      - { id: zero, title: 0 的认识 }
+      - { id: order-within-10, title: 10 以内数的顺序 }
+      - { id: compose-10, title: 10 以内数的组成 }
+  - id: add-sub-10
+    title: 10 以内的加减法
+    term: 1
+    domain: number
+    lessons:
+      - { id: add-meaning, title: 加法的意义 }
+      - { id: sub-meaning, title: 减法的意义 }
+      - { id: add-sub-by-bond, title: 用数的组成算加减 }
+  - id: add-within-20            # 已有
     title: 20 以内的进位加法
+    term: 1
+    domain: number
     lessons:
       - make-ten
-  - id: subtract-within-20
+      - { id: count-on, title: 点数法与接着数 }
+      - { id: commute-add, title: 交换加数的位置 }
+  - id: clock            # 已有
+    title: 认识钟表
+    term: 1
+    domain: number
+    lessons:
+      - clock-basics
+  - id: compare-quantity
+    title: 比一比
+    term: 1
+    domain: geometry
+    lessons:
+      - { id: compare-height-length, title: 比高矮、比长短 }
+      - { id: compare-size-weight, title: 比大小、比轻重 }
+  - id: solids-intro
+    title: 认识立体图形
+    term: 1
+    domain: geometry
+    lessons:
+      - { id: solids-intro, title: 认识立体图形 }
+  - id: classify-1
+    title: 分类与整理
+    term: 1
+    domain: stats
+    lessons:
+      - { id: classify-single, title: 按一个标准分类 }
+      - { id: classify-count, title: 分类后数一数 }
+  # ───── 下册 ─────
+  - id: numbers-100
+    title: 100 以内数的认识
+    term: 2
+    domain: number
+    lessons:
+      - { id: count-to-100, title: 数数：十个十是一百 }
+      - { id: place-value-100, title: 数的组成与读写 }
+      - { id: order-compare-100, title: 数的顺序与大小比较 }
+  - id: subtract-within-20            # 已有
     title: 20 以内的退位减法
+    term: 2
+    domain: number
     lessons:
       - borrow-ten
       - level-ten
-  - id: clock
-    title: 认识钟表
+      - { id: think-add-for-sub, title: 想加算减法 }
+  - id: add-sub-100-oral
+    title: 100 以内的加法和减法（一）
+    term: 2
+    domain: number
     lessons:
-      - clock-basics
+      - { id: tens-add-sub, title: 整十数加减整十数 }
+      - { id: two-digit-add, title: 两位数加一位数、整十数 }
+      - { id: two-digit-sub, title: 两位数减一位数、整十数（不退位） }
+      - { id: column-intro, title: 竖式初步 }
+      - { id: continuous-add-sub, title: 连加、连减与加减混合 }
+  - id: money-1
+    title: 认识人民币
+    term: 2
+    domain: number
+    lessons:
+      - { id: money-intro, title: 认识元、角、分与换算 }
+      - { id: money-shopping-1, title: 简单的购物计算 }
+  - id: shapes-2d
+    title: 认识平面图形
+    term: 2
+    domain: geometry
+    lessons:
+      - { id: shapes-2d-intro, title: 长方形、正方形、三角形、圆 }
+      - { id: shapes-compose, title: 图形的拼组 }
+  - id: classify-2
+    title: 分类与整理
+    term: 2
+    domain: stats
+    lessons:
+      - { id: classify-multi, title: 按不同标准分类 }
+      - { id: data-collect-1, title: 简单数据的收集与整理 }

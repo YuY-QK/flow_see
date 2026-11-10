@@ -312,7 +312,10 @@ describe('搜索高亮', () => {
 
 describe('3.0 新字段校验与索引（D1）', () => {
   it('目录里一个单元写 term、另一个没写 → 报错，指出文件和单元', () => {
-    const raw = readFileSync(join(CONTENT_ROOT, 'curriculum/math/grade1.yaml'), 'utf8');
+    const raw = readFileSync(join(CONTENT_ROOT, 'curriculum/math/grade1.yaml'), 'utf8').replace(
+      /\n\s*term:\s*\d+/g,
+      '',
+    );
     // 在第一个单元加 term: 1，第二个单元不加
     const bad = raw.replace('id: add-within-20', 'id: add-within-20\n    term: 1');
     const errs = errors(sandbox({ 'curriculum/math/grade1.yaml': bad }));
@@ -327,7 +330,10 @@ describe('3.0 新字段校验与索引（D1）', () => {
   });
 
   it('domain: algebra（不在 domains 里）→ 报错', () => {
-    const raw = readFileSync(join(CONTENT_ROOT, 'curriculum/math/grade1.yaml'), 'utf8');
+    const raw = readFileSync(join(CONTENT_ROOT, 'curriculum/math/grade1.yaml'), 'utf8').replace(
+      /\n\s*domain:\s*\w+/g,
+      '',
+    );
     // 给所有单元都加上 domain，但其中一个写 algebra
     const bad = raw
       .replace('id: add-within-20', 'id: add-within-20\n    domain: algebra')
@@ -403,16 +409,11 @@ describe('3.0 新字段校验与索引（D1）', () => {
   });
 
   it('索引里能读到 term、domain、related、domains', () => {
-    const mathG1 = readFileSync(join(CONTENT_ROOT, 'curriculum/math/grade1.yaml'), 'utf8')
-      .replace('id: add-within-20', 'id: add-within-20\n    term: 1\n    domain: number')
-      .replace('id: subtract-within-20', 'id: subtract-within-20\n    term: 2\n    domain: number')
-      .replace('id: clock', 'id: clock\n    term: 1\n    domain: number');
     const withRelated = LESSON.replace(
       'tags: [分数, 平均分]',
       'tags: [分数, 平均分]\nrelated: [make-ten]',
     );
     const r = sandbox({
-      'curriculum/math/grade1.yaml': mathG1,
       'lessons/math/g3/fraction-intro.yaml': withRelated,
     });
     const { bundle, issues } = loadContent(r);

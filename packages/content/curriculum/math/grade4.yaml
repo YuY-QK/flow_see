@@ -1,0 +1,145 @@
+# yaml-language-server: $schema=../../schemas/curriculum.schema.json
+# 四年级数学。单元和知识点的顺序就是页面上的顺序；已有单元 id 不改。
+subject: math
+grade: 4
+units:
+  # ───── 上册 ─────
+  - id: big-numbers
+    title: 大数的认识
+    term: 1
+    domain: number
+    lessons:
+      - { id: big-numbers-read, title: 亿以内、亿以上数的读写 }
+      - { id: big-numbers-round, title: 改写与近似数 }
+  - id: mult-3x2
+    title: 三位数乘两位数
+    term: 1
+    domain: number
+    lessons:
+      - { id: mult-3x2, title: 三位数乘两位数的笔算（末尾有 0 的简写） }
+  - id: div-2digit
+    title: 除数是两位数的除法
+    term: 1
+    domain: number
+    lessons:
+      - { id: div-2digit, title: 除数是两位数的笔算（试商） }
+      - { id: div-adjust, title: 调商 }
+  - id: mixed-ops
+    title: 四则混合运算
+    term: 1
+    domain: number
+    lessons:
+      - { id: mixed-order, title: 运算顺序（小括号、中括号） }
+  - id: operation-laws
+    title: 运算定律
+    term: 1
+    domain: number
+    lessons:
+      - { id: add-laws, title: 加法交换律、结合律 }
+      - { id: mult-laws, title: 乘法交换律、结合律 }
+      - { id: distributive-law, title: 乘法分配律 }
+      - { id: simplify-calc, title: 简便运算 }
+  - id: angle-measure
+    title: 角的度量
+    term: 1
+    domain: geometry
+    lessons:
+      - { id: protractor-use, title: 用量角器量角 }
+      - { id: draw-angle, title: 画角与角的分类 }
+  - id: parallel-perpendicular
+    title: 平行与垂直
+    term: 1
+    domain: geometry
+    lessons:
+      - { id: parallel-perpendicular, title: 平行与垂直 }
+  - id: quadrilaterals
+    title: 平行四边形和梯形
+    term: 1
+    domain: geometry
+    lessons:
+      - { id: parallelogram-trapezoid, title: 平行四边形、梯形的特征 }
+  - id: observe-2
+    title: 观察物体（二）
+    term: 1
+    domain: geometry
+    lessons:
+      - { id: observe-cubes, title: 小正方体组合的三视图 }
+  - id: bar-chart
+    title: 平均数与条形统计图
+    term: 1
+    domain: stats
+    lessons:
+      - { id: average-apply, title: 平均数的特点 }
+      - { id: bar-chart, title: 条形统计图（单式、复式；一格代表多个） }
+  - id: operation-laws-2
+    title: 减法和除法的运算性质
+    term: 1
+    domain: number
+    lessons:
+      - { id: sub-div-properties, title: 减法、除法的运算性质 }
+  # ───── 下册 ─────
+  - id: letters
+    title: 用字母表示数
+    term: 2
+    domain: number
+    lessons:
+      - { id: letters-for-numbers, title: 用字母表示数与数量关系 }
+  - id: fraction-meaning
+    title: 分数的意义
+    term: 2
+    domain: number
+    lessons:
+      - { id: fraction-unit-one, title: 单位“1”与分数单位 }
+      - { id: fraction-and-division, title: 分数与除法 }
+  - id: decimal-meaning
+    title: 小数的意义和性质
+    term: 2
+    domain: number
+    lessons:
+      - { id: decimal-meaning, title: 小数的意义（十分之几、百分之几、千分之几） }
+      - { id: decimal-property, title: 小数的性质与大小比较 }
+      - { id: decimal-point-move, title: 小数点移动引起大小变化 }
+  - id: decimal-add-sub
+    title: 小数加减法
+    term: 2
+    domain: number
+    lessons:
+      - { id: decimal-add-sub, title: 小数加减（竖式、简便运算） }
+  - id: meeting
+    title: 相遇问题
+    term: 2
+    domain: number
+    lessons:
+      - { id: meeting-problem, title: 相遇问题 }
+  - id: mixed-apply
+    title: 三步混合运算解决问题
+    term: 2
+    domain: number
+    lessons:
+      - { id: mixed-apply, title: 三步混合运算与实际应用 }
+  - id: triangles
+    title: 三角形
+    term: 2
+    domain: geometry
+    lessons:
+      - { id: triangle-classify, title: 三角形的分类与稳定性 }
+      - { id: triangle-angle-sum, title: 三角形的内角和 }
+      - { id: triangle-sides, title: 三角形的三边关系 }
+  - id: quadrilaterals-2
+    title: 平行四边形和梯形（二）
+    term: 2
+    domain: geometry
+    lessons:
+      - { id: parallelogram-height, title: 底和高、图形之间的关系 }
+  - id: observe-3
+    title: 观察物体（三）
+    term: 2
+    domain: geometry
+    lessons:
+      - { id: observe-reconstruct, title: 根据视图搭立体图形 }
+  - id: line-chart-1
+    title: 折线统计图
+    term: 2
+    domain: stats
+    lessons:
+      - { id: line-chart-single, title: 单式折线统计图 }

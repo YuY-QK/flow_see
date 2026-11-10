@@ -1,0 +1,109 @@
+# yaml-language-server: $schema=../../schemas/curriculum.schema.json
+# 五年级数学。单元和知识点的顺序就是页面上的顺序；已有单元 id 不改。
+subject: math
+grade: 5
+units:
+  # ───── 上册 ─────
+  - id: decimal-mult
+    title: 小数乘法
+    term: 1
+    domain: number
+    lessons:
+      - { id: decimal-times-int, title: 小数乘整数 }
+      - { id: decimal-times-decimal, title: 小数乘小数 }
+      - { id: product-round, title: 积的近似数 }
+  - id: decimal-div
+    title: 小数除法
+    term: 1
+    domain: number
+    lessons:
+      - { id: decimal-div-int, title: 除数是整数的小数除法 }
+      - { id: decimal-div-decimal, title: 除数是小数的除法 }
+      - { id: quotient-round-repeating, title: 商的近似数与循环小数 }
+  - id: decimal-mixed
+    title: 小数混合运算
+    term: 1
+    domain: number
+    lessons:
+      - { id: decimal-mixed, title: 小数四则混合与简便运算 }
+  - id: transformations-1
+    title: 图形的运动（二）
+    term: 1
+    domain: geometry
+    lessons:
+      - { id: axis-symmetry, title: 轴对称 }
+      - { id: translation, title: 平移 }
+      - { id: rotation-intro, title: 旋转的认识 }
+  - id: polygon-area
+    title: 多边形的面积
+    term: 1
+    domain: geometry
+    lessons:
+      - { id: parallelogram-area, title: 平行四边形的面积 }
+      - { id: triangle-area, title: 三角形的面积 }
+      - { id: trapezoid-area, title: 梯形的面积 }
+      - { id: composite-area, title: 组合图形的面积 }
+  - id: clock-direction
+    title: 几点钟方向
+    term: 1
+    domain: geometry
+    lessons:
+      - { id: clock-direction, title: 几点钟方向 }
+  - id: possibility
+    title: 可能性
+    term: 1
+    domain: stats
+    lessons:
+      - { id: possibility-certain, title: 一定、可能、不可能 }
+      - { id: possibility-size, title: 可能性的大小 }
+      - { id: fair-game, title: 游戏规则的公平性 }
+  # ───── 下册 ─────
+  - id: factors-multiples
+    title: 因数与倍数
+    term: 2
+    domain: number
+    lessons:
+      - { id: factor-multiple, title: 因数和倍数 }
+      - { id: multiples-2-3-5, title: 2、3、5 的倍数特征 }
+      - { id: prime-composite, title: 质数与合数 }
+      - { id: lcm, title: 公倍数与最小公倍数 }
+  - id: fraction-forms
+    title: 分数的意义和性质（二）
+    term: 2
+    domain: number
+    lessons:
+      - { id: proper-improper, title: 真分数、假分数、带分数与互化 }
+      - { id: fraction-basic-property, title: 分数的基本性质 }
+      - { id: gcf, title: 公因数与最大公因数 }
+      - { id: simplify-common-denominator, title: 约分与通分 }
+  - id: fraction-ops
+    title: 分数运算
+    term: 2
+    domain: number
+    lessons:
+      - { id: fraction-add-sub-diff, title: 异分母分数加减 }
+      - { id: fraction-times, title: 分数乘法 }
+      - { id: fraction-divide, title: 分数除法与倒数 }
+      - { id: fraction-mixed, title: 分数四则混合与简便运算 }
+  - id: cuboid
+    title: 长方体和正方体
+    term: 2
+    domain: geometry
+    lessons:
+      - { id: cuboid-features, title: 长方体、正方体的特征 }
+      - { id: cuboid-net, title: 展开图 }
+      - { id: cuboid-surface, title: 表面积 }
+      - { id: volume-meaning, title: 体积、容积与单位换算 }
+      - { id: cuboid-volume, title: 长方体、正方体的体积 }
+  - id: rotation-2
+    title: 图形的运动（三）
+    term: 2
+    domain: geometry
+    lessons:
+      - { id: rotation-90, title: 绕点旋转 90° }
+  - id: line-chart-2
+    title: 折线统计图（二）
+    term: 2
+    domain: stats
+    lessons:
+      - { id: line-chart-double, title: 复式折线统计图 }
