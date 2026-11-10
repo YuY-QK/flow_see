@@ -23,6 +23,7 @@ import { thermometerPart } from './parts/thermometer';
 import { splitCalcPart } from './parts/splitcalc';
 import { fractionPart, labelPart, textPart } from './parts/text';
 import { itemSetPart } from './parts/item-set';
+import { polygonPart } from './parts/polygon';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -74,6 +75,7 @@ export {
   type ItemSetShapeKind,
   type ItemSlot,
 } from './parts/item-set';
+export { polygonLayout, polygonPart, type PolygonLayoutResult } from './parts/polygon';
 
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
@@ -104,6 +106,7 @@ export const PARTS: readonly PartDef[] = [
   wirePart,
   thermometerPart,
   itemSetPart,
+  polygonPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */

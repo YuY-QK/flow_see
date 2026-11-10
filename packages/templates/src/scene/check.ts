@@ -150,6 +150,14 @@ function checkProps(
       out.push({ path: [...path, k], message: `图形的 shape 只能是 ${SHAPE_KINDS.join('、')}` });
     if (k === 'time' && part.type === 'clock' && parseClockTime(v) === undefined)
       out.push({ path: [...path, k], message: '钟面的 time 写成 "3:30" 这样的时间，或分钟数' });
+    if (k === 'points' && part.type === 'polygon') {
+      if (!Array.isArray(v) || v.length < 3 || !v.every(isPoint))
+        out.push({ path: [...path, k], message: '多边形的 points 必须至少包含 3 个顶点坐标 [x, y]' });
+    }
+    if (k === 'cut' && part.type === 'polygon') {
+      if (!Array.isArray(v) || v.length !== 2 || !isPoint(v[0]) || !isPoint(v[1]))
+        out.push({ path: [...path, k], message: '剪开线 cut 要写成两个坐标 [[x1, y1], [x2, y2]]' });
+    }
   }
 }
 
