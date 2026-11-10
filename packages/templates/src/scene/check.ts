@@ -3,6 +3,8 @@ import {
   COMMON_PROPS,
   COUNTER_LAYOUTS,
   COUNTER_SHAPES,
+  ITEM_SET_LAYOUTS,
+  ITEM_SET_SHAPES,
   PART_TYPES,
   SHAPE_KINDS,
   findSubitem,
@@ -96,8 +98,45 @@ function checkProps(
           });
         }
       }
-    if (k === 'layout' && !(COUNTER_LAYOUTS as readonly unknown[]).includes(v))
-      out.push({ path: [...path, k], message: `layout 只能是 ${COUNTER_LAYOUTS.join('、')}` });
+    if (k === 'layout') {
+      if (part.type === 'item-set') {
+        if (!(ITEM_SET_LAYOUTS as readonly unknown[]).includes(v))
+          out.push({
+            path: [...path, k],
+            message: `物品组的 layout 只能是 ${ITEM_SET_LAYOUTS.join('、')}`,
+          });
+      } else if (!(COUNTER_LAYOUTS as readonly unknown[]).includes(v)) {
+        out.push({ path: [...path, k], message: `layout 只能是 ${COUNTER_LAYOUTS.join('、')}` });
+      }
+    }
+    if (k === 'items' && part.type === 'item-set') {
+      if (!Array.isArray(v)) {
+        out.push({ path: [...path, k], message: 'items 必须是列表' });
+      } else {
+        v.forEach((it, idx) => {
+          if (!it || typeof it !== 'object') {
+            out.push({ path: [...path, k, idx], message: '物品必须是对象' });
+            return;
+          }
+          const item = it as Record<string, unknown>;
+          if (
+            item.shape !== undefined &&
+            !(ITEM_SET_SHAPES as readonly unknown[]).includes(item.shape)
+          ) {
+            out.push({
+              path: [...path, k, idx, 'shape'],
+              message: `物品的 shape 只能是 ${ITEM_SET_SHAPES.join('、')}`,
+            });
+          }
+          if (item.color !== undefined && !colorOk(item.color, alive)) {
+            out.push({
+              path: [...path, k, idx, 'color'],
+              message: `颜色写颜色名、#RRGGBB，或 "@零件id"`,
+            });
+          }
+        });
+      }
+    }
     if (
       k === 'shape' &&
       isCounters(part.type) &&

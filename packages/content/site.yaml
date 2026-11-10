@@ -137,6 +137,7 @@ scene:
     wire: { width: 6, flow: 0, t: 0, speed: 90, spacing: 36, color: ink }
     column-calc: { size: 44, op: '×', show: 0, accent: red, focus: true, color: ink }
     split-calc: { size: 40, show: 0, op: '+', split: b, color: ink, partColor: blue, accent: red }
+    item-set: { layout: row, cols: 5, size: 56, gap: 12, color: blue, hiddenItems: [] }   # 物品组：一组各不相同的物品（水果、图形等），用于点数、分类
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:

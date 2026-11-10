@@ -295,22 +295,23 @@ export function SceneView({
             return subs.map((sub) => {
               const fullName = `${o.id}.${sub.name}`;
               const clickable =
-                !among ||
-                among.some((pat) => {
-                  if (pat === sub.name || pat === fullName || pat === o.id) return true;
-                  if (pat.includes('*')) {
-                    const re = new RegExp(
-                      '^' +
-                        pat
-                          .split('*')
-                          .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-                          .join('.*') +
-                        '$',
-                    );
-                    return re.test(sub.name) || re.test(fullName);
-                  }
-                  return false;
-                });
+                !sub.disabled &&
+                (!among ||
+                  among.some((pat) => {
+                    if (pat === sub.name || pat === fullName || pat === o.id) return true;
+                    if (pat.includes('*')) {
+                      const re = new RegExp(
+                        '^' +
+                          pat
+                            .split('*')
+                            .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+                            .join('.*') +
+                          '$',
+                      );
+                      return re.test(sub.name) || re.test(fullName);
+                    }
+                    return false;
+                  }));
               if (!clickable) return null;
               const isTapped = Boolean(
                 tryIt?.tapped?.includes(`${o.id}.${sub.name}`) ||

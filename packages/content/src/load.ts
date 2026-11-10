@@ -264,11 +264,22 @@ export function loadContent(
       err(name, `模板不存在：${lesson.template}（已有：${opts.templateIds.join('、')}）`);
     if (lesson.thumbnail && !assetIds.has(lesson.thumbnail))
       err(name, `缩略图素材不存在：${lesson.thumbnail}`);
-    // 素材：asset，以及各零件里以 Asset 结尾的属性（如光与影的 sunAsset）
-    for (const o of lesson.objects ?? [])
+    // 素材：asset，各零件里以 Asset 结尾的属性（如光与影的 sunAsset），以及物品组 items 里的 asset
+    for (const o of lesson.objects ?? []) {
       for (const [k, asset] of Object.entries(o))
         if ((k === 'asset' || k.endsWith('Asset')) && typeof asset === 'string' && !assetIds.has(asset))
           err(name, `零件 ${o.id} 引用的素材不存在：${asset}`);
+      if (Array.isArray(o.items)) {
+        for (const it of o.items) {
+          if (it && typeof it === 'object' && 'asset' in it) {
+            const asset = (it as { asset?: unknown }).asset;
+            if (typeof asset === 'string' && !assetIds.has(asset)) {
+              err(name, `零件 ${o.id} 引用的素材不存在：${asset}`);
+            }
+          }
+        }
+      }
+    }
 
     // 参数、派生值、动手试一试
     const known = new Set(Object.keys(lesson.params));

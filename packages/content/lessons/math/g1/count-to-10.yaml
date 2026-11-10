@@ -1,0 +1,83 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: count-to-10
+title: 数一数
+summary: 一个一个数，最后数到几就是几个
+status: draft
+duration: 1分钟
+tags: [数数, 1到10, 认数, 点数]
+recommended: true
+cover: { text: 1 2 3 }
+related: [cardinal-ordinal, zero]
+
+template: scene
+stage: { width: 800, height: 360 }
+
+params:
+  n: 7
+explore:
+  - { param: n, control: slider, label: 有几个, min: 1, max: 10 }
+
+objects:
+  - id: fruits
+    type: item-set
+    items:
+      - { repeat: '{n}', asset: apple }
+    layout: row
+    size: 56
+    at: [40, 60]
+  - id: dots
+    type: counters
+    count: '{n}'
+    layout: row
+    size: 36
+    color: blue
+    at: [40, 170]
+    hidden: true
+  - id: num
+    type: text
+    text: '[{n}](blank)'
+    size: 72
+    at: [640, 110]
+  - id: word
+    type: label
+    text: '{n} 个苹果'
+    at: [640, 210]
+    hidden: true
+
+steps:
+  - title: 有几个苹果
+    say: 盘子里有几个苹果？我们一起数一数。
+    do:
+      - highlight: fruits
+  - title: 一个一个数
+    say: 一个一个地数，数一个记一个圆点。
+    do:
+      - show: dots
+      - repeat: '{n}'
+        do:
+          - highlight: { target: 'fruits.{i}', duration: 0.4s }
+  - title: 数到几就是几
+    say: 最后数到 {n}，就是有 {n} 个苹果。
+    do:
+      - highlight: dots
+      - ask: true
+      - set: { target: num, text: '{n}' }
+      - show: word
+    try:
+      task: 一共有几个苹果？
+      choose:
+        answer: '{n}'
+        min: 1
+        max: 10
+        show: [dots]
+      hints:
+        - 用手指着，一个一个数。
+  - title: 写一写
+    say: '{n} 个苹果，写作数字 {n}。'
+    do:
+      - highlight: num
+
+keyPoints:
+  - 数的时候一个一个数，不重复、不漏掉
+  - 最后数到几，就有几个
+  - '{n} 个苹果写作 {n}'
