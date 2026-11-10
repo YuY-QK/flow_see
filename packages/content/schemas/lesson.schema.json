@@ -446,6 +446,139 @@
                 ],
                 "additionalProperties": false
               },
+              "tap": {
+                "description": "点选零件：点选画面上的零件或子项",
+                "type": "object",
+                "properties": {
+                  "answer": {
+                    "description": "正确答案：子项名（如 \"row.3\" 或 \"grid1.row.3\"）或零件 id，可写参数；写成列表时要全部点出",
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        ]
+                      },
+                      {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "string",
+                              "minLength": 1
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "among": {
+                    "description": "可点选的子项或零件范围，支持通配符 *；不写时全部子项可点",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "pick": {
+                    "description": "按条件点时需要点选的个数",
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    ]
+                  },
+                  "valid": {
+                    "description": "按条件点时的判定表达式，如 \"{n % 2 == 0}\"，{n} 为子项数值",
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "turn": {
+                "description": "转动把手（T2）",
+                "type": "object",
+                "properties": {
+                  "target": {
+                    "type": "string",
+                    "description": "改哪个零件的属性"
+                  },
+                  "prop": {
+                    "type": "string",
+                    "description": "改哪个属性"
+                  },
+                  "answer": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    ],
+                    "description": "正确答案"
+                  },
+                  "tolerance": {
+                    "description": "容差",
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    ]
+                  },
+                  "step": {
+                    "description": "步长",
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "target",
+                  "prop",
+                  "answer"
+                ],
+                "additionalProperties": false
+              },
+              "sort": {
+                "description": "分类拖放（T3）",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              },
+              "place": {
+                "description": "拖到位（T4）",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              },
               "hints": {
                 "description": "做错时依次给出的提示（每句不超过约 30 字）；不写用通用提示",
                 "maxItems": 3,

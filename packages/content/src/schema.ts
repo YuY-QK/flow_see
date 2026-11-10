@@ -602,6 +602,37 @@ const trySchema = z
       .strict()
       .optional()
       .describe('点选：从几个选项里选出答案（所有模板都支持）'),
+    tap: z
+      .object({
+        answer: z
+          .union([paramRef, z.array(paramRef).min(1)])
+          .optional()
+          .describe(
+            '正确答案：子项名（如 "row.3" 或 "grid1.row.3"）或零件 id，可写参数；写成列表时要全部点出',
+          ),
+        among: z
+          .array(z.string())
+          .optional()
+          .describe('可点选的子项或零件范围，支持通配符 *；不写时全部子项可点'),
+        pick: paramRef.optional().describe('按条件点时需要点选的个数'),
+        valid: z.string().optional().describe('按条件点时的判定表达式，如 "{n % 2 == 0}"，{n} 为子项数值'),
+      })
+      .strict()
+      .optional()
+      .describe('点选零件：点选画面上的零件或子项'),
+    turn: z
+      .object({
+        target: z.string().describe('改哪个零件的属性'),
+        prop: z.string().describe('改哪个属性'),
+        answer: paramRef.describe('正确答案'),
+        tolerance: paramRef.optional().describe('容差'),
+        step: paramRef.optional().describe('步长'),
+      })
+      .strict()
+      .optional()
+      .describe('转动把手（T2）'),
+    sort: z.record(z.string(), z.unknown()).optional().describe('分类拖放（T3）'),
+    place: z.record(z.string(), z.unknown()).optional().describe('拖到位（T4）'),
     hints: z
       .array(text)
       .max(3)
@@ -609,7 +640,10 @@ const trySchema = z
       .describe('做错时依次给出的提示（每句不超过约 30 字）；不写用通用提示'),
   })
   .strict()
-  .refine((v) => !!v.drag !== !!v.choose, '动手方式 drag 和 choose 写一个就行');
+  .refine(
+    (v) => [v.drag, v.choose, v.tap, v.turn, v.sort, v.place].filter(Boolean).length === 1,
+    '动手方式 drag、choose、tap、turn、sort、place 只能写一个',
+  );
 
 const stepSchema = z
   .object({

@@ -614,6 +614,26 @@
     animation: none;
   }
 }
+.stageSvg [data-tap-wrong='true'] {
+  animation: tapShake 0.25s ease-in-out;
+}
+@keyframes tapShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stageSvg [data-tap-wrong='true'] {
+    animation: none;
+  }
+}
 .sayRow {
   display: flex;
   align-items: flex-start;

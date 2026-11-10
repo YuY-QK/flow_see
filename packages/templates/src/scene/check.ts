@@ -15,8 +15,8 @@ import {
   parseClockTime,
   type Props,
 } from '@flow-see/blocks';
-import { evalExpr, fillParams, resolveParams } from '@flow-see/core';
-import type { ConfigIssue, LessonLike } from '@flow-see/runtime/template.ts';
+import { evalExpr, fillParams, matchPattern, resolveParams } from '@flow-see/core';
+import type { ConfigIssue, LessonLike, TrySpec } from '@flow-see/runtime/template.ts';
 import {
   MULTI_TARGET,
   TIMING_KEYS,
@@ -328,7 +328,7 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
   };
 
   lesson.steps.forEach((step, si) => {
-    if (step.try?.drag) checkTry(def, si, alive, out);
+    if (step.try) checkTry(def, si, alive, objects, (lesson.params ?? {}) as Record<string, unknown>, out);
     if (step.try?.choose?.show) checkChooseShow(step.try.choose.show, si, alive, objects, out);
     (step.do ?? []).forEach((raw, ai) => {
       const path = ['steps', si, 'do', ai];
@@ -566,16 +566,30 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
   return out;
 }
 
-/** 动手做（try）：拖动的零件要在这一步开头存在，要拖的个数要对得上 do 里的标准做法 */
-function checkTry(def: SceneDef, si: number, alive: Map<string, string>, out: ConfigIssue[]) {
+/** 动手做（try）：拖动的零件要在这一步开头存在，要拖的个数要对得上 do 里的标准做法；点选的零件/子项要在 among 内存在 */
+function checkTry(
+  def: SceneDef,
+  si: number,
+  alive: Map<string, string>,
+  objects: Props[],
+  scope: Record<string, unknown>,
+  out: ConfigIssue[],
+) {
   const spec = def.tries?.[si];
-  const drag = spec?.drag;
   const path = ['steps', si, 'try'];
-  if (!drag) {
-    out.push({ path, message: 'try 要写一种动手方式，如 drag（拖动）' });
+  if (!spec?.drag && !spec?.tap && !spec?.choose && !spec?.turn && !spec?.sort && !spec?.place) {
+    out.push({ path, message: 'try 要写一种动手方式，如 drag（拖动）或 tap（点选）' });
     return;
   }
-  const p = [...path, 'drag'];
+  if (spec.drag) checkDrag(def, si, alive, out);
+  if (spec.tap) checkTap(spec.tap, si, alive, objects, scope, out);
+}
+
+function checkDrag(def: SceneDef, si: number, alive: Map<string, string>, out: ConfigIssue[]) {
+  const spec = def.tries?.[si];
+  const drag = spec?.drag;
+  if (!drag) return;
+  const p = ['steps', si, 'try', 'drag'];
   const fromType = alive.get(drag.from);
   if (!fromType) {
     out.push({ path: [...p, 'from'], message: `零件 ${drag.from} 在这一步开头不存在` });
@@ -605,7 +619,7 @@ function checkTry(def: SceneDef, si: number, alive: Map<string, string>, out: Co
   const to = dragTargets(drag).join('、');
   if (!moves.length) {
     out.push({
-      path,
+      path: ['steps', si, 'try'],
       message: `do 里要有把 ${drag.from} 移动（move）、合并（merge）或一个一个分（deal）到 ${to} 的动作，演示和做对后的画面都用它`,
     });
     return;
@@ -622,6 +636,146 @@ function checkTry(def: SceneDef, si: number, alive: Map<string, string>, out: Co
       path: [...p, 'count'],
       message: `要孩子拖 ${count} 个，但 do 里的标准做法移过去的是 ${standard} 个`,
     });
+}
+
+function checkTap(
+  tap: TrySpec['tap'],
+  si: number,
+  alive: Map<string, string>,
+  objects: Props[],
+  scope: Record<string, unknown>,
+  out: ConfigIssue[],
+) {
+  if (!tap) return;
+  const path = ['steps', si, 'try', 'tap'];
+
+  if (!tap.answer && (!tap.valid || tap.pick === undefined)) {
+    out.push({
+      path,
+      message: 'tap 要写指定答案（answer）或按条件点（valid 与 pick）',
+    });
+    return;
+  }
+
+  // 1. 检查 among
+  if (tap.among) {
+    if (!Array.isArray(tap.among) || tap.among.length === 0) {
+      out.push({ path: [...path, 'among'], message: 'among 写子项或零件列表，如 ["grid1.row.*"]' });
+    } else {
+      tap.among.forEach((pat: string, idx: number) => {
+        if (typeof pat !== 'string') return;
+        const { id, sub } = parseTargetRef(pat);
+        if (!alive.has(id)) {
+          out.push({ path: [...path, 'among', idx], message: `零件 ${id} 在这一步开头不存在` });
+        } else if (sub) {
+          const type = alive.get(id);
+          const part = type ? getPart(type) : undefined;
+          if (!part?.subitems) {
+            out.push({ path: [...path, 'among', idx], message: `${part?.name ?? id} 没有子项` });
+          } else {
+            const obj = objects.find((o) => o.id === id);
+            const props: Props = obj ? { ...part.defaults, ...(part.normalize?.(obj) ?? obj) } : {};
+            const found = findSubitem(part, props, sub);
+            if (!found || (Array.isArray(found) && found.length === 0)) {
+              out.push({ path: [...path, 'among', idx], message: `零件 ${id} 没有子项 ${sub}` });
+            }
+          }
+        }
+      });
+    }
+  }
+
+  // 2. 检查指定答案（answer）
+  if (tap.answer !== undefined) {
+    const answers = Array.isArray(tap.answer) ? tap.answer : [tap.answer];
+    if (answers.length === 0) {
+      out.push({ path: [...path, 'answer'], message: 'answer 不能为空' });
+    }
+    answers.forEach((ans: string | number, idx: number) => {
+      const ansStr = String(ans);
+      const { id, sub } = parseTargetRef(ansStr);
+      const ansPath = Array.isArray(tap.answer) ? [...path, 'answer', idx] : [...path, 'answer'];
+      if (!alive.has(id)) {
+        out.push({ path: ansPath, message: `零件 ${id} 在这一步开头不存在` });
+      } else if (sub) {
+        const type = alive.get(id);
+        const part = type ? getPart(type) : undefined;
+        if (!part?.subitems) {
+          out.push({ path: ansPath, message: `${part?.name ?? id} 没有子项` });
+        } else {
+          const obj = objects.find((o) => o.id === id);
+          const props: Props = obj ? { ...part.defaults, ...(part.normalize?.(obj) ?? obj) } : {};
+          const found = findSubitem(part, props, sub);
+          if (!found || (Array.isArray(found) && found.length === 0)) {
+            out.push({ path: ansPath, message: `零件 ${id} 没有子项 ${sub}` });
+          }
+        }
+      }
+      if (tap.among && tap.among.length > 0) {
+        const inAmong = tap.among.some((pat: string) => matchPattern(pat, ansStr));
+        if (!inAmong) {
+          out.push({ path: ansPath, message: `答案 ${ansStr} 不在 among 允许的范围内` });
+        }
+      }
+    });
+  }
+
+  // 3. 检查按条件点（valid 和 pick）
+  if (tap.valid !== undefined || tap.pick !== undefined) {
+    const pick = Number(tap.pick);
+    if (!Number.isFinite(pick) || pick < 1 || !Number.isInteger(pick)) {
+      out.push({ path: [...path, 'pick'], message: 'pick 写需要点选的个数（正整数）' });
+    }
+    if (!tap.valid || typeof tap.valid !== 'string') {
+      out.push({ path: [...path, 'valid'], message: 'valid 写判定条件的算式，如 "{n % 2 == 0}"' });
+    } else {
+      const eligibleSubitems: { id: string; name: string; value?: number }[] = [];
+      for (const obj of objects) {
+        if (!alive.has(obj.id as string)) continue;
+        const type = alive.get(obj.id as string);
+        const part = type ? getPart(type) : undefined;
+        if (!part?.subitems) continue;
+        const props: Props = { ...part.defaults, ...(part.normalize?.(obj) ?? obj) };
+        const subs = part.subitems(props);
+        for (const sub of subs) {
+          const fullName = `${obj.id}.${sub.name}`;
+          if (
+            !tap.among ||
+            tap.among.some((pat: string) => matchPattern(pat, fullName) || matchPattern(pat, sub.name))
+          ) {
+            eligibleSubitems.push({ id: obj.id as string, name: sub.name, value: sub.value });
+          }
+        }
+      }
+      let matchCount = 0;
+      for (const sub of eligibleSubitems) {
+        const val =
+          sub.value ??
+          (() => {
+            const last = sub.name.split('.').pop();
+            const n = Number(last);
+            return Number.isFinite(n) ? n : undefined;
+          })();
+        if (val !== undefined) {
+          const evalScope: Record<string, number> = {};
+          for (const [k, v] of Object.entries(scope)) {
+            if (typeof v === 'number') evalScope[k] = v;
+          }
+          evalScope.n = val;
+          const r = evalExpr(tap.valid, evalScope);
+          if (r !== undefined && r !== 0) {
+            matchCount++;
+          }
+        }
+      }
+      if (Number.isFinite(pick) && pick >= 1 && matchCount < pick) {
+        out.push({
+          path: [...path, 'valid'],
+          message: `满足条件的子项只有 ${matchCount} 个，少于 pick 要求的 ${pick} 个`,
+        });
+      }
+    }
+  }
 }
 
 /** 点选（choose）做错提示：检查 show 里引用的零件或子项是否存在 */

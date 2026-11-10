@@ -1,0 +1,97 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: cardinal-ordinal
+title: 几个和第几个
+summary: “几个”是一共几个，“第几个”只是其中一个
+status: draft
+duration: 1分钟
+tags: [几个, 第几个, 基数, 序数, 排队]
+recommended: true
+cover: { text: 第3 }
+
+template: scene
+stage: { width: 800, height: 360 }
+
+objects:
+  - id: c1
+    type: shape
+    shape: circle
+    radius: 24
+    color: blue
+    at: [160, 180]
+  - id: c2
+    type: shape
+    shape: circle
+    radius: 24
+    color: blue
+    at: [240, 180]
+  - id: c3
+    type: shape
+    shape: circle
+    radius: 24
+    color: blue
+    at: [320, 180]
+  - id: c4
+    type: shape
+    shape: circle
+    radius: 24
+    color: blue
+    at: [400, 180]
+  - id: c5
+    type: shape
+    shape: circle
+    radius: 24
+    color: blue
+    at: [480, 180]
+  - id: arrow
+    type: arrow
+    from: [130, 240]
+    to: [510, 240]
+    color: dim
+  - id: t1
+    type: label
+    text: 3 个
+    at: [640, 100]
+    hidden: true
+  - id: t2
+    type: label
+    text: 第 3 个
+    at: [640, 100]
+    hidden: true
+
+steps:
+  - title: 排好队
+    say: 圆片排好队，从左往右数。
+    do:
+      - highlight: arrow
+
+  - title: 几个
+    say: 前 3 个，要把前 3 个都圈起来。
+    do:
+      - show: t1
+      - highlight: [c1, c2, c3]
+
+  - title: 第几个
+    say: 第 3 个，只是其中的一个。
+    do:
+      - hide: t1
+      - show: t2
+      - ask: true
+      - highlight: c3
+    try:
+      task: 点出从左数第 3 个圆片。
+      tap:
+        answer: c3
+        among: [c1, c2, c3, c4, c5]
+      hints:
+        - 从左边第一个开始数。
+        - 看亮起来的第 3 个圆片。
+
+  - title: 比一比
+    say: “3 个”是一共有 3 个，“第 3 个”只有一个。
+    do:
+      - highlight: c3
+
+keyPoints:
+  - “几个”表示一共有多少
+  - “第几个”表示排在哪个位置，只指其中一个
+  - 从不同方向数，第几个会不一样

@@ -58,7 +58,7 @@ export interface TrySpec {
    */
   drag?: { from: string; to: string | string[]; count: number | string; each?: number | string };
   choose?: ChooseSpec;
-  tap?: { answer?: string[] | string; among?: string[]; pick?: number | string; valid?: string };
+  tap?: { answer?: (string | number)[] | string | number; among?: string[]; pick?: number | string; valid?: string };
   turn?: {
     target: string;
     prop: string;
@@ -66,6 +66,8 @@ export interface TrySpec {
     tolerance?: number | string;
     step?: number | string;
   };
+  sort?: Record<string, unknown>;
+  place?: Record<string, unknown>;
   hints?: string[];
 }
 
@@ -93,6 +95,8 @@ export interface StageTry {
   tapped?: string[];
   /** 把手当前的转动数值 */
   turnValue?: number;
+  /** 刚点错或操作错的目标（抖动反馈） */
+  wrong?: string;
 }
 
 /** 知识点配置里与模板有关的部分（结构与 packages/content 的 lesson 一致，这里不依赖 content） */

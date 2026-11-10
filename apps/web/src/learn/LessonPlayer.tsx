@@ -14,7 +14,11 @@ import {
   type Animation,
   type ChooseValue,
   t,
+  tapDemoAnswers,
+  tapResult,
+  type TapSubitem,
 } from '@flow-see/core';
+import { getPart } from '@flow-see/blocks';
 import { useTimeline } from '@flow-see/runtime/player/useTimeline.ts';
 import { isSpeechSupported, speak } from '@flow-see/runtime/services/speech.ts';
 import { useSettings } from '@flow-see/runtime/store/settings.ts';
@@ -38,6 +42,8 @@ interface TryProgress {
   placed: string[];
   /** 多选：已经选对的选项 */
   picked: string[];
+  /** 点选零件（tap）：已点对的子项/零件 */
+  tapped: string[];
   misses: number;
   /** 字幕下方的反馈：提示、“看我做一遍”等 */
   note: string;
@@ -49,11 +55,14 @@ interface TryProgress {
   reveal: boolean;
   /** 点选：刚选错的那一项（标红、晃一下） */
   wrong?: string;
+  /** 点选零件（tap）：刚点错的那一项（抖动） */
+  wrongTap?: string;
 }
 const freshTry = (key: string): TryProgress => ({
   moved: [],
   placed: [],
   picked: [],
+  tapped: [],
   misses: 0,
   note: '',
   demo: null,
@@ -227,6 +236,7 @@ export function LessonPlayer({
     const misses = tp.misses + 1;
     if (misses >= handsOn.demoAfterMisses) return startDemo(misses);
     const choosing = !!spec.choose;
+    const tapping = !!spec.tap;
     const text =
       note ??
       spec.hints?.[misses - 1] ??
@@ -236,7 +246,9 @@ export function LessonPlayer({
           : t('handsOn.target')
         : choosing
           ? t('handsOn.choose_miss')
-          : t('handsOn.miss'));
+          : tapping
+            ? t('try.tap_wrong')
+            : t('handsOn.miss'));
     setTp({ ...tp, ...extra, misses, note: text });
     say(text);
   };
@@ -259,6 +271,84 @@ export function LessonPlayer({
     }
     miss({});
   };
+  // 点选零件（tap）：收集当前零件与子项，判定点中是否正确
+  const tapSpec = spec?.tap;
+  const stageSubitems = useMemo<TapSubitem[]>(() => {
+    if (!tapSpec) return [];
+    const items: TapSubitem[] = [];
+    const objs = (animation.config?.objects ?? []) as Record<string, unknown>[];
+    for (const o of objs) {
+      const part = getPart(String(o.type));
+      if (!part) continue;
+      const id = String(o.id ?? '');
+      if (part.subitems) {
+        const subs = part.subitems(o);
+        for (const s of subs) {
+          items.push({ id, name: s.name, value: s.value });
+        }
+      } else {
+        const val =
+          typeof o.value === 'number'
+            ? o.value
+            : typeof o.val === 'number'
+              ? o.val
+              : undefined;
+        items.push({ id, name: id, value: val });
+      }
+    }
+    return items;
+  }, [tapSpec, animation]);
+
+  const tapTotalNeed = useMemo(() => {
+    if (!tapSpec) return 0;
+    if (tapSpec.answer) {
+      return Array.isArray(tapSpec.answer) ? tapSpec.answer.length : 1;
+    }
+    if (tapSpec.pick !== undefined) {
+      return Math.max(1, Math.round(Number(tapSpec.pick)));
+    }
+    return 1;
+  }, [tapSpec]);
+
+  const demoAnswers = useMemo(() => {
+    if (!tapSpec) return [];
+    return tapDemoAnswers(
+      tapSpec,
+      stageSubitems,
+      (animation.params ?? {}) as Record<string, number>,
+    );
+  }, [tapSpec, stageSubitems, animation]);
+
+  const onTap = (id: string, sub?: string) => {
+    if (!spec || !tapSpec) return;
+    begin();
+    const target = sub ? `${id}.${sub}` : id;
+    const res = tapResult(
+      tapSpec,
+      target,
+      tp.tapped,
+      stageSubitems,
+      (animation.params ?? {}) as Record<string, number>,
+    );
+    if (res.status === 'ignored' || res.status === 'repeat') return;
+    if (res.status === 'wrong') {
+      miss({ wrongTap: target }, t('try.tap_wrong'));
+      return;
+    }
+    if (res.correct) {
+      const newTapped = res.tapped;
+      const leftCount = tapTotalNeed - newTapped.length;
+      if (res.solved) {
+        setTp({ ...tp, tapped: newTapped, note: '', wrongTap: undefined });
+        dispatch({ type: 'solve' });
+        return;
+      }
+      const note = t('try.tap_more', { n: leftCount });
+      setTp({ ...tp, tapped: newTapped, note, wrongTap: undefined });
+      say(note);
+    }
+  };
+
   // 点选：选项打乱顺序（每次进入这一步重新打乱）；选对 → 做对了，选错 → 逐级引导
   const choose = spec?.choose;
   const multi = !!choose && isMultiChoose(choose);
@@ -286,18 +376,29 @@ export function LessonPlayer({
     }
     miss({ wrong: String(v) });
   };
-  // 多选、一个一个分：孩子停下来太久还没做完，提示还差几个（每次操作后重新计时）
+  // 多选、一个一个分、tap点选：孩子停下来太久还没做完，提示还差几个（每次操作后重新计时）
   const doingNow = !!spec && state.waiting && tp.demo === null;
   const left = multi
     ? answerCount - tp.picked.length
     : targets.length > 1
       ? need - tp.moved.length
-      : 0;
-  const remindKey = `${tryKey}:${tp.picked.length}:${tp.moved.length}:${tp.misses}`;
+      : tapSpec
+        ? tapTotalNeed - tp.tapped.length
+        : 0;
+  const remindKey = `${tryKey}:${tp.picked.length}:${tp.moved.length}:${tp.tapped.length}:${tp.misses}`;
   useEffect(() => {
-    if (!doingNow || left <= 0 || (!multi && targets.length < 2)) return;
+    if (
+      !doingNow ||
+      left <= 0 ||
+      (!multi && targets.length < 2 && (!tapSpec || tapTotalNeed < 2))
+    )
+      return;
     const timer = window.setTimeout(() => {
-      const note = multi ? t('handsOn.multi_remind', { left }) : t('handsOn.deal_remind', { left });
+      const note = multi
+        ? t('handsOn.multi_remind', { left })
+        : tapSpec
+          ? t('try.tap_more', { n: left })
+          : t('handsOn.deal_remind', { left });
       setTp((x) => (x.key === tryKey ? { ...x, note } : x));
       say(note);
     }, handsOn.remindMs);
@@ -307,6 +408,16 @@ export function LessonPlayer({
   }, [remindKey, doingNow]);
   // 看我做一遍：按标准做法（do）放一遍这一步，停一会儿再让孩子自己做
   const demoing = tp.demo !== null;
+  const demoTapped = useMemo(() => {
+    if (!demoing || !spec?.tap || demoAnswers.length === 0) return [];
+    const p = tp.demo ?? 0;
+    const count = Math.min(
+      demoAnswers.length,
+      Math.floor(p * (demoAnswers.length + 0.5)),
+    );
+    return demoAnswers.slice(0, count);
+  }, [demoing, spec?.tap, demoAnswers, tp.demo]);
+
   useEffect(() => {
     if (!demoing) return;
     const ms = (template.motionMs?.(animation, state.index) ?? 0) / state.speed;
@@ -341,18 +452,30 @@ export function LessonPlayer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demoing]);
   const tryIt: StageTry | undefined =
-    !spec || demoing
+    !spec
       ? undefined
-      : state.waiting
-        ? {
-            phase: 'doing',
-            moved: tp.moved,
-            placed: tp.placed,
-            progress: state.progress,
-            showTarget: tp.misses >= handsOn.targetAfterMisses,
-            onDrop,
-          }
-        : { phase: 'solved' };
+      : demoing
+        ? spec.tap
+          ? {
+              phase: 'doing',
+              tap: spec.tap,
+              tapped: demoTapped,
+            }
+          : undefined
+        : state.waiting
+          ? {
+              phase: 'doing',
+              moved: tp.moved,
+              placed: tp.placed,
+              tapped: tp.tapped,
+              wrong: tp.wrongTap,
+              tap: spec.tap,
+              onTap,
+              progress: state.progress,
+              showTarget: tp.misses >= handsOn.targetAfterMisses,
+              onDrop,
+            }
+          : { phase: 'solved' };
   const doing = !!spec && state.waiting;
   // 字幕下方的一行反馈（提示、已放好几个）；没有就不占地方
   const noteText =

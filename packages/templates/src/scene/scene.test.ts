@@ -587,6 +587,35 @@ describe('SceneView subitems tap and handles turn', () => {
     expect(htmlNoTap).not.toContain('data-tap-sub');
   });
 
+  it('renders hit rects for whole objects without subitems and supports wrong feedback', () => {
+    const shapeScene: SceneDef = {
+      stage: { width: 800, height: 450 },
+      objects: [
+        { id: 'c1', type: 'shape', shape: 'circle', size: 40, at: [100, 100] },
+        { id: 'c2', type: 'shape', shape: 'circle', size: 40, at: [160, 100] },
+      ],
+      steps: [[]],
+    };
+
+    const html = renderToStaticMarkup(
+      createElement(SceneView, {
+        def: shapeScene,
+        animation: dummyAnim,
+        index: 0,
+        theme,
+        tryIt: {
+          phase: 'doing',
+          tap: { among: ['c1', 'c2'] },
+          wrong: 'c1',
+          tapped: ['c2'],
+        },
+      }),
+    );
+    expect(html).toContain('data-tap-part="c1"');
+    expect(html).toContain('data-tap-part="c2"');
+    expect(html).toContain('data-tap-wrong="true"');
+  });
+
   it('renders turn handle when tryIt.turn is present', () => {
     const htmlWithTurn = renderToStaticMarkup(
       createElement(SceneView, {
@@ -1494,5 +1523,154 @@ describe('沿路径移动（follow）', () => {
       ],
     });
     expect(badDrawIssues.some((issue) => issue.message.includes('draw'))).toBe(true);
+  });
+
+  describe('配置检查（checkScene）校验 tap 动手方式', () => {
+    const baseGrid = {
+      id: 'grid1',
+      type: 'grid',
+      rows: 3,
+      cols: 3,
+      cell: 20,
+      at: [100, 100],
+    };
+
+    it('合法的指定答案 tap 通过检查', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [baseGrid],
+        steps: [
+          {
+            say: '点第 2 行',
+            try: {
+              task: '点出第 2 行',
+              tap: {
+                answer: 'grid1.row.2',
+                among: ['grid1.row.*'],
+              },
+            },
+          },
+        ],
+      });
+      expect(issues).toHaveLength(0);
+    });
+
+    it('答案不在 among 范围内报错', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [baseGrid],
+        steps: [
+          {
+            say: '点第 2 行',
+            try: {
+              task: '点出第 2 行',
+              tap: {
+                answer: 'grid1.row.2',
+                among: ['grid1.col.*'],
+              },
+            },
+          },
+        ],
+      });
+      expect(issues.some((i) => i.message.includes('不在 among 允许的范围内'))).toBe(true);
+    });
+
+    it('引用的零件不存在报错', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [baseGrid],
+        steps: [
+          {
+            say: '点不存在的零件',
+            try: {
+              task: '点点看',
+              tap: {
+                answer: 'nonexistent.row.1',
+              },
+            },
+          },
+        ],
+      });
+      expect(issues.some((i) => i.message.includes('nonexistent 在这一步开头不存在'))).toBe(true);
+    });
+
+    it('引用的子项不存在报错', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [baseGrid],
+        steps: [
+          {
+            say: '点不存在的行',
+            try: {
+              task: '点第 9 行',
+              tap: {
+                answer: 'grid1.row.9',
+              },
+            },
+          },
+        ],
+      });
+      expect(issues.some((i) => i.message.includes('没有子项 row.9'))).toBe(true);
+    });
+
+    it('按条件点选：满足 valid 条件的子项数满足 pick 时通过', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'chart',
+            type: 'grid',
+            rows: 4,
+            cols: 1,
+            cell: 20,
+            at: [100, 100],
+          },
+        ],
+        steps: [
+          {
+            say: '点 2 行',
+            try: {
+              task: '点 2 行',
+              tap: {
+                pick: 2,
+                among: ['chart.row.*'],
+                valid: '{1 == 1}',
+              },
+            },
+          },
+        ],
+      });
+      expect(issues).toHaveLength(0);
+    });
+
+    it('按条件点选：满足条件的子项数不足 pick 时报错', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'chart',
+            type: 'grid',
+            rows: 2,
+            cols: 1,
+            cell: 20,
+            at: [100, 100],
+          },
+        ],
+        steps: [
+          {
+            say: '点 5 行',
+            try: {
+              task: '点 5 行',
+              tap: {
+                pick: 5,
+                among: ['chart.row.*'],
+                valid: '{1 == 1}',
+              },
+            },
+          },
+        ],
+      });
+      expect(issues.some((i) => i.message.includes('少于 pick 要求的 5 个'))).toBe(true);
+    });
   });
 });

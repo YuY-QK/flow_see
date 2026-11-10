@@ -9,9 +9,10 @@ import {
   type Handle,
   type PartContext,
   type Point,
+  type Subitem,
 } from '@flow-see/blocks';
 import type { StageProps } from '@flow-see/runtime/template.ts';
-import { t } from '@flow-see/core';
+import { evalExpr, t } from '@flow-see/core';
 import {
   axisTransformMatrix,
   dragFrame,
@@ -190,23 +191,69 @@ export function SceneView({
     return obj;
   });
 
+  const isReducedMotion =
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
   const subHints = useMemo(() => {
-    if (!doing || !tryIt?.showTarget || !spec?.choose?.show) return [];
+    if (!doing || !tryIt?.showTarget) return [];
     const res: SubHighlight[] = [];
-    for (const item of spec.choose.show) {
-      const { id, sub } = parseTargetRef(item);
-      if (!sub) continue;
-      const obj = objects.find((o) => o.id === id);
-      const part = obj ? getPart(obj.type) : undefined;
-      if (!part || !obj) continue;
-      const found = findSubitem(part, obj.props, sub);
-      const items = Array.isArray(found) ? found : found ? [found] : [];
-      for (const it of items) {
-        res.push({ id, name: it.name, box: it.box, value: it.value });
+    if (spec?.choose?.show) {
+      for (const item of spec.choose.show) {
+        const { id, sub } = parseTargetRef(item);
+        if (!sub) continue;
+        const obj = objects.find((o) => o.id === id);
+        const part = obj ? getPart(obj.type) : undefined;
+        if (!part || !obj) continue;
+        const found = findSubitem(part, obj.props, sub);
+        const items = Array.isArray(found) ? found : found ? [found] : [];
+        for (const it of items) {
+          res.push({ id, name: it.name, box: it.box, value: it.value });
+        }
+      }
+    }
+    if (spec?.tap) {
+      if (spec.tap.answer) {
+        const answers = Array.isArray(spec.tap.answer) ? spec.tap.answer : [spec.tap.answer];
+        for (const ans of answers) {
+          const { id, sub } = parseTargetRef(String(ans));
+          const obj = objects.find((o) => o.id === id);
+          const part = obj ? getPart(obj.type) : undefined;
+          if (!part || !obj) continue;
+          if (sub && part.subitems) {
+            const found = findSubitem(part, obj.props, sub);
+            const items = Array.isArray(found) ? found : found ? [found] : [];
+            for (const it of items) {
+              res.push({ id, name: it.name, box: it.box, value: it.value });
+            }
+          } else {
+            res.push({ id, name: sub ?? '', box: part.bbox(obj.props) });
+          }
+        }
+      } else if (spec.tap.valid && spec.tap.pick !== undefined) {
+        const pick = Math.max(1, Math.round(Number(spec.tap.pick)));
+        const params = (animation.params ?? {}) as Record<string, number>;
+        for (const obj of objects) {
+          const part = getPart(obj.type);
+          if (!part) continue;
+          const subs: Subitem[] = part.subitems
+            ? part.subitems(obj.props)
+            : [{ name: '', box: part.bbox(obj.props), value: (obj.props.value as number) ?? undefined }];
+          for (const it of subs) {
+            if (it.value !== undefined) {
+              const r = evalExpr(spec.tap.valid, { ...params, n: it.value });
+              if (r !== undefined && r !== 0) {
+                res.push({ id: obj.id, name: it.name, box: it.box, value: it.value });
+                if (res.length >= pick) break;
+              }
+            }
+          }
+          if (res.length >= pick) break;
+        }
       }
     }
     return res;
-  }, [doing, tryIt?.showTarget, spec?.choose?.show, objects]);
+  }, [doing, tryIt?.showTarget, spec?.choose?.show, spec?.tap, objects, animation.params]);
 
   const allSubHighlights = useMemo(
     () => [...(frame.subHighlights ?? []), ...subHints],
@@ -280,20 +327,38 @@ export function SceneView({
             strokeWidth={strokeWidth}
             strokeDasharray={dash}
             style={{ pointerEvents: 'none' }}
-          />
+          >
+            {doing && tryIt?.showTarget && !isReducedMotion ? (
+              <animate
+                attributeName="opacity"
+                values={`1;${sceneStyle().blank.minOpacity};1`}
+                dur={`${sceneStyle().blank.seconds}s`}
+                repeatCount="indefinite"
+              />
+            ) : null}
+          </rect>
         );
       })}
 
       {isTapping
         ? objects.map((o) => {
             const part = getPart(o.type);
-            if (!part?.subitems) return null;
-            const subs = part.subitems(o.props);
+            if (!part) return null;
+            const subs: Subitem[] = part.subitems
+              ? part.subitems(o.props)
+              : [
+                  {
+                    name: '',
+                    box: part.bbox(o.props),
+                    label: (o.props.label as string) ?? o.id,
+                    value: (o.props.value as number) ?? (o.props.val as number) ?? undefined,
+                  },
+                ];
             const tapSpec = typeof tryIt?.tap === 'object' ? tryIt.tap : spec?.tap;
             const among = tapSpec?.among;
             const pad = sceneStyle().tryIt.tapPadding;
             return subs.map((sub) => {
-              const fullName = `${o.id}.${sub.name}`;
+              const fullName = sub.name ? `${o.id}.${sub.name}` : o.id;
               const clickable =
                 !sub.disabled &&
                 (!among ||
@@ -308,29 +373,38 @@ export function SceneView({
                             .join('.*') +
                           '$',
                       );
-                      return re.test(sub.name) || re.test(fullName);
+                      return re.test(sub.name) || re.test(fullName) || re.test(o.id);
                     }
                     return false;
                   }));
               if (!clickable) return null;
               const isTapped = Boolean(
-                tryIt?.tapped?.includes(`${o.id}.${sub.name}`) ||
-                  tryIt?.tapped?.includes(sub.name),
+                tryIt?.tapped?.includes(fullName) ||
+                  tryIt?.tapped?.includes(o.id) ||
+                  (sub.name && tryIt?.tapped?.includes(sub.name)),
               );
+              const isWrong = Boolean(
+                tryIt?.wrong &&
+                  (tryIt.wrong === fullName ||
+                    tryIt.wrong === o.id ||
+                    (sub.name && tryIt.wrong === sub.name)),
+              );
+              const targetName = sub.name || undefined;
               return (
                 <g
-                  key={`tap-${o.id}-${sub.name}`}
+                  key={`tap-${o.id}-${sub.name || 'self'}`}
                   role="button"
                   tabIndex={0}
-                  aria-label={t('a11y.subitem', { name: sub.label ?? sub.name })}
+                  aria-label={t('a11y.subitem', { name: sub.label ?? sub.name ?? o.id })}
                   style={{ cursor: 'pointer' }}
                   data-tap-part={o.id}
-                  data-tap-sub={sub.name}
-                  onClick={() => tryIt?.onTap?.(o.id, sub.name)}
+                  data-tap-sub={targetName}
+                  data-tap-wrong={isWrong ? 'true' : undefined}
+                  onClick={() => tryIt?.onTap?.(o.id, targetName)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      tryIt?.onTap?.(o.id, sub.name);
+                      tryIt?.onTap?.(o.id, targetName);
                     }
                   }}
                 >

@@ -8,5 +8,6 @@ export * from './timeline';
 export * from './params';
 export * from './texts';
 export * from './choose';
+export * from './tap';
 export * from './format';
 export * from './fill';
