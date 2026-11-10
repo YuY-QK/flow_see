@@ -2289,4 +2289,207 @@ describe('沿路径移动（follow）', () => {
     });
   });
 
+
+  describe('方格扩展 (X8) 配置检查', () => {
+    it('objects 中 filled 与 cells 同时写报错', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'g1',
+            type: 'grid',
+            rows: 3,
+            cols: 3,
+            cell: 40,
+            filled: 3,
+            cells: [[1, 1]],
+            at: [100, 100],
+          },
+        ],
+        steps: [{ say: '看方格', do: [{ wait: '1s' }] }],
+      });
+      expect(issues.map((i) => i.message).join('\n')).toMatch(/cells 和 filled 二者写一个/);
+    });
+
+    it('set 动作中 filled 与 cells 同时写报错', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'g1',
+            type: 'grid',
+            rows: 3,
+            cols: 3,
+            cell: 40,
+            at: [100, 100],
+          },
+        ],
+        steps: [
+          {
+            say: '涂色',
+            do: [{ set: { target: 'g1', filled: 2, cells: [[1, 1]] } }],
+          },
+        ],
+      });
+      expect(issues.map((i) => i.message).join('\n')).toMatch(/cells 和 filled 二者写一个/);
+    });
+
+    it('原零件使用 cells 时 set filled 报错，原零件使用 filled 时 set cells 报错', () => {
+      const issues1 = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'g1',
+            type: 'grid',
+            rows: 3,
+            cols: 3,
+            cell: 40,
+            cells: [[1, 1]],
+            at: [100, 100],
+          },
+        ],
+        steps: [
+          {
+            say: '改 filled',
+            do: [{ set: { target: 'g1', filled: 3 } }],
+          },
+        ],
+      });
+      expect(issues1.map((i) => i.message).join('\n')).toMatch(/方格已使用 cells，不能再设置 filled/);
+
+      const issues2 = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'g2',
+            type: 'grid',
+            rows: 3,
+            cols: 3,
+            cell: 40,
+            filled: 1,
+            at: [100, 100],
+          },
+        ],
+        steps: [
+          {
+            say: '改 cells',
+            do: [{ set: { target: 'g2', cells: [[1, 2]] } }],
+          },
+        ],
+      });
+      expect(issues2.map((i) => i.message).join('\n')).toMatch(/方格已使用 filled，不能再设置 cells/);
+    });
+
+    it('cells 格式非法或越界时报错', () => {
+      // 1. cells 不是列表
+      const badType = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'g',
+            type: 'grid',
+            rows: 3,
+            cols: 3,
+            cell: 40,
+            cells: 'invalid' as never,
+            at: [100, 100],
+          },
+        ],
+        steps: [{ say: '看', do: [{ wait: '1s' }] }],
+      });
+      expect(badType.map((i) => i.message).join('\n')).toMatch(/cells 必须是坐标列表/);
+
+      // 2. 坐标从 1 开始，[0, 1] 报错
+      const zeroCoord = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'g',
+            type: 'grid',
+            rows: 3,
+            cols: 3,
+            cell: 40,
+            cells: [[0, 1]],
+            at: [100, 100],
+          },
+        ],
+        steps: [{ say: '看', do: [{ wait: '1s' }] }],
+      });
+      expect(zeroCoord.map((i) => i.message).join('\n')).toMatch(/格子坐标写成 \[行, 列\]，从 1 开始/);
+
+      // 3. 行号超出 rows 范围
+      const rowOut = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'g',
+            type: 'grid',
+            rows: 3,
+            cols: 4,
+            cell: 40,
+            cells: [[4, 2]],
+            at: [100, 100],
+          },
+        ],
+        steps: [{ say: '看', do: [{ wait: '1s' }] }],
+      });
+      expect(rowOut.map((i) => i.message).join('\n')).toMatch(/行号 4 超出方格总行数 3/);
+
+      // 4. 列号超出 cols 范围
+      const colOut = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'g',
+            type: 'grid',
+            rows: 3,
+            cols: 4,
+            cell: 40,
+            cells: [[2, 5]],
+            at: [100, 100],
+          },
+        ],
+        steps: [{ say: '看', do: [{ wait: '1s' }] }],
+      });
+      expect(colOut.map((i) => i.message).join('\n')).toMatch(/列号 5 超出方格总列数 4/);
+    });
+
+    it('合法 cells 配置检查通过', () => {
+      const ok = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'g',
+            type: 'grid',
+            rows: 3,
+            cols: 4,
+            cell: 40,
+            cells: [
+              [1, 1],
+              [2, 3],
+              [3, 4],
+            ],
+            at: [100, 100],
+          },
+        ],
+        steps: [
+          {
+            say: '看',
+            do: [
+              {
+                set: {
+                  target: 'g',
+                  cells: [
+                    [1, 2],
+                    [2, 2],
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      });
+      expect(ok).toEqual([]);
+    });
+  });
 });

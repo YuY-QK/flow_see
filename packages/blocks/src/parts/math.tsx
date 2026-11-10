@@ -1120,7 +1120,7 @@ export const gridPart: PartDef = {
   type: 'grid',
   name: '方格',
   anchor: 'start',
-  props: ['rows', 'cols', 'cell', 'filled'],
+  props: ['rows', 'cols', 'cell', 'filled', 'cells'],
   bbox(p) {
     const [x, y] = pt(p.at);
     const cell = num(p.cell, 0);
@@ -1161,15 +1161,42 @@ export const gridPart: PartDef = {
     const cell = num(p.cell, 0);
     const filled = Math.max(0, num(p.filled, 0));
     const fill = color(p.color, ctx.theme, 'green');
+    const hasCells = Array.isArray(p.cells);
+    const cellSet = hasCells
+      ? new Set(
+          (p.cells as unknown[])
+            .filter((item): item is [unknown, unknown] => Array.isArray(item) && item.length === 2)
+            .map(([r, c]) => `${Math.round(num(r, 0))},${Math.round(num(c, 0))}`),
+        )
+      : null;
+    const subColors =
+      p._subColors && typeof p._subColors === 'object'
+        ? (p._subColors as Record<string, string>)
+        : undefined;
+
     return (
       <g>
         {Array.from({ length: rows * cols }, (_, i) => {
-          const amount = Math.max(0, Math.min(1, filled - i));
+          const r = Math.floor(i / cols) + 1;
+          const c = (i % cols) + 1;
+          const isColored = cellSet ? cellSet.has(`${r},${c}`) : false;
+          const amount = cellSet ? (isColored ? 1 : 0) : Math.max(0, Math.min(1, filled - i));
+          const cellColor = subColors
+            ? color(
+                subColors[`cell.${r}.${c}`] ??
+                  subColors[`row.${r}`] ??
+                  subColors[`col.${c}`] ??
+                  p.color,
+                ctx.theme,
+                'green',
+              )
+            : fill;
+
           return (
             <g key={i}>
               <rect
-                x={x + (i % cols) * cell}
-                y={y + Math.floor(i / cols) * cell}
+                x={x + (c - 1) * cell}
+                y={y + (r - 1) * cell}
                 width={cell}
                 height={cell}
                 fill={ctx.theme.stageBg}
@@ -1178,12 +1205,12 @@ export const gridPart: PartDef = {
               />
               {amount > 0 ? (
                 <rect
-                  x={x + (i % cols) * cell + 3}
-                  y={y + Math.floor(i / cols) * cell + 3}
-                  width={cell - 6}
-                  height={cell - 6}
+                  x={x + (c - 1) * cell + 3}
+                  y={y + (r - 1) * cell + 3}
+                  width={Math.max(0, cell - 6)}
+                  height={Math.max(0, cell - 6)}
                   rx={4}
-                  fill={fill}
+                  fill={cellColor}
                   opacity={amount}
                 />
               ) : null}

@@ -58,6 +58,12 @@ function checkProps(
 ) {
   const part = getPart(type);
   if (!part) return;
+  if (type === 'grid' && props.filled !== undefined && props.cells !== undefined) {
+    out.push({
+      path: [...path, 'cells'],
+      message: '方格的 cells 和 filled 二者写一个，不能同时指定',
+    });
+  }
   const known = new Set<string>([...COMMON_PROPS, ...part.props]);
   for (const [k, v] of Object.entries(props)) {
     if (!known.has(k)) {
@@ -176,6 +182,40 @@ function checkProps(
     if (k === 'cut' && part.type === 'polygon') {
       if (!Array.isArray(v) || v.length !== 2 || !isPoint(v[0]) || !isPoint(v[1]))
         out.push({ path: [...path, k], message: '剪开线 cut 要写成两个坐标 [[x1, y1], [x2, y2]]' });
+    }
+    if (k === 'cells' && part.type === 'grid') {
+      if (!Array.isArray(v)) {
+        out.push({ path: [...path, k], message: 'cells 必须是坐标列表 [[行, 列], …]' });
+      } else {
+        v.forEach((item, idx) => {
+          if (
+            !Array.isArray(item) ||
+            item.length !== 2 ||
+            typeof item[0] !== 'number' ||
+            typeof item[1] !== 'number' ||
+            item[0] < 1 ||
+            item[1] < 1
+          ) {
+            out.push({
+              path: [...path, k, idx],
+              message: '格子坐标写成 [行, 列]，从 1 开始',
+            });
+          } else {
+            if (typeof props.rows === 'number' && item[0] > props.rows) {
+              out.push({
+                path: [...path, k, idx],
+                message: `行号 ${item[0]} 超出方格总行数 ${props.rows}`,
+              });
+            }
+            if (typeof props.cols === 'number' && item[1] > props.cols) {
+              out.push({
+                path: [...path, k, idx],
+                message: `列号 ${item[1]} 超出方格总列数 ${props.cols}`,
+              });
+            }
+          }
+        });
+      }
     }
   }
 }
@@ -481,6 +521,46 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
           for (const t of targets) {
             const tt = alive.get(t);
             if (tt) checkProps(tt, patch, [...path, verb], out, alive);
+            if (tt === 'grid') {
+              const orig = objects.find((o) => o.id === t);
+              if (orig) {
+                if (orig.cells !== undefined && patch.filled !== undefined) {
+                  out.push({
+                    path: [...path, verb, 'filled'],
+                    message: '方格已使用 cells，不能再设置 filled（二者写一个）',
+                  });
+                }
+                if (orig.filled !== undefined && patch.cells !== undefined) {
+                  out.push({
+                    path: [...path, verb, 'cells'],
+                    message: '方格已使用 filled，不能再设置 cells（二者写一个）',
+                  });
+                }
+                if (Array.isArray(patch.cells)) {
+                  (patch.cells as unknown[]).forEach((item, idx) => {
+                    if (
+                      Array.isArray(item) &&
+                      item.length === 2 &&
+                      typeof item[0] === 'number' &&
+                      typeof item[1] === 'number'
+                    ) {
+                      if (typeof orig.rows === 'number' && item[0] > orig.rows) {
+                        out.push({
+                          path: [...path, verb, 'cells', idx],
+                          message: `行号 ${item[0]} 超出方格总行数 ${orig.rows}`,
+                        });
+                      }
+                      if (typeof orig.cols === 'number' && item[1] > orig.cols) {
+                        out.push({
+                          path: [...path, verb, 'cells', idx],
+                          message: `列号 ${item[1]} 超出方格总列数 ${orig.cols}`,
+                        });
+                      }
+                    }
+                  });
+                }
+              }
+            }
           }
           break;
         }
