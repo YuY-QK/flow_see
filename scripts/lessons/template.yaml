@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 知识点唯一标识，小写字母、数字与连字符
+id: __ID__
+# 知识点标题，与课程目录保持一致
+title: __TITLE__
+# 一句话简介，说明学什么或怎么学
+summary: ''
+# 状态：draft（起草中）/ reviewed（走查通过）/ published（已发布）
+status: draft
+# 预计学习时长
+duration: 1分钟
+# 检索与推荐标签
+tags: []
+# 知识点卡片封面文案（画面加载前显示）
+cover: { text: '' }
+# 相关知识点 id 列表，最多 4 个
+related: []
+
+# 使用的模板类型：scene（场景模板）
+template: scene
+# 舞台尺寸（默认 800 × 450）
+stage: { width: 800, height: 450 }
+
+# 知识点参数定义与标准值
+params: {}
+
+# 舞台上的零件列表
+objects: []
+
+# 讲解与互动步骤列表
+steps: []
+
+# 本课核心要点总结（2–4 条）
+keyPoints: []

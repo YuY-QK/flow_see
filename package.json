@@ -18,6 +18,7 @@
     "typecheck": "tsc -b",
     "content:check": "pnpm --filter @flow-see/content check",
     "content:schema": "pnpm --filter @flow-see/content schema",
+    "lesson:new": "tsx scripts/lessons/new.ts",
     "server": "node server/index.mjs",
     "start": "node server/index.mjs",
     "cf:dev": "wrangler pages dev",
