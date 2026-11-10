@@ -31,7 +31,7 @@ describe('Part subitems and handles', () => {
     const props = { at: [200, 200], radius: 100, time: '3:00' };
     const handles = clockPart.handles?.(props);
     expect(handles).toBeDefined();
-    expect(handles).toHaveLength(1);
+    expect(handles).toHaveLength(2);
     const h = handles![0];
     expect(h.prop).toBe('time');
     expect(h.kind).toBe('rotate');

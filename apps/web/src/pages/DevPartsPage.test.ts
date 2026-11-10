@@ -43,7 +43,7 @@ describe('DevPartsPage', () => {
     expect(clock?.handles).toBeDefined();
 
     const handles = clock!.handles!({ at: [400, 225], radius: 130, time: 180 });
-    expect(handles).toHaveLength(1);
+    expect(handles).toHaveLength(2);
     expect(handles[0].prop).toBe('time');
     expect(handles[0].min).toBe(0);
     expect(handles[0].max).toBe(720);

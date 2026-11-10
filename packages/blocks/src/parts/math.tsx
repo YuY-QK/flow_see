@@ -487,20 +487,37 @@ export function parseClockTime(v: unknown): number | undefined {
   return Number(m[1]) * 60 + Number(m[2]);
 }
 
-/** 时针、分针的角度（度，12 点方向为 0，顺时针） */
-export function clockAngles(minutes: number): { hour: number; minute: number } {
-  return { hour: (minutes / 2) % 360, minute: (minutes * 6) % 360 };
+/** 时针、分针、秒针的角度（度，12 点方向为 0，顺时针） */
+export function clockAngles(
+  minutes: number,
+  seconds?: number,
+): { hour: number; minute: number; second?: number } {
+  const res: { hour: number; minute: number; second?: number } = {
+    hour: (minutes / 2) % 360,
+    minute: (minutes * 6) % 360,
+  };
+  if (seconds !== undefined) {
+    res.second = ((seconds * 6) % 360 + 360) % 360;
+  }
+  return res;
 }
 
 export const clockPart: PartDef = {
   type: 'clock',
   name: '钟面',
   anchor: 'center',
-  props: ['time', 'radius', 'numbers', 'ticks', 'hands', 'emphasis'],
+  props: ['time', 'radius', 'numbers', 'ticks', 'hands', 'emphasis', 'seconds', 'hour24'],
   normalize(p) {
-    if (p.time === undefined) return p;
-    const t = parseClockTime(p.time);
-    return t === undefined ? p : { ...p, time: t };
+    let next = p;
+    if (p.time !== undefined) {
+      const t = parseClockTime(p.time);
+      if (t !== undefined) next = { ...next, time: t };
+    }
+    if (p.seconds !== undefined) {
+      const s = typeof p.seconds === 'number' ? p.seconds : Number(p.seconds);
+      if (Number.isFinite(s)) next = { ...next, seconds: s };
+    }
+    return next;
   },
   bbox(p) {
     const [x, y] = pt(p.at);
@@ -511,14 +528,18 @@ export const clockPart: PartDef = {
     const [x, y] = pt(p.at);
     const r = num(p.radius, 0);
     const minutes = num(parseClockTime(p.time), 0);
-    const { minute } = clockAngles(minutes);
-    const rad = (minute * Math.PI) / 180;
-    const len = r * 0.78;
-    const at: Point = [x + Math.sin(rad) * len, y - Math.cos(rad) * len];
-    return [
-      {
+    const { hour, minute } = clockAngles(minutes);
+    const hands = str(p.hands, 'both');
+    const res: Handle[] = [];
+
+    // 分针把手（prop 'time'，已有）
+    if (hands !== 'hour') {
+      const radMin = (minute * Math.PI) / 180;
+      const minLen = r * 0.78;
+      const atMin: Point = [x + Math.sin(radMin) * minLen, y - Math.cos(radMin) * minLen];
+      res.push({
         prop: 'time',
-        at,
+        at: atMin,
         kind: 'rotate',
         center: [x, y],
         min: 0,
@@ -533,15 +554,73 @@ export const clockPart: PartDef = {
           const currentHour = Math.floor(minutes / 60);
           return currentHour * 60 + minuteOffset;
         },
-      },
-    ];
+      });
+    }
+
+    // 时针把手（prop 'time'，拖时针按 1 分钟 = 0.5° 换算，保持吸附到 step）
+    if (hands !== 'minute') {
+      const radHour = (hour * Math.PI) / 180;
+      const hourLen = r * 0.5;
+      const atHour: Point = [x + Math.sin(radHour) * hourLen, y - Math.cos(radHour) * hourLen];
+      res.push({
+        prop: 'time',
+        at: atHour,
+        kind: 'rotate',
+        center: [x, y],
+        min: 0,
+        max: 720,
+        valueAt(pointer: Point): number {
+          const dx = pointer[0] - x;
+          const dy = pointer[1] - y;
+          if (dx === 0 && dy === 0) return minutes;
+          let deg = (Math.atan2(dx, -dy) * 180) / Math.PI;
+          if (deg < 0) deg += 360;
+          let val = deg / 0.5;
+          if (minutes >= 720) {
+            val += 720;
+          } else if (minutes > 660 && val === 0) {
+            val = 720;
+          }
+          return val;
+        },
+      });
+    }
+
+    // 秒针把手（prop 'seconds'，写了就画秒针）
+    if (p.seconds !== undefined) {
+      const seconds = num(p.seconds, 0);
+      const { second = 0 } = clockAngles(minutes, seconds);
+      const radSec = (second * Math.PI) / 180;
+      const secLen = r * 0.78 * 1.1;
+      const atSec: Point = [x + Math.sin(radSec) * secLen, y - Math.cos(radSec) * secLen];
+      res.push({
+        prop: 'seconds',
+        at: atSec,
+        kind: 'rotate',
+        center: [x, y],
+        min: 0,
+        max: 60,
+        valueAt(pointer: Point): number {
+          const dx = pointer[0] - x;
+          const dy = pointer[1] - y;
+          if (dx === 0 && dy === 0) return seconds;
+          let deg = (Math.atan2(dx, -dy) * 180) / Math.PI;
+          if (deg < 0) deg += 360;
+          return deg / 6;
+        },
+      });
+    }
+
+    return res;
   },
   Render({ p, ctx }) {
     const [x, y] = pt(p.at);
     const r = num(p.radius, 0);
     const c = color(p.color, ctx.theme);
     const minutes = num(parseClockTime(p.time), 0);
-    const { hour, minute } = clockAngles(minutes);
+    const hasSeconds = p.seconds !== undefined && p.seconds !== null;
+    const seconds = hasSeconds ? num(p.seconds, 0) : undefined;
+    const { hour, minute, second } = clockAngles(minutes, seconds);
     const hands = str(p.hands, 'both');
     const emphasis = str(p.emphasis, 'none');
     const polar = (deg: number, len: number): [number, number] => [
@@ -554,6 +633,8 @@ export const clockPart: PartDef = {
         <line x1={x} y1={y} x2={hx} y2={hy} stroke={fill} strokeWidth={w} strokeLinecap="round" />
       );
     };
+    const secColor = color('red', ctx.theme);
+    const dimColor = color('dim', ctx.theme);
     return (
       <g>
         <circle cx={x} cy={y} r={r} fill={ctx.theme.stageBg} stroke={c} strokeWidth={5} />
@@ -578,7 +659,8 @@ export const clockPart: PartDef = {
           : null}
         {p.numbers !== false
           ? Array.from({ length: 12 }, (_, i) => {
-              const [nx, ny] = polar((i + 1) * 30, r - 38);
+              const numR = p.hour24 ? r - 50 : r - 38;
+              const [nx, ny] = polar((i + 1) * 30, numR);
               return (
                 <text
                   key={i}
@@ -595,6 +677,25 @@ export const clockPart: PartDef = {
               );
             })
           : null}
+        {p.numbers !== false && p.hour24
+          ? Array.from({ length: 12 }, (_, i) => {
+              const [nx, ny] = polar((i + 1) * 30, r - 26);
+              return (
+                <text
+                  key={`h24-${i}`}
+                  x={nx}
+                  y={ny}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize={r * 0.2 * 0.55}
+                  fontWeight="bold"
+                  fill={dimColor}
+                >
+                  {i + 13}
+                </text>
+              );
+            })
+          : null}
         {/* emphasis：突出一根指针（另一根变淡），讲“哪根是时针、哪根是分针”时用 */}
         <g opacity={emphasis === 'minute' ? 0.3 : 1}>
           {hands !== 'minute' ? hand(hour, r * 0.5, emphasis === 'hour' ? 14 : 9, c) : null}
@@ -604,7 +705,30 @@ export const clockPart: PartDef = {
             ? hand(minute, r * 0.78, emphasis === 'minute' ? 9 : 5, ctx.theme.accent)
             : null}
         </g>
+        {/* 秒针：细线，red，比分针长 10%，尾部有短配重；时间连续变化时秒针由 seconds 单独控制 */}
+        {seconds !== undefined && second !== undefined ? (() => {
+          const secLen = r * 0.78 * 1.1;
+          const tailLen = r * 0.2;
+          const [sx2, sy2] = polar(second, secLen);
+          const [tx, ty] = polar(second + 180, tailLen);
+          const [wx, wy] = polar(second + 180, tailLen * 0.65);
+          return (
+            <g opacity={emphasis !== 'none' ? 0.3 : 1}>
+              <line
+                x1={tx}
+                y1={ty}
+                x2={sx2}
+                y2={sy2}
+                stroke={secColor}
+                strokeWidth={2}
+                strokeLinecap="round"
+              />
+              <circle cx={wx} cy={wy} r={r * 0.035} fill={secColor} />
+            </g>
+          );
+        })() : null}
         <circle cx={x} cy={y} r={8} fill={c} />
+        {seconds !== undefined ? <circle cx={x} cy={y} r={3.5} fill={secColor} /> : null}
       </g>
     );
   },

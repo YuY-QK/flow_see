@@ -118,6 +118,8 @@ export function clockScene(animation: Animation): SceneDef {
         time: start,
         numbers: animation.params?.numbers !== false,
         ticks: animation.params?.ticks !== false,
+        ...(animation.params?.seconds !== undefined ? { seconds: animation.params.seconds } : {}),
+        ...(animation.params?.hour24 !== undefined ? { hour24: animation.params.hour24 } : {}),
       },
       {
         id: 'digital',

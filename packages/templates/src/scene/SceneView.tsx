@@ -30,6 +30,9 @@ import {
 import { parseTargetRef } from './actions';
 
 function formatHandleValue(val: number, prop: string, type: string): string {
+  if (prop === 'seconds') {
+    return `${Math.round(val)}s`;
+  }
   if (type === 'clock' || prop === 'time') {
     return formatClockTime(val);
   }
@@ -705,15 +708,16 @@ export function SceneView({
               ? handles.filter((h) => h.prop === turnProp)
               : handles;
             const hr = sceneStyle().tryIt.turnHandle;
-            return activeHandles.map((handle) => {
+            return activeHandles.map((handle, handleIdx) => {
               const currentVal =
                 tryIt?.turnValue ?? num(targetObj.props[handle.prop], handle.min);
-              const showBadge = turning?.handle.prop === handle.prop || focusedProp === handle.prop;
+              const showBadge =
+                turning?.handle === handle || focusedProp === `${handle.prop}-${handleIdx}`;
               const displayStr = formatHandleValue(currentVal, handle.prop, targetObj.type);
               const pillW = Math.max(48, displayStr.length * 9 + 18);
               return (
                 <g
-                  key={`handle-${targetObj.id}-${handle.prop}`}
+                  key={`handle-${targetObj.id}-${handle.prop}-${handleIdx}`}
                   role="slider"
                   tabIndex={0}
                   aria-label={t('a11y.handle', { name: handle.prop })}
@@ -722,7 +726,7 @@ export function SceneView({
                   aria-valuenow={currentVal}
                   style={{ cursor: 'grab' }}
                   data-handle-prop={handle.prop}
-                  onFocus={() => setFocusedProp(handle.prop)}
+                  onFocus={() => setFocusedProp(`${handle.prop}-${handleIdx}`)}
                   onBlur={() => setFocusedProp(undefined)}
                   onPointerDown={(e) => onHandleDown(e, handle)}
                   onKeyDown={(e) => {
