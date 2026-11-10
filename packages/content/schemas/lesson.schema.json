@@ -286,6 +286,11 @@
             "minLength": 1,
             "description": "这一步的讲解，会朗读；可以用 {参数名} 代入参数"
           },
+          "speak": {
+            "description": "单独指定的朗读文字；不写时朗读 say",
+            "type": "string",
+            "minLength": 1
+          },
           "title": {
             "type": "string"
           },

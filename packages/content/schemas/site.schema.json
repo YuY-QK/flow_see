@@ -871,6 +871,30 @@
           ],
           "additionalProperties": false,
           "description": "朗读语速三档对应的倍率"
+        },
+        "readAs": {
+          "default": [],
+          "description": "朗读规整规则列表，按顺序替换",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "match": {
+                "type": "string",
+                "minLength": 1,
+                "description": "匹配正则字符串"
+              },
+              "say": {
+                "type": "string",
+                "description": "替换为的内容，可含正则捕获组如 $1"
+              }
+            },
+            "required": [
+              "match",
+              "say"
+            ],
+            "additionalProperties": false
+          }
         }
       },
       "required": [

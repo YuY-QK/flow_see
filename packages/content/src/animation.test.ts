@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { narrationText } from '@flow-see/core';
 import { lessonToAnimation } from './animation';
 import type { LessonConfig } from './schema';
 
@@ -123,5 +124,47 @@ describe('E2: 步骤条件 when', () => {
     expect(anim.steps[0].desc).toBe('5');
     expect(anim.steps[1].title).toBe('第 3 位');
     expect(anim.steps[1].desc).toBe('3');
+  });
+});
+
+describe('F3: 步骤 speak 字段与朗读', () => {
+  it('步骤写了 speak：朗读用 speak，字幕仍显示 say', () => {
+    const lesson: LessonConfig = {
+      ...baseLesson,
+      params: { a: 3 },
+      steps: [
+        {
+          title: '第一步',
+          say: '算式是 3/4 + 1/4 = 1',
+          speak: '四分之三加四分之一等于一',
+        },
+        {
+          title: '第二步',
+          say: '没有指定 speak 的步骤',
+        },
+        {
+          title: '第三步',
+          say: '参数 a 是 {a}',
+          speak: '朗读参数 a 为 {a}',
+        },
+      ],
+    };
+    const anim = lessonToAnimation(lesson);
+    expect(anim.steps.length).toBe(3);
+
+    // 第一步：写了 speak
+    expect(anim.steps[0].desc).toBe('算式是 3/4 + 1/4 = 1');
+    expect(anim.steps[0].narration).toBe('四分之三加四分之一等于一');
+    expect(narrationText(anim.steps[0])).toBe('四分之三加四分之一等于一');
+
+    // 第二步：没有写 speak
+    expect(anim.steps[1].desc).toBe('没有指定 speak 的步骤');
+    expect(anim.steps[1].narration).toBeUndefined();
+    expect(narrationText(anim.steps[1])).toBe('没有指定 speak 的步骤');
+
+    // 第三步：speak 中包含参数代入
+    expect(anim.steps[2].desc).toBe('参数 a 是 3');
+    expect(anim.steps[2].narration).toBe('朗读参数 a 为 3');
+    expect(narrationText(anim.steps[2])).toBe('朗读参数 a 为 3');
   });
 });

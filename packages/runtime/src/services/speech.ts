@@ -1,5 +1,15 @@
 // 朗读：网页用浏览器自带的语音合成；App 里用系统的文字转语音。
 import { isNative, speakNative, stopSpeakingNative } from './native';
+import { toSpeech, type ReadAsRule } from './readAs';
+import { runtimeConfig } from '../config';
+
+function currentReadAsRules(): ReadAsRule[] {
+  try {
+    return runtimeConfig().speech?.readAs ?? [];
+  } catch {
+    return [];
+  }
+}
 
 export interface SpeakHandle {
   /** 读完（或被取消、出错）时完成 */
@@ -31,15 +41,17 @@ export function onVoicesChanged(cb: () => void): () => void {
 
 export function speak(
   text: string,
-  opts: { rate?: number; lang?: string; voiceURI?: string } = {},
+  opts: { rate?: number; lang?: string; voiceURI?: string; rules?: ReadAsRule[] } = {},
 ): SpeakHandle {
-  if (!isSpeechSupported() || !text.trim()) {
+  const rules = opts.rules ?? currentReadAsRules();
+  const spokenText = toSpeech(text, rules);
+  if (!isSpeechSupported() || !spokenText.trim()) {
     return { done: Promise.resolve(), cancel() {}, spokenChars: () => 0 };
   }
-  if (isNative()) return speakWithNative(text, opts);
+  if (isNative()) return speakWithNative(spokenText, opts);
   const synth = window.speechSynthesis;
   synth.cancel();
-  const u = new SpeechSynthesisUtterance(text);
+  const u = new SpeechSynthesisUtterance(spokenText);
   u.lang = opts.lang ?? 'zh-CN';
   u.rate = Math.min(2, Math.max(0.5, opts.rate ?? 1));
   if (opts.voiceURI) {
@@ -50,14 +62,14 @@ export function speak(
   let finish!: () => void;
   const done = new Promise<void>((resolve) => (finish = resolve));
   // 部分浏览器偶尔不触发 onend，用按字数估算的超时兜底
-  const fallback = window.setTimeout(finish, (text.length * 350) / u.rate + 3000);
+  const fallback = window.setTimeout(finish, (spokenText.length * 350) / u.rate + 3000);
   let spoken = 0;
   u.onboundary = (e) => {
     spoken = Math.max(spoken, e.charIndex);
   };
   u.onend = u.onerror = () => {
     window.clearTimeout(fallback);
-    spoken = text.length;
+    spoken = spokenText.length;
     finish();
   };
   synth.speak(u);

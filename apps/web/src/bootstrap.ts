@@ -19,6 +19,7 @@ configureRuntime({
   saveRevokeMs: site.ui.saveRevokeMs,
   shareOrigin:
     import.meta.env.VITE_SHARE_ORIGIN ?? (typeof location !== 'undefined' ? location.origin : ''),
+  speech: site.speech,
 });
 
 // 场景零件的外观和默认值来自 site.yaml 的 scene
