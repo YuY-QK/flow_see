@@ -42,6 +42,8 @@ export {
   clockPart,
   formatClockTime,
   formatTickValue,
+  fractionBarPart,
+  fractionCirclePart,
   gridPart,
   hopsOf,
   numberlinePart,

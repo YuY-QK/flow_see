@@ -789,6 +789,31 @@ export const digitalClockPart: PartDef = {
 
 /* ───────────── 分数圆、分数条 ───────────── */
 
+/** 计算扇形的包围盒（舞台坐标） */
+function sectorBox(cx: number, cy: number, r: number, a1: number, a2: number) {
+  if (a2 - a1 >= 2 * Math.PI - 1e-6) {
+    return { x: cx - r, y: cy - r, w: 2 * r, h: 2 * r };
+  }
+  const pts: [number, number][] = [
+    [cx, cy],
+    [cx + Math.sin(a1) * r, cy - Math.cos(a1) * r],
+    [cx + Math.sin(a2) * r, cy - Math.cos(a2) * r],
+  ];
+  const cardinals = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2, 2 * Math.PI];
+  for (const c of cardinals) {
+    if (c > a1 && c < a2) {
+      pts.push([cx + Math.sin(c) * r, cy - Math.cos(c) * r]);
+    }
+  }
+  const xs = pts.map((p) => p[0]);
+  const ys = pts.map((p) => p[1]);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
 /** 取了几份：可以是小数（“取几份”变化时，正在变的那一份半透明） */
 function takeOf(p: Props, parts: number): number {
   return Math.max(0, Math.min(parts, num(p.take, 0)));
@@ -799,58 +824,144 @@ export const fractionCirclePart: PartDef = {
   name: '分数圆',
   anchor: 'center',
   required: ['parts'],
-  props: ['parts', 'take', 'radius'],
+  props: ['parts', 'take', 'radius', 'wholes', 'subdivide'],
   bbox(p) {
-    const [x, y] = pt(p.at);
+    const [cx, cy] = pt(p.at);
     const r = num(p.radius, 0);
-    return boxAround(x, y, r * 2 + 8, r * 2 + 8);
+    const wholes = Math.max(1, Math.round(num(p.wholes, 1)));
+    const gap = r * 0.3;
+    const totalW = wholes * (2 * r) + (wholes - 1) * gap;
+    return boxAround(cx, cy, totalW + 8, r * 2 + 8);
+  },
+  subitems(p) {
+    const [cx, cy] = pt(p.at);
+    const r = num(p.radius, 0);
+    const wholes = Math.max(1, Math.round(num(p.wholes, 1)));
+    const parts = Math.max(1, Math.round(num(p.parts, 1)));
+    const subdivide = Math.max(1, num(p.subdivide, 1));
+    const subDiv = Math.max(1, Math.round(subdivide));
+    const effectiveParts = parts * subDiv;
+    const gap = r * 0.3;
+    const pitch = 2 * r + gap;
+    const x0 = cx - ((wholes - 1) * pitch) / 2;
+
+    const items: Subitem[] = [];
+    for (let wi = 0; wi < wholes; wi++) {
+      const cxW = x0 + wi * pitch;
+      items.push({
+        name: `whole.${wi + 1}`,
+        box: { x: cxW - r, y: cy - r, w: 2 * r, h: 2 * r },
+      });
+    }
+    for (let wi = 0; wi < wholes; wi++) {
+      const cxW = x0 + wi * pitch;
+      for (let pj = 0; pj < effectiveParts; pj++) {
+        const partNum = wi * effectiveParts + pj + 1;
+        const a1 = (pj / effectiveParts) * 2 * Math.PI;
+        const a2 = ((pj + 1) / effectiveParts) * 2 * Math.PI;
+        items.push({
+          name: `part.${partNum}`,
+          box: sectorBox(cxW, cy, r, a1, a2),
+        });
+      }
+    }
+    return items;
   },
   Render({ p, ctx }) {
-    const [x, y] = pt(p.at);
+    const [cx, cy] = pt(p.at);
     const r = num(p.radius, 0);
-    const parts = Math.max(1, Math.round(num(p.parts, 0)));
-    const take = takeOf(p, parts);
+    const wholes = Math.max(1, Math.round(num(p.wholes, 1)));
+    const parts = Math.max(1, Math.round(num(p.parts, 1)));
+    const subdivide = Math.max(1, num(p.subdivide, 1));
+    const targetDiv =
+      subdivide > 1 && !Number.isInteger(subdivide)
+        ? Math.ceil(subdivide)
+        : Math.max(1, Math.round(subdivide));
+    const lineRatio = Number.isInteger(subdivide) ? 1.0 : subdivide - Math.floor(subdivide);
+    const effectiveParts = parts * targetDiv;
+    const totalParts = wholes * effectiveParts;
+    const take = takeOf(p, totalParts);
     const fill = color(p.color, ctx.theme, 'orange');
-    const at = (k: number): [number, number] => {
-      const a = (k / parts) * 2 * Math.PI;
-      return [x + Math.sin(a) * r, y - Math.cos(a) * r];
-    };
+
+    const gap = r * 0.3;
+    const pitch = 2 * r + gap;
+    const x0 = cx - ((wholes - 1) * pitch) / 2;
+
     return (
       <g>
-        <circle cx={x} cy={y} r={r} fill={ctx.theme.stageBg} />
-        {Array.from({ length: parts }, (_, k) => {
-          const amount = Math.max(0, Math.min(1, take - k));
-          if (amount <= 0) return null;
-          if (parts === 1)
-            return <circle key={k} cx={x} cy={y} r={r} fill={fill} opacity={amount} />;
-          const [x1, y1] = at(k);
-          const [x2, y2] = at(k + 1);
+        {Array.from({ length: wholes }, (_, wi) => {
+          const cxW = x0 + wi * pitch;
+          const cyW = cy;
+          const atAngle = (idx: number, rad = r): [number, number] => {
+            const a = (idx / effectiveParts) * 2 * Math.PI;
+            return [cxW + Math.sin(a) * rad, cyW - Math.cos(a) * rad];
+          };
           return (
-            <path
-              key={k}
-              d={`M${x},${y} L${x1},${y1} A${r},${r} 0 0 1 ${x2},${y2} Z`}
-              fill={fill}
-              opacity={amount}
-            />
+            <g key={wi}>
+              <circle cx={cxW} cy={cyW} r={r} fill={ctx.theme.stageBg} />
+              {Array.from({ length: effectiveParts }, (_, pj) => {
+                const pIndex = wi * effectiveParts + pj;
+                const amount = Math.max(0, Math.min(1, take - pIndex));
+                if (amount <= 0) return null;
+                if (effectiveParts === 1) {
+                  return <circle key={pj} cx={cxW} cy={cyW} r={r} fill={fill} opacity={amount} />;
+                }
+                const [x1, y1] = atAngle(pj);
+                const [x2, y2] = atAngle(pj + 1);
+                return (
+                  <path
+                    key={pj}
+                    d={`M${cxW},${cyW} L${x1},${y1} A${r},${r} 0 0 1 ${x2},${y2} Z`}
+                    fill={fill}
+                    opacity={amount}
+                  />
+                );
+              })}
+              {parts > 1
+                ? Array.from({ length: parts }, (_, k) => {
+                    const a = (k / parts) * 2 * Math.PI;
+                    const x1 = cxW + Math.sin(a) * r;
+                    const y1 = cyW - Math.cos(a) * r;
+                    return (
+                      <line
+                        key={`p-${k}`}
+                        x1={cxW}
+                        y1={cyW}
+                        x2={x1}
+                        y2={y1}
+                        stroke={ctx.theme.ink}
+                        strokeWidth={3}
+                      />
+                    );
+                  })
+                : null}
+              {targetDiv > 1
+                ? Array.from({ length: parts }, (_, k) =>
+                    Array.from({ length: targetDiv - 1 }, (__, j) => {
+                      const subPartIdx = k * targetDiv + j + 1;
+                      const a = (subPartIdx / effectiveParts) * 2 * Math.PI;
+                      const subLen = r * lineRatio;
+                      const xEnd = cxW + Math.sin(a) * subLen;
+                      const yEnd = cyW - Math.cos(a) * subLen;
+                      return (
+                        <line
+                          key={`sub-${k}-${j}`}
+                          data-subdivide-line="true"
+                          x1={cxW}
+                          y1={cyW}
+                          x2={xEnd}
+                          y2={yEnd}
+                          stroke={ctx.theme.ink}
+                          strokeWidth={3}
+                        />
+                      );
+                    }),
+                  )
+                : null}
+              <circle cx={cxW} cy={cyW} r={r} fill="none" stroke={ctx.theme.ink} strokeWidth={4} />
+            </g>
           );
         })}
-        {parts > 1
-          ? Array.from({ length: parts }, (_, k) => {
-              const [x1, y1] = at(k);
-              return (
-                <line
-                  key={k}
-                  x1={x}
-                  y1={y}
-                  x2={x1}
-                  y2={y1}
-                  stroke={ctx.theme.ink}
-                  strokeWidth={3}
-                />
-              );
-            })
-          : null}
-        <circle cx={x} cy={y} r={r} fill="none" stroke={ctx.theme.ink} strokeWidth={4} />
       </g>
     );
   },
@@ -861,42 +972,143 @@ export const fractionBarPart: PartDef = {
   name: '分数条',
   anchor: 'center',
   required: ['parts'],
-  props: ['parts', 'take', 'width', 'height'],
+  props: ['parts', 'take', 'width', 'height', 'wholes', 'subdivide'],
   bbox(p) {
-    const [x, y] = pt(p.at);
-    return boxAround(x, y, num(p.width, 0) + 6, num(p.height, 0) + 6);
+    const [cx, cy] = pt(p.at);
+    const w = num(p.width, 0);
+    const h = num(p.height, 0);
+    const wholes = Math.max(1, Math.round(num(p.wholes, 1)));
+    const gap = h * 0.4;
+    const totalH = wholes * h + (wholes - 1) * gap;
+    return boxAround(cx, cy, w + 6, totalH + 6);
+  },
+  subitems(p) {
+    const [cx, cy] = pt(p.at);
+    const w = num(p.width, 0);
+    const h = num(p.height, 0);
+    const wholes = Math.max(1, Math.round(num(p.wholes, 1)));
+    const parts = Math.max(1, Math.round(num(p.parts, 1)));
+    const subdivide = Math.max(1, num(p.subdivide, 1));
+    const subDiv = Math.max(1, Math.round(subdivide));
+    const effectiveParts = parts * subDiv;
+    const gap = h * 0.4;
+    const pitch = h + gap;
+    const y0 = cy - ((wholes - 1) * pitch) / 2;
+    const x = cx - w / 2;
+    const cw = w / effectiveParts;
+
+    const items: Subitem[] = [];
+    for (let wi = 0; wi < wholes; wi++) {
+      const cyW = y0 + wi * pitch;
+      items.push({
+        name: `whole.${wi + 1}`,
+        box: { x, y: cyW - h / 2, w, h },
+      });
+    }
+    for (let wi = 0; wi < wholes; wi++) {
+      const cyW = y0 + wi * pitch;
+      const yW = cyW - h / 2;
+      for (let pj = 0; pj < effectiveParts; pj++) {
+        const partNum = wi * effectiveParts + pj + 1;
+        items.push({
+          name: `part.${partNum}`,
+          box: { x: x + pj * cw, y: yW, w: cw, h },
+        });
+      }
+    }
+    return items;
   },
   Render({ p, ctx }) {
     const [cx, cy] = pt(p.at);
     const w = num(p.width, 0);
     const h = num(p.height, 0);
-    const x = cx - w / 2;
-    const y = cy - h / 2;
-    const parts = Math.max(1, Math.round(num(p.parts, 0)));
-    const take = takeOf(p, parts);
-    const cw = w / parts;
+    const wholes = Math.max(1, Math.round(num(p.wholes, 1)));
+    const parts = Math.max(1, Math.round(num(p.parts, 1)));
+    const subdivide = Math.max(1, num(p.subdivide, 1));
+    const targetDiv =
+      subdivide > 1 && !Number.isInteger(subdivide)
+        ? Math.ceil(subdivide)
+        : Math.max(1, Math.round(subdivide));
+    const lineRatio = Number.isInteger(subdivide) ? 1.0 : subdivide - Math.floor(subdivide);
+    const effectiveParts = parts * targetDiv;
+    const totalParts = wholes * effectiveParts;
+    const take = takeOf(p, totalParts);
+    const cw = w / effectiveParts;
+    const partW = w / parts;
     const fill = color(p.color, ctx.theme, 'orange');
+
+    const gap = h * 0.4;
+    const pitch = h + gap;
+    const y0 = cy - ((wholes - 1) * pitch) / 2;
+    const x = cx - w / 2;
+
     return (
       <g>
-        <rect x={x} y={y} width={w} height={h} fill={ctx.theme.stageBg} />
-        {Array.from({ length: parts }, (_, k) => {
-          const amount = Math.max(0, Math.min(1, take - k));
-          return amount > 0 ? (
-            <rect key={k} x={x + k * cw} y={y} width={cw} height={h} fill={fill} opacity={amount} />
-          ) : null;
+        {Array.from({ length: wholes }, (_, wi) => {
+          const cyW = y0 + wi * pitch;
+          const yW = cyW - h / 2;
+          return (
+            <g key={wi}>
+              <rect x={x} y={yW} width={w} height={h} fill={ctx.theme.stageBg} />
+              {Array.from({ length: effectiveParts }, (_, pj) => {
+                const pIndex = wi * effectiveParts + pj;
+                const amount = Math.max(0, Math.min(1, take - pIndex));
+                return amount > 0 ? (
+                  <rect
+                    key={pj}
+                    x={x + pj * cw}
+                    y={yW}
+                    width={cw}
+                    height={h}
+                    fill={fill}
+                    opacity={amount}
+                  />
+                ) : null;
+              })}
+              {Array.from({ length: parts - 1 }, (_, k) => (
+                <line
+                  key={`p-${k}`}
+                  x1={x + (k + 1) * partW}
+                  x2={x + (k + 1) * partW}
+                  y1={yW}
+                  y2={yW + h}
+                  stroke={ctx.theme.ink}
+                  strokeWidth={3}
+                />
+              ))}
+              {targetDiv > 1
+                ? Array.from({ length: parts }, (_, k) =>
+                    Array.from({ length: targetDiv - 1 }, (__, j) => {
+                      const subW = partW / targetDiv;
+                      const xSub = x + k * partW + (j + 1) * subW;
+                      const subH = h * lineRatio;
+                      return (
+                        <line
+                          key={`sub-${k}-${j}`}
+                          data-subdivide-line="true"
+                          x1={xSub}
+                          x2={xSub}
+                          y1={yW}
+                          y2={yW + subH}
+                          stroke={ctx.theme.ink}
+                          strokeWidth={3}
+                        />
+                      );
+                    }),
+                  )
+                : null}
+              <rect
+                x={x}
+                y={yW}
+                width={w}
+                height={h}
+                fill="none"
+                stroke={ctx.theme.ink}
+                strokeWidth={4}
+              />
+            </g>
+          );
         })}
-        {Array.from({ length: parts - 1 }, (_, k) => (
-          <line
-            key={k}
-            x1={x + (k + 1) * cw}
-            x2={x + (k + 1) * cw}
-            y1={y}
-            y2={y + h}
-            stroke={ctx.theme.ink}
-            strokeWidth={3}
-          />
-        ))}
-        <rect x={x} y={y} width={w} height={h} fill="none" stroke={ctx.theme.ink} strokeWidth={4} />
       </g>
     );
   },

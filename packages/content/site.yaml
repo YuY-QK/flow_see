@@ -119,8 +119,8 @@ scene:
     numberline: { from: 0, to: 10, step: 1, length: 600, color: ink, size: 22 }
     clock: { time: 180, radius: 130, numbers: true, ticks: true, color: ink, emphasis: none }
     digital-clock: { time: 180, size: 48, color: ink }
-    fraction-circle: { parts: 4, take: 0, radius: 120, color: orange }
-    fraction-bar: { parts: 4, take: 0, width: 480, height: 64, color: orange }
+    fraction-circle: { parts: 4, take: 0, radius: 120, color: orange, wholes: 1, subdivide: 1 }
+    fraction-bar: { parts: 4, take: 0, width: 480, height: 64, color: orange, wholes: 1, subdivide: 1 }
     grid: { rows: 3, cols: 4, cell: 44, filled: 0, color: green }
     shape: { shape: rect, width: 160, height: 100, radius: 70, angle: 90, color: blue }
     line: { color: ink, width: 4, draw: 1 }

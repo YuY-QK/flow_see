@@ -82,6 +82,12 @@ function getRange(
   if (isZeroToOne) {
     return { min: 0, max: 1, step: 0.01 };
   }
+  if (prop === 'wholes') {
+    return { min: 1, max: 5, step: 1 };
+  }
+  if (prop === 'subdivide') {
+    return { min: 1, max: 6, step: 0.1 };
+  }
   if (base > 1) {
     return { min: 0, max: Math.ceil(base * 3), step: Number.isInteger(base) ? 1 : 0.1 };
   }
