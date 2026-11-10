@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+# 图形的拼组：两个同样的三角形拼成正方形、大三角形。
+# 样板知识点（status: draft）
+id: shapes-compose
+title: 图形的拼组
+summary: 两个同样的三角形能拼成新图形
+status: draft
+duration: 1分钟
+tags: [图形拼组, 拼一拼, 三角形, 正方形]
+cover: { text: △+△ }
+related: [tangram, shapes-2d-intro]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+objects:
+  - id: t1
+    type: polygon
+    points: [[100, 300], [260, 300], [100, 140]]
+    color: blue
+  - id: t2
+    type: polygon
+    points: [[420, 300], [580, 300], [420, 140]]
+    color: orange
+  - id: goal
+    type: polygon
+    points: [[260, 300], [260, 140], [100, 140]]
+    dashed: true
+    fill: false
+    hidden: true
+
+steps:
+  - title: 两个三角形
+    say: 两个一模一样的三角形。
+    do:
+      - highlight: t1
+      - highlight: t2
+  - title: 拼成正方形
+    say: 转一转、拼一拼，拼成一个正方形。
+    do:
+      - show: goal
+      - rotate: { target: t2, by: 180, around: [500, 220] }
+      - set: { target: t2, points: [[260, 140], [100, 140], [260, 300]], duration: 0.8s }
+      - hide: goal
+  - title: 拼成大三角形
+    say: 换一种拼法，拼成一个大三角形。
+    do:
+      - set: { target: t2, points: [[260, 300], [420, 300], [260, 140]], duration: 0.8s }
+  - title: 数一数
+    say: 大三角形里有 3 个三角形。
+    do:
+      - ask: true
+      - highlight: t1
+      - highlight: { target: t2, together: true }
+    try:
+      task: 现在一共有几个三角形？
+      choose: { answer: '3', options: ['2', '3', '4'] }
+      hints:
+        - 两个小的，还有拼成的大的。
+
+keyPoints:
+  - 两个完全一样的三角形可以拼成正方形、大三角形等
+  - 数图形时别忘了拼成的大图形

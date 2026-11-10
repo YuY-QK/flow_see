@@ -137,6 +137,7 @@ scene:
     wire: { width: 6, flow: 0, t: 0, speed: 90, spacing: 36, color: ink }
     column-calc: { size: 44, op: '×', show: 0, accent: red, focus: true, color: ink }
     split-calc: { size: 40, show: 0, op: '+', split: b, color: ink, partColor: blue, accent: red }
+    polygon: { fill: true, color: blue, sideLabels: [], vertexLabels: [], angles: [], angleLabels: [], rightAngles: [], heights: [], dashed: false }   # 多边形：fill 填充；color 主色；sideLabels 边长；vertexLabels 顶点字母；angles 角弧；rightAngles 直角符号；heights 垂线；dashed 虚线轮廓
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:
