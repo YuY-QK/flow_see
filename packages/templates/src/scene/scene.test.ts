@@ -16,6 +16,7 @@ import {
   coveredActions,
   dragEach,
   dragFrame,
+  sortFrame,
   dragTargets,
   pointOnPolyline,
   sceneFrame,
@@ -1801,6 +1802,243 @@ describe('沿路径移动（follow）', () => {
       expect(covered.has(1)).toBe(true);
       expect(covered.has(0)).toBe(false);
       expect(covered.has(2)).toBe(false);
+    });
+  });
+
+  describe('动手做：分类拖放（sort）', () => {
+    const sortDef: SceneDef = {
+      stage: { width: 800, height: 420 },
+      objects: [
+        {
+          id: 'fruits',
+          type: 'item-set',
+          layout: 'pile',
+          size: 52,
+          at: [80, 60],
+          items: [
+            { shape: 'circle', color: 'red', tags: { color: 'red' } },
+            { shape: 'circle', color: 'red', tags: { color: 'red' } },
+            { shape: 'circle', color: 'yellow', tags: { color: 'yellow' } },
+            { shape: 'circle', color: 'yellow', tags: { color: 'yellow' } },
+            { shape: 'circle', color: 'yellow', tags: { color: 'yellow' } },
+            { shape: 'circle', color: 'yellow', tags: { color: 'yellow' } },
+          ],
+        },
+        {
+          id: 'binR',
+          type: 'shape',
+          shape: 'rect',
+          width: 240,
+          height: 130,
+          at: [180, 330],
+        },
+        {
+          id: 'binY',
+          type: 'shape',
+          shape: 'rect',
+          width: 240,
+          height: 130,
+          at: [520, 330],
+        },
+      ],
+      steps: [
+        [
+          { move: { target: 'fruits.1', to: 'binR' } },
+          { move: { target: 'fruits.2', to: 'binR' } },
+          { move: { target: 'fruits.3', to: 'binY' } },
+        ],
+      ],
+      tries: [
+        {
+          task: '把水果按颜色放进筐里。',
+          sort: {
+            from: 'fruits',
+            by: 'color',
+            bins: {
+              red: 'binR',
+              yellow: 'binY',
+            },
+          },
+        },
+      ],
+    };
+
+    it('未移动时：items 全部可拖，筐内无物品', () => {
+      const f0 = sortFrame(sortDef, 0, []);
+      expect(f0.items).toHaveLength(6);
+      expect(f0.placedItems).toHaveLength(0);
+      expect(f0.to.map((o) => o.id)).toEqual(['binR', 'binY']);
+    });
+
+    it('移动物品后：已放好的物品排入筐中网格，未放好的仍在 from 中', () => {
+      // 移动物品 1（red）到 binR，物品 3（yellow）到 binY
+      const f1 = sortFrame(sortDef, 0, [1, 3], undefined, ['binR', 'binY']);
+      expect(f1.items.map((it) => it.index)).toEqual([2, 4, 5, 6]);
+      expect(f1.placedItems).toHaveLength(2);
+
+      const p1 = f1.placedItems.find((it) => it.index === 1);
+      expect(p1).toBeDefined();
+      expect(p1?.binId).toBe('binR');
+
+      const p3 = f1.placedItems.find((it) => it.index === 3);
+      expect(p3).toBeDefined();
+      expect(p3?.binId).toBe('binY');
+
+      // 筐零件下创建了对应的 item-set 渲染对象
+      const binRItems = f1.objects.find((o) => o.id === 'binR__items');
+      expect(binRItems).toBeDefined();
+      expect(binRItems?.type).toBe('item-set');
+      expect(binRItems?.props.items).toHaveLength(1);
+    });
+
+    it('正在拖动（lifted）的物品从 items 和 from 中移除', () => {
+      const f = sortFrame(sortDef, 0, [], 1);
+      expect(f.items.map((it) => it.index)).toEqual([2, 3, 4, 5, 6]);
+      expect(f.from?.props.hiddenItems).toContain(1);
+    });
+
+    it('sortFrame 中物品在筐里的网格位置与折行', () => {
+      // binY 宽 240，高 130，itemSize = 52
+      // 每行 cols = floor(240/52) = 4
+      // 前 4 个（3, 4, 5, 6）在第 1 行，第 5 个（假设再加一个）折行到第 2 行
+      const f = sortFrame(sortDef, 0, [3, 4, 5, 6], undefined, ['binY', 'binY', 'binY', 'binY']);
+      const placed = f.placedItems.filter((it) => it.binId === 'binY');
+      expect(placed).toHaveLength(4);
+
+      // 同一行的 y 坐标相同
+      expect(placed[0].box.y).toBe(placed[1].box.y);
+      expect(placed[1].box.y).toBe(placed[2].box.y);
+      expect(placed[2].box.y).toBe(placed[3].box.y);
+
+      // x 坐标按 itemSize 依次递增
+      expect(placed[1].box.x - placed[0].box.x).toBe(52);
+      expect(placed[2].box.x - placed[1].box.x).toBe(52);
+      expect(placed[3].box.x - placed[2].box.x).toBe(52);
+    });
+
+    it('coveredActions 覆盖移动到分类筐的 move 动作', () => {
+      const spec = sortDef.tries![0]!;
+      const actions = [
+        { highlight: 'fruits' },
+        { move: { target: 'fruits.1', to: 'binR' } },
+        { move: { target: 'fruits.3', to: 'binY' } },
+        { move: { target: 'other', to: 'binR' } },
+      ];
+      const covered = coveredActions(actions, spec);
+      expect(covered.has(1)).toBe(true);
+      expect(covered.has(2)).toBe(true);
+      expect(covered.has(0)).toBe(false);
+      expect(covered.has(3)).toBe(false);
+    });
+
+    it('checkScene 校验 sort 配置异常与正常', () => {
+      // 1. from 不存在
+      const badFrom = checkScene({
+        params: {},
+        objects: sortDef.objects as Record<string, unknown>[],
+        steps: [
+          {
+            say: '分',
+            try: {
+              task: '分',
+              sort: { from: 'notExist', by: 'color', bins: { red: 'binR' } },
+            },
+          },
+        ],
+      });
+      expect(badFrom.some((i) => i.message.includes('在这一步开头不存在'))).toBe(true);
+
+      // 2. from 不是 item-set
+      const badType = checkScene({
+        params: {},
+        objects: sortDef.objects as Record<string, unknown>[],
+        steps: [
+          {
+            say: '分',
+            try: {
+              task: '分',
+              sort: { from: 'binR', by: 'color', bins: { red: 'binY' } },
+            },
+          },
+        ],
+      });
+      expect(badType.some((i) => i.message.includes('要写一个物品组'))).toBe(true);
+
+      // 3. 筐不存在
+      const badBin = checkScene({
+        params: {},
+        objects: sortDef.objects as Record<string, unknown>[],
+        steps: [
+          {
+            say: '分',
+            try: {
+              task: '分',
+              sort: { from: 'fruits', by: 'color', bins: { red: 'noBin' } },
+            },
+          },
+        ],
+      });
+      expect(badBin.some((i) => i.message.includes('零件 noBin 在这一步开头不存在'))).toBe(true);
+
+      // 4. 物品缺少 tags[by]
+      const badItemTag = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'items',
+            type: 'item-set',
+            items: [{ shape: 'circle' }], // 缺少 tags
+          },
+          { id: 'b', type: 'shape', at: [0, 0] },
+        ],
+        steps: [
+          {
+            say: '分',
+            try: {
+              task: '分',
+              sort: { from: 'items', by: 'color', bins: { red: 'b' } },
+            },
+          },
+        ],
+      });
+      expect(badItemTag.some((i) => i.message.includes('缺少标签 color'))).toBe(true);
+
+      // 5. 物品 tags[by] 不在 bins 里
+      const badBinTag = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'items',
+            type: 'item-set',
+            items: [{ shape: 'circle', tags: { color: 'blue' } }],
+          },
+          { id: 'b', type: 'shape', at: [0, 0] },
+        ],
+        steps: [
+          {
+            say: '分',
+            try: {
+              task: '分',
+              sort: { from: 'items', by: 'color', bins: { red: 'b' } },
+            },
+          },
+        ],
+      });
+      expect(badBinTag.some((i) => i.message.includes('不在 bins 里'))).toBe(true);
+
+      // 6. 正常配置无报错
+      const ok = checkScene({
+        params: {},
+        objects: sortDef.objects as Record<string, unknown>[],
+        steps: [
+          {
+            say: '分',
+            do: sortDef.steps[0] as Record<string, unknown>[],
+            try: sortDef.tries![0] as never,
+          },
+        ],
+      });
+      expect(ok).toEqual([]);
     });
   });
 });

@@ -12,6 +12,7 @@ import {
   parseTurnAnswer,
   shuffled,
   snapToStep,
+  sortResult,
   stepDurationMs,
   turnResult,
   type Animation,
@@ -22,7 +23,7 @@ import {
   tapResult,
   type TapSubitem,
 } from '@flow-see/core';
-import { getPart } from '@flow-see/blocks';
+import { getPart, itemSetLayout } from '@flow-see/blocks';
 import { sceneOf, sceneFrame } from '@flow-see/templates';
 import { useTimeline } from '@flow-see/runtime/player/useTimeline.ts';
 import { isSpeechSupported, speak } from '@flow-see/runtime/services/speech.ts';
@@ -324,6 +325,34 @@ export function LessonPlayer({
   const onDrop = (i: number, target: string | undefined) => {
     if (!spec) return;
     begin();
+    if (spec.sort) {
+      const def = sceneOf(animation);
+      const fromObj = def.objects.find((o) => o.id === spec.sort!.from);
+      if (!fromObj) return;
+      const layout = itemSetLayout(fromObj.props as Record<string, unknown>);
+      const slot = layout.slots.find((s) => s.index === i);
+      const totalCount = layout.slots.length;
+      const res = sortResult(
+        spec.sort,
+        { index: i, tags: slot?.item.tags as Record<string, string> | undefined },
+        target,
+        tp.moved,
+        totalCount,
+      );
+
+      if (res.correct) {
+        const moved = res.moved;
+        const placed = [...tp.placed, target!];
+        setTp({ ...tp, moved, placed, note: '', wrong: undefined });
+        if (res.solved) {
+          dispatch({ type: 'solve' });
+        }
+        return;
+      }
+
+      miss({ wrong: String(i) }, spec.hints?.[tp.misses] ?? t('try.sort_wrong'));
+      return;
+    }
     const room = target !== undefined && tp.placed.filter((x) => x === target).length < each;
     if (target !== undefined && room) {
       const moved = [...tp.moved, i];
@@ -445,7 +474,15 @@ export function LessonPlayer({
     }
     miss({ wrong: String(v) });
   };
-  // 多选、一个一个分、tap点选：孩子停下来太久还没做完，提示还差几个（每次操作后重新计时）
+  const sortTotalNeed = useMemo(() => {
+    if (!spec?.sort) return 0;
+    const def = sceneOf(animation);
+    const fromObj = def.objects.find((o) => o.id === spec.sort!.from);
+    if (!fromObj) return 0;
+    return itemSetLayout(fromObj.props as Record<string, unknown>).slots.length;
+  }, [spec?.sort, animation]);
+
+  // 多选、一个一个分、tap点选、sort分类拖放：孩子停下来太久还没做完，提示还差几个（每次操作后重新计时）
   const doingNow = !!spec && state.waiting && tp.demo === null;
   const left = multi
     ? answerCount - tp.picked.length
@@ -453,13 +490,15 @@ export function LessonPlayer({
       ? need - tp.moved.length
       : tapSpec
         ? tapTotalNeed - tp.tapped.length
-        : 0;
+        : spec?.sort
+          ? sortTotalNeed - tp.moved.length
+          : 0;
   const remindKey = `${tryKey}:${tp.picked.length}:${tp.moved.length}:${tp.tapped.length}:${tp.misses}`;
   useEffect(() => {
     if (
       !doingNow ||
       left <= 0 ||
-      (!multi && targets.length < 2 && (!tapSpec || tapTotalNeed < 2))
+      (!multi && targets.length < 2 && (!tapSpec || tapTotalNeed < 2) && (!spec?.sort || sortTotalNeed < 2))
     )
       return;
     const timer = window.setTimeout(() => {
@@ -487,10 +526,50 @@ export function LessonPlayer({
     return demoAnswers.slice(0, count);
   }, [demoing, spec?.tap, demoAnswers, tp.demo]);
 
+  const demoSortSequence = useMemo(() => {
+    if (!spec?.sort) return [];
+    const def = sceneOf(animation);
+    const fromObj = def.objects.find((o) => o.id === spec.sort!.from);
+    if (!fromObj) return [];
+    const layout = itemSetLayout(fromObj.props as Record<string, unknown>);
+    const seq: { index: number; bin: string }[] = [];
+    const binKeys = Object.keys(spec.sort.bins);
+    for (const key of binKeys) {
+      const binId = spec.sort.bins[key];
+      for (const slot of layout.slots) {
+        const tagVal = slot.item.tags ? slot.item.tags[spec.sort.by] : undefined;
+        if (tagVal === key) {
+          seq.push({ index: slot.index, bin: binId });
+        }
+      }
+    }
+    return seq;
+  }, [spec?.sort, animation]);
+
+  const demoSortMoved = useMemo(() => {
+    if (!demoing || !spec?.sort || demoSortSequence.length === 0) return [];
+    const p = tp.demo ?? 0;
+    const count = Math.min(
+      demoSortSequence.length,
+      Math.floor(p * (demoSortSequence.length + 0.5)),
+    );
+    return demoSortSequence.slice(0, count).map((x) => x.index);
+  }, [demoing, spec?.sort, demoSortSequence, tp.demo]);
+
+  const demoSortPlaced = useMemo(() => {
+    if (!demoing || !spec?.sort || demoSortSequence.length === 0) return [];
+    const p = tp.demo ?? 0;
+    const count = Math.min(
+      demoSortSequence.length,
+      Math.floor(p * (demoSortSequence.length + 0.5)),
+    );
+    return demoSortSequence.slice(0, count).map((x) => x.bin);
+  }, [demoing, spec?.sort, demoSortSequence, tp.demo]);
+
   useEffect(() => {
     if (!demoing) return;
     const baseMs = template.motionMs?.(animation, state.index) ?? 0;
-    const ms = (baseMs > 0 ? baseMs : (spec?.turn ? 1000 : 0)) / state.speed;
+    const ms = (baseMs > 0 ? baseMs : (spec?.turn ? 1000 : (spec?.sort ? 1500 : 0))) / state.speed;
     const start = performance.now();
     const fromVal = demoFromVal.current;
     let raf = 0;
@@ -634,7 +713,13 @@ export function LessonPlayer({
                 turnValue: tp.turnValue,
                 turn: spec.turn,
               }
-          : undefined
+            : spec.sort
+              ? {
+                  phase: 'doing',
+                  moved: demoSortMoved,
+                  placed: demoSortPlaced,
+                }
+              : undefined
         : state.waiting
           ? {
               phase: 'doing',

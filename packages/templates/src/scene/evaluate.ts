@@ -9,14 +9,17 @@ import {
   isColor,
   isCounters,
   isPoint,
+  itemSetLayout,
   mixColor,
   namedColors,
-  sceneStyle,
   num,
+  numList,
+  sceneStyle,
   type Box,
   type Point,
   type Props,
 } from '@flow-see/blocks';
+import { binItemPosition } from '@flow-see/core';
 import type { StageTry, TrySpec } from '@flow-see/runtime/template.ts';
 import {
   dealCount,
@@ -381,7 +384,56 @@ function apply(world: World, a: SceneAction, p: number, current: boolean, startW
       return;
     case 'merge':
     case 'move': {
-      if (!one) return;
+      if (!one) {
+        if (a.targets.length > 0) {
+          const { id, sub } = parseTargetRef(a.targets[0]);
+          const parent = world.get(id);
+          const destId = a.verb === 'merge' ? args.into : args.to;
+          const dest = typeof destId === 'string' ? world.get(destId) : undefined;
+          if (parent && parent.type === 'item-set' && sub && dest) {
+            const subIdx = Number(sub);
+            if (Number.isFinite(subIdx) && subIdx >= 1) {
+              const destPart = getPart(dest.type);
+              const binBox = destPart ? destPart.bbox(dest.props) : { x: 0, y: 0, w: 200, h: 200 };
+              const itemSize = Math.max(1, num(parent.props.size, 56));
+              const binMovedList: number[] = ((dest.props._binItems as number[] | undefined) ??= []);
+              let idxInBin = binMovedList.indexOf(subIdx);
+              if (idxInBin === -1) {
+                idxInBin = binMovedList.length;
+                binMovedList.push(subIdx);
+              }
+              const targetPos = binItemPosition(binBox, itemSize, idxInBin);
+              const layout = itemSetLayout(parent.props);
+              const slot = layout.slots.find((s) => s.index === subIdx);
+              if (slot) {
+                const startBox = slot.box;
+                const curX = startBox.x + (targetPos.box.x - startBox.x) * e;
+                const curY = startBox.y + (targetPos.box.y - startBox.y) * e;
+                const hidden = numList(parent.props.hiddenItems);
+                if (!hidden.includes(subIdx)) {
+                  parent.props.hiddenItems = [...hidden, subIdx];
+                }
+                world.set(`${id}__moved_${sub}`, {
+                  id: `${id}__moved_${sub}`,
+                  type: 'item-set',
+                  props: {
+                    ...parent.props,
+                    items: [slot.item],
+                    layout: 'row',
+                    cols: 1,
+                    size: itemSize,
+                    at: [curX, curY],
+                    show: 1,
+                    hiddenItems: [],
+                  },
+                });
+              }
+              return;
+            }
+          }
+        }
+        return;
+      }
       const destId = a.verb === 'merge' ? args.into : args.to;
       const dest = typeof destId === 'string' ? world.get(destId) : undefined;
       if (dest && isCounters(one.type) && isCounters(dest.type))
@@ -652,6 +704,27 @@ export function coveredActions(list: readonly unknown[] | undefined, spec?: TryS
       }
     });
   }
+  if (spec?.sort) {
+    const sort = spec.sort;
+    const binIds = new Set(Object.values(sort.bins));
+    (list ?? []).forEach((raw, i) => {
+      const a = parseAction(raw);
+      if (!a) return;
+      if (a.verb === 'move') {
+        const dest = a.args.to;
+        const target = a.args.target ?? a.targets[0];
+        const targetStr = typeof target === 'string' ? target : '';
+        const { id } = parseTargetRef(targetStr);
+        if (
+          (id === sort.from || targetStr === sort.from) &&
+          typeof dest === 'string' &&
+          binIds.has(dest)
+        ) {
+          out.add(i);
+        }
+      }
+    });
+  }
   const drag = spec?.drag;
   if (!drag) return out;
   const ids = new Set([drag.from]);
@@ -906,4 +979,148 @@ export function dragFrame(
   src.props.colors = items.map((it) => it.color);
   src.props.count = items.length;
   return { objects: [...world.values()], subHighlights, subColors, items, colors, from: src, to: dests };
+}
+
+/** 动手做（分类拖放 sort）中的物品信息 */
+export interface SortItemInfo {
+  index: number;
+  at: Point;
+  box: Box;
+  item: Record<string, unknown>;
+  binId?: string;
+}
+
+/** 动手做（分类拖放 sort）时的画面：能拖的物品、各个筐以及已放好的物品 */
+export interface SortFrame extends SceneFrame {
+  /** 还在原来的组里、可以拖的物品：序号、手指该放上去的点、box、item 定义 */
+  items: SortItemInfo[];
+  /** 已经放进各个筐里的物品：序号、在筐里的位置、item 定义、放进的筐 id */
+  placedItems: SortItemInfo[];
+  /** 被拖的那一组（已去掉拖走的和正在拖的） */
+  from?: SceneObject;
+  /** 目标筐零件列表 */
+  to: SceneObject[];
+}
+
+/**
+ * 分类拖放中的画面：这一步提问时的画面，已放好的物品画在筐里，按筐内顺序排成网格，
+ * 每行 floor(筐宽 / 物品格子) 个；正在拖的那一个（lifted）先从 from 里隐藏，
+ * 由舞台画在手指下。
+ */
+export function sortFrame(
+  def: SceneDef,
+  index: number,
+  moved: readonly number[],
+  lifted?: number,
+  placed?: readonly string[],
+): SortFrame {
+  const world = buildWorld(def, index, 1, 'doing');
+  const subHighlights = extractSubHighlights(world);
+  const subColors = extractSubColors(world);
+  const sort = def.tries?.[index]?.sort;
+  const src = sort ? world.get(sort.from) : undefined;
+  const binIds = sort ? Object.values(sort.bins) : [];
+  const dests = binIds.map((id) => world.get(id)).filter((o): o is SceneObject => !!o);
+
+  if (!sort || !src || src.type !== 'item-set') {
+    return {
+      objects: [...world.values()],
+      subHighlights,
+      subColors,
+      items: [],
+      placedItems: [],
+      to: dests,
+    };
+  }
+
+  const layout = itemSetLayout(src.props);
+  const slots = layout.slots;
+  const gone = new Set(moved);
+
+  // 还在原来的组里、可以拖的物品（未放好且未被提起的）
+  const keepSlots = slots.filter((s) => !gone.has(s.index));
+  const items: SortItemInfo[] = keepSlots
+    .filter((s) => s.index !== lifted)
+    .map((s) => ({
+      index: s.index,
+      at: [s.box.x + s.box.w / 2, s.box.y + s.box.h / 2] as Point,
+      box: s.box,
+      item: s.item as Record<string, unknown>,
+    }));
+
+  // 被拖的那一组把已经拖走的以及正在拖的那一个隐藏掉
+  const existingHidden = numList(src.props.hiddenItems);
+  src.props.hiddenItems = [
+    ...existingHidden,
+    ...moved,
+    ...(lifted !== undefined ? [lifted] : []),
+  ];
+
+  // 已经放进筐里的物品按筐分组
+  const placedItems: SortItemInfo[] = [];
+  const itemsByBin = new Map<string, { slot: (typeof slots)[0]; index: number }[]>();
+
+  moved.forEach((itemIdx, k) => {
+    const slot = slots.find((s) => s.index === itemIdx);
+    if (!slot) return;
+    const tagVal = (slot.item as Record<string, unknown>).tags
+      ? ((slot.item as Record<string, unknown>).tags as Record<string, string>)[sort.by]
+      : undefined;
+    const binId = placed?.[k] ?? (tagVal !== undefined ? sort.bins[tagVal] : binIds[0]);
+    if (!binId) return;
+    let list = itemsByBin.get(binId);
+    if (!list) {
+      list = [];
+      itemsByBin.set(binId, list);
+    }
+    list.push({ slot, index: itemIdx });
+  });
+
+  const itemSize = Math.max(1, num(src.props.size, 56));
+
+  // 将已放好的物品排入各自的筐中
+  dests.forEach((dest) => {
+    const binItems = itemsByBin.get(dest.id) ?? [];
+    if (!binItems.length) return;
+    const destPart = getPart(dest.type);
+    const binBox = destPart ? destPart.bbox(dest.props) : { x: 0, y: 0, w: 200, h: 200 };
+    const cols = Math.max(1, Math.floor(binBox.w / itemSize));
+    const padX = (binBox.w - cols * itemSize) / 2;
+    const maxRows = Math.max(1, Math.floor(binBox.h / itemSize));
+    const padY = (binBox.h - maxRows * itemSize) / 2;
+
+    binItems.forEach((it, j) => {
+      const pos = binItemPosition(binBox, itemSize, j);
+      placedItems.push({
+        index: it.index,
+        at: pos.at,
+        box: pos.box,
+        item: it.slot.item as Record<string, unknown>,
+        binId: dest.id,
+      });
+    });
+
+    world.set(`${dest.id}__items`, {
+      id: `${dest.id}__items`,
+      type: 'item-set',
+      props: {
+        items: binItems.map((b) => b.slot.item),
+        layout: 'grid',
+        cols,
+        size: itemSize,
+        gap: 0,
+        at: [binBox.x + padX, binBox.y + padY],
+      },
+    });
+  });
+
+  return {
+    objects: [...world.values()],
+    subHighlights,
+    subColors,
+    items,
+    placedItems,
+    from: src,
+    to: dests,
+  };
 }

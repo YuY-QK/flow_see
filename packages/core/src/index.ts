@@ -10,5 +10,6 @@ export * from './texts';
 export * from './choose';
 export * from './tap';
 export * from './turn';
+export * from './sort';
 export * from './format';
 export * from './fill';

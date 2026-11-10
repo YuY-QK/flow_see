@@ -11,7 +11,17 @@ import { SceneStage } from './stage';
 export { VERBS, parseDuration, planStep } from './actions';
 export { checkScene } from './check';
 export { contentBox, fitBox, sceneViewBox } from './box';
-export { coveredActions, dragFrame, sceneFrame, stepMotionMs, type SceneDef } from './evaluate';
+export {
+  coveredActions,
+  dragFrame,
+  sortFrame,
+  sceneFrame,
+  stepMotionMs,
+  type DragFrame,
+  type SceneDef,
+  type SortFrame,
+  type SortItemInfo,
+} from './evaluate';
 export { sceneOf, triesOf } from './scene';
 export { makeSceneStage } from './stage';
 

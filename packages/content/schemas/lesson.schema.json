@@ -564,12 +564,34 @@
                 "additionalProperties": false
               },
               "sort": {
-                "description": "分类拖放（T3）",
+                "description": "分类拖放：把物品按类别拖进不同的筐",
                 "type": "object",
-                "propertyNames": {
-                  "type": "string"
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "description": "从哪个物品组拖（item-set 零件 id）"
+                  },
+                  "by": {
+                    "type": "string",
+                    "description": "按哪个标签属性分类（如 \"color\"、\"shape\"）"
+                  },
+                  "bins": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "分类筐的映射表：{ 标签值: 筐零件id }"
+                  }
                 },
-                "additionalProperties": {}
+                "required": [
+                  "from",
+                  "by",
+                  "bins"
+                ],
+                "additionalProperties": false
               },
               "place": {
                 "description": "拖到位（T4）",

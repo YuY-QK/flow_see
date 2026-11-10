@@ -66,7 +66,11 @@ export interface TrySpec {
     tolerance?: number | string;
     step?: number | string;
   };
-  sort?: Record<string, unknown>;
+  sort?: {
+    from: string;
+    by: string;
+    bins: Record<string, string>;
+  };
   place?: Record<string, unknown>;
   hints?: string[];
 }

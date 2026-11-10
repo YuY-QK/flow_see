@@ -631,7 +631,15 @@ const trySchema = z
       .strict()
       .optional()
       .describe('转动把手：拖动把手改变零件属性'),
-    sort: z.record(z.string(), z.unknown()).optional().describe('分类拖放（T3）'),
+    sort: z
+      .object({
+        from: z.string().describe('从哪个物品组拖（item-set 零件 id）'),
+        by: z.string().describe('按哪个标签属性分类（如 "color"、"shape"）'),
+        bins: z.record(z.string(), z.string()).describe('分类筐的映射表：{ 标签值: 筐零件id }'),
+      })
+      .strict()
+      .optional()
+      .describe('分类拖放：把物品按类别拖进不同的筐'),
     place: z.record(z.string(), z.unknown()).optional().describe('拖到位（T4）'),
     hints: z
       .array(text)

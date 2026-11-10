@@ -387,7 +387,8 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
       if (targets.length > 1 && !MULTI_TARGET.has(verb))
         need('target', false, '这个动作一次只能作用于一个零件');
 
-      const allowsSubitem = verb === 'highlight' || verb === 'unhighlight' || verb === 'color';
+      const allowsSubitem =
+        verb === 'highlight' || verb === 'unhighlight' || verb === 'color' || verb === 'move';
       for (const t of targets) {
         const { id, sub } = parseTargetRef(t);
         if (sub) {
@@ -601,6 +602,7 @@ function checkTry(
   if (spec.drag) checkDrag(def, si, alive, out);
   if (spec.tap) checkTap(spec.tap, si, alive, objects, scope, out);
   if (spec.turn) checkTurn(def, si, alive, objects, out);
+  if (spec.sort) checkSort(spec.sort, si, alive, objects, out);
 }
 
 function checkDrag(def: SceneDef, si: number, alive: Map<string, string>, out: ConfigIssue[]) {
@@ -934,4 +936,76 @@ function checkTurn(
       out.push({ path: [...p, 'step'], message: 'step 必须为正数' });
     }
   }
+}
+
+/** 动手做（sort）：分类拖放，检查 from 是 item-set、每个物品 tags[by] 都在 bins 里、筐零件存在 */
+function checkSort(
+  sort: TrySpec['sort'],
+  si: number,
+  alive: Map<string, string>,
+  objects: Props[],
+  out: ConfigIssue[],
+) {
+  if (!sort) return;
+  const path = ['steps', si, 'try', 'sort'];
+
+  if (!sort.from) {
+    out.push({ path: [...path, 'from'], message: 'sort 要写 from（从哪个物品组拖）' });
+    return;
+  }
+  if (!alive.has(sort.from)) {
+    out.push({ path: [...path, 'from'], message: `零件 ${sort.from} 在这一步开头不存在` });
+    return;
+  }
+  const fromType = alive.get(sort.from);
+  if (fromType !== 'item-set') {
+    out.push({ path: [...path, 'from'], message: 'from 要写一个物品组（item-set）' });
+    return;
+  }
+
+  if (!sort.by || typeof sort.by !== 'string') {
+    out.push({ path: [...path, 'by'], message: 'by 要写分类依据的标签名（如 "color"、"shape"）' });
+    return;
+  }
+
+  if (!sort.bins || typeof sort.bins !== 'object' || Array.isArray(sort.bins)) {
+    out.push({ path: [...path, 'bins'], message: 'bins 要写分类筐的映射表' });
+    return;
+  }
+
+  // 检查每个筐零件是否存在
+  for (const [tagVal, binId] of Object.entries(sort.bins)) {
+    if (typeof binId !== 'string' || !alive.has(binId)) {
+      out.push({ path: [...path, 'bins', tagVal], message: `零件 ${binId} 在这一步开头不存在` });
+    }
+  }
+
+  // 检查 from 里的每一个物品：tags[by] 必须存在且在 bins 里
+  const fromObj = objects.find((o) => o.id === sort.from);
+  const rawItems = fromObj && Array.isArray(fromObj.items) ? fromObj.items : [];
+  if (!rawItems.length) {
+    out.push({ path: [...path, 'from'], message: `${sort.from} 没有物品` });
+    return;
+  }
+
+  rawItems.forEach((it: unknown, idx: number) => {
+    if (!it || typeof it !== 'object') return;
+    const item = it as Record<string, unknown>;
+    const tags =
+      item.tags && typeof item.tags === 'object'
+        ? (item.tags as Record<string, string>)
+        : undefined;
+    const tagVal = tags ? tags[sort.by] : undefined;
+    if (tagVal === undefined) {
+      out.push({
+        path: [...path, 'from'],
+        message: `第 ${idx + 1} 个物品缺少标签 ${sort.by}`,
+      });
+    } else if (!(tagVal in sort.bins)) {
+      out.push({
+        path: [...path, 'from'],
+        message: `第 ${idx + 1} 个物品的标签 ${tagVal} 不在 bins 里`,
+      });
+    }
+  });
 }

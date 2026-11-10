@@ -5,6 +5,7 @@ import {
   findSubitem,
   formatClockTime,
   getPart,
+  itemSetLayout,
   num,
   sceneStyle,
   type Handle,
@@ -13,13 +14,14 @@ import {
   type Subitem,
 } from '@flow-see/blocks';
 import type { StageProps } from '@flow-see/runtime/template.ts';
-import { evalExpr, t } from '@flow-see/core';
+import { evalExpr, findDropBin, t } from '@flow-see/core';
 import {
   axisTransformMatrix,
   dragFrame,
   dragTargets,
   isAxis,
   sceneFrame,
+  sortFrame,
   type SceneDef,
   type SceneObject,
   type SubHighlight,
@@ -56,10 +58,11 @@ export function SceneView({
   const spec = def.tries?.[index];
   const doing = tryIt?.phase === 'doing' && !!spec;
   const dragging = doing && !!spec?.drag;
+  const isSorting = doing && !!spec?.sort;
   const isTapping = Boolean(tryIt?.tap || (doing && spec?.tap));
   const isTurning = Boolean(tryIt?.turn || (doing && spec?.turn));
   const svgRef = useRef<SVGSVGElement>(null);
-  // 正在拖的计数块：原来的序号、手指位置
+  // 正在拖的计数块/物品：原来的序号、手指位置
   const [lift, setLift] = useState<{ index: number; at: Point; pointer: number } | undefined>();
   // 正在转动的把手
   const [turning, setTurning] = useState<{ handle: Handle; pointer: number } | undefined>();
@@ -71,11 +74,15 @@ export function SceneView({
     () => (dragging ? dragFrame(def, index, moved ?? [], lift?.index, placed) : undefined),
     [dragging, def, index, moved, lift?.index, placed],
   );
+  const sort = useMemo(
+    () => (isSorting ? sortFrame(def, index, moved ?? [], lift?.index, placed) : undefined),
+    [isSorting, def, index, moved, lift?.index, placed],
+  );
   // 等孩子动手时：提问前那一段动作按 tryIt.progress 放
   const shown = tryIt?.phase === 'doing' ? (tryIt.progress ?? 1) : progress;
   const frame = useMemo(
-    () => drag ?? sceneFrame(def, index, shown, tryIt?.phase),
-    [drag, def, index, shown, tryIt?.phase],
+    () => sort ?? drag ?? sceneFrame(def, index, shown, tryIt?.phase),
+    [sort, drag, def, index, shown, tryIt?.phase],
   );
 
   const toStage = (e: PointerEvent): Point | undefined => {
@@ -87,6 +94,14 @@ export function SceneView({
   /** 放下的位置在哪个目标零件上（外面 dropPadding 以内也算）；都不在时为 undefined */
   const onTarget = (at: Point): string | undefined => {
     const pad = sceneStyle().tryIt.dropPadding;
+    if (isSorting && sort) {
+      const binBoxes = sort.to.map((to) => {
+        const part = getPart(to.type);
+        const box = part ? part.bbox(to.props) : { x: 0, y: 0, w: 0, h: 0 };
+        return { id: to.id, box };
+      });
+      return findDropBin(at, binBoxes, pad);
+    }
     return drag?.to.find((to) => {
       const part = getPart(to.type);
       if (!part) return false;
@@ -100,7 +115,16 @@ export function SceneView({
     })?.id;
   };
   /** 键盘放下：按顺序放进下一个目标（一个一个分时轮流放） */
-  const nextTarget = (): string | undefined => {
+  const nextTarget = (itemIdx?: number): string | undefined => {
+    if (spec?.sort) {
+      if (itemIdx !== undefined && sort?.from) {
+        const itemSlot = itemSetLayout(sort.from.props).slots.find((s) => s.index === itemIdx);
+        const tagVal = itemSlot?.item.tags ? itemSlot.item.tags[spec.sort.by] : undefined;
+        if (tagVal && spec.sort.bins[tagVal]) return spec.sort.bins[tagVal];
+      }
+      const binIds = Object.values(spec.sort.bins);
+      return binIds[(moved?.length ?? 0) % Math.max(1, binIds.length)];
+    }
     const ids = spec?.drag ? dragTargets(spec.drag) : [];
     return ids[(moved?.length ?? 0) % Math.max(1, ids.length)];
   };
@@ -177,8 +201,24 @@ export function SceneView({
     return map;
   }, [frame.subColors]);
 
-  // 做错几次后：拖动高亮目标零件；点选高亮配置里指定的零件
-  const hint = new Set(spec?.drag ? dragTargets(spec.drag) : (spec?.choose?.show ?? []));
+  // 做错几次后：拖动高亮目标零件；点选高亮配置里指定的零件；sort 高亮分类筐
+  const hint = new Set(
+    spec?.drag
+      ? dragTargets(spec.drag)
+      : spec?.sort
+        ? (() => {
+            if (lift && sort?.from) {
+              const slot = itemSetLayout(sort.from.props).slots.find(
+                (s) => s.index === lift.index,
+              );
+              const tagVal = slot?.item.tags ? slot.item.tags[spec.sort.by] : undefined;
+              const expectedBin = tagVal ? spec.sort.bins[tagVal] : undefined;
+              if (expectedBin) return [expectedBin];
+            }
+            return Object.values(spec.sort.bins);
+          })()
+        : (spec?.choose?.show ?? []),
+  );
   const objects = frame.objects.map((o) => {
     let obj = o;
     const extraColors = subColorsByPart.get(o.id);
@@ -278,7 +318,7 @@ export function SceneView({
   const size = num(src?.props.size, 44);
   const { hitScale, liftScale } = sceneStyle().tryIt;
   const liftedColor = lift ? drag?.colors[lift.index] : undefined;
-  const isInteracting = dragging || isTurning;
+  const isInteracting = dragging || isSorting || isTurning;
 
   return (
     <svg
@@ -563,6 +603,31 @@ export function SceneView({
           ))
         : null}
 
+      {doing && sort
+        ? sort.items.map((it) => (
+            <circle
+              key={it.index}
+              cx={it.at[0]}
+              cy={it.at[1]}
+              r={(it.box.w / 2) * hitScale}
+              fill="transparent"
+              style={{ cursor: 'grab' }}
+              role="button"
+              tabIndex={0}
+              aria-label={t('handsOn.drag_item_aria')}
+              data-try-item={it.index}
+              onPointerDown={(e) => onDown(e, it.index)}
+              onKeyDown={(e) => {
+                // 键盘：回车或空格直接放进目标
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  tryIt?.onDrop?.(it.index, nextTarget(it.index));
+                }
+              }}
+            />
+          ))
+        : null}
+
       {doing && lift && src ? (
         <g
           transform={`translate(${lift.at[0]} ${lift.at[1]}) scale(${liftScale}) translate(${-lift.at[0]} ${-lift.at[1]})`}
@@ -576,6 +641,42 @@ export function SceneView({
                 count: 1,
                 items: [lift.at],
                 colors: liftedColor ? [liftedColor] : undefined,
+                highlight: 0,
+                opacity: 1,
+              },
+            }}
+            ctx={ctx}
+            theme={theme}
+          />
+        </g>
+      ) : null}
+
+      {doing && lift && sort && sort.from ? (
+        <g
+          transform={`translate(${lift.at[0]} ${lift.at[1]}) scale(${liftScale}) translate(${-lift.at[0]} ${-lift.at[1]})`}
+          style={{ pointerEvents: 'none' }}
+        >
+          <PartView
+            o={{
+              id: `${sort.from.id}__lifted`,
+              type: 'item-set',
+              props: {
+                ...sort.from.props,
+                items: (() => {
+                  const itemSlot = itemSetLayout(sort.from.props).slots.find(
+                    (s) => s.index === lift.index,
+                  );
+                  return itemSlot ? [itemSlot.item] : [];
+                })(),
+                layout: 'row',
+                cols: 1,
+                size: num(sort.from.props.size, 56),
+                at: [
+                  lift.at[0] - num(sort.from.props.size, 56) / 2,
+                  lift.at[1] - num(sort.from.props.size, 56) / 2,
+                ],
+                show: 1,
+                hiddenItems: [],
                 highlight: 0,
                 opacity: 1,
               },

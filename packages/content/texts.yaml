@@ -357,6 +357,7 @@ try:
   tap_more: 还差 {n} 个没点出来。
   turn_close: 快对了，再转一点。
   turn_wrong: 再看看，转到哪里才对？
+  sort_wrong: 它不属于这一类哦。
 mePage:
   ge_ren_zhong_xin: 个人中心
   zi_liao: 资料
