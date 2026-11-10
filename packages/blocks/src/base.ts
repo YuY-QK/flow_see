@@ -30,6 +30,8 @@ export interface Subitem {
   value?: number;
   /** 类别（sort 用，来自 item-set 的 tags） */
   tags?: Record<string, string>;
+  /** 是否不可点击（如 hiddenItems 隐藏的物品） */
+  disabled?: boolean;
 }
 
 export interface Handle {

@@ -22,6 +22,7 @@ import { particlesPart } from './parts/particles';
 import { thermometerPart } from './parts/thermometer';
 import { splitCalcPart } from './parts/splitcalc';
 import { fractionPart, labelPart, textPart } from './parts/text';
+import { itemSetPart } from './parts/item-set';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -62,6 +63,17 @@ export { particleLayout, particlePosition, type ParticleLayout } from './parts/p
 export { COLUMN_CALC_OPS, columnCalcPlan, type ColumnCalcPlan } from './parts/columncalc';
 export { splitCalcLayout } from './parts/splitcalc';
 export { thermometerFill, thermometerLayout, thermometerMix } from './parts/thermometer';
+export {
+  ITEM_SET_LAYOUTS,
+  ITEM_SET_SHAPES,
+  itemSetLayout,
+  itemSetPart,
+  type ItemSetItem,
+  type ItemSetLayout,
+  type ItemSetLayoutKind,
+  type ItemSetShapeKind,
+  type ItemSlot,
+} from './parts/item-set';
 
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
@@ -91,6 +103,7 @@ export const PARTS: readonly PartDef[] = [
   switchPart,
   wirePart,
   thermometerPart,
+  itemSetPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */
