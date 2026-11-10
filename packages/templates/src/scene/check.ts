@@ -534,6 +534,11 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
           need('target', type === 'numberline', '只能在数轴上跳');
           need('from', typeof args.from === 'number', 'from 写起点数');
           need('to', typeof args.to === 'number', 'to 写终点数');
+          need(
+            'color',
+            args.color === undefined || colorOk(args.color, alive),
+            'color 写颜色名或 #RRGGBB',
+          );
           break;
         case 'flip': {
           need(

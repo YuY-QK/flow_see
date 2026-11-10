@@ -80,7 +80,7 @@ export const VERB_KEYS: Record<Verb, readonly string[]> = {
   scale: ['target', 'to'],
   color: ['target', 'to'],
   count: ['target', 'from', 'to'],
-  hop: ['target', 'from', 'to', 'label'],
+  hop: ['target', 'from', 'to', 'label', 'color'],
   wait: [],
   deal: ['target', 'into', 'count'],
   ask: [],

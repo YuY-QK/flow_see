@@ -512,7 +512,8 @@ function apply(world: World, a: SceneAction, p: number, current: boolean, startW
       if (!one || typeof args.from !== 'number' || typeof args.to !== 'number') return;
       const hops = Array.isArray(one.props.hops) ? one.props.hops : [];
       const label = typeof args.label === 'string' ? args.label : undefined;
-      one.props.hops = [...hops, { from: args.from, to: args.to, label, p: e }];
+      const color = typeof args.color === 'string' ? args.color : undefined;
+      one.props.hops = [...hops, { from: args.from, to: args.to, label, color, p: e }];
       // 有指针时，指针跟着跳
       if (typeof one.props.pointer === 'number') one.props.pointer = lerp(args.from, args.to, e);
       return;

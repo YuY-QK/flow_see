@@ -1,11 +1,13 @@
 // 数学零件：数轴、钟面、分数圆、分数条、方格。
+import { formatNumber, time } from '@flow-see/core';
 import {
+  boxAround,
   color,
   num,
   numList,
   pt,
   str,
-  boxAround,
+  textWidth as baseTextWidth,
   type Handle,
   type PartDef,
   type Point,
@@ -19,8 +21,86 @@ export interface Hop {
   from: number;
   to: number;
   label?: string;
+  color?: string;
   /** 画出来的程度 0–1（“跳一跳”动作逐渐画出弧线） */
   p?: number;
+}
+
+export interface NumberlineLayer {
+  labels?: 'integer' | 'decimal' | 'fraction' | 'time' | 'percent' | string;
+  step?: number;
+  offset?: number;
+  color?: string;
+}
+
+export type TickValue =
+  | { type: 'text'; text: string }
+  | { type: 'frac'; num: string; den: string };
+
+function gcd(a: number, b: number): number {
+  a = Math.abs(a);
+  b = Math.abs(b);
+  while (b) {
+    const t = b;
+    b = a % b;
+    a = t;
+  }
+  return a;
+}
+
+/** 格式化刻度文字（支持 integer、decimal、fraction、time、percent） */
+export function formatTickValue(
+  v: number,
+  labels?: string,
+  step?: number,
+): TickValue {
+  const lbl = labels || 'integer';
+
+  if (lbl === 'percent') {
+    return { type: 'text', text: formatNumber(v * 100) + '%' };
+  }
+
+  if (lbl === 'time') {
+    return { type: 'text', text: time(v) };
+  }
+
+  if (lbl === 'fraction') {
+    // 整数刻度写整数
+    if (Math.abs(v - Math.round(v)) < 1e-6) {
+      return { type: 'text', text: formatNumber(Math.round(v)) };
+    }
+    const s = Math.max(step ?? 1, 1e-6);
+    const den0 = Math.round(1 / s);
+    const num0 = Math.round(v * den0);
+    const g = gcd(num0, den0);
+    const num = num0 / g;
+    const den = den0 / g;
+    if (den === 1) {
+      return { type: 'text', text: formatNumber(num) };
+    }
+    return {
+      type: 'frac',
+      num: formatNumber(num),
+      den: String(den),
+    };
+  }
+
+  if (lbl === 'decimal') {
+    return { type: 'text', text: formatNumber(v) };
+  }
+
+  // integer / default：负数刻度写 −3（formatNumber 保证）
+  if (Math.abs(v - Math.round(v)) < 1e-6) {
+    return { type: 'text', text: formatNumber(Math.round(v)) };
+  }
+  return { type: 'text', text: formatNumber(v) };
+}
+
+/** 返回刻度文字的字符串表示（分数返回 "a/b"，用于测试断言及读屏） */
+export function tickLabel(v: number, labels?: string, step?: number): string {
+  const val = formatTickValue(v, labels, step);
+  if (val.type === 'frac') return `${val.num}/${val.den}`;
+  return val.text;
 }
 
 export function numberlineX(p: Props, v: number): number {
@@ -40,18 +120,160 @@ export function hopsOf(p: Props): Hop[] {
     : [];
 }
 
+/** 渲染单个刻度标签（支持普通文本与 F4 行内分数） */
+function TickLabelView({
+  x,
+  y,
+  val,
+  size,
+  color,
+}: {
+  x: number;
+  y: number;
+  val: TickValue;
+  size: number;
+  color: string;
+}) {
+  if (val.type === 'text') {
+    return (
+      <text
+        x={x}
+        y={y}
+        textAnchor="middle"
+        dominantBaseline="hanging"
+        fontSize={size}
+        fill={color}
+      >
+        {val.text}
+      </text>
+    );
+  }
+
+  // F4 行内分数：分子分母字号 × 0.7，上下排列，中间横线
+  const numSize = size * 0.7;
+  const denSize = size * 0.7;
+  const numW = baseTextWidth(val.num, numSize);
+  const denW = baseTextWidth(val.den, denSize);
+  const lineWidth = Math.max(numW, denW) + size * 0.2;
+  const lineStrokeWidth = Math.max(1.5, size * 0.06);
+  const cy = y + size * 0.5;
+
+  return (
+    <g data-tick-label={`${val.num}/${val.den}`}>
+      <line
+        x1={x - lineWidth / 2}
+        x2={x + lineWidth / 2}
+        y1={cy}
+        y2={cy}
+        stroke={color}
+        strokeWidth={lineStrokeWidth}
+        strokeLinecap="round"
+      />
+      <text
+        x={x}
+        y={cy - size * 0.35}
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize={numSize}
+        fill={color}
+      >
+        {val.num}
+      </text>
+      <text
+        x={x}
+        y={cy + size * 0.35}
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize={denSize}
+        fill={color}
+      >
+        {val.den}
+      </text>
+    </g>
+  );
+}
+
 export const numberlinePart: PartDef = {
   type: 'numberline',
   name: '数轴',
   anchor: 'start',
-  props: ['from', 'to', 'step', 'length', 'labelEvery', 'marks', 'pointer', 'hops', 'size'],
+  props: [
+    'from',
+    'to',
+    'step',
+    'length',
+    'labelEvery',
+    'labels',
+    'layers',
+    'zoomFrom',
+    'zoomTo',
+    'zoomScale',
+    'marks',
+    'pointer',
+    'hops',
+    'size',
+  ],
   bbox(p) {
     const [x, y] = pt(p.at);
     const len = num(p.length, 0);
     const span = num(p.to, 0) - num(p.from, 0) || 1;
     const hop = Math.max(0, ...hopsOf(p).map((h) => (Math.abs(h.to - h.from) / span) * len));
     const up = Math.max(30, Math.min(hop * 0.45, 120) + 30);
-    return { x: x - 20, y: y - up, w: len + 40, h: up + 50 };
+    const size = num(p.size, 0) || 22;
+
+    let down = Math.max(50, 14 + size + 10);
+    if (Array.isArray(p.layers) && p.layers.length > 0) {
+      down = Math.max(down, 14 + (p.layers.length + 1) * size * 1.4);
+    }
+    const zoomScale = num(p.zoomScale, 0);
+    if (zoomScale > 1 && p.zoomFrom !== undefined && p.zoomTo !== undefined) {
+      const zoomY = y + size * 3;
+      down = Math.max(down, zoomY - y + 14 + size + 10);
+    }
+
+    return { x: x - 20, y: y - up, w: len + 40, h: up + down };
+  },
+  subitems(p): Subitem[] {
+    const [x, y] = pt(p.at);
+    const from = num(p.from, 0);
+    const to = num(p.to, 0);
+    const step = Math.max(num(p.step, 1), 1e-6);
+    const len = num(p.length, 0);
+    const size = num(p.size, 0) || 22;
+    const X = (v: number) => numberlineX(p, v);
+
+    const items: Subitem[] = [];
+
+    // tick.<值>（刻度点，值用 formatNumber 后的字符串）
+    for (let v = from, i = 0; v <= to + 1e-9 && i < 500; v = from + ++i * step) {
+      const formatted = formatNumber(v);
+      const cx = X(v);
+      items.push({
+        name: `tick.${formatted}`,
+        box: boxAround(cx, y, 40, 40),
+        value: v,
+        label: formatted,
+      });
+    }
+
+    // zoom
+    const zoomScale = num(p.zoomScale, 0);
+    if (zoomScale > 1 && p.zoomFrom !== undefined && p.zoomTo !== undefined) {
+      const zoomLen = len * 0.8;
+      const zoomX = x + (len - zoomLen) / 2;
+      const zoomY = y + size * 3;
+      items.push({
+        name: 'zoom',
+        box: {
+          x: zoomX - 10,
+          y: zoomY - 10,
+          w: zoomLen + 20,
+          h: size + 30,
+        },
+      });
+    }
+
+    return items;
   },
   Render({ p, ctx }) {
     const [x, y] = pt(p.at);
@@ -60,33 +282,96 @@ export const numberlinePart: PartDef = {
     const step = Math.max(num(p.step, 1), 1e-6);
     const every = Math.max(1, Math.round(num(p.labelEvery, 1)));
     const len = num(p.length, 0);
-    const size = num(p.size, 0);
+    const size = num(p.size, 0) || 22;
     const c = color(p.color, ctx.theme);
     const X = (v: number) => numberlineX(p, v);
     const ticks: number[] = [];
     for (let v = from, i = 0; v <= to + 1e-9 && i < 500; v = from + ++i * step) ticks.push(v);
     const pointer = typeof p.pointer === 'number' ? p.pointer : undefined;
+    const mainLabels = str(p.labels) || 'integer';
+
+    // layers 多层刻度
+    const layers: NumberlineLayer[] = Array.isArray(p.layers)
+      ? (p.layers.filter((l) => !!l && typeof l === 'object') as NumberlineLayer[])
+      : [];
+
+    // zoom 放大轴
+    const zoomScale = num(p.zoomScale, 0);
+    const hasZoom = zoomScale > 1 && p.zoomFrom !== undefined && p.zoomTo !== undefined;
+    const zFrom = num(p.zoomFrom, from);
+    const zTo = num(p.zoomTo, to);
+    const zoomLen = len * 0.8;
+    const zoomX = x + (len - zoomLen) / 2;
+    const zoomY = y + size * 3;
+    const zoomXAt = (v: number) => zoomX + ((v - zFrom) / (zTo - zFrom || 1)) * zoomLen;
+    const zoomStep = step / 10;
+    const zoomTicks: number[] = [];
+    if (hasZoom) {
+      for (let v = zFrom, i = 0; v <= zTo + 1e-9 && i < 500; v = zFrom + ++i * zoomStep) {
+        zoomTicks.push(v);
+      }
+    }
+
     return (
       <g>
         <line x1={x - 10} x2={x + len + 18} y1={y} y2={y} stroke={c} strokeWidth={3} />
         <path d={`M${x + len + 22},${y} l-12,-7 v14 z`} fill={c} />
-        {ticks.map((v, i) => (
-          <g key={i}>
-            <line x1={X(v)} x2={X(v)} y1={y - 8} y2={y + 8} stroke={c} strokeWidth={2.5} />
-            {i % every === 0 ? (
-              <text
-                x={X(v)}
-                y={y + 14}
-                textAnchor="middle"
-                dominantBaseline="hanging"
-                fontSize={size}
-                fill={c}
-              >
-                {Math.round(v * 1000) / 1000}
-              </text>
-            ) : null}
-          </g>
-        ))}
+        {ticks.map((v, i) => {
+          // 0 刻度加粗（线宽 × 1.5）
+          const isZero = Math.abs(v) < 1e-6;
+          const tickStrokeWidth = isZero ? 2.5 * 1.5 : 2.5;
+          return (
+            <g key={i}>
+              <line
+                x1={X(v)}
+                x2={X(v)}
+                y1={y - 8}
+                y2={y + 8}
+                stroke={c}
+                strokeWidth={tickStrokeWidth}
+              />
+              {i % every === 0 ? (
+                <TickLabelView
+                  x={X(v)}
+                  y={y + 14}
+                  val={formatTickValue(v, mainLabels, step)}
+                  size={size}
+                  color={c}
+                />
+              ) : null}
+            </g>
+          );
+        })}
+        {/* 多行刻度文字 layers */}
+        {layers.map((layer, lIdx) => {
+          const layerY = y + 14 + (lIdx + 1) * size * 1.4;
+          const layerLabels = layer.labels || mainLabels;
+          const layerStep = Math.max(typeof layer.step === 'number' ? layer.step : step, 1e-6);
+          const layerOffset = typeof layer.offset === 'number' ? layer.offset : 0;
+          const layerColor = layer.color ? color(layer.color, ctx.theme) : c;
+          const layerTicks: number[] = [];
+          for (
+            let v = from + layerOffset, i = 0;
+            v <= to + 1e-9 && i < 500;
+            v = from + layerOffset + ++i * layerStep
+          ) {
+            layerTicks.push(v);
+          }
+          return (
+            <g key={`layer-${lIdx}`}>
+              {layerTicks.map((v, i) => (
+                <TickLabelView
+                  key={i}
+                  x={X(v)}
+                  y={layerY}
+                  val={formatTickValue(v, layerLabels, layerStep)}
+                  size={size}
+                  color={layerColor}
+                />
+              ))}
+            </g>
+          );
+        })}
         {numList(p.marks).map((v, i) => (
           <circle key={i} cx={X(v)} cy={y} r={8} fill={ctx.theme.accent} />
         ))}
@@ -96,12 +381,13 @@ export const numberlinePart: PartDef = {
           const lift = Math.min(Math.abs(x2 - x1) * 0.45, 120) + 10;
           const d = `M${x1},${y - 6} C${x1},${y - lift} ${x2},${y - lift} ${x2},${y - 6}`;
           const shown = Math.max(0, Math.min(1, h.p ?? 1));
+          const hopColor = h.color ? color(h.color, ctx.theme) : ctx.theme.accent;
           return (
             <g key={i} opacity={shown > 0 ? 1 : 0}>
               <path
                 d={d}
                 fill="none"
-                stroke={ctx.theme.accent}
+                stroke={hopColor}
                 strokeWidth={3.5}
                 pathLength={1}
                 strokeDasharray={`${shown} 1`}
@@ -114,7 +400,7 @@ export const numberlinePart: PartDef = {
                   textAnchor="middle"
                   fontSize={size}
                   fontWeight="bold"
-                  fill={ctx.theme.accent}
+                  fill={hopColor}
                 >
                   {h.label}
                 </text>
@@ -129,6 +415,62 @@ export const numberlinePart: PartDef = {
             stroke={ctx.theme.stageBg}
             strokeWidth={2}
           />
+        ) : null}
+        {/* zoom 放大轴 */}
+        {hasZoom ? (
+          <g>
+            {/* 连接原数轴与放大轴两端的 line 色虚线 */}
+            <line
+              x1={X(zFrom)}
+              y1={y}
+              x2={zoomX}
+              y2={zoomY}
+              stroke={ctx.theme.line}
+              strokeWidth={2}
+              strokeDasharray="8 6"
+            />
+            <line
+              x1={X(zTo)}
+              y1={y}
+              x2={zoomX + zoomLen}
+              y2={zoomY}
+              stroke={ctx.theme.line}
+              strokeWidth={2}
+              strokeDasharray="8 6"
+            />
+            {/* 放大轴主体 */}
+            <line
+              x1={zoomX}
+              x2={zoomX + zoomLen}
+              y1={zoomY}
+              y2={zoomY}
+              stroke={c}
+              strokeWidth={3}
+            />
+            {zoomTicks.map((v, i) => {
+              const isZero = Math.abs(v) < 1e-6;
+              const tickStrokeWidth = isZero ? 2.5 * 1.5 : 2.5;
+              return (
+                <g key={i}>
+                  <line
+                    x1={zoomXAt(v)}
+                    x2={zoomXAt(v)}
+                    y1={zoomY - 6}
+                    y2={zoomY + 6}
+                    stroke={c}
+                    strokeWidth={tickStrokeWidth}
+                  />
+                  <TickLabelView
+                    x={zoomXAt(v)}
+                    y={zoomY + 14}
+                    val={formatTickValue(v, 'decimal', zoomStep)}
+                    size={size}
+                    color={c}
+                  />
+                </g>
+              );
+            })}
+          </g>
         ) : null}
       </g>
     );

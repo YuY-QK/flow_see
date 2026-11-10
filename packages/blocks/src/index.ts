@@ -41,11 +41,16 @@ export {
   clockAngles,
   clockPart,
   formatClockTime,
+  formatTickValue,
   gridPart,
   hopsOf,
+  numberlinePart,
   numberlineX,
   parseClockTime,
+  tickLabel,
   type Hop,
+  type NumberlineLayer,
+  type TickValue,
 } from './parts/math';
 export { arcLayout, arcPoint } from './parts/arc';
 export { SHAPE_KINDS } from './parts/shapes';
