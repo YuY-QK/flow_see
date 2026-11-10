@@ -81,8 +81,11 @@ export { particleLayout, particlePosition, type ParticleLayout } from './parts/p
 export {
   COLUMN_CALC_OPS,
   columnCalcPlan,
+  divisionSteps,
   subtractionSteps,
   type ColumnCalcPlan,
+  type DivisionStep,
+  type DivStepType,
   type SubtractionStep,
 } from './parts/columncalc';
 export { splitCalcLayout } from './parts/splitcalc';
