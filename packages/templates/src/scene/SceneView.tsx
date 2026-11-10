@@ -57,7 +57,10 @@ export function SceneView({
   viewBox,
 }: StageProps & { def: SceneDef }) {
   const assetUrl = useContext(AssetUrlContext);
-  const ctx: PartContext = useMemo(() => ({ theme, assetUrl }), [theme, assetUrl]);
+  const ctx: PartContext = useMemo(
+    () => ({ theme, assetUrl, stage: def.stage }),
+    [theme, assetUrl, def.stage],
+  );
   const { width: W, height: H } = def.stage;
   const spec = def.tries?.[index];
   const doing = tryIt?.phase === 'doing' && !!spec;

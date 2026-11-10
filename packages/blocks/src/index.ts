@@ -55,7 +55,16 @@ export {
   type TickValue,
 } from './parts/math';
 export { arcLayout, arcPoint } from './parts/arc';
-export { SHAPE_KINDS } from './parts/shapes';
+export {
+  SHAPE_KINDS,
+  arrowPart,
+  distanceToStageBoundary,
+  imagePart,
+  lineLayout,
+  linePart,
+  shapePart,
+  type LineLayout,
+} from './parts/shapes';
 export { displayText, richSpans, textPart } from './parts/text';
 export { blankRect, markRect } from './parts/markRect';
 export { circleCutLayout, type CircleCutLayout } from './parts/circlecut';

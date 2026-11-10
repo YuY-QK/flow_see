@@ -31,6 +31,10 @@ function getInitialProps(part: ResolvedPart): Props {
   } else if (part.type === 'line' || part.type === 'arrow') {
     if (initial.from === undefined) initial.from = [200, 225];
     if (initial.to === undefined) initial.to = [600, 225];
+    if (part.type === 'line') {
+      if (initial.ends === undefined) initial.ends = ['point', 'open'];
+      if (initial.extend === undefined) initial.extend = 0;
+    }
   } else if (part.type === 'image' && initial.asset === undefined) {
     initial.asset = 'sun';
   } else if (part.type === 'wire' && initial.points === undefined) {
@@ -76,8 +80,15 @@ function getRange(
         prop === 'phase' ||
         prop === 'lit' ||
         prop === 'opacity' ||
+        prop === 'extend' ||
         !Number.isInteger(base))) ||
-    (base === 0 && (prop === 't' || prop === 'draw' || prop === 'phase' || prop === 'lit'));
+    (base === 0 &&
+      (prop === 't' ||
+        prop === 'draw' ||
+        prop === 'phase' ||
+        prop === 'lit' ||
+        prop === 'opacity' ||
+        prop === 'extend'));
 
   if (isZeroToOne) {
     return { min: 0, max: 1, step: 0.01 };

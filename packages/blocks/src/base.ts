@@ -17,6 +17,8 @@ export interface PartContext {
   theme: Theme;
   /** 素材 id → 地址；找不到时返回 undefined（零件显示灰色占位） */
   assetUrl?(id: string): string | undefined;
+  /** 舞台尺寸（可选，默认 800 × 450） */
+  stage?: { width: number; height: number };
 }
 
 export interface Subitem {
