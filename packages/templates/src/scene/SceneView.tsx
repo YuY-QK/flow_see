@@ -5,6 +5,7 @@ import {
   findSubitem,
   formatClockTime,
   getPart,
+  isPoint,
   itemSetLayout,
   num,
   sceneStyle,
@@ -14,7 +15,7 @@ import {
   type Subitem,
 } from '@flow-see/blocks';
 import type { StageProps } from '@flow-see/runtime/template.ts';
-import { evalExpr, findDropBin, t } from '@flow-see/core';
+import { evalExpr, findDropBin, normalizeAngle, t } from '@flow-see/core';
 import {
   axisTransformMatrix,
   dragFrame,
@@ -61,12 +62,32 @@ export function SceneView({
   const isSorting = doing && !!spec?.sort;
   const isTapping = Boolean(tryIt?.tap || (doing && spec?.tap));
   const isTurning = Boolean(tryIt?.turn || (doing && spec?.turn));
+  const isPlacing = Boolean(tryIt?.place || (doing && spec?.place));
+  const placeSpec = typeof tryIt?.place === 'object' ? tryIt.place : spec?.place;
+  const placeTarget = placeSpec?.target;
+
   const svgRef = useRef<SVGSVGElement>(null);
   // 正在拖的计数块/物品：原来的序号、手指位置
   const [lift, setLift] = useState<{ index: number; at: Point; pointer: number } | undefined>();
   // 正在转动的把手
   const [turning, setTurning] = useState<{ handle: Handle; pointer: number } | undefined>();
   const [focusedProp, setFocusedProp] = useState<string | undefined>();
+
+  // 拖到位：选中状态、拖动零件状态、转动把手状态与本地位置/角度
+  const [selectedPlace, setSelectedPlace] = useState(false);
+  const [placingDrag, setPlacingDrag] = useState<{
+    startPointer: Point;
+    startCenter: Point;
+    pointer: number;
+  }>();
+  const [rotatingHandle, setRotatingHandle] = useState<{
+    startPointer: Point;
+    startAngle: number;
+    pointer: number;
+    startTime: number;
+  }>();
+  const [localPlacePos, setLocalPlacePos] = useState<Point | undefined>();
+  const [localPlaceRotate, setLocalPlaceRotate] = useState<number | undefined>();
 
   const moved = tryIt?.moved;
   const placed = tryIt?.placed;
@@ -85,7 +106,7 @@ export function SceneView({
     [sort, drag, def, index, shown, tryIt?.phase],
   );
 
-  const toStage = (e: PointerEvent): Point | undefined => {
+  const toStage = (e: { clientX: number; clientY: number }): Point | undefined => {
     const m = svgRef.current?.getScreenCTM();
     if (!m) return undefined;
     const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
@@ -171,17 +192,79 @@ export function SceneView({
     tryIt?.onTurn?.(val, true);
   };
 
+  const onPlacingMove = (e: PointerEvent) => {
+    if (!placingDrag || e.pointerId !== placingDrag.pointer) return;
+    const at = toStage(e);
+    if (at) {
+      const dx = at[0] - placingDrag.startPointer[0];
+      const dy = at[1] - placingDrag.startPointer[1];
+      const nextPos: Point = [placingDrag.startCenter[0] + dx, placingDrag.startCenter[1] + dy];
+      setLocalPlacePos(nextPos);
+      tryIt?.onPlace?.(nextPos, currentRotate, false);
+    }
+  };
+  const onPlacingUp = (e: PointerEvent) => {
+    if (!placingDrag || e.pointerId !== placingDrag.pointer) return;
+    const at = toStage(e) ?? placingDrag.startPointer;
+    const dx = at[0] - placingDrag.startPointer[0];
+    const dy = at[1] - placingDrag.startPointer[1];
+    const finalPos: Point = [placingDrag.startCenter[0] + dx, placingDrag.startCenter[1] + dy];
+    setPlacingDrag(undefined);
+    setLocalPlacePos(undefined);
+    tryIt?.onPlace?.(finalPos, currentRotate, true);
+  };
+
+  const onRotateHandleMove = (e: PointerEvent) => {
+    if (!rotatingHandle || e.pointerId !== rotatingHandle.pointer) return;
+    const at = toStage(e);
+    if (at) {
+      const angleDeg =
+        (Math.atan2(at[1] - currentCenter[1], at[0] - currentCenter[0]) * 180) / Math.PI + 90;
+      const step = sceneStyle().tryIt.rotateStep ?? 45;
+      const snapped = Math.round(angleDeg / step) * step;
+      const normalized = normalizeAngle(snapped);
+      setLocalPlaceRotate(normalized);
+      tryIt?.onPlace?.(currentCenter, normalized, false);
+    }
+  };
+  const onRotateHandleUp = (e: PointerEvent) => {
+    if (!rotatingHandle || e.pointerId !== rotatingHandle.pointer) return;
+    const at = toStage(e) ?? rotatingHandle.startPointer;
+    const movedDist = Math.hypot(
+      at[0] - rotatingHandle.startPointer[0],
+      at[1] - rotatingHandle.startPointer[1],
+    );
+    const duration = Date.now() - rotatingHandle.startTime;
+    const step = sceneStyle().tryIt.rotateStep ?? 45;
+    let finalRot = currentRotate;
+    if (movedDist < 5 && duration < 300) {
+      // 点一下转一档
+      finalRot = normalizeAngle(currentRotate + step);
+    }
+    setRotatingHandle(undefined);
+    setLocalPlaceRotate(undefined);
+    tryIt?.onPlace?.(currentCenter, finalRot, true);
+  };
+
   const handlePointerMove = (e: PointerEvent) => {
     if (lift && e.pointerId === lift.pointer) onMove(e);
     else if (turning && e.pointerId === turning.pointer) onHandleMove(e);
+    else if (placingDrag && e.pointerId === placingDrag.pointer) onPlacingMove(e);
+    else if (rotatingHandle && e.pointerId === rotatingHandle.pointer) onRotateHandleMove(e);
   };
   const handlePointerUp = (e: PointerEvent) => {
     if (lift && e.pointerId === lift.pointer) onUp(e);
     else if (turning && e.pointerId === turning.pointer) onHandleUp(e);
+    else if (placingDrag && e.pointerId === placingDrag.pointer) onPlacingUp(e);
+    else if (rotatingHandle && e.pointerId === rotatingHandle.pointer) onRotateHandleUp(e);
   };
   const handlePointerCancel = () => {
     setLift(undefined);
     setTurning(undefined);
+    setPlacingDrag(undefined);
+    setRotatingHandle(undefined);
+    setLocalPlacePos(undefined);
+    setLocalPlaceRotate(undefined);
   };
 
   const turnSpec = typeof tryIt?.turn === 'object' ? tryIt.turn : spec?.turn;
@@ -219,6 +302,23 @@ export function SceneView({
           })()
         : (spec?.choose?.show ?? []),
   );
+
+  const initialTargetObj = frame.objects.find((o) => o.id === placeTarget);
+  const initialPart = initialTargetObj ? getPart(initialTargetObj.type) : undefined;
+  const initialBox =
+    initialPart && initialTargetObj ? initialPart.bbox(initialTargetObj.props) : undefined;
+  const initialCenter: Point = initialBox
+    ? [initialBox.x + initialBox.w / 2, initialBox.y + initialBox.h / 2]
+    : [0, 0];
+  const initialRotate = Number(initialTargetObj?.props.rotate ?? 0);
+  const [initialAtX, initialAtY] = isPoint(initialTargetObj?.props.at)
+    ? (initialTargetObj!.props.at as Point)
+    : [0, 0];
+
+  const currentCenter: Point =
+    localPlacePos ?? (tryIt?.placedPos as Point | undefined) ?? initialCenter;
+  const currentRotate: number =
+    localPlaceRotate ?? (tryIt?.placedRotate as number | undefined) ?? initialRotate;
   const objects = frame.objects.map((o) => {
     let obj = o;
     const extraColors = subColorsByPart.get(o.id);
@@ -240,8 +340,103 @@ export function SceneView({
     if ((isTurning || tryIt?.turnValue !== undefined) && turnProp && o.id === turnTarget) {
       obj = { ...obj, props: { ...obj.props, [turnProp]: tryIt?.turnValue ?? o.props[turnProp] } };
     }
+    if (isPlacing && o.id === placeTarget && tryIt?.phase !== 'solved') {
+      const dx = currentCenter[0] - initialCenter[0];
+      const dy = currentCenter[1] - initialCenter[1];
+      obj = {
+        ...obj,
+        props: {
+          ...obj.props,
+          at: [initialAtX + dx, initialAtY + dy],
+          rotate: currentRotate,
+        },
+      };
+    }
     return obj;
   });
+
+  const currentBox = useMemo(() => {
+    if (!initialPart || !initialTargetObj) return { x: 0, y: 0, w: 0, h: 0 };
+    const dx = currentCenter[0] - initialCenter[0];
+    const dy = currentCenter[1] - initialCenter[1];
+    const curProps = {
+      ...initialTargetObj.props,
+      at: [initialAtX + dx, initialAtY + dy],
+      rotate: currentRotate,
+    };
+    return initialPart.bbox(curProps);
+  }, [
+    initialPart,
+    initialTargetObj,
+    currentCenter,
+    initialCenter,
+    initialAtX,
+    initialAtY,
+    currentRotate,
+  ]);
+
+  const hasRotate = placeSpec?.rotate !== undefined;
+  const handleDist = Math.max(currentBox.h / 2 + 28, 40);
+  const edgeDist = Math.max(currentBox.h / 2, 10);
+  const angleRad = ((currentRotate - 90) * Math.PI) / 180;
+  const stemStart: Point = [
+    currentCenter[0] + edgeDist * Math.cos(angleRad),
+    currentCenter[1] + edgeDist * Math.sin(angleRad),
+  ];
+  const handlePos: Point = [
+    currentCenter[0] + handleDist * Math.cos(angleRad),
+    currentCenter[1] + handleDist * Math.sin(angleRad),
+  ];
+  const hr = sceneStyle().tryIt.turnHandle ? sceneStyle().tryIt.turnHandle / 2 : 16;
+  const showRotateBadge = Boolean(rotatingHandle || selectedPlace);
+  const displayRot = `${Math.round(normalizeAngle(currentRotate))}°`;
+  const pillW = Math.max(48, displayRot.length * 9 + 18);
+
+  const goalObj = useMemo(() => {
+    if (!isPlacing || !placeSpec?.showGoal || !initialTargetObj || tryIt?.phase === 'solved')
+      return null;
+    let targetPos: Point = [0, 0];
+    if (Array.isArray(placeSpec.to) && placeSpec.to.length === 2) {
+      targetPos = [Number(placeSpec.to[0]), Number(placeSpec.to[1])];
+    } else if (typeof placeSpec.to === 'string') {
+      const dest = frame.objects.find((o) => o.id === placeSpec.to);
+      if (dest) {
+        const p = getPart(dest.type);
+        if (p) {
+          const b = p.bbox(dest.props);
+          targetPos = [b.x + b.w / 2, b.y + b.h / 2];
+        }
+      }
+    }
+    const goalRotate = placeSpec.rotate !== undefined ? Number(placeSpec.rotate) : 0;
+    const goalDx = targetPos[0] - initialCenter[0];
+    const goalDy = targetPos[1] - initialCenter[1];
+    return {
+      ...initialTargetObj,
+      id: `${initialTargetObj.id}__goal`,
+      props: {
+        ...initialTargetObj.props,
+        at: [initialAtX + goalDx, initialAtY + goalDy],
+        rotate: goalRotate,
+        fill: false,
+        dashed: true,
+        strokeColor: 'line',
+        opacity: 0.85,
+        highlight: 0,
+      },
+    };
+  }, [
+    isPlacing,
+    placeSpec?.showGoal,
+    placeSpec?.to,
+    placeSpec?.rotate,
+    initialTargetObj,
+    tryIt?.phase,
+    frame.objects,
+    initialCenter,
+    initialAtX,
+    initialAtY,
+  ]);
 
   const isReducedMotion =
     typeof window !== 'undefined' &&
@@ -318,7 +513,7 @@ export function SceneView({
   const size = num(src?.props.size, 44);
   const { hitScale, liftScale } = sceneStyle().tryIt;
   const liftedColor = lift ? drag?.colors[lift.index] : undefined;
-  const isInteracting = dragging || isSorting || isTurning;
+  const isInteracting = dragging || isSorting || isTurning || Boolean(placingDrag || rotatingHandle);
 
   return (
     <svg
@@ -336,6 +531,9 @@ export function SceneView({
         userSelect: isInteracting ? 'none' : undefined,
         WebkitUserSelect: isInteracting ? 'none' : undefined,
       }}
+      onPointerDown={(e) => {
+        if (e.target === svgRef.current) setSelectedPlace(false);
+      }}
       onPointerMove={isInteracting ? handlePointerMove : undefined}
       onPointerUp={isInteracting ? handlePointerUp : undefined}
       onPointerCancel={isInteracting ? handlePointerCancel : undefined}
@@ -345,6 +543,19 @@ export function SceneView({
           <feDropShadow dx="0" dy="3" stdDeviation="3" floodOpacity="0.25" />
         </filter>
       </defs>
+
+      {goalObj ? (
+        <g
+          pointerEvents="none"
+          stroke={color('line', theme)}
+          strokeDasharray="8 6"
+          strokeWidth={2}
+          fill="none"
+          opacity={0.85}
+        >
+          <PartView o={goalObj} ctx={ctx} theme={theme} />
+        </g>
+      ) : null}
 
       {objects.map((o) => (
         <PartView key={o.id} o={o} ctx={ctx} theme={theme} />
@@ -684,6 +895,161 @@ export function SceneView({
             ctx={ctx}
             theme={theme}
           />
+        </g>
+      ) : null}
+
+      {isPlacing && tryIt?.phase !== 'solved' && initialTargetObj ? (
+        <g data-place-target={placeTarget}>
+          {/* 零件整体拖动区域 */}
+          <rect
+            x={currentBox.x - 8}
+            y={currentBox.y - 8}
+            width={currentBox.w + 16}
+            height={currentBox.h + 16}
+            rx={Math.min(theme.radius, 12)}
+            fill="transparent"
+            style={{ cursor: placingDrag ? 'grabbing' : 'grab' }}
+            role="button"
+            tabIndex={0}
+            aria-label={t('a11y.handle', { name: initialPart?.name ?? placeTarget })}
+            data-place-wrong={tryIt?.wrong === placeTarget ? 'true' : undefined}
+            onFocus={() => setSelectedPlace(true)}
+            onPointerDown={(e) => {
+              const at = toStage(e);
+              if (!at) return;
+              e.preventDefault();
+              svgRef.current?.setPointerCapture(e.pointerId);
+              setSelectedPlace(true);
+              setPlacingDrag({
+                startPointer: at,
+                startCenter: currentCenter,
+                pointer: e.pointerId,
+              });
+            }}
+            onKeyDown={(e) => {
+              const step = sceneStyle().tryIt.rotateStep ?? 45;
+              if (e.key === 'r' || e.key === 'R') {
+                e.preventDefault();
+                const nextRot = normalizeAngle(currentRotate + step);
+                tryIt?.onPlace?.(currentCenter, nextRot, true);
+              } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                const nextPos: Point = [currentCenter[0] - 10, currentCenter[1]];
+                tryIt?.onPlace?.(nextPos, currentRotate, false);
+              } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                const nextPos: Point = [currentCenter[0] + 10, currentCenter[1]];
+                tryIt?.onPlace?.(nextPos, currentRotate, false);
+              } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                const nextPos: Point = [currentCenter[0], currentCenter[1] - 10];
+                tryIt?.onPlace?.(nextPos, currentRotate, false);
+              } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const nextPos: Point = [currentCenter[0], currentCenter[1] + 10];
+                tryIt?.onPlace?.(nextPos, currentRotate, false);
+              } else if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                tryIt?.onPlace?.(currentCenter, currentRotate, true);
+              }
+            }}
+          />
+
+          {/* 旋转把手：写了 rotate 且选中后显示 */}
+          {hasRotate && selectedPlace ? (
+            <g>
+              <line
+                x1={stemStart[0]}
+                y1={stemStart[1]}
+                x2={handlePos[0]}
+                y2={handlePos[1]}
+                stroke={color('accent', theme)}
+                strokeWidth={2}
+                strokeDasharray="4 3"
+              />
+              <g
+                role="slider"
+                tabIndex={0}
+                aria-label={t('a11y.handle', { name: 'rotate' })}
+                style={{ cursor: rotatingHandle ? 'grabbing' : 'grab' }}
+                onPointerDown={(e) => {
+                  const at = toStage(e);
+                  if (!at) return;
+                  e.preventDefault();
+                  e.stopPropagation();
+                  svgRef.current?.setPointerCapture(e.pointerId);
+                  setRotatingHandle({
+                    startPointer: at,
+                    startAngle: currentRotate,
+                    pointer: e.pointerId,
+                    startTime: Date.now(),
+                  });
+                }}
+                onKeyDown={(e) => {
+                  const step = sceneStyle().tryIt.rotateStep ?? 45;
+                  if (e.key === 'r' || e.key === 'R') {
+                    e.preventDefault();
+                    const nextRot = normalizeAngle(currentRotate + step);
+                    tryIt?.onPlace?.(currentCenter, nextRot, true);
+                  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const nextRot = normalizeAngle(currentRotate - step);
+                    tryIt?.onPlace?.(currentCenter, nextRot, false);
+                  } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const nextRot = normalizeAngle(currentRotate + step);
+                    tryIt?.onPlace?.(currentCenter, nextRot, false);
+                  } else if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    tryIt?.onPlace?.(currentCenter, currentRotate, true);
+                  }
+                }}
+              >
+                <circle
+                  cx={handlePos[0]}
+                  cy={handlePos[1]}
+                  r={Math.max(hr, 22)}
+                  fill="transparent"
+                />
+                <circle
+                  cx={handlePos[0]}
+                  cy={handlePos[1]}
+                  r={hr}
+                  fill={color('accent', theme)}
+                  stroke={color('white', theme)}
+                  strokeWidth={3}
+                  filter="url(#turn-handle-shadow)"
+                />
+                {showRotateBadge ? (
+                  <g
+                    transform={`translate(${handlePos[0]} ${handlePos[1] - hr - 14})`}
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    <rect
+                      x={-pillW / 2}
+                      y={-14}
+                      width={pillW}
+                      height={24}
+                      rx={6}
+                      fill={color('ink', theme)}
+                      fillOpacity={0.88}
+                    />
+                    <text
+                      x={0}
+                      y={3}
+                      textAnchor="middle"
+                      fill={color('white', theme)}
+                      fontSize={14}
+                      fontWeight="bold"
+                      fontFamily={theme.font}
+                    >
+                      {displayRot}
+                    </text>
+                  </g>
+                ) : null}
+              </g>
+            </g>
+          ) : null}
         </g>
       ) : null}
     </svg>

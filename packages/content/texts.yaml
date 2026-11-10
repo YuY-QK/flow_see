@@ -358,6 +358,8 @@ try:
   turn_close: 快对了，再转一点。
   turn_wrong: 再看看，转到哪里才对？
   sort_wrong: 它不属于这一类哦。
+  place_rotate: 转一转再放。
+  place_wrong: 再找找它该放在哪里。
 mePage:
   ge_ren_zhong_xin: 个人中心
   zi_liao: 资料

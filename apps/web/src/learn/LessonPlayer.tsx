@@ -10,6 +10,7 @@ import {
   isAnswer,
   narrationText,
   parseTurnAnswer,
+  placeResult,
   shuffled,
   snapToStep,
   sortResult,
@@ -67,8 +68,17 @@ interface TryProgress {
   turnValue?: number;
   /** 转动把手：这一步开头的初始数值 */
   turnInitial?: number;
+  /** 拖到位：当前零件锚点位置 */
+  placedPos?: [number, number];
+  /** 拖到位：当前零件旋转角度 */
+  placedRotate?: number;
 }
-const freshTry = (key: string, initialTurn?: number): TryProgress => ({
+const freshTry = (
+  key: string,
+  initialTurn?: number,
+  initialPlacePos?: [number, number],
+  initialPlaceRotate?: number,
+): TryProgress => ({
   moved: [],
   placed: [],
   picked: [],
@@ -80,6 +90,8 @@ const freshTry = (key: string, initialTurn?: number): TryProgress => ({
   reveal: false,
   turnValue: initialTurn,
   turnInitial: initialTurn,
+  placedPos: initialPlacePos,
+  placedRotate: initialPlaceRotate,
 });
 
 function getInitialTurnValue(animation: Animation, stepIndex: number, turn: TurnSpec): number {
@@ -97,6 +109,26 @@ function getInitialTurnValue(animation: Animation, stepIndex: number, turn: Turn
     return parseTurnAnswer(val as number | string);
   } catch {
     return 0;
+  }
+}
+
+function getInitialPlace(
+  animation: Animation,
+  stepIndex: number,
+  place: NonNullable<TrySpec['place']>,
+): { pos: [number, number]; rot: number } | undefined {
+  try {
+    const def = sceneOf(animation);
+    const frame = sceneFrame(def, stepIndex, 0, 'doing');
+    const obj = frame.objects.find((o) => o.id === place.target);
+    if (!obj) return undefined;
+    const part = getPart(obj.type);
+    const box = part?.bbox(obj.props);
+    const pos: [number, number] = box ? [box.x + box.w / 2, box.y + box.h / 2] : [0, 0];
+    const rot = Number(obj.props.rotate ?? 0);
+    return { pos, rot };
+  } catch {
+    return undefined;
   }
 }
 
@@ -237,6 +269,12 @@ export function LessonPlayer({
     return getInitialTurnValue(animation, state.index, turnSpec);
   }, [turnSpec, animation, state.index]);
 
+  const placeSpec = spec?.place;
+  const initialPlace = useMemo(() => {
+    if (!placeSpec) return undefined;
+    return getInitialPlace(animation, state.index, placeSpec);
+  }, [placeSpec, animation, state.index]);
+
   const targetAnswer = useMemo(() => {
     if (!turnSpec) return 0;
     try {
@@ -260,8 +298,13 @@ export function LessonPlayer({
   }, [turnSpec, animation]);
 
   const tryKey = `${state.index}:${state.waiting}`;
-  const [saved, setTp] = useState<TryProgress>(() => freshTry(tryKey, initialTurn));
-  const tp = saved.key === tryKey ? saved : freshTry(tryKey, initialTurn);
+  const [saved, setTp] = useState<TryProgress>(() =>
+    freshTry(tryKey, initialTurn, initialPlace?.pos, initialPlace?.rot),
+  );
+  const tp =
+    saved.key === tryKey
+      ? saved
+      : freshTry(tryKey, initialTurn, initialPlace?.pos, initialPlace?.rot);
   const say = (text: string) => {
     if (narrate)
       speak(text, { rate: state.speed * settings.speechRate, voiceURI: settings.voiceURI });
@@ -280,7 +323,7 @@ export function LessonPlayer({
     const fromVal = tp.turnValue ?? initialTurn ?? 0;
     demoFromVal.current = fromVal;
     setTp({
-      ...freshTry(tryKey, initialTurn),
+      ...freshTry(tryKey, initialTurn, initialPlace?.pos, initialPlace?.rot),
       misses,
       note: t('handsOn.watch_me'),
       demo: 0,
@@ -305,6 +348,7 @@ export function LessonPlayer({
     const choosing = !!spec.choose;
     const tapping = !!spec.tap;
     const isTurn = !!spec.turn;
+    const isPlace = !!spec.place;
     const text =
       spec.hints?.[misses - 1] ??
       note ??
@@ -318,6 +362,8 @@ export function LessonPlayer({
             ? t('try.tap_wrong')
             : isTurn
               ? t('try.turn_wrong')
+              : isPlace
+                ? t('try.place_wrong')
             : t('handsOn.miss'));
     setTp({ ...tp, ...extra, misses, note: text });
     say(text);
@@ -569,7 +615,9 @@ export function LessonPlayer({
   useEffect(() => {
     if (!demoing) return;
     const baseMs = template.motionMs?.(animation, state.index) ?? 0;
-    const ms = (baseMs > 0 ? baseMs : (spec?.turn ? 1000 : (spec?.sort ? 1500 : 0))) / state.speed;
+    const ms =
+      (baseMs > 0 ? baseMs : spec?.turn ? 1000 : spec?.sort ? 1500 : spec?.place ? 1200 : 0) /
+      state.speed;
     const start = performance.now();
     const fromVal = demoFromVal.current;
     let raf = 0;
@@ -589,7 +637,7 @@ export function LessonPlayer({
       else
         timer = window.setTimeout(() => {
           setTp({
-            ...freshTry(tryKey, initialTurn),
+            ...freshTry(tryKey, initialTurn, initialPlace?.pos, initialPlace?.rot),
             note: t('handsOn.you_try'),
             reveal: !!tries[state.index]?.choose,
           });
@@ -697,6 +745,82 @@ export function LessonPlayer({
     }
   };
 
+  const onPlace = (pos: [number, number], rot: number, done: boolean) => {
+    if (!spec || !spec.place) return;
+    begin();
+    if (!done) {
+      setTp((prev) => ({ ...prev, placedPos: pos, placedRotate: rot, note: '' }));
+      return;
+    }
+
+    const place = spec.place;
+    const def = sceneOf(animation);
+    const frame0 = sceneFrame(def, state.index, 0, 'doing');
+
+    let targetPos: [number, number] = [0, 0];
+    if (Array.isArray(place.to) && place.to.length === 2) {
+      targetPos = [Number(place.to[0]), Number(place.to[1])];
+    } else if (typeof place.to === 'string') {
+      const destObj = frame0.objects.find((o) => o.id === place.to);
+      if (destObj) {
+        const p = getPart(destObj.type);
+        if (p) {
+          const b = p.bbox(destObj.props);
+          targetPos = [b.x + b.w / 2, b.y + b.h / 2];
+        }
+      }
+    }
+
+    const defaultTol = site.scene.tryIt.placeTolerance ?? 24;
+    const res = placeResult(place, pos, rot, {
+      defaultTolerance: defaultTol,
+      targetPos,
+    });
+
+    if (res.status === 'correct') {
+      setTp((prev) => ({
+        ...prev,
+        placedPos: targetPos,
+        placedRotate: res.targetRotate,
+        note: t('handsOn.praise'),
+        wrong: undefined,
+      }));
+      say(t('handsOn.praise'));
+      dispatch({ type: 'solve' });
+      return;
+    }
+
+    if (res.status === 'rotate') {
+      const note = t('try.place_rotate');
+      setTp((prev) => ({
+        ...prev,
+        placedPos: pos,
+        placedRotate: rot,
+        note,
+        wrong: undefined,
+      }));
+      say(note);
+      return;
+    }
+
+    // 位置不对：弹回初始位置、做错一次
+    const nextMisses = tp.misses + 1;
+    const hints = spec.hints ?? [];
+    const hintText = hints[tp.misses] || t('try.place_wrong');
+    setTp((prev) => ({
+      ...prev,
+      misses: nextMisses,
+      placedPos: initialPlace?.pos,
+      placedRotate: initialPlace?.rot,
+      note: hintText,
+      wrong: place.target,
+    }));
+    say(hintText);
+    if (nextMisses >= handsOn.demoAfterMisses) {
+      startDemo(nextMisses);
+    }
+  };
+
   const tryIt: StageTry | undefined =
     !spec
       ? undefined
@@ -719,6 +843,11 @@ export function LessonPlayer({
                   moved: demoSortMoved,
                   placed: demoSortPlaced,
                 }
+            : spec.place
+              ? {
+                  phase: 'doing',
+                  place: spec.place,
+                }
               : undefined
         : state.waiting
           ? {
@@ -726,7 +855,7 @@ export function LessonPlayer({
               moved: tp.moved,
               placed: tp.placed,
               tapped: tp.tapped,
-              wrong: tp.wrongTap,
+              wrong: tp.wrongTap || tp.wrong,
               tap: spec.tap,
               onTap,
               progress: state.progress,
@@ -735,8 +864,17 @@ export function LessonPlayer({
               turn: spec.turn,
               onTurn,
               turnValue: tp.turnValue,
+              place: spec.place,
+              onPlace,
+              placedPos: tp.placedPos,
+              placedRotate: tp.placedRotate,
             }
-          : { phase: 'solved', turnValue: tp.turnValue ?? targetAnswer };
+          : {
+              phase: 'solved',
+              turnValue: tp.turnValue ?? targetAnswer,
+              placedPos: tp.placedPos,
+              placedRotate: tp.placedRotate,
+            };
   const doing = !!spec && state.waiting;
   // 字幕下方的一行反馈（提示、已放好几个）；没有就不占地方
   const noteText =

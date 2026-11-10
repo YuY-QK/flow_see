@@ -640,7 +640,19 @@ const trySchema = z
       .strict()
       .optional()
       .describe('分类拖放：把物品按类别拖进不同的筐'),
-    place: z.record(z.string(), z.unknown()).optional().describe('拖到位（T4）'),
+    place: z
+      .object({
+        target: z.string().describe('拖动哪个零件（零件 id）'),
+        to: z
+          .union([z.tuple([paramRef, paramRef]), z.string()])
+          .describe('目标坐标 [x, y] 或目标零件 id'),
+        rotate: paramRef.optional().describe('目标旋转角度（度）'),
+        tolerance: paramRef.optional().describe('放置容差，默认从 site.yaml 读取'),
+        showGoal: z.boolean().optional().describe('是否在目标位置显示虚线轮廓'),
+      })
+      .strict()
+      .optional()
+      .describe('拖到位：拖动零件到指定位置和角度（T4）'),
     hints: z
       .array(text)
       .max(3)

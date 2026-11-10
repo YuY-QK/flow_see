@@ -1,0 +1,118 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+# 平行四边形的面积：沿高剪下一个三角形，平移到另一边，拼成长方形：面积 = 底 × 高。
+# 样板知识点（status: draft，任务卡 T4）
+id: parallelogram-area
+title: 平行四边形的面积
+summary: 沿高剪下一个三角形，平移到另一边，拼成长方形：面积 = 底 × 高
+status: draft
+duration: 2分钟
+tags: [平行四边形面积, 割补, 转化, 底乘高]
+cover: { step: 5, text: S=ah }
+related: [rect-area, triangle-area, parallelogram-height]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  b: 6 # 底
+  h: 4 # 高
+  s: 2 # 上边相对下边右移几格；1 = 40 像素
+
+explore:
+  - { param: b, control: slider, label: 底, min: 4, max: 8 }
+  - { param: h, control: slider, label: 高, min: 2, max: 5 }
+  - { param: s, control: slider, label: 倾斜, min: 1, max: 3 }
+
+presets:
+  - { label: 6 × 4, params: { b: 6, h: 4, s: 2 } }
+  - { label: 5 × 3, params: { b: 5, h: 3, s: 1 } }
+  - { label: 7 × 4, params: { b: 7, h: 4, s: 2 } }
+
+objects:
+  - id: body
+    type: polygon
+    points:
+      - ['{100 + s * 40}', 300]
+      - ['{100 + b * 40}', 300]
+      - ['{100 + b * 40 + s * 40}', '{300 - h * 40}']
+      - ['{100 + s * 40}', '{300 - h * 40}']
+    color: blue
+  - id: piece
+    type: polygon
+    points:
+      - [100, 300]
+      - ['{100 + s * 40}', 300]
+      - ['{100 + s * 40}', '{300 - h * 40}']
+    color: orange
+  - id: cut
+    type: line
+    from: ['{100 + s * 40}', 300]
+    to: ['{100 + s * 40}', '{300 - h * 40}']
+    dashed: true
+    color: red
+  - id: labels
+    type: text
+    text: '底 {b}　高 {h}'
+    size: 26
+    at: ['{100 + b * 20}', 340]
+  - id: eq
+    type: text
+    text: '面积 = 底 × 高 = {b} × {h} = [{b * h}](blank)'
+    size: 30
+    at: [560, 120]
+  - id: wrong
+    type: text
+    text: 不是邻边相乘
+    size: 24
+    color: red
+    at: [560, 380]
+    hidden: true
+
+steps:
+  - title: 平行四边形
+    say: 底是 {b}，高是 {h}，面积是多少？
+    do:
+      - highlight: body
+      - highlight: { target: piece, together: true }
+  - title: 沿高剪开
+    say: 沿着高剪下左边的三角形。
+    do:
+      - highlight: cut
+      - move: { target: piece, by: [0, 20], duration: 0.8s }
+  - title: 平移过去
+    say: 把它平移到右边。
+    do:
+      - ask: true
+      - move: { target: piece, by: ['{b * 40}', -20], duration: 1s }
+    try:
+      task: 把三角形平移到右边，拼成长方形。
+      place:
+        target: piece
+        to: ['{100 + b * 40 + s * 20}', '{300 - h * 20}']
+        showGoal: true
+      hints:
+        - 向右平移，斜边对斜边。
+  - title: 变成长方形
+    say: 拼成的长方形，长就是底，宽就是高。
+    do:
+      - highlight: body
+      - highlight: { target: piece, together: true }
+  - title: 面积公式
+    say: 平行四边形的面积 = 底 × 高。
+    do:
+      - highlight: eq
+      - ask: true
+      - set: { target: eq, text: '面积 = 底 × 高 = {b} × {h} = {b * h}', duration: 0.5s }
+    try:
+      task: 平行四边形的面积是多少？
+      choose: { answer: '{b * h}', min: 8, max: 40 }
+  - title: 别用邻边
+    say: 拉歪的框架邻边没变，高变小了，面积也变小，不能用邻边相乘。
+    do:
+      - show: wrong
+      - highlight: wrong
+
+keyPoints:
+  - 平行四边形的面积 = 底 × 高，用字母表示 S = ah
+  - 推导方法是“剪、移、拼”，把平行四边形转化成长方形

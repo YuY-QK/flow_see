@@ -725,6 +725,23 @@ export function coveredActions(list: readonly unknown[] | undefined, spec?: TryS
       }
     });
   }
+  if (spec?.place) {
+    const place = spec.place;
+    const target = place.target;
+    (list ?? []).forEach((raw, i) => {
+      const a = parseAction(raw);
+      if (!a) return;
+      if (a.targets.includes(target)) {
+        if (a.verb === 'move') {
+          out.add(i);
+        } else if (a.verb === 'rotate' && place.rotate !== undefined) {
+          out.add(i);
+        } else if (a.verb === 'set' && place.rotate !== undefined && a.args.rotate !== undefined) {
+          out.add(i);
+        }
+      }
+    });
+  }
   const drag = spec?.drag;
   if (!drag) return out;
   const ids = new Set([drag.from]);

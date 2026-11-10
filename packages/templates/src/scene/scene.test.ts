@@ -2041,4 +2041,252 @@ describe('沿路径移动（follow）', () => {
       expect(ok).toEqual([]);
     });
   });
+  describe('动手做：拖到位（place）配置检查、coveredActions 与 SceneView（任务卡 T4）', () => {
+    it('正确配置的 place（坐标一致、含 rotate）检查通过', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [{ id: 'p1', type: 'shape', shape: 'rect', width: 80, height: 60, at: [100, 100] }],
+        steps: [
+          {
+            say: '拖到位并旋转',
+            do: [
+              { move: { target: 'p1', to: [400, 200] } },
+              { rotate: { target: 'p1', to: 90 } },
+            ],
+            try: {
+              task: '把方块拖到右边并转90度。',
+              place: {
+                target: 'p1',
+                to: [400, 200],
+                rotate: 90,
+                tolerance: 20,
+                showGoal: true,
+              },
+            },
+          },
+        ],
+      });
+      expect(issues).toHaveLength(0);
+    });
+
+    it('正确配置的 place 使用 move.by 计算终点一致时检查通过', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [{ id: 'p1', type: 'shape', shape: 'rect', width: 80, height: 60, at: [100, 100] }],
+        steps: [
+          {
+            say: '平移方块',
+            do: [{ move: { target: 'p1', by: [200, 50] } }],
+            try: {
+              task: '平移方块',
+              place: {
+                target: 'p1',
+                to: [300, 150],
+              },
+            },
+          },
+        ],
+      });
+      expect(issues).toHaveLength(0);
+    });
+
+    it('目标零件不存在时报错', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [],
+        steps: [
+          {
+            say: '拖零件',
+            try: {
+              task: '拖零件',
+              place: {
+                target: 'ghost',
+                to: [200, 200],
+              },
+            },
+          },
+        ],
+      });
+      expect(issues.some((i) => i.message.includes('ghost 在这一步开头不存在'))).toBe(true);
+    });
+
+    it('do 里缺少 move 动作时报错', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [{ id: 'p1', type: 'shape', shape: 'rect', at: [100, 100] }],
+        steps: [
+          {
+            say: '未写 move',
+            do: [{ highlight: 'p1' }],
+            try: {
+              task: '拖零件',
+              place: {
+                target: 'p1',
+                to: [300, 100],
+              },
+            },
+          },
+        ],
+      });
+      expect(issues.some((i) => i.message.includes('do 里要有把 p1 移动到目标位置的 move 动作'))).toBe(true);
+    });
+
+    it('move 移动坐标与 place.to 不一致时报错', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [{ id: 'p1', type: 'shape', shape: 'rect', at: [100, 100] }],
+        steps: [
+          {
+            say: '坐标不一致',
+            do: [{ move: { target: 'p1', to: [500, 500] } }],
+            try: {
+              task: '拖零件',
+              place: {
+                target: 'p1',
+                to: [300, 100],
+              },
+            },
+          },
+        ],
+      });
+      expect(issues.some((i) => i.message.includes('不一致'))).toBe(true);
+    });
+
+    it('写了 rotate 时缺少 rotate 动作报错', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [{ id: 'p1', type: 'shape', shape: 'rect', at: [100, 100] }],
+        steps: [
+          {
+            say: '未写 rotate',
+            do: [{ move: { target: 'p1', to: [300, 100] } }],
+            try: {
+              task: '拖零件',
+              place: {
+                target: 'p1',
+                to: [300, 100],
+                rotate: 90,
+              },
+            },
+          },
+        ],
+      });
+      expect(issues.some((i) => i.message.includes('要有把 p1 旋转到该角度的 rotate 动作'))).toBe(true);
+    });
+
+    it('rotate 动作目标角度与 place.rotate 不一致时报错', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [{ id: 'p1', type: 'shape', shape: 'rect', at: [100, 100] }],
+        steps: [
+          {
+            say: '角度不一致',
+            do: [
+              { move: { target: 'p1', to: [300, 100] } },
+              { rotate: { target: 'p1', to: 180 } },
+            ],
+            try: {
+              task: '拖零件',
+              place: {
+                target: 'p1',
+                to: [300, 100],
+                rotate: 90,
+              },
+            },
+          },
+        ],
+      });
+      expect(issues.some((i) => i.message.includes('角度') && i.message.includes('不一致'))).toBe(true);
+    });
+
+    it('tolerance 必须为非负数', () => {
+      const issues = checkScene({
+        params: {},
+        objects: [{ id: 'p1', type: 'shape', shape: 'rect', at: [100, 100] }],
+        steps: [
+          {
+            say: '负容差',
+            do: [{ move: { target: 'p1', to: [300, 100] } }],
+            try: {
+              task: '拖零件',
+              place: {
+                target: 'p1',
+                to: [300, 100],
+                tolerance: -5,
+              },
+            },
+          },
+        ],
+      });
+      expect(issues.some((i) => i.message.includes('tolerance 必须为非负数'))).toBe(true);
+    });
+
+    it('coveredActions 覆盖对 place.target 的 move 与 rotate 动作', () => {
+      const spec = {
+        task: '拖到位',
+        place: {
+          target: 'piece',
+          to: [380, 220] as [number, number],
+          rotate: 180,
+        },
+      };
+      const actions = [
+        { highlight: 'cut' },
+        { move: { target: 'piece', to: [380, 220] } },
+        { rotate: { target: 'piece', to: 180 } },
+        { move: { target: 'other', to: [100, 100] } },
+      ];
+      const covered = coveredActions(actions, spec);
+      expect(covered.has(1)).toBe(true);
+      expect(covered.has(2)).toBe(true);
+      expect(covered.has(0)).toBe(false);
+      expect(covered.has(3)).toBe(false);
+    });
+
+    it('SceneView 渲染 place 整体拖动区域、showGoal 虚线轮廓及错位抖动反馈', () => {
+      const dummyAnim = {
+        title: 'Test Animation',
+        templateId: 'scene',
+        steps: [],
+      } as unknown as Animation;
+      const theme = getTheme('cute');
+
+      const placeScene: SceneDef = {
+        stage: { width: 800, height: 450 },
+        objects: [{ id: 'piece', type: 'shape', shape: 'rect', width: 100, height: 80, at: [200, 200] }],
+        steps: [[{ move: { target: 'piece', to: [400, 200] } }]],
+        tries: [
+          {
+            task: '拖到目标位置',
+            place: {
+              target: 'piece',
+              to: [400, 200],
+              showGoal: true,
+            },
+          },
+        ],
+      };
+
+      const htmlDoing = renderToStaticMarkup(
+        createElement(SceneView, {
+          def: placeScene,
+          animation: dummyAnim,
+          index: 0,
+          theme,
+          tryIt: {
+            phase: 'doing',
+            place: placeScene.tries?.[0]?.place,
+            wrong: 'piece',
+          },
+        }),
+      );
+
+      // 整体拖动区域与做错抖动属性
+      expect(htmlDoing).toContain('data-place-target="piece"');
+      expect(htmlDoing).toContain('data-place-wrong="true"');
+      // showGoal 虚线轮廓渲染
+      expect(htmlDoing).toContain('stroke-dasharray="8 6"');
+    });
+  });
+
 });

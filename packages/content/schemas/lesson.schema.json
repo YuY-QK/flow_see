@@ -594,12 +594,85 @@
                 "additionalProperties": false
               },
               "place": {
-                "description": "拖到位（T4）",
+                "description": "拖到位：拖动零件到指定位置和角度（T4）",
                 "type": "object",
-                "propertyNames": {
-                  "type": "string"
+                "properties": {
+                  "target": {
+                    "type": "string",
+                    "description": "拖动哪个零件（零件 id）"
+                  },
+                  "to": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            ]
+                          },
+                          {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            ]
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 2,
+                        "maxItems": 2
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "description": "目标坐标 [x, y] 或目标零件 id"
+                  },
+                  "rotate": {
+                    "description": "目标旋转角度（度）",
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    ]
+                  },
+                  "tolerance": {
+                    "description": "放置容差，默认从 site.yaml 读取",
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    ]
+                  },
+                  "showGoal": {
+                    "description": "是否在目标位置显示虚线轮廓",
+                    "type": "boolean"
+                  }
                 },
-                "additionalProperties": {}
+                "required": [
+                  "target",
+                  "to"
+                ],
+                "additionalProperties": false
               },
               "hints": {
                 "description": "做错时依次给出的提示（每句不超过约 30 字）；不写用通用提示",

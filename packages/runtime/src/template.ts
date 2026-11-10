@@ -71,7 +71,13 @@ export interface TrySpec {
     by: string;
     bins: Record<string, string>;
   };
-  place?: Record<string, unknown>;
+  place?: {
+    target: string;
+    to: [number | string, number | string] | string;
+    rotate?: number | string;
+    tolerance?: number | string;
+    showGoal?: boolean;
+  };
   hints?: string[];
 }
 
@@ -101,6 +107,10 @@ export interface StageTry {
   turnValue?: number;
   /** 刚点错或操作错的目标（抖动反馈） */
   wrong?: string;
+  place?: TrySpec['place'] | boolean;
+  onPlace?(pos: [number, number], rotate: number, done: boolean): void;
+  placedPos?: [number, number];
+  placedRotate?: number;
 }
 
 /** 知识点配置里与模板有关的部分（结构与 packages/content 的 lesson 一致，这里不依赖 content） */

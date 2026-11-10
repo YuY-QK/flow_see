@@ -16,7 +16,14 @@ import {
   parseClockTime,
   type Props,
 } from '@flow-see/blocks';
-import { evalExpr, fillParams, matchPattern, parseTurnAnswer, resolveParams } from '@flow-see/core';
+import {
+  evalExpr,
+  fillParams,
+  isAngleEqual,
+  matchPattern,
+  parseTurnAnswer,
+  resolveParams,
+} from '@flow-see/core';
 import type { ConfigIssue, LessonLike, TrySpec } from '@flow-see/runtime/template.ts';
 import {
   MULTI_TARGET,
@@ -29,7 +36,7 @@ import {
   parseDuration,
   parseTargetRef,
 } from './actions';
-import { coveredActions, dragFrame, dragTargets, type SceneDef } from './evaluate';
+import { coveredActions, dragFrame, dragTargets, sceneFrame, type SceneDef } from './evaluate';
 import { MAX_REPEAT, expandActions, expandObjects, isObj, isRepeat } from './repeat';
 
 /** 颜色：颜色名、#RRGGBB，或 "@零件id"（跟着那个零件的颜色） */
@@ -603,6 +610,7 @@ function checkTry(
   if (spec.tap) checkTap(spec.tap, si, alive, objects, scope, out);
   if (spec.turn) checkTurn(def, si, alive, objects, out);
   if (spec.sort) checkSort(spec.sort, si, alive, objects, out);
+  if (spec.place) checkPlace(def, si, alive, objects, out);
 }
 
 function checkDrag(def: SceneDef, si: number, alive: Map<string, string>, out: ConfigIssue[]) {
@@ -1008,4 +1016,166 @@ function checkSort(
       });
     }
   });
+}
+
+/** 动手做（place）：拖到位，检查目标零件在这一步开头存在、do 里有把 target 移到 to 的 move（坐标一致）、写了 rotate 时还要有转到该角度的 rotate */
+function checkPlace(
+  def: SceneDef,
+  si: number,
+  alive: Map<string, string>,
+  objects: Props[],
+  out: ConfigIssue[],
+) {
+  const spec = def.tries?.[si];
+  const place = spec?.place;
+  if (!place) return;
+  const p = ['steps', si, 'try', 'place'];
+
+  if (!place.target) {
+    out.push({ path: [...p, 'target'], message: 'place 要写 target（拖动哪个零件）' });
+    return;
+  }
+  if (!alive.has(place.target)) {
+    out.push({ path: [...p, 'target'], message: `零件 ${place.target} 在这一步开头不存在` });
+    return;
+  }
+
+  if (place.to === undefined) {
+    out.push({ path: [...p, 'to'], message: 'place 要写 to（目标位置）' });
+    return;
+  }
+
+  const isToArray =
+    Array.isArray(place.to) &&
+    place.to.length === 2 &&
+    Number.isFinite(Number(place.to[0])) &&
+    Number.isFinite(Number(place.to[1]));
+  const isToStr = typeof place.to === 'string';
+  if (!isToArray && !isToStr) {
+    out.push({ path: [...p, 'to'], message: 'to 写目标坐标 [x, y] 或零件 id' });
+    return;
+  }
+  if (typeof place.to === 'string' && !alive.has(place.to)) {
+    out.push({ path: [...p, 'to'], message: `目标零件 ${place.to} 在这一步开头不存在` });
+    return;
+  }
+
+  const list = def.steps[si] ?? [];
+  const moveAction = list
+    .map(parseAction)
+    .find((a) => a && a.verb === 'move' && a.targets.includes(place.target));
+
+  if (!moveAction) {
+    out.push({
+      path: ['steps', si, 'try', 'place'],
+      message: `do 里要有把 ${place.target} 移动到目标位置的 move 动作`,
+    });
+    return;
+  }
+
+  let targetPoint: [number, number] | undefined;
+  if (isToArray) {
+    targetPoint = [Number((place.to as unknown[])[0]), Number((place.to as unknown[])[1])];
+  } else if (isToStr) {
+    const targetObj = objects.find((o) => o.id === place.to);
+    if (targetObj) {
+      const part = getPart(String(targetObj.type));
+      if (part) {
+        const box = part.bbox(targetObj);
+        targetPoint = [box.x + box.w / 2, box.y + box.h / 2];
+      }
+    }
+  }
+
+  if (targetPoint) {
+    const moveTo = moveAction.args.to;
+    const moveBy = moveAction.args.by;
+    let finalMovePoint: [number, number] | undefined;
+    if (isPoint(moveTo)) {
+      finalMovePoint = [Number(moveTo[0]), Number(moveTo[1])];
+    } else if (typeof moveTo === 'string' && alive.has(moveTo)) {
+      const destObj = objects.find((o) => o.id === moveTo);
+      if (destObj) {
+        const part = getPart(String(destObj.type));
+        if (part) {
+          const box = part.bbox(destObj);
+          finalMovePoint = [box.x + box.w / 2, box.y + box.h / 2];
+        }
+      }
+    } else if (isPoint(moveBy)) {
+      const frameBefore = sceneFrame(def, si, 0);
+      const currObj = frameBefore.objects.find((o) => o.id === place.target);
+      if (currObj) {
+        const part = getPart(currObj.type);
+        if (part) {
+          const box = part.bbox(currObj.props);
+          const cx = box.x + box.w / 2;
+          const cy = box.y + box.h / 2;
+          finalMovePoint = [cx + Number(moveBy[0]), cy + Number(moveBy[1])];
+        }
+      }
+    }
+
+    if (finalMovePoint) {
+      const dist = Math.hypot(
+        finalMovePoint[0] - targetPoint[0],
+        finalMovePoint[1] - targetPoint[1],
+      );
+      if (dist > 1) {
+        out.push({
+          path: ['steps', si, 'try', 'place'],
+          message: `move 移动目标坐标 [${finalMovePoint[0]}, ${finalMovePoint[1]}] 与 place.to 坐标 [${targetPoint[0]}, ${targetPoint[1]}] 不一致`,
+        });
+      }
+    }
+  }
+
+  if (place.rotate !== undefined) {
+    const targetDeg = Number(place.rotate);
+    if (!Number.isFinite(targetDeg)) {
+      out.push({ path: [...p, 'rotate'], message: `rotate（${place.rotate}）必须为有效数值` });
+    } else {
+      const rotateAction = list
+        .map(parseAction)
+        .find(
+          (a) =>
+            a &&
+            (a.verb === 'rotate' || (a.verb === 'set' && a.args.rotate !== undefined)) &&
+            a.targets.includes(place.target),
+        );
+      if (!rotateAction) {
+        out.push({
+          path: ['steps', si, 'try', 'place'],
+          message: `写了 rotate 时，do 里要有把 ${place.target} 旋转到该角度的 rotate 动作`,
+        });
+      } else {
+        let moveDeg: number | undefined;
+        if (rotateAction.verb === 'rotate') {
+          if (typeof rotateAction.args.to === 'number') {
+            moveDeg = rotateAction.args.to;
+          } else if (typeof rotateAction.args.by === 'number') {
+            const frameBefore = sceneFrame(def, si, 0);
+            const currObj = frameBefore.objects.find((o) => o.id === place.target);
+            const curRot = Number(currObj?.props.rotate ?? 0);
+            moveDeg = curRot + rotateAction.args.by;
+          }
+        } else if (rotateAction.verb === 'set') {
+          moveDeg = Number(rotateAction.args.rotate);
+        }
+        if (moveDeg !== undefined && !isAngleEqual(moveDeg, targetDeg)) {
+          out.push({
+            path: ['steps', si, 'try', 'place'],
+            message: `rotate 动作目标角度（${moveDeg}°）与 place.rotate（${targetDeg}°）不一致`,
+          });
+        }
+      }
+    }
+  }
+
+  if (place.tolerance !== undefined) {
+    const tol = Number(place.tolerance);
+    if (!Number.isFinite(tol) || tol < 0) {
+      out.push({ path: [...p, 'tolerance'], message: 'tolerance 必须为非负数' });
+    }
+  }
 }

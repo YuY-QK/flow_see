@@ -614,7 +614,8 @@
     animation: none;
   }
 }
-.stageSvg [data-tap-wrong='true'] {
+.stageSvg [data-tap-wrong='true'],
+.stageSvg [data-place-wrong='true'] {
   animation: tapShake 0.25s ease-in-out;
 }
 @keyframes tapShake {
@@ -630,7 +631,8 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .stageSvg [data-tap-wrong='true'] {
+  .stageSvg [data-tap-wrong='true'],
+  .stageSvg [data-place-wrong='true'] {
     animation: none;
   }
 }
