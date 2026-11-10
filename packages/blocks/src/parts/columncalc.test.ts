@@ -843,3 +843,329 @@ describe('竖式除法（长除法，任务卡 X2）', () => {
     expect(boxAfterAdj.y).toBeLessThan(boxBeforeAdj.y);
   });
 });
+
+describe('竖式小数、多位数乘法、简写与 blank（任务卡 X3）', () => {
+  it('decimals 参数支持与从数值推断小数位数（保留末尾 0 如 2.50）', () => {
+    // 隐式推断
+    const plan1 = columnCalcPlan({ a: 2.5, b: 3.86, op: '+' });
+    expect(plan1.decimals).toEqual([1, 2]);
+    expect(plan1.isDecimal).toBe(true);
+
+    // 显式指定 decimals: [2, 0]（保留末尾 0 成为 2.50）
+    const plan2 = columnCalcPlan({ a: 2.5, b: 3, op: '+', decimals: [2, 0] });
+    expect(plan2.decimals).toEqual([2, 0]);
+    expect(plan2.a[0]).toBe(0); // 2.50 的百分位是 0
+    expect(plan2.a[1]).toBe(5); // 十分位 5
+    expect(plan2.a[2]).toBe(2); // 个位 2
+  });
+
+  it('2.5 + 3.86：小数点对齐、末尾补灰色小 0、结果对齐', () => {
+    const props = { at: [400, 200], a: 2.5, b: 3.86, op: '+', size: 44 };
+    const plan = columnCalcPlan(props);
+    const L = layoutOf(props, plan);
+    expect(plan.isDecimal).toBe(true);
+    expect(plan.result).toBe(6.36);
+    expect(plan.maxDec).toBe(2);
+    expect(plan.padZerosA).toBe(1); // 2.5 补一个 0 成为 2.50
+    expect(plan.padZerosB).toBe(0);
+
+    // 4 步：① 补 0；② 百分位 0+6=6；③ 十分位 5+8=13（写 3 进 1）；④ 个位 2+3+1=6
+    expect(plan.steps).toHaveLength(4);
+    expect(plan.steps[0].phase).toBe('pad');
+    expect(plan.steps[1].cells).toEqual([{ row: 'res', col: 0, digit: 6 }]);
+    expect(plan.steps[2].cells).toEqual([{ row: 'res', col: 1, digit: 3 }]);
+    expect(plan.steps[2].carry).toEqual({ col: 2, digit: 1 });
+    expect(plan.steps[3].cells).toEqual([{ row: 'res', col: 2, digit: 6 }]);
+
+    // show = 0 时补的 0 未出现（opacity 0）
+    const els0 = renderPart({ ...props, show: 0 });
+    const padText0 = els0.find((e) => e.type === 'text' && e.props.x === L.x(0) && e.props.y === L.yA);
+    expect(padText0).toBeDefined();
+    expect(Number(padText0!.props.opacity)).toBe(0);
+
+    // show = 1 时补位 0 出现：字号更小（44 * 0.75 = 33），颜色为 dim 色
+    const els1 = renderPart({ ...props, show: 1 });
+    const padText1 = els1.find((e) => e.type === 'text' && e.props.x === L.x(0) && e.props.y === L.yA);
+    expect(padText1).toBeDefined();
+    expect(Number(padText1!.props.opacity)).toBe(1);
+    expect(padText1!.props.children).toBe('0');
+    expect(Number(padText1!.props.fontSize)).toBe(44 * 0.75);
+    expect(padText1!.props.fill).toBe(getTheme('cute').dim);
+
+    // show = 4 全部写出，结果 6.36，结果行小数点出现
+    const els4 = renderPart({ ...props, show: 4 });
+    const rw4 = resWords(els4, L.yRes);
+    expect(rw4).toContain('6');
+    expect(rw4).toContain('3');
+    const dots4 = els4.filter((e) => e.type === 'circle');
+    // a 有小数点、b 有小数点、res 有小数点
+    expect(dots4.length).toBeGreaterThanOrEqual(3);
+    const dotRes = dots4.find((d) => d.props.cx === L.xDotRes && Math.abs(Number(d.props.cy) - (L.yRes + 44 * 0.35)) < 1);
+    expect(dotRes).toBeDefined();
+  });
+
+  it('10 − 2.35：整数末尾补 .00，连续退位与每一步画面元素', () => {
+    const props = { at: [400, 200], a: 10, b: 2.35, op: '−', size: 44 };
+    const plan = columnCalcPlan(props);
+    const L = layoutOf(props, plan);
+    expect(plan.result).toBe(7.65);
+    expect(plan.padZerosA).toBe(2); // 10 补两个 0 成为 10.00
+    expect(plan.steps[0].phase).toBe('pad');
+
+    // show = 1 时，10 补出小数点和两个灰色小 0
+    const els1 = renderPart({ ...props, show: 1 });
+    const zero0 = els1.find((e) => e.type === 'text' && e.props.x === L.x(0) && e.props.y === L.yA);
+    const zero1 = els1.find((e) => e.type === 'text' && e.props.x === L.x(1) && e.props.y === L.yA);
+    expect(zero0).toBeDefined();
+    expect(zero1).toBeDefined();
+    expect(zero0!.props.fill).toBe(getTheme('cute').dim);
+    expect(zero1!.props.fill).toBe(getTheme('cute').dim);
+    expect(Number(zero0!.props.fontSize)).toBe(44 * 0.75);
+
+    // show = 2 时，百分位向十位退位（chainFrom: 3），退位点产生，差为 5
+    const els2 = renderPart({ ...props, show: 2 });
+    const sm2 = smallWords(els2);
+    expect(sm2).toContain('10'); // 个位借来的 10
+    expect(sm2).toContain('9');  // 十分位变 9
+    const rw2 = resWords(els2, L.yRes);
+    expect(rw2).toEqual(['5']);
+
+    // show = 5 全部算完，差 7.65
+    const els5 = renderPart({ ...props, show: 5 });
+    const rw5 = resWords(els5, L.yRes);
+    expect(rw5).toContain('5');
+    expect(rw5).toContain('6');
+    expect(rw5).toContain('7');
+  });
+
+  it('加法结果末尾的 0 用 dim 色表示（如 5.4 + 2.6 = 8.0）', () => {
+    const props = { at: [400, 200], a: 5.4, b: 2.6, op: '+', size: 44, show: 3 };
+    const plan = columnCalcPlan(props);
+    const L = layoutOf(props, plan);
+    expect(plan.result).toBe(8);
+    expect(plan.trailingZerosCount).toBe(1);
+
+    const els = renderPart(props);
+    // 结果行的 0（十分位）为 dim 色
+    const zeroRes = els.find((e) => e.type === 'text' && e.props.x === L.x(0) && Math.abs(Number(e.props.y) - L.yRes) < 1);
+    expect(zeroRes).toBeDefined();
+    expect(zeroRes!.props.fill).toBe(getTheme('cute').dim);
+    // 结果行的 8 为 ink 正常色
+    const eightRes = els.find((e) => e.type === 'text' && e.props.x === L.x(1) && Math.abs(Number(e.props.y) - L.yRes) < 1);
+    expect(eightRes).toBeDefined();
+    expect(eightRes!.props.fill).not.toBe(getTheme('cute').dim);
+  });
+
+  it('0.8 × 3：先按整数算右对齐，最后一小步点小数点', () => {
+    const props = { at: [400, 200], a: 0.8, b: 3, op: '×', size: 44 };
+    const plan = columnCalcPlan(props);
+    const L = layoutOf(props, plan);
+    expect(plan.result).toBe(2.4);
+    expect(plan.maxDec).toBe(1);
+    expect(plan.steps).toHaveLength(2);
+
+    // 第 1 步：整数乘 8×3=24，写出 24，phase = 0
+    expect(plan.steps[0].phase).toBe(0);
+    expect(plan.steps[0].cells).toEqual([
+      { row: 0, col: 0, digit: 4 },
+      { row: 0, col: 1, digit: 2 },
+    ]);
+
+    // 第 2 步：点小数点，phase = 'point'
+    expect(plan.steps[1].phase).toBe('point');
+
+    // show = 1 时：积为 24，无小数点
+    const els1 = renderPart({ ...props, show: 1 });
+    const dots1 = els1.filter(
+      (e) => e.type === 'circle' && Math.abs(Number(e.props.cy) - (L.yRes + 44 * 0.35)) < 1,
+    );
+    expect(dots1).toHaveLength(0);
+
+    // show = 2 时：点上小数点，积变为 2.4
+    const els2 = renderPart({ ...props, show: 2 });
+    const dots2 = els2.filter(
+      (e) => e.type === 'circle' && Math.abs(Number(e.props.cy) - (L.yRes + 44 * 0.35)) < 1,
+    );
+    expect(dots2).toHaveLength(1);
+    expect(dots2[0].props.cx).toBeCloseTo(L.xDotRes!);
+  });
+
+  it('0.25 × 0.4（积前补 0）：位数不够时在前面补 0，补的 0 用 accent 色', () => {
+    const props = { at: [400, 200], a: 0.25, b: 0.4, op: '×', size: 44 };
+    const plan = columnCalcPlan(props);
+    const L = layoutOf(props, plan);
+    expect(plan.result).toBe(0.1);
+    expect(plan.maxDec).toBe(3); // 2 + 1 = 3 位小数
+    expect(plan.paddedLeadingZeros).toBe(1); // 25×4=100 只有 3 位，前面补 0 形成 0.100
+
+    const pointStep = plan.steps[plan.steps.length - 1];
+    expect(pointStep.phase).toBe('point');
+    expect(pointStep.isLeadingZero).toBe(true);
+    expect(pointStep.cells).toEqual([{ row: 0, col: 3, digit: 0 }]);
+
+    expect(plan.steps).toHaveLength(3);
+
+    // show = 2 时写出整数乘积 100（尚未点小数点与补 0）
+    const els2 = renderPart({ ...props, show: 2 });
+    const zeroLeading2 = els2.find(
+      (e) => e.type === 'text' && e.props.x === L.x(3) && Math.abs(Number(e.props.y) - L.yRes) < 1,
+    );
+    expect(zeroLeading2).toBeUndefined();
+
+    // show = 3（最后一小步：点小数点与补 0 步）
+    const els3 = renderPart({ ...props, show: 3 });
+    // 个位补的 0 使用 accent 色
+    const zeroLeading = els3.find(
+      (e) => e.type === 'text' && e.props.x === L.x(3) && Math.abs(Number(e.props.y) - L.yRes) < 1,
+    );
+    expect(zeroLeading).toBeDefined();
+    expect(zeroLeading!.props.fill).toBe(getTheme('cute').accent);
+
+    // 末尾的 00 为 dim 色
+    const zeroTail0 = els3.find(
+      (e) => e.type === 'text' && e.props.x === L.x(0) && Math.abs(Number(e.props.y) - L.yRes) < 1,
+    );
+    const zeroTail1 = els3.find(
+      (e) => e.type === 'text' && e.props.x === L.x(1) && Math.abs(Number(e.props.y) - L.yRes) < 1,
+    );
+    expect(zeroTail0!.props.fill).toBe(getTheme('cute').dim);
+    expect(zeroTail1!.props.fill).toBe(getTheme('cute').dim);
+  });
+
+  it('350 × 24（trimZeros: true）：因数末尾 0 写在外面，最后一小步补 0 到积末尾', () => {
+    const props = { at: [400, 200], a: 350, b: 24, op: '×', trimZeros: true, size: 44 };
+    const plan = columnCalcPlan(props);
+    const L = layoutOf(props, plan);
+    expect(plan.trimZeros).toBe(true);
+    expect(plan.trimmedZerosCount).toBe(1);
+    expect(plan.result).toBe(8400);
+
+    // 最后一小步是 trim-zero，将 0 补到积的 col 0
+    const lastStep = plan.steps[plan.steps.length - 1];
+    expect(lastStep.phase).toBe('trim-zero');
+    expect(lastStep.cells).toEqual([{ row: 'res', col: 0, digit: 0 }]);
+
+    // 在倒数第二步（相加完成，未补 0 时）：积中尚未有 col 0 的 0
+    const beforeLastShow = plan.steps.length - 1;
+    const elsBefore = renderPart({ ...props, show: beforeLastShow });
+    const zeroResBefore = elsBefore.find(
+      (e) => e.type === 'text' && e.props.x === L.x(0) && Math.abs(Number(e.props.y) - L.yRes) < 1,
+    );
+    expect(zeroResBefore).toBeUndefined();
+
+    // 在最后一步（show = 总步数）：0 补在积末尾
+    const elsFinal = renderPart({ ...props, show: plan.steps.length });
+    const zeroResFinal = elsFinal.find(
+      (e) => e.type === 'text' && e.props.x === L.x(0) && Math.abs(Number(e.props.y) - L.yRes) < 1,
+    );
+    expect(zeroResFinal).toBeDefined();
+    expect(zeroResFinal!.props.children).toBe('0');
+  });
+
+  it('22.4 ÷ 4：商的小数点与被除数小数点对齐，在商的小步出现', () => {
+    const props = { at: [400, 200], a: 22.4, b: 4, op: '÷', size: 44 };
+    const plan = columnCalcPlan(props);
+    const L = layoutOf(props, plan);
+    expect(plan.result).toBe(5.6);
+    expect(plan.divRounds).toHaveLength(2);
+
+    // 第 1 轮（整数部分 22÷4）：商 5、乘 20、差 2、落 4，共 4 步
+    // 第 2 轮（小数部分十分位 24÷4）：商 6（此时商的小数点出现）、乘 24、差 0
+    const dotRound = plan.divRounds![1];
+    expect(dotRound.hasDot).toBe(true);
+    expect(dotRound.qDigit).toBe(6);
+
+    // show = 4（第 1 轮结束时）：商行还没有小数点
+    const els4 = renderPart({ ...props, show: 4 });
+    const dotQ4 = els4.filter(
+      (e) => e.type === 'circle' && Math.abs(Number(e.props.cy) - (L.yQ! + 44 * 0.35)) < 1,
+    );
+    expect(dotQ4).toHaveLength(0);
+
+    // show = 5（商 6 出现时）：商行小数点出现，与被除数小数点对齐（cx 相同）
+    const els5 = renderPart({ ...props, show: 5 });
+    const dotQ5 = els5.find(
+      (e) => e.type === 'circle' && Math.abs(Number(e.props.cy) - (L.yQ! + 44 * 0.35)) < 1,
+    );
+    expect(dotQ5).toBeDefined();
+    expect(dotQ5!.props.cx).toBeCloseTo(L.xDotQ!);
+    expect(L.xDotQ).toBeCloseTo(L.xDotA!);
+  });
+
+  it('1 ÷ 4（添 0）：被除数除尽前添 0 继续除，添的 0 用 dim 色', () => {
+    const props = { at: [400, 200], a: 1, b: 4, op: '÷', size: 44 };
+    const plan = columnCalcPlan(props);
+    const L = layoutOf(props, plan);
+    expect(plan.result).toBe(0.25);
+    expect(plan.divRounds).toHaveLength(3); // 3 轮：商 0、商 2、商 5
+
+    // 第一轮商 0，商行出现 0.，被除数添 0 落位，dropIsAppended 为 true
+    expect(plan.divRounds![0].qDigit).toBe(0);
+    expect(plan.divRounds![0].hasDot).toBe(true);
+    expect(plan.divRounds![0].dropIsAppended).toBe(true);
+
+    // 第二轮添 0 落位，dropIsAppended 为 true
+    expect(plan.divRounds![1].dropIsAppended).toBe(true);
+
+    // 第三轮为最后一轮（商 5，整除）
+    expect(plan.divRounds![2].qDigit).toBe(5);
+    expect(plan.divRounds![2].isLast).toBe(true);
+
+    // show = 99 全部显示
+    const els = renderPart({ ...props, show: 99 });
+    // 被除数上添的 0 在 yA 行且颜色为 dim 色
+    const dimAppended = els.filter(
+      (e) => e.type === 'text' && Math.abs(Number(e.props.y) - L.yA) < 1 && e.props.fill === getTheme('cute').dim,
+    );
+    expect(dimAppended.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('2.52 ÷ 0.6（小数点移动）：第一步把除数、被除数小数点同时右移', () => {
+    const props = { at: [400, 200], a: 2.52, b: 0.6, op: '÷', size: 44 };
+    const plan = columnCalcPlan(props);
+    const L = layoutOf(props, plan);
+    expect(plan.isDivShift).toBe(true);
+    expect(plan.shiftAmount).toBe(1);
+    expect(plan.result).toBe(4.2);
+
+    // 第 1 步是 shift-points
+    expect(plan.steps[0].divType).toBe('shift-points');
+
+    // show = 1 时画出移动弧形箭头
+    const els1 = renderPart({ ...props, show: 1 });
+    const paths = els1.filter((e) => e.type === 'path' && e.props.stroke === getTheme('cute').line);
+    // 除数和被除数各有一个弧形箭头与箭头尖端
+    expect(paths.length).toBeGreaterThanOrEqual(2);
+
+    // show = 99 算完，商为 4.2
+    const elsDone = renderPart({ ...props, show: 99 });
+    const qTexts = elsDone
+      .filter((e) => e.type === 'text' && Math.abs(Number(e.props.y) - L.yQ!) < 1)
+      .map((e) => String(e.props.children));
+    expect(qTexts).toContain('4');
+    expect(qTexts).toContain('2');
+  });
+
+  it('所有 op 都支持 blank 挖空虚线框', () => {
+    // 加法 blank
+    const pAdd = { at: [400, 200], a: 2.5, b: 3.86, op: '+', blank: ['r2c0'], show: 4 };
+    const elsAdd = renderPart(pAdd);
+    expect(elsAdd.filter((e) => e.type === BlankBox || (e.props && 'data-blank' in e.props))).toHaveLength(1);
+
+    // 减法 blank
+    const pSub = { at: [400, 200], a: 10, b: 2.35, op: '−', blank: ['r2c1'], show: 5 };
+    const elsSub = renderPart(pSub);
+    expect(elsSub.filter((e) => e.type === BlankBox || (e.props && 'data-blank' in e.props))).toHaveLength(1);
+
+    // 乘法 blank
+    const pMul = { at: [400, 200], a: 0.8, b: 3, op: '×', blank: ['r2c0', 'r0c0'], show: 2 };
+    const elsMul = renderPart(pMul);
+    expect(elsMul.filter((e) => e.type === BlankBox || (e.props && 'data-blank' in e.props))).toHaveLength(2);
+
+    // 除法 blank
+    const pDiv = { at: [400, 200], a: 22.4, b: 4, op: '÷', blank: ['q0', 'dividend.c0'], show: 7 };
+    const elsDiv = renderPart(pDiv);
+    expect(elsDiv.filter((e) => e.type === BlankBox || (e.props && 'data-blank' in e.props))).toHaveLength(2);
+  });
+});
+
