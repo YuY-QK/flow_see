@@ -184,6 +184,15 @@ const profileSchema = z
   })
   .strict();
 
+const readAsRuleSchema = z
+  .object({
+    match: z.string().min(1).describe('匹配正则字符串'),
+    say: z.string().describe('替换为的内容，可含正则捕获组如 $1'),
+  })
+  .strict();
+
+export type ReadAsRule = z.infer<typeof readAsRuleSchema>;
+
 const speechSchema = z
   .object({
     rates: z
@@ -195,6 +204,10 @@ const speechSchema = z
       )
       .strict()
       .describe('朗读语速三档对应的倍率'),
+    readAs: z
+      .array(readAsRuleSchema)
+      .default([])
+      .describe('朗读规整规则列表，按顺序替换'),
   })
   .strict();
 
@@ -609,6 +622,7 @@ const stepSchema = z
       .optional()
       .describe('这一步出现的条件：{算式}，结果为 0 时跳过'),
     say: text.describe('这一步的讲解，会朗读；可以用 {参数名} 代入参数'),
+    speak: text.optional().describe('单独指定的朗读文字；不写时朗读 say'),
     title: z.string().optional(),
     show: z.string().optional().describe('模板约定的画面状态'),
     do: z

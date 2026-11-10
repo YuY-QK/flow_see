@@ -412,6 +412,7 @@ num:
   hour: 时
   minute: 分
   two: 两
+  blank: 几
 officialCard:
   jing_xuan: 精选
   watch_aria: 观看「{title}」

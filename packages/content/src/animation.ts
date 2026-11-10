@@ -48,6 +48,7 @@ export function lessonToAnimation(
       id: `${lesson.id}-${i + 1}`,
       title: st.title ?? '',
       desc: String(st.say ?? ''),
+      ...(st.speak !== undefined ? { narration: String(st.speak) } : {}),
       data: { show: st.show, do: st.do ?? [], ...(st.try ? { try: st.try } : {}) },
     })),
     params,

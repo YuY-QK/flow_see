@@ -7,9 +7,20 @@ import { configureStyle } from './packages/core/src/style';
 import { configureTexts } from './packages/core/src/texts';
 import { CONTENT_ROOT } from './packages/content/src/json-schema';
 import { siteSchema, styleSchema, textsSchema } from './packages/content/src/schema';
+import { configureRuntime } from './packages/runtime/src/config';
 
 const site = siteSchema.parse(parse(readFileSync(join(CONTENT_ROOT, 'site.yaml'), 'utf8')));
 configureScene(site.scene);
+
+configureRuntime({
+  siteName: site.site.name,
+  shareApiBase: site.share.apiBase,
+  shareOrigin: '',
+  player: site.player,
+  editor: site.editor,
+  saveRevokeMs: site.ui.saveRevokeMs,
+  speech: site.speech,
+});
 
 // 界面文案同样来自真实的 texts.yaml；缺键直接抛错
 configureTexts(textsSchema.parse(parse(readFileSync(join(CONTENT_ROOT, site.texts), 'utf8'))), {

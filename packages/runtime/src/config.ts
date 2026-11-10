@@ -1,6 +1,7 @@
 // 运行时配置：由应用（apps/web）启动时根据 site.yaml 注入。
 // runtime 处在内容层之下，不能直接读取内容配置，所以通过这里传进来。
 import { t, type AfterSpeechConfig, type DwellConfig } from '@flow-see/core';
+import type { ReadAsRule } from './services/readAs';
 
 export interface RuntimeConfig {
   /** 网站名称：导出视频的署名、备份文件提示等 */
@@ -15,6 +16,8 @@ export interface RuntimeConfig {
   editor: { autosaveMs: number; stepDurations: number[] };
   /** 导出文件下载后，多久释放临时地址（site.yaml 的 ui.saveRevokeMs） */
   saveRevokeMs: number;
+  /** 朗读规整规则（site.yaml 的 speech.readAs） */
+  speech?: { readAs?: ReadAsRule[] };
 }
 
 let current: RuntimeConfig | undefined;
