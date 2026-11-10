@@ -24,6 +24,7 @@ import { splitCalcPart } from './parts/splitcalc';
 import { fractionPart, labelPart, textPart } from './parts/text';
 import { itemSetPart } from './parts/item-set';
 import { polygonPart } from './parts/polygon';
+import { moneyPart } from './parts/money';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -76,6 +77,19 @@ export {
   type ItemSlot,
 } from './parts/item-set';
 export { polygonLayout, polygonPart, type PolygonLayoutResult } from './parts/polygon';
+export {
+  DEFAULT_MONEY_COLORS,
+  MONEY_LAYOUTS,
+  isDarkBackground,
+  moneyLayout,
+  moneyPart,
+  parseDenomination,
+  type MoneyDenomination,
+  type MoneyLabels,
+  type MoneyLayout,
+  type MoneyLayoutKind,
+  type MoneySlot,
+} from './parts/money';
 
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
@@ -107,6 +121,7 @@ export const PARTS: readonly PartDef[] = [
   thermometerPart,
   itemSetPart,
   polygonPart,
+  moneyPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */

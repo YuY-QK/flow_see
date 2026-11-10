@@ -5,6 +5,7 @@ import {
   COUNTER_SHAPES,
   ITEM_SET_LAYOUTS,
   ITEM_SET_SHAPES,
+  MONEY_LAYOUTS,
   PART_TYPES,
   SHAPE_KINDS,
   findSubitem,
@@ -105,8 +106,19 @@ function checkProps(
             path: [...path, k],
             message: `物品组的 layout 只能是 ${ITEM_SET_LAYOUTS.join('、')}`,
           });
+      } else if (part.type === 'money') {
+        if (!(MONEY_LAYOUTS as readonly unknown[]).includes(v))
+          out.push({
+            path: [...path, k],
+            message: `人民币的 layout 只能是 ${MONEY_LAYOUTS.join('、')}`,
+          });
       } else if (!(COUNTER_LAYOUTS as readonly unknown[]).includes(v)) {
         out.push({ path: [...path, k], message: `layout 只能是 ${COUNTER_LAYOUTS.join('、')}` });
+      }
+    }
+    if (k === 'items' && part.type === 'money') {
+      if (!Array.isArray(v)) {
+        out.push({ path: [...path, k], message: 'items 必须是列表' });
       }
     }
     if (k === 'items' && part.type === 'item-set') {

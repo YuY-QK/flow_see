@@ -45,6 +45,10 @@ function getInitialProps(part: ResolvedPart): Props {
   } else if (part.type === 'column-calc') {
     if (initial.a === undefined) initial.a = 24;
     if (initial.b === undefined) initial.b = 18;
+  } else if (part.type === 'money') {
+    if (initial.items === undefined) {
+      initial.items = [100, 50, 20, 10, 5, '1n', 1, 0.5, 0.1, 0.05, 0.01];
+    }
   }
   return initial;
 }
@@ -155,6 +159,10 @@ function YamlPropField({
 export function DevPartsPage() {
   const partsList = useMemo(() => allParts(), []);
   const [selectedType, setSelectedType] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const q = new URLSearchParams(window.location.search).get('part');
+      if (q && partsList.some((p) => p.type === q)) return q;
+    }
     const foundClock = partsList.find((p) => p.type === 'clock');
     return foundClock ? foundClock.type : partsList[0]?.type ?? 'text';
   });
@@ -174,7 +182,13 @@ export function DevPartsPage() {
     }
   }, [currentPart]);
 
-  const [animTheme, setAnimTheme] = useState<ThemeId>('cute');
+  const [animTheme, setAnimTheme] = useState<ThemeId>(() => {
+    if (typeof window !== 'undefined') {
+      const q = new URLSearchParams(window.location.search).get('theme') as ThemeId;
+      if (['flat', 'cute', 'chalk', 'pro'].includes(q)) return q;
+    }
+    return 'cute';
+  });
   const settingsUiTheme = useSettings((st) => st.uiTheme);
   const isDarkUi =
     settingsUiTheme === 'dark' ||

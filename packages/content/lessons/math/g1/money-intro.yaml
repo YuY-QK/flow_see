@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: money-intro
+title: 认识元、角、分与换算
+summary: 1 元 = 10 角，1 角 = 10 分
+status: draft
+duration: 1分钟
+tags: [人民币, 元, 角, 分, 换钱]
+recommended: true
+cover: { text: 1元=10角 }
+related: [money-shopping-1, decimal-intro]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+objects:
+  - id: all
+    type: money
+    items: [100, '1n', 5, 1, 0.5, 0.1, 0.05, 0.01]
+    layout: row
+    size: 0.9
+    at: [30, 60]
+  - id: one
+    type: money
+    items: [1]
+    at: [80, 230]
+    hidden: true
+  - id: ten
+    type: money
+    items: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+    layout: row
+    size: 0.9
+    show: 0
+    at: [220, 230]
+    hidden: true
+  - id: eq
+    type: text
+    text: '1 元 = [10](blank) 角'
+    size: 40
+    at: [520, 360]
+    hidden: true
+
+steps:
+  - title: 认识人民币
+    say: 人民币有纸币和硬币，单位是元、角、分。
+    do:
+      - repeat: 8
+        do:
+          - highlight: { target: 'all.{i}', duration: 0.5s }
+  - title: 1 元换角
+    say: 1 元可以换 10 个 1 角。
+    do:
+      - hide: all
+      - show: one
+      - show: ten
+      - set: { target: ten, show: 10, duration: 2s }
+      - show: eq
+      - ask: true
+      - set: { target: eq, text: '1 元 = 10 角' }
+    try:
+      task: 1 元能换几个 1 角？
+      choose:
+        answer: '10'
+        options: ['1', '5', '10']
+        show: [ten]
+      hints:
+        - 数一数 1 角的硬币。
+  - title: 1 角换分
+    say: 1 角可以换 10 个 1 分。
+    do:
+      - set: { target: eq, text: '1 角 = 10 分' }
+
+keyPoints:
+  - 人民币的单位有元、角、分
+  - 1 元 = 10 角，1 角 = 10 分
+  - 同样多的钱可以有不同的组成
