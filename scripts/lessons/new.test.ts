@@ -30,13 +30,13 @@ describe('lesson:new scaffold', () => {
     const result = createNewLesson({
       root: tempDir,
       grade: 1,
-      id: 'count-to-10',
+      id: 'compare-within-10',
     });
 
-    expect(result.lessonFile).toBe('packages/content/lessons/math/g1/count-to-10.yaml');
+    expect(result.lessonFile).toBe('packages/content/lessons/math/g1/compare-within-10.yaml');
     expect(result.curriculumFile).toBe('packages/content/curriculum/math/grade1.yaml');
     expect(result.title).toBeTruthy();
-    expect(result.scriptHint).toContain('count-to-10');
+    expect(result.scriptHint).toContain('compare-within-10');
 
     const generatedPath = join(tempDir, result.lessonFile);
     expect(existsSync(generatedPath)).toBe(true);
@@ -45,7 +45,7 @@ describe('lesson:new scaffold', () => {
     const lines = content.split('\n');
 
     expect(lines[0]).toBe('# yaml-language-server: $schema=../../../schemas/lesson.schema.json');
-    expect(content).toContain('id: count-to-10');
+    expect(content).toContain('id: compare-within-10');
     expect(content).toContain(`title: ${result.title}`);
     expect(content).toContain("summary: ''");
     expect(content).toContain('status: draft');
@@ -85,22 +85,22 @@ describe('lesson:new scaffold', () => {
     const curriculumContent = readFileSync(curriculumPath, 'utf8');
     const curriculumLines = curriculumContent.split('\n');
 
-    expect(curriculumLines.some((l) => l === '      - count-to-10')).toBe(true);
-    expect(curriculumLines.some((l) => l.includes('{ id: count-to-10,'))).toBe(false);
+    expect(curriculumLines.some((l) => l === '      - compare-within-10')).toBe(true);
+    expect(curriculumLines.some((l) => l.includes('{ id: compare-within-10,'))).toBe(false);
   });
 
   it('fails on duplicate execution when lesson is already created', () => {
     createNewLesson({
       root: tempDir,
       grade: 1,
-      id: 'count-to-10',
+      id: 'compare-within-10',
     });
 
     expect(() => {
       createNewLesson({
         root: tempDir,
         grade: 1,
-        id: 'count-to-10',
+        id: 'compare-within-10',
       });
     }).toThrow();
   });
