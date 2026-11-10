@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { fillParams } from './fill';
 import {
+  allExploreCombos,
   clampParams,
   dec,
   digit,
@@ -14,6 +15,7 @@ import {
   pow,
   range,
   resolveParams,
+  whenCoverage,
   type ExploreControl,
 } from './params';
 
@@ -275,6 +277,79 @@ describe('派生值与动手试一试', () => {
     // a = 6..9，b = (11-a)..9：5 + 6 + 7 + 8 = 26 组，且都在范围内
     expect(all).toHaveLength(26);
     expect(all.every((p) => (p.b as number) >= 11 - (p.a as number))).toBe(true);
+  });
+
+  it('F8: 两个参数各 1–99 组合 9801 个，抽样结果包含两端与标准值组合，其余按间隔抽样', () => {
+    const cs: ExploreControl[] = [
+      { param: 'a', control: 'slider', label: 'a', min: 1, max: 99 },
+      { param: 'b', control: 'slider', label: 'b', min: 1, max: 99 },
+    ];
+    const std = { a: 20, b: 30 };
+    const { total, combos: all } = allExploreCombos(cs, std);
+    expect(total).toBe(9801);
+    expect(all).toHaveLength(9801);
+
+    const combos = exploreCombos(cs, std);
+    expect(combos.length).toBe(400);
+
+    const has = (a: number, b: number) => combos.some((p) => p.a === a && p.b === b);
+
+    // 抽样结果包含 (1, 标准)、(99, 标准)、(标准, 1)、(标准, 99)、(1,1)、(99,99)
+    expect(has(1, 30)).toBe(true);
+    expect(has(99, 30)).toBe(true);
+    expect(has(20, 1)).toBe(true);
+    expect(has(20, 99)).toBe(true);
+    expect(has(1, 1)).toBe(true);
+    expect(has(99, 99)).toBe(true);
+  });
+
+  it('F8: whenCoverage 统计每个带 when 的步骤真/假出现次数与正反组合', () => {
+    const lesson = {
+      params: { a: 10, b: 5 },
+      derived: { sum: 'a + b' },
+      steps: [
+        { say: 'step 1' },
+        { when: '{a > 10}', say: 'step 2' },
+        { when: '{sum == 15}', say: 'step 3' },
+      ],
+    };
+    const combos = [
+      { a: 5, b: 5 },
+      { a: 10, b: 5 },
+      { a: 15, b: 5 },
+    ];
+    const cov = whenCoverage(lesson, combos);
+    expect(cov).toHaveLength(2);
+
+    expect(cov[0]).toMatchObject({
+      stepIndex: 1,
+      when: '{a > 10}',
+      trueCount: 1,
+      falseCount: 2,
+    });
+    expect(cov[0].trueCombo).toEqual({ a: 15, b: 5 });
+    expect(cov[0].falseCombo).toEqual({ a: 5, b: 5 });
+
+    expect(cov[1]).toMatchObject({
+      stepIndex: 2,
+      when: '{sum == 15}',
+      trueCount: 1,
+      falseCount: 2,
+    });
+    expect(cov[1].trueCombo).toEqual({ a: 10, b: 5 });
+    expect(cov[1].falseCombo).toEqual({ a: 5, b: 5 });
+  });
+
+  it('F8: whenCoverage 支持 repeat 步骤中的 {i} 条件判断', () => {
+    const lesson = {
+      params: { a: 3 },
+      steps: [{ repeat: 3, when: '{i > 1}', say: 'step {i}' }],
+    };
+    const combos = [{ a: 3 }];
+    const cov = whenCoverage(lesson, combos);
+    expect(cov).toHaveLength(1);
+    expect(cov[0].trueCount).toBe(1);
+    expect(cov[0].falseCount).toBe(1);
   });
 });
 
