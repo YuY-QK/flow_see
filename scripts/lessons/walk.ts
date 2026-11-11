@@ -1,0 +1,651 @@
+import { execSync, spawn, type ChildProcess } from 'node:child_process';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import * as net from 'node:net';
+import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright';
+import { parse as parseYaml } from 'yaml';
+import { configureScene, displayText, type Box } from '../../packages/blocks/src';
+import { lessonToAnimation } from '../../packages/content/src';
+import { siteSchema, styleSchema, textsSchema } from '../../packages/content/src/schema';
+import { chooseAnswers, configureStyle, configureTexts, type TrySpec } from '../../packages/core/src';
+import type { FrameObjectInfo, LessonTestApi } from '../../apps/web/src/learn/LessonPlayer';
+import { loadContent } from '../../packages/content/src/load';
+import { writeReport, type LessonThumbnails, type LessonWalkResult, type WalkProblem } from './report';
+
+export const ROOT = resolve(import.meta.dirname, '..', '..');
+
+export function initConfig(root = ROOT): void {
+  const contentRoot = join(root, 'packages', 'content');
+  const siteRaw = parseYaml(readFileSync(join(contentRoot, 'site.yaml'), 'utf8'));
+  const site = siteSchema.parse(siteRaw);
+  configureScene(site.scene);
+  const textsRaw = parseYaml(readFileSync(join(contentRoot, site.texts), 'utf8'));
+  configureTexts(textsSchema.parse(textsRaw), { strict: false });
+  const styleRaw = parseYaml(readFileSync(join(contentRoot, site.style), 'utf8'));
+  configureStyle(styleSchema.parse(styleRaw));
+}
+
+initConfig();
+
+export interface WalkOptions {
+  lessons?: string[];
+  changed?: boolean;
+  noSelf?: boolean;
+  port?: number;
+  baseUrl?: string;
+  outDir?: string;
+  skipServer?: boolean;
+}
+
+export function parseArgs(argv = process.argv.slice(2)): WalkOptions {
+  const options: WalkOptions = {};
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === '--lesson' && argv[i + 1]) {
+      options.lessons = options.lessons ?? [];
+      options.lessons.push(argv[i + 1]);
+      i++;
+    } else if (arg.startsWith('--lesson=')) {
+      options.lessons = options.lessons ?? [];
+      options.lessons.push(arg.slice('--lesson='.length));
+    } else if (arg === '--changed') {
+      options.changed = true;
+    } else if (arg === '--no-self') {
+      options.noSelf = true;
+    } else if (arg === '--port' && argv[i + 1]) {
+      options.port = Number(argv[i + 1]);
+      i++;
+    } else if (arg === '--base-url' && argv[i + 1]) {
+      options.baseUrl = argv[i + 1];
+      i++;
+    }
+  }
+  return options;
+}
+
+export function getChangedLessonIds(root = ROOT): string[] {
+  try {
+    const stdout = execSync('git diff --name-only origin/main packages/content/lessons/', {
+      cwd: root,
+      encoding: 'utf8',
+    });
+    const ids: string[] = [];
+    const lines = stdout.split('\n');
+    for (const line of lines) {
+      const match = line.match(/lessons\/math\/g\d+\/([a-z0-9-]+)\.yaml$/);
+      if (match) {
+        ids.push(match[1]);
+      }
+    }
+    return [...new Set(ids)];
+  } catch {
+    return [];
+  }
+}
+
+export async function findFreePort(prefer = 5188): Promise<number> {
+  return new Promise((res) => {
+    const s = net.createServer();
+    s.listen(prefer, () => {
+      const port = (s.address() as net.AddressInfo).port;
+      s.close(() => res(port));
+    });
+    s.on('error', () => {
+      const s2 = net.createServer();
+      s2.listen(0, () => {
+        const port = (s2.address() as net.AddressInfo).port;
+        s2.close(() => res(port));
+      });
+    });
+  });
+}
+
+export async function waitForServer(url: string, timeoutMs = 30000): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const res = await fetch(url);
+      if (res.ok || res.status === 200 || res.status === 404) {
+        return;
+      }
+    } catch {
+      // ignore
+    }
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  throw new Error(`Server did not respond at ${url} within ${timeoutMs}ms`);
+}
+
+export function checkBoundingBoxes(
+  objects: FrameObjectInfo[],
+  stage: { width: number; height: number },
+  stepNum: number,
+): WalkProblem[] {
+  const problems: WalkProblem[] = [];
+  const W = stage.width;
+  const H = stage.height;
+  for (const obj of objects) {
+    const b = obj.box;
+    if (b.x < -4 || b.y < -4 || b.x + b.w > W + 4 || b.y + b.h > H + 4) {
+      problems.push({
+        step: stepNum,
+        message: `Part "${obj.id}" (${obj.type}) bounding box [${b.x.toFixed(1)}, ${b.y.toFixed(1)}, ${b.w.toFixed(1)}, ${b.h.toFixed(1)}] exceeds stage boundaries [0, 0, ${W}, ${H}]`,
+      });
+    }
+  }
+  return problems;
+}
+
+export function checkTextOverlaps(
+  objects: FrameObjectInfo[],
+  stepNum: number,
+): WalkProblem[] {
+  const problems: WalkProblem[] = [];
+  const textObjs = objects.filter((o) => o.type === 'text' || o.type === 'label');
+  for (let i = 0; i < textObjs.length; i++) {
+    for (let j = i + 1; j < textObjs.length; j++) {
+      const a = textObjs[i].box;
+      const b = textObjs[j].box;
+      const x1 = Math.max(a.x, b.x);
+      const y1 = Math.max(a.y, b.y);
+      const x2 = Math.min(a.x + a.w, b.x + b.w);
+      const y2 = Math.min(a.y + a.h, b.y + b.h);
+      if (x2 > x1 && y2 > y1) {
+        const overlapArea = (x2 - x1) * (y2 - y1);
+        const areaA = a.w * a.h;
+        const areaB = b.w * b.h;
+        const minArea = Math.min(areaA, areaB);
+        if (minArea > 0 && overlapArea / minArea > 0.1) {
+          problems.push({
+            step: stepNum,
+            message: `Text parts "${textObjs[i].id}" and "${textObjs[j].id}" overlap by ${((overlapArea / minArea) * 100).toFixed(1)}% (allowed <= 10%)`,
+          });
+        }
+      }
+    }
+  }
+  return problems;
+}
+
+export function checkTopLeftArea(
+  objects: FrameObjectInfo[],
+  stepNum: number,
+): WalkProblem[] {
+  const problems: WalkProblem[] = [];
+  const textObjs = objects.filter((o) => o.type === 'text' || o.type === 'label');
+  for (const obj of textObjs) {
+    const b = obj.box;
+    const x1 = Math.max(b.x, 0);
+    const y1 = Math.max(b.y, 0);
+    const x2 = Math.min(b.x + b.w, 140);
+    const y2 = Math.min(b.y + b.h, 40);
+    if (x2 > x1 && y2 > y1) {
+      problems.push({
+        step: stepNum,
+        message: `Text part "${obj.id}" intersects stage top-left reserved area [0, 0, 140, 40] (duration & step progress)`,
+      });
+    }
+  }
+  return problems;
+}
+
+export function checkEarlyAnswer(
+  texts: string[],
+  trySpec: TrySpec,
+  stepNum: number,
+): WalkProblem[] {
+  const problems: WalkProblem[] = [];
+  if (!trySpec.choose) return problems;
+
+  const answers = chooseAnswers(trySpec.choose);
+  const combinedText = texts.join(' ');
+
+  for (const ans of answers) {
+    const ansStr = String(ans).trim();
+    if (!ansStr) continue;
+
+    const isNum = /^-?\d+(\.\d+)?$/.test(ansStr);
+    if (isNum) {
+      const escaped = ansStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const numRegex = new RegExp(`(?:^|[^0-9.])${escaped}(?:[^0-9.]|$)`);
+      if (numRegex.test(combinedText)) {
+        problems.push({
+          step: stepNum,
+          message: `Screen text contains answer "${ansStr}" before the question is asked (ask: true)`,
+        });
+      }
+    } else {
+      if (combinedText.includes(ansStr)) {
+        problems.push({
+          step: stepNum,
+          message: `Screen text contains answer "${ansStr}" before the question is asked (ask: true)`,
+        });
+      }
+    }
+  }
+
+  return problems;
+}
+
+export async function runWalk(opts: WalkOptions = {}): Promise<number> {
+  const { objectBox, sceneFrame, sceneOf } = await import('../../packages/templates/src/scene');
+  const root = ROOT;
+  const contentRoot = join(root, 'packages', 'content');
+  const { bundle } = loadContent(contentRoot);
+  if (!bundle) {
+    console.error('Failed to load content bundle');
+    return 1;
+  }
+
+  let lessonItems = bundle.lessons;
+  if (opts.lessons && opts.lessons.length > 0) {
+    const set = new Set(opts.lessons);
+    lessonItems = bundle.lessons.filter((l) => set.has(l.lesson.id));
+    if (lessonItems.length === 0) {
+      console.error(`No lessons matched the filter: ${opts.lessons.join(', ')}`);
+      return 1;
+    }
+  } else if (opts.changed) {
+    const changedIds = getChangedLessonIds(root);
+    if (changedIds.length === 0) {
+      console.log('No changed lessons found relative to origin/main.');
+      return 0;
+    }
+    const set = new Set(changedIds);
+    lessonItems = bundle.lessons.filter((l) => set.has(l.lesson.id));
+  } else {
+    // Walk all published lessons
+    lessonItems = bundle.lessons.filter((l) => l.lesson.status === 'published');
+  }
+
+  console.log(`Preparing to walk ${lessonItems.length} lessons...`);
+
+  let serverProc: ChildProcess | undefined;
+  let baseUrl = opts.baseUrl;
+
+  if (!baseUrl) {
+    const port = opts.port ?? (await findFreePort(5188));
+    baseUrl = `http://localhost:${port}`;
+    console.log(`Starting Vite dev server on port ${port}...`);
+    serverProc = spawn('pnpm', ['--filter', '@flow-see/web', 'dev', '--port', String(port), '--strictPort'], {
+      cwd: root,
+      stdio: 'pipe',
+      detached: process.platform !== 'win32',
+    });
+
+    const cleanup = () => {
+      if (serverProc && !serverProc.killed) {
+        try {
+          if (process.platform !== 'win32' && serverProc.pid) {
+            process.kill(-serverProc.pid);
+          } else {
+            serverProc.kill();
+          }
+        } catch {
+          // ignore
+        }
+      }
+    };
+
+    process.on('exit', cleanup);
+    process.on('SIGINT', () => {
+      cleanup();
+      process.exit(130);
+    });
+    process.on('SIGTERM', () => {
+      cleanup();
+      process.exit(143);
+    });
+
+    try {
+      await waitForServer(baseUrl, 40000);
+      console.log(`Dev server ready at ${baseUrl}`);
+    } catch (e) {
+      cleanup();
+      console.error((e as Error).message);
+      return 1;
+    }
+  }
+
+  const browser = await chromium.launch({ headless: true });
+  const context = await browser.newContext({ deviceScaleFactor: 1 });
+
+  const outDir = resolve(opts.outDir ?? join(root, 'test-results', 'lessons'));
+  mkdirSync(outDir, { recursive: true });
+
+  const viewports = [
+    { name: '1280', width: 1280, height: 800 },
+    { name: '820', width: 820, height: 1180 },
+    { name: '390', width: 390, height: 844 },
+  ];
+
+  const results: LessonWalkResult[] = [];
+  const startTime = Date.now();
+
+  for (let idx = 0; idx < lessonItems.length; idx++) {
+    const item = lessonItems[idx];
+    const lessonStart = Date.now();
+    const lessonId = item.lesson.id;
+    const lessonProblems: WalkProblem[] = [];
+    const lessonDir = join(outDir, 'screenshots', lessonId);
+    mkdirSync(lessonDir, { recursive: true });
+
+    const page = await context.newPage();
+    const consoleErrors: string[] = [];
+    page.on('console', (msg: { type(): string; text(): string }) => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
+    });
+    page.on('pageerror', (err: { message: string }) => {
+      consoleErrors.push(err.message);
+    });
+
+    const url = `${baseUrl}/learn/${item.grade}/${item.subject}/${lessonId}`;
+    try {
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.waitForFunction(() => typeof (window as unknown as { __lessonTest?: LessonTestApi }).__lessonTest !== 'undefined', {
+        timeout: 15000,
+      });
+
+      const totalSteps = await page.evaluate(() => (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.steps());
+      const stage = await page.evaluate(() => (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.stage());
+      const midStep = Math.max(1, Math.ceil(totalSteps / 2));
+
+      const thumbnails: LessonThumbnails[] = [];
+
+      for (const vp of viewports) {
+        await page.setViewportSize({ width: vp.width, height: vp.height });
+        await page.waitForTimeout(60);
+
+        for (let s = 0; s < totalSteps; s++) {
+          await page.evaluate((step) => (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.goto(step), s);
+          await page.waitForTimeout(60);
+
+          const stepNum = s + 1;
+          const relPath = `screenshots/${lessonId}/${vp.name}_step_${stepNum}.png`;
+          const fullPath = join(outDir, relPath);
+          await page.screenshot({ path: fullPath });
+
+          // Run geometry checks primarily on 1280
+          if (vp.name === '1280') {
+            const objs = await page.evaluate(() => (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.frameObjects());
+            const boxProblems = checkBoundingBoxes(objs, stage, stepNum);
+            const overlapProblems = checkTextOverlaps(objs, stepNum);
+            const topLeftProblems = checkTopLeftArea(objs, stepNum);
+
+            for (const p of [...boxProblems, ...overlapProblems, ...topLeftProblems]) {
+              lessonProblems.push({ ...p, screenshot: relPath });
+            }
+          }
+        }
+
+        thumbnails.push({
+          viewport: `${vp.name}px`,
+          first: `screenshots/${lessonId}/${vp.name}_step_1.png`,
+          mid: `screenshots/${lessonId}/${vp.name}_step_${midStep}.png`,
+          last: `screenshots/${lessonId}/${vp.name}_step_${totalSteps}.png`,
+        });
+      }
+
+      // Check 5: Answer early check in steps with try
+      try {
+        const anim = lessonToAnimation(item.lesson);
+        const def = sceneOf(anim);
+        for (let s = 0; s < item.lesson.steps.length; s++) {
+          const st = item.lesson.steps[s];
+          if (!st.try) continue;
+          const doingFrame = sceneFrame(def, s, 1, 'doing');
+          const texts: string[] = [];
+          for (const o of doingFrame.objects) {
+            const b = objectBox(o);
+            if (!b) continue;
+            if (o.type === 'text' || o.type === 'label') {
+              texts.push(displayText(o.props));
+            } else if (typeof o.props.text === 'string') {
+              texts.push(displayText(o.props));
+            } else if (typeof o.props.label === 'string') {
+              texts.push(String(o.props.label));
+            }
+          }
+          const earlyProblems = checkEarlyAnswer(texts, st.try, s + 1);
+          for (const ep of earlyProblems) {
+            lessonProblems.push({
+              ...ep,
+              screenshot: `screenshots/${lessonId}/1280_step_${s + 1}.png`,
+            });
+          }
+        }
+      } catch {
+        // ignore scene calculation error
+      }
+
+      const hasTries = item.lesson.steps.some((st) => Boolean(st.try));
+
+      // 4. Follow mode
+      if (hasTries) {
+        await page.evaluate(() => {
+          (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.mode('follow');
+          (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.setSpeed?.(2);
+        });
+        let lastStep = -1;
+        let stepStartTime = Date.now();
+        const maxStepWait = 30000;
+
+        while (true) {
+          const st = await page.evaluate(
+            () =>
+              (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.getState?.() ?? {
+                index: 0,
+                total: 0,
+                waiting: false,
+                playing: false,
+              },
+          );
+          if (st.index !== lastStep) {
+            lastStep = st.index;
+            stepStartTime = Date.now();
+          } else if (Date.now() - stepStartTime > maxStepWait) {
+            lessonProblems.push({
+              step: lastStep + 1,
+              message: `Follow mode stuck at step ${lastStep + 1} for more than 30 seconds`,
+            });
+            break;
+          }
+
+          const pending = await page.evaluate(() => (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.pending());
+          if (pending) {
+            await page.evaluate(() => (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.solve());
+            stepStartTime = Date.now();
+          }
+
+          const finished = await page.evaluate(
+            () => (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.isFinished?.() ?? false,
+          );
+          if (finished) break;
+          await page.waitForTimeout(100);
+        }
+      }
+
+      // 5. Self mode
+      if (hasTries && !opts.noSelf) {
+        await page.evaluate(() => {
+          (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.mode('self');
+          (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.setSpeed?.(2);
+        });
+        let lastStep = -1;
+        let stepStartTime = Date.now();
+        const maxStepWait = 30000;
+
+        while (true) {
+          const st = await page.evaluate(
+            () =>
+              (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.getState?.() ?? {
+                index: 0,
+                total: 0,
+                waiting: false,
+                playing: false,
+              },
+          );
+          if (st.index !== lastStep) {
+            lastStep = st.index;
+            stepStartTime = Date.now();
+          } else if (Date.now() - stepStartTime > maxStepWait) {
+            lessonProblems.push({
+              step: lastStep + 1,
+              message: `Self mode stuck at step ${lastStep + 1} for more than 30 seconds`,
+            });
+            break;
+          }
+
+          const pending = await page.evaluate(() => (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.pending());
+          if (pending) {
+            await page.evaluate(() => (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.solve());
+            stepStartTime = Date.now();
+          }
+
+          const finished = await page.evaluate(
+            () => (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.isFinished?.() ?? false,
+          );
+          if (finished) break;
+          await page.waitForTimeout(100);
+        }
+
+        // Second pass: Max explore controls
+        const controls = await page.evaluate(
+          () => (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.getControls?.() ?? [],
+        );
+        if (controls && controls.length > 0) {
+          const patch: Record<string, number> = {};
+          for (const c of controls) {
+            patch[c.param] = c.max;
+          }
+          await page.evaluate((p) => (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.setParams?.(p), patch);
+          lastStep = -1;
+          stepStartTime = Date.now();
+
+          while (true) {
+            const st = await page.evaluate(
+              () =>
+                (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.getState?.() ?? {
+                  index: 0,
+                  total: 0,
+                  waiting: false,
+                  playing: false,
+                },
+            );
+            if (st.index !== lastStep) {
+              lastStep = st.index;
+              stepStartTime = Date.now();
+            } else if (Date.now() - stepStartTime > maxStepWait) {
+              lessonProblems.push({
+                step: lastStep + 1,
+                message: `Self mode (with max params) stuck at step ${lastStep + 1} for more than 30 seconds`,
+              });
+              break;
+            }
+
+            const pending = await page.evaluate(() => (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.pending());
+            if (pending) {
+              await page.evaluate(() => (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.solve());
+              stepStartTime = Date.now();
+            }
+
+            const finished = await page.evaluate(
+              () => (window as unknown as { __lessonTest: LessonTestApi }).__lessonTest.isFinished?.() ?? false,
+            );
+            if (finished) break;
+            await page.waitForTimeout(100);
+          }
+        }
+      }
+
+      for (const err of consoleErrors) {
+        lessonProblems.push({ message: `Console error: ${err}` });
+      }
+
+      const durationMs = Date.now() - lessonStart;
+      const statusStr = lessonProblems.length === 0 ? 'PASS' : `FAIL (${lessonProblems.length} issues)`;
+      console.log(`[${idx + 1}/${lessonItems.length}] ${lessonId} (${item.lesson.title}): ${statusStr} in ${(durationMs / 1000).toFixed(1)}s`);
+
+      results.push({
+        id: lessonId,
+        title: item.lesson.title,
+        grade: item.grade,
+        subject: item.subject,
+        status: item.lesson.status,
+        thumbnails,
+        problems: lessonProblems,
+        durationMs,
+      });
+    } catch (e) {
+      const durationMs = Date.now() - lessonStart;
+      console.error(`[${idx + 1}/${lessonItems.length}] ${lessonId}: ERROR: ${(e as Error).message}`);
+      lessonProblems.push({ message: (e as Error).message });
+      results.push({
+        id: lessonId,
+        title: item.lesson.title,
+        grade: item.grade,
+        subject: item.subject,
+        status: item.lesson.status,
+        thumbnails: [],
+        problems: lessonProblems,
+        durationMs,
+      });
+    } finally {
+      await page.close();
+    }
+  }
+
+  await browser.close();
+
+  if (serverProc && !serverProc.killed) {
+    try {
+      if (process.platform !== 'win32' && serverProc.pid) {
+        process.kill(-serverProc.pid);
+      } else {
+        serverProc.kill();
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  const totalDurationMs = Date.now() - startTime;
+  const passedCount = results.filter((r) => r.problems.length === 0).length;
+  const failedCount = results.length - passedCount;
+
+  const reportPath = writeReport(
+    {
+      total: results.length,
+      passed: passedCount,
+      failed: failedCount,
+      durationMs: totalDurationMs,
+      results,
+    },
+    outDir,
+  );
+
+  console.log('\n----------------------------------------');
+  console.log(`Walk completed in ${(totalDurationMs / 1000).toFixed(1)}s`);
+  console.log(`Total: ${results.length}, Passed: ${passedCount}, Failed: ${failedCount}`);
+  console.log(`Report generated at: ${reportPath}`);
+  console.log('----------------------------------------\n');
+
+  return failedCount === 0 ? 0 : 1;
+}
+
+const isMain =
+  process.argv[1] &&
+  (fileURLToPath(import.meta.url) === resolve(process.argv[1]) ||
+    process.argv[1].endsWith('scripts/lessons/walk.ts'));
+
+if (isMain) {
+  runWalk(parseArgs())
+    .then((code) => {
+      process.exit(code);
+    })
+    .catch((err) => {
+      console.error(err);
+      process.exit(1);
+    });
+}

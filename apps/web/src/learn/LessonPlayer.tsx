@@ -21,6 +21,8 @@ import {
   turnResult,
   type Animation,
   type ChooseValue,
+  type ExploreControl,
+  type Speed,
   type SumItem,
   type TurnSpec,
   t,
@@ -28,8 +30,8 @@ import {
   tapResult,
   type TapSubitem,
 } from '@flow-see/core';
-import { getPart, itemSetLayout, moneyLayout } from '@flow-see/blocks';
-import { sceneOf, sceneFrame } from '@flow-see/templates';
+import { displayText, getPart, itemSetLayout, moneyLayout, type Box } from '@flow-see/blocks';
+import { objectBox, sceneOf, sceneFrame } from '@flow-see/templates';
 import { useTimeline } from '@flow-see/runtime/player/useTimeline.ts';
 import { isSpeechSupported, speak } from '@flow-see/runtime/services/speech.ts';
 import { useSettings } from '@flow-see/runtime/store/settings.ts';
@@ -136,6 +138,34 @@ function getInitialPlace(
   }
 }
 
+export interface FrameObjectInfo {
+  id: string;
+  type: string;
+  box: Box;
+  text?: string;
+}
+
+export interface LessonTestApi {
+  steps(): number;
+  goto(index: number): void;                  // 跳到某步的结尾画面（暂停）
+  mode(m: 'watch' | 'follow' | 'self'): void;
+  pending(): TrySpec | undefined;              // 当前等待孩子做的 try
+  solve(): Promise<void>;                      // 用标准答案完成当前 try（choose 点正确选项；drag/sort/place/tap/turn 直接调用对应回调）
+  frameObjects(): FrameObjectInfo[];           // 当前画面零件的包围盒与文字
+  stage(): { width: number; height: number };
+  setSpeed?(speed: Speed): void;
+  setParams?(patch: Record<string, number>): void;
+  getControls?(): ExploreControl[];
+  isFinished?(): boolean;
+  getState?(): { index: number; total: number; waiting: boolean; playing: boolean };
+}
+
+declare global {
+  interface Window {
+    __lessonTest?: LessonTestApi;
+  }
+}
+
 interface Props {
   animation: Animation;
   /** 学习方式，默认看一看 */
@@ -168,6 +198,8 @@ interface Props {
   onVisit(index: number): void;
   /** 在播放状态下自然播完最后一步（规格 3.2） */
   onFinish(): void;
+  /** 切换学习方式 */
+  onModeChange?(mode: HandsMode, keepProblem?: boolean, autoPlay?: boolean): void;
 }
 
 function isTyping(el: EventTarget | null): boolean {
@@ -197,6 +229,7 @@ export function LessonPlayer({
   largeCaption,
   onVisit,
   onFinish,
+  onModeChange,
 }: Props) {
   const speechOk = isSpeechSupported();
   const settings = useSettings();
@@ -1133,6 +1166,171 @@ export function LessonPlayer({
   useEffect(() => {
     if (engaged) progress.current?.(ratio);
   }, [engaged, ratio]);
+
+  const testApiRef = useRef<LessonTestApi | undefined>(undefined);
+  testApiRef.current = {
+    steps: () => total,
+    goto: (index: number) => {
+      const i = Math.max(0, Math.min(total - 1, Math.floor(index)));
+      act({ type: 'pause' });
+      act({ type: 'seek', index: i });
+      if (tries[i]) {
+        act({ type: 'solve' });
+      }
+      act({ type: 'frame', delta: 1 });
+      act({ type: 'pause' });
+      setTp(freshTry(`${i}:false`, initialTurn, initialPlace?.pos, initialPlace?.rot));
+    },
+    mode: (m: 'watch' | 'follow' | 'self') => {
+      const targetMode: HandsMode = m === 'follow' ? 'guided' : m;
+      if (onModeChange) {
+        onModeChange(targetMode, false, m !== 'watch');
+      } else {
+        act({ type: 'seek', index: 0 });
+        if (m !== 'watch') {
+          act({ type: 'play' });
+        }
+      }
+    },
+    pending: () => (state.waiting && spec ? spec : undefined),
+    solve: async () => {
+      if (!state.waiting || !spec) return;
+      if (spec.choose) {
+        const answers = chooseAnswers(spec.choose);
+        for (const ans of answers) {
+          onChoose(ans);
+          await new Promise((r) => setTimeout(r, 20));
+        }
+      } else if (isDragSum && spec.drag) {
+        const toId = Array.isArray(spec.drag.to) ? spec.drag.to[0] : spec.drag.to;
+        for (const idx of demoSumSequence) {
+          onDrop(idx, toId);
+          await new Promise((r) => setTimeout(r, 20));
+        }
+      } else if (spec.drag) {
+        const needCount = Math.max(1, Math.round(Number(spec.drag.count ?? 1)));
+        const targets = Array.isArray(spec.drag.to) ? spec.drag.to : [spec.drag.to];
+        for (let i = 0; i < needCount; i++) {
+          const target = targets.length > 1 ? targets[i % targets.length] : targets[0];
+          onDrop(i, target);
+          await new Promise((r) => setTimeout(r, 20));
+        }
+      } else if (spec.sort) {
+        for (const item of demoSortSequence) {
+          onDrop(item.index, item.bin);
+          await new Promise((r) => setTimeout(r, 20));
+        }
+      } else if (spec.place) {
+        const def = sceneOf(animation);
+        const frame0 = sceneFrame(def, state.index, 0, 'doing');
+        let targetPos: [number, number] = [0, 0];
+        if (Array.isArray(spec.place.to) && spec.place.to.length === 2) {
+          targetPos = [Number(spec.place.to[0]), Number(spec.place.to[1])];
+        } else if (typeof spec.place.to === 'string') {
+          const destObj = frame0.objects.find((o) => o.id === spec.place!.to);
+          if (destObj) {
+            const p = getPart(destObj.type);
+            if (p) {
+              const b = p.bbox(destObj.props);
+              targetPos = [b.x + b.w / 2, b.y + b.h / 2];
+            }
+          }
+        }
+        const targetRot = Number(spec.place.rotate ?? 0);
+        onPlace(targetPos, targetRot, true);
+      } else if (spec.tap) {
+        for (const ans of demoAnswers) {
+          const dot = ans.indexOf('.');
+          if (dot >= 0) {
+            onTap(ans.slice(0, dot), ans.slice(dot + 1));
+          } else {
+            onTap(ans);
+          }
+          await new Promise((r) => setTimeout(r, 20));
+        }
+      } else if (spec.turn) {
+        onTurn(targetAnswer, true);
+      }
+      await new Promise((r) => setTimeout(r, 40));
+      if (state.waiting) {
+        act({ type: 'solve' });
+      }
+    },
+    frameObjects: () => {
+      const def = sceneOf(animation);
+      const frame = sceneFrame(def, state.index, state.progress, tryIt?.phase);
+      const result: FrameObjectInfo[] = [];
+      for (const o of frame.objects) {
+        const b = objectBox(o);
+        if (!b) continue;
+        let text: string | undefined;
+        if (o.type === 'text' || o.type === 'label') {
+          text = displayText(o.props);
+        } else if (typeof o.props.text === 'string') {
+          text = displayText(o.props);
+        } else if (typeof o.props.label === 'string') {
+          text = String(o.props.label);
+        }
+        if (!text && typeof document !== 'undefined') {
+          const el = document.querySelector(`[data-part="${o.id}"]`);
+          if (el) {
+            const t = el.textContent?.trim();
+            if (t) text = t;
+          }
+        }
+        result.push({
+          id: o.id,
+          type: o.type,
+          box: b,
+          ...(text !== undefined ? { text } : {}),
+        });
+      }
+      return result;
+    },
+    stage: () => ({ width: stage.width, height: stage.height }),
+    setSpeed: (s) => act({ type: 'setSpeed', speed: s }),
+    setParams: (patch) => {
+      panel?.onChange(patch);
+      act({ type: 'seek', index: 0 });
+      act({ type: 'play' });
+    },
+    getControls: () => panel?.controls ?? (animation.config?.explore as ExploreControl[]) ?? [],
+    isFinished: () => state.finishes > 0,
+    getState: () => ({
+      index: state.index,
+      total,
+      waiting: state.waiting,
+      playing: state.playing,
+    }),
+  };
+
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      window.__lessonTest = {
+        steps: () => testApiRef.current!.steps(),
+        goto: (i) => testApiRef.current!.goto(i),
+        mode: (m) => testApiRef.current!.mode(m),
+        pending: () => testApiRef.current!.pending(),
+        solve: () => testApiRef.current!.solve(),
+        frameObjects: () => testApiRef.current!.frameObjects(),
+        stage: () => testApiRef.current!.stage(),
+        setSpeed: (s) => testApiRef.current?.setSpeed?.(s),
+        setParams: (p) => testApiRef.current?.setParams?.(p),
+        getControls: () => testApiRef.current?.getControls?.() ?? [],
+        isFinished: () => testApiRef.current?.isFinished?.() ?? false,
+        getState: () =>
+          testApiRef.current?.getState?.() ?? {
+            index: 0,
+            total: 0,
+            waiting: false,
+            playing: false,
+          },
+      };
+      return () => {
+        delete window.__lessonTest;
+      };
+    }
+  }, []);
 
   return (
     <div ref={rootRef} className={s.player} data-full={isFull}>

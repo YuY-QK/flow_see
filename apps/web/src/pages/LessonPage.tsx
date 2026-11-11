@@ -219,13 +219,20 @@ function LessonReady({
   };
 
   /** 切换学习方式；keepProblem = 带着现在这道题的数字（“演示”）；进入自己做时自动换一道题 */
-  const switchMode = (mode: HandsMode, keepProblem = false) => {
+  const switchMode = (mode: HandsMode, keepProblem = false, autoPlay?: boolean) => {
     setFinished(null);
     setStarted(false);
-    const picked = mode === 'self' ? pickProblem(values) : null;
+    const picked = mode === 'self' ? (keepProblem ? values : pickProblem(values)) : null;
     setSession((st) => {
       const trial = mode === 'self' ? (picked ?? st.trial) : keepProblem ? st.trial : null;
-      return { ...st, mode, trial, n: st.n + 1, startIndex: 0, autoPlay: mode !== 'self' };
+      return {
+        ...st,
+        mode,
+        trial,
+        n: st.n + 1,
+        startIndex: 0,
+        autoPlay: autoPlay !== undefined ? autoPlay : mode !== 'self',
+      };
     });
   };
   const newProblem = () => {
@@ -335,6 +342,7 @@ function LessonReady({
         <LessonPlayer
           key={session.n}
           mode={mode}
+          onModeChange={switchMode}
           animation={animation}
           template={template}
           startIndex={session.startIndex}

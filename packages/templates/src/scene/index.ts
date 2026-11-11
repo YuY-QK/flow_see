@@ -10,7 +10,7 @@ import { SceneStage } from './stage';
 
 export { VERBS, parseDuration, planStep } from './actions';
 export { checkScene } from './check';
-export { contentBox, fitBox, sceneViewBox } from './box';
+export { contentBox, fitBox, objectBox, sceneViewBox } from './box';
 export {
   coveredActions,
   dragFrame,

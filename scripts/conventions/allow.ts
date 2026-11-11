@@ -23,6 +23,10 @@ export const ALLOW_CHINESE: Allow[] = [
     path: /^packages\/blocks\/src\/style\.ts$/,
     reason: '零件样式还没注入时给开发者看的报错（此时读不到配置）',
   },
+  {
+    path: /^scripts\/lessons\/report\.ts$/,
+    reason: '开发用的走查报告页，不是产品界面文案',
+  },
 ];
 
 /** 允许在代码里直接写颜色值（#RRGGBB、rgba(...)）的文件 */
