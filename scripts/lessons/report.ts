@@ -5,6 +5,7 @@ export interface WalkProblem {
   step?: number;
   message: string;
   screenshot?: string;
+  severity?: 'error' | 'warn';
 }
 
 export interface LessonThumbnails {
@@ -48,10 +49,17 @@ export function generateReportHtml(summary: WalkSummary): string {
 
   const rows = summary.results
     .map((r) => {
-      const isOk = r.problems.length === 0;
+      const errors = r.problems.filter((p) => p.severity !== 'warn');
+      const warnings = r.problems.filter((p) => p.severity === 'warn');
+      const isFailed = errors.length > 0;
+      const isWarn = !isFailed && warnings.length > 0;
+      const isOk = !isFailed && !isWarn;
+
       const statusBadge = isOk
         ? '<span class="badge badge-pass">✓ 通过</span>'
-        : `<span class="badge badge-fail">✗ ${r.problems.length} 个问题</span>`;
+        : isWarn
+          ? `<span class="badge badge-warn">⚠ ${warnings.length} 个提醒</span>`
+          : `<span class="badge badge-fail">✗ ${errors.length} 个问题</span>`;
 
       const thumbsHtml = r.thumbnails
         .map((t) => {
@@ -74,8 +82,9 @@ export function generateReportHtml(summary: WalkSummary): string {
             ${r.problems
               .map(
                 (p) => `
-              <li class="problem-item">
+              <li class="problem-item ${p.severity === 'warn' ? 'problem-item-warn' : 'problem-item-error'}">
                 <span class="problem-step">${p.step !== undefined ? `[第 ${p.step} 步]` : '[全局]'}</span>
+                <span class="problem-severity badge ${p.severity === 'warn' ? 'badge-warn' : 'badge-fail'}">${p.severity === 'warn' ? '提醒' : '错误'}</span>
                 <span class="problem-msg">${escapeHtml(p.message)}</span>
                 ${p.screenshot ? `<a href="${escapeHtml(p.screenshot)}" target="_blank" class="problem-link">查看截图</a>` : ''}
               </li>
@@ -85,7 +94,7 @@ export function generateReportHtml(summary: WalkSummary): string {
           </ul>`;
 
       return `
-        <div class="lesson-card ${isOk ? 'lesson-card-pass' : 'lesson-card-fail'}">
+        <div class="lesson-card ${isFailed ? 'lesson-card-fail' : isWarn ? 'lesson-card-warn' : 'lesson-card-pass'}">
           <div class="lesson-meta-row">
             <div class="lesson-info">
               <span class="lesson-title">${escapeHtml(r.title)}</span>
@@ -128,6 +137,9 @@ export function generateReportHtml(summary: WalkSummary): string {
       --pass: #16a34a;
       --pass-bg: #f0fdf4;
       --pass-border: #bbf7d0;
+      --warn: #d97706;
+      --warn-bg: #fffbeb;
+      --warn-border: #fde68a;
       --fail: #dc2626;
       --fail-bg: #fef2f2;
       --fail-border: #fecaca;
@@ -259,6 +271,11 @@ export function generateReportHtml(summary: WalkSummary): string {
       background: var(--pass-bg);
       color: var(--pass);
       border: 1px solid var(--pass-border);
+    }
+    .badge-warn {
+      background: var(--warn-bg);
+      color: var(--warn);
+      border: 1px solid var(--warn-border);
     }
     .badge-fail {
       background: var(--fail-bg);

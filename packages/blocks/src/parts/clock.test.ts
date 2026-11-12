@@ -48,24 +48,28 @@ describe('X5 钟表扩展', () => {
       const redColor = color('red', dummyTheme);
       const vnodeWithSec = renderTree({ at: [200, 200], radius: 100, time: '3:00', seconds: 15 });
 
-      // 提取所有 line
+      type VNode = { type?: string; props?: Record<string, unknown> } | null | undefined | string | number | VNode[];
       const lines: Array<{ x1: number; y1: number; x2: number; y2: number; stroke: string; strokeWidth: number }> = [];
       const circles: Array<{ cx: number; cy: number; r: number; fill: string }> = [];
 
-      function walk(node: any) {
+      function walk(node: VNode) {
         if (!node || typeof node !== 'object') return;
+        if (Array.isArray(node)) {
+          node.forEach(walk);
+          return;
+        }
         if (node.type === 'line' && node.props) {
-          lines.push(node.props);
+          lines.push(node.props as unknown as (typeof lines)[0]);
         }
         if (node.type === 'circle' && node.props) {
-          circles.push(node.props);
+          circles.push(node.props as unknown as (typeof circles)[0]);
         }
         if (node.props?.children) {
           const ch = Array.isArray(node.props.children) ? node.props.children : [node.props.children];
           ch.forEach(walk);
         }
       }
-      walk(vnodeWithSec);
+      walk(vnodeWithSec as VNode);
 
       // 找到秒针的线（stroke 是 red，strokeWidth 是 2）
       const secLine = lines.find((l) => l.stroke === redColor && l.strokeWidth === 2);
@@ -88,19 +92,24 @@ describe('X5 钟表扩展', () => {
     });
 
     it('Render 在不写 seconds 时不画秒针', () => {
+      type VNode = { type?: string; props?: Record<string, unknown> } | null | undefined | string | number | VNode[];
       const redColor = color('red', dummyTheme);
       const vnodeNoSec = renderTree({ at: [200, 200], radius: 100, time: '3:00' });
 
-      const lines: any[] = [];
-      function walk(node: any) {
+      const lines: Array<Record<string, unknown>> = [];
+      function walk(node: VNode) {
         if (!node || typeof node !== 'object') return;
+        if (Array.isArray(node)) {
+          node.forEach(walk);
+          return;
+        }
         if (node.type === 'line' && node.props) lines.push(node.props);
         if (node.props?.children) {
           const ch = Array.isArray(node.props.children) ? node.props.children : [node.props.children];
           ch.forEach(walk);
         }
       }
-      walk(vnodeNoSec);
+      walk(vnodeNoSec as VNode);
 
       const secLine = lines.find((l) => l.stroke === redColor);
       expect(secLine).toBeUndefined();
@@ -109,11 +118,12 @@ describe('X5 钟表扩展', () => {
 
   describe('hour24 的 13 在 1 外面', () => {
     it('hour24 为 true 时画出 13–24，13 在 1 外面，24 在 12 外面，字号为 0.55 倍，dim 色', () => {
+      type VNode = { type?: string; props?: Record<string, unknown> } | null | undefined | string | number | VNode[];
       const dimColor = color('dim', dummyTheme);
       const vnode24 = renderTree({ at: [200, 200], radius: 100, time: '0:00', hour24: true });
 
       const texts: Array<{ text: string; x: number; y: number; fontSize: number; fill: string }> = [];
-      function walk(node: any) {
+      function walk(node: VNode) {
         if (!node) return;
         if (Array.isArray(node)) {
           node.forEach(walk);
@@ -123,17 +133,17 @@ describe('X5 钟表扩展', () => {
         if (node.type === 'text' && node.props) {
           texts.push({
             text: String(node.props.children),
-            x: node.props.x,
-            y: node.props.y,
-            fontSize: node.props.fontSize,
-            fill: node.props.fill,
+            x: Number(node.props.x),
+            y: Number(node.props.y),
+            fontSize: Number(node.props.fontSize),
+            fill: String(node.props.fill),
           });
         }
         if (node.props?.children) {
-          walk(node.props.children);
+          walk(node.props.children as VNode);
         }
       }
-      walk(vnode24);
+      walk(vnode24 as VNode);
 
       // 共 24 个数字文本
       expect(texts).toHaveLength(24);
@@ -173,10 +183,11 @@ describe('X5 钟表扩展', () => {
     });
 
     it('hour24 未设置时不画 13–24', () => {
+      type VNode = { type?: string; props?: Record<string, unknown> } | null | undefined | string | number | VNode[];
       const vnode = renderTree({ at: [200, 200], radius: 100, time: '0:00' });
 
       const texts: string[] = [];
-      function walk(node: any) {
+      function walk(node: VNode) {
         if (!node) return;
         if (Array.isArray(node)) {
           node.forEach(walk);
@@ -185,10 +196,10 @@ describe('X5 钟表扩展', () => {
         if (typeof node !== 'object') return;
         if (node.type === 'text' && node.props) texts.push(String(node.props.children));
         if (node.props?.children) {
-          walk(node.props.children);
+          walk(node.props.children as VNode);
         }
       }
-      walk(vnode);
+      walk(vnode as VNode);
 
       expect(texts).toHaveLength(12);
       expect(texts).not.toContain('13');
@@ -199,7 +210,7 @@ describe('X5 钟表扩展', () => {
   describe('三个把手的 valueAt', () => {
     it('分针把手（prop time）：指针在 3 点方向返回 3:15（195 分钟）', () => {
       const props = { at: [200, 200], radius: 100, time: '3:00', seconds: 0 };
-      const handles = clockPart.handles?.(props)!;
+      const handles = clockPart.handles!(props);
       expect(handles).toHaveLength(3);
 
       const minuteHandle = handles[0];
@@ -216,7 +227,7 @@ describe('X5 钟表扩展', () => {
 
     it('时针把手（prop time）：拖时针按 1 分钟 = 0.5° 换算', () => {
       const props = { at: [200, 200], radius: 100, time: '3:00', seconds: 0 };
-      const handles = clockPart.handles?.(props)!;
+      const handles = clockPart.handles!(props);
 
       const hourHandle = handles[1];
       expect(hourHandle.prop).toBe('time');
@@ -242,7 +253,7 @@ describe('X5 钟表扩展', () => {
 
     it('秒针把手（prop seconds）：秒针末端，按 1 秒 = 6° 换算', () => {
       const props = { at: [200, 200], radius: 100, time: '3:00', seconds: 15 };
-      const handles = clockPart.handles?.(props)!;
+      const handles = clockPart.handles!(props);
 
       const secHandle = handles[2];
       expect(secHandle.prop).toBe('seconds');
@@ -265,17 +276,17 @@ describe('X5 钟表扩展', () => {
 
     it('没有 seconds 属性时只返回分针和时针两个把手', () => {
       const props = { at: [200, 200], radius: 100, time: '3:00' };
-      const handles = clockPart.handles?.(props)!;
+      const handles = clockPart.handles!(props);
       expect(handles).toHaveLength(2);
       expect(handles.map((h) => h.prop)).toEqual(['time', 'time']);
     });
 
     it('hands 指定为 minute 时只返回分针把手，指定为 hour 时只返回时针把手', () => {
-      const minuteOnly = clockPart.handles?.({ at: [200, 200], radius: 100, time: '3:00', hands: 'minute' })!;
+      const minuteOnly = clockPart.handles!({ at: [200, 200], radius: 100, time: '3:00', hands: 'minute' });
       expect(minuteOnly).toHaveLength(1);
       expect(minuteOnly[0].at[1]).toBeCloseTo(122);
 
-      const hourOnly = clockPart.handles?.({ at: [200, 200], radius: 100, time: '3:00', hands: 'hour' })!;
+      const hourOnly = clockPart.handles!({ at: [200, 200], radius: 100, time: '3:00', hands: 'hour' });
       expect(hourOnly).toHaveLength(1);
       expect(hourOnly[0].at[0]).toBeCloseTo(250);
     });

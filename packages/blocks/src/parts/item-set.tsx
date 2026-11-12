@@ -1,4 +1,5 @@
 // 物品组：一组各不相同的物品（水果、文具、小动物、图形），用于点数、序数、分类、比较、连加连减。
+import type { ReactNode } from 'react';
 import {
   color,
   mixColor,
@@ -226,7 +227,7 @@ export const itemSetPart: PartDef = {
           const d = box.w * 0.8;
           const r = d / 2;
 
-          let shapeContent = null;
+          let shapeContent: ReactNode;
           if (item.asset) {
             const url = ctx.assetUrl?.(str(item.asset));
             if (!url) {

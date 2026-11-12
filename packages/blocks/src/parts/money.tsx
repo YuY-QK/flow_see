@@ -109,9 +109,9 @@ export function parseDenomination(raw: unknown): MoneyDenomination {
   val = Math.round(val * 100) / 100;
 
   if (isNote) {
-    let width = 120;
-    let height = 60;
-    let colorKey = '1n';
+    let width: number;
+    let height: number;
+    let colorKey: string;
     const digits = String(val);
 
     if (val >= 100) {
@@ -152,10 +152,10 @@ export function parseDenomination(raw: unknown): MoneyDenomination {
   }
 
   // 硬币：直径 1分 30、2分 34、5分 38、1角 40、5角 44、1元 50
-  let d = 40;
-  let digits = '1';
-  let unitKey: 'yuan' | 'jiao' | 'fen' = 'yuan';
-  let colorKey = '1';
+  let d: number;
+  let digits: string;
+  let unitKey: 'yuan' | 'jiao' | 'fen';
+  let colorKey: string;
 
   if (Math.abs(val - 0.01) < 0.005) {
     d = 30;

@@ -14,11 +14,13 @@ export { contentBox, fitBox, objectBox, sceneViewBox } from './box';
 export {
   coveredActions,
   dragFrame,
+  initialObject,
   sortFrame,
   sceneFrame,
   stepMotionMs,
   type DragFrame,
   type SceneDef,
+  type SceneObject,
   type SortFrame,
   type SortItemInfo,
 } from './evaluate';

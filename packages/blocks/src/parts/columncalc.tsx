@@ -1178,7 +1178,7 @@ export function columnCalcPlan(p: Props): ColumnCalcPlan {
   // 先预跑一遍除法，确定一共需要添几个 0，以便排定列坐标
   const runSim = () => {
     const sim = allDigits.map((x) => ({ ...x }));
-    let cur = 0;
+    let cur: number;
     let k = 0;
     const maxFracLimit = daDec > 6 ? daDec : 6;
     if (sim.length === 1 && sim[0].digit < effB) {

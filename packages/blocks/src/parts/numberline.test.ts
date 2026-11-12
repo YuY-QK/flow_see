@@ -2,7 +2,7 @@ import { isValidElement, type ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 import { getTheme } from '@flow-see/core';
 import { checkScene } from '../../../templates/src/scene/check';
-import { sceneFrame } from '../../../templates/src/scene/evaluate';
+import { sceneFrame, type SceneDef } from '../../../templates/src/scene/evaluate';
 import { color, findSubitem } from '../index';
 import {
   formatTickValue,
@@ -435,7 +435,7 @@ describe('数轴扩展 (X4)', () => {
         ],
       };
 
-      const frame = sceneFrame(def as any, 0, 1);
+      const frame = sceneFrame(def as unknown as SceneDef, 0, 1);
       const line = frame.objects.find((o) => o.id === 'line');
       expect(line).toBeDefined();
       const lineHops = line?.props.hops as Hop[];
@@ -459,7 +459,7 @@ describe('数轴扩展 (X4)', () => {
           },
         ],
       };
-      const rOk = checkScene(sceneOk as any);
+      const rOk = checkScene(sceneOk as unknown as Parameters<typeof checkScene>[0]);
       expect(rOk).toHaveLength(0);
 
       const sceneBad = {
@@ -472,7 +472,7 @@ describe('数轴扩展 (X4)', () => {
           },
         ],
       };
-      const rBad = checkScene(sceneBad as any);
+      const rBad = checkScene(sceneBad as unknown as Parameters<typeof checkScene>[0]);
       expect(rBad.length).toBeGreaterThan(0);
       expect(rBad.some((i) => i.message.includes('color'))).toBe(true);
     });

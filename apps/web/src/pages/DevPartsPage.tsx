@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
+import { useMemo, useRef, useState, type PointerEvent } from 'react';
 import {
   allParts,
   AssetUrlContext,
@@ -131,11 +131,13 @@ function YamlPropField({
 
   const [text, setText] = useState(() => formatVal(value));
   const [error, setError] = useState(false);
+  const [prevValue, setPrevValue] = useState(value);
 
-  useEffect(() => {
+  if (prevValue !== value) {
+    setPrevValue(value);
     setText(formatVal(value));
     setError(false);
-  }, [value]);
+  }
 
   const handleBlur = () => {
     const trimmed = text.trim();
@@ -192,12 +194,12 @@ export function DevPartsPage() {
   const [props, setProps] = useState<Props>(() =>
     currentPart ? getInitialProps(currentPart) : {},
   );
+  const [prevPart, setPrevPart] = useState(currentPart);
 
-  useEffect(() => {
-    if (currentPart) {
-      setProps(getInitialProps(currentPart));
-    }
-  }, [currentPart]);
+  if (prevPart !== currentPart) {
+    setPrevPart(currentPart);
+    setProps(currentPart ? getInitialProps(currentPart) : {});
+  }
 
   const [animTheme, setAnimTheme] = useState<ThemeId>(() => {
     if (typeof window !== 'undefined') {

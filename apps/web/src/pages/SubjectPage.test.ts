@@ -95,7 +95,7 @@ vi.mock('@flow-see/content', async (importOriginal) => {
           ],
         };
       }
-      return actual.findEntry(content as any, grade, subject);
+      return actual.findEntry(content as Parameters<typeof actual.findEntry>[0], grade, subject);
     },
   };
 });

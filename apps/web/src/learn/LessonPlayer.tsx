@@ -31,7 +31,7 @@ import {
   type TapSubitem,
 } from '@flow-see/core';
 import { displayText, getPart, itemSetLayout, moneyLayout, type Box } from '@flow-see/blocks';
-import { objectBox, sceneOf, sceneFrame } from '@flow-see/templates';
+import { getTemplate, initialObject, objectBox, sceneOf, sceneFrame, type SceneObject } from '@flow-see/templates';
 import { useTimeline } from '@flow-see/runtime/player/useTimeline.ts';
 import { isSpeechSupported, speak } from '@flow-see/runtime/services/speech.ts';
 import { useSettings } from '@flow-see/runtime/store/settings.ts';
@@ -136,6 +136,20 @@ function getInitialPlace(
   } catch {
     return undefined;
   }
+}
+
+function getSceneObject(
+  animation: Animation,
+  id: string,
+  stepIndex = 0,
+): SceneObject | undefined {
+  const def = sceneOf(animation);
+  const frame = sceneFrame(def, stepIndex, 0, 'doing');
+  const found = frame.objects.find((o) => o.id === id);
+  if (found) return found;
+  const raw = def.objects.find((o) => o.id === id);
+  if (raw) return initialObject(raw);
+  return undefined;
 }
 
 export interface FrameObjectInfo {
@@ -370,22 +384,21 @@ export function LessonPlayer({
 
   const dragSumItems = useMemo<SumItem[]>(() => {
     if (!isDragSum || !spec?.drag) return [];
-    const def = sceneOf(animation);
-    const fromObj = def.objects.find((o) => o.id === spec.drag!.from);
+    const fromObj = getSceneObject(animation, spec.drag.from, state.index);
     if (!fromObj) return [];
     if (fromObj.type === 'money') {
-      const layout = moneyLayout(fromObj.props as Record<string, unknown>);
+      const layout = moneyLayout(fromObj.props);
       return layout.slots.map((s) => ({ index: s.index, value: s.value }));
     }
     if (fromObj.type === 'item-set') {
-      const layout = itemSetLayout(fromObj.props as Record<string, unknown>);
+      const layout = itemSetLayout(fromObj.props);
       return layout.slots.map((s) => ({
         index: s.index,
         value: typeof s.item.value === 'number' ? s.item.value : 0,
       }));
     }
     return [];
-  }, [isDragSum, spec?.drag, animation]);
+  }, [isDragSum, spec, animation, state.index]);
 
   const currentPaidSum = useMemo(() => {
     if (!isDragSum) return 0;
@@ -497,10 +510,9 @@ export function LessonPlayer({
       return;
     }
     if (spec.sort) {
-      const def = sceneOf(animation);
-      const fromObj = def.objects.find((o) => o.id === spec.sort!.from);
+      const fromObj = getSceneObject(animation, spec.sort.from, state.index);
       if (!fromObj) return;
-      const layout = itemSetLayout(fromObj.props as Record<string, unknown>);
+      const layout = itemSetLayout(fromObj.props);
       const slot = layout.slots.find((s) => s.index === i);
       const totalCount = layout.slots.length;
       const res = sortResult(
@@ -647,11 +659,10 @@ export function LessonPlayer({
   };
   const sortTotalNeed = useMemo(() => {
     if (!spec?.sort) return 0;
-    const def = sceneOf(animation);
-    const fromObj = def.objects.find((o) => o.id === spec.sort!.from);
+    const fromObj = getSceneObject(animation, spec.sort.from, state.index);
     if (!fromObj) return 0;
-    return itemSetLayout(fromObj.props as Record<string, unknown>).slots.length;
-  }, [spec?.sort, animation]);
+    return itemSetLayout(fromObj.props).slots.length;
+  }, [spec, animation, state.index]);
 
   // 多选、一个一个分、tap点选、sort分类拖放、drag按面值凑数：孩子停下来太久还没做完，提示还差几个/还差多少（每次操作后重新计时）
   const doingNow = !!spec && state.waiting && tp.demo === null;
@@ -707,10 +718,9 @@ export function LessonPlayer({
 
   const demoSortSequence = useMemo(() => {
     if (!spec?.sort) return [];
-    const def = sceneOf(animation);
-    const fromObj = def.objects.find((o) => o.id === spec.sort!.from);
+    const fromObj = getSceneObject(animation, spec.sort.from, state.index);
     if (!fromObj) return [];
-    const layout = itemSetLayout(fromObj.props as Record<string, unknown>);
+    const layout = itemSetLayout(fromObj.props);
     const seq: { index: number; bin: string }[] = [];
     const binKeys = Object.keys(spec.sort.bins);
     for (const key of binKeys) {
@@ -723,7 +733,7 @@ export function LessonPlayer({
       }
     }
     return seq;
-  }, [spec?.sort, animation]);
+  }, [spec, animation, state.index]);
 
   const demoSortMoved = useMemo(() => {
     if (!demoing || !spec?.sort || demoSortSequence.length === 0) return [];
@@ -748,7 +758,7 @@ export function LessonPlayer({
   const demoSumSequence = useMemo(() => {
     if (!isDragSum || !spec?.drag || dragSumItems.length === 0) return [];
     return greedySumSequence(targetSum, dragSumItems) ?? [];
-  }, [isDragSum, spec?.drag, targetSum, dragSumItems]);
+  }, [isDragSum, spec, targetSum, dragSumItems]);
 
   const demoSumMoved = useMemo(() => {
     if (!demoing || !isDragSum || demoSumSequence.length === 0) return [];
@@ -764,7 +774,7 @@ export function LessonPlayer({
     if (!demoing || !isDragSum || demoSumMoved.length === 0 || !spec?.drag) return [];
     const toId = Array.isArray(spec.drag.to) ? spec.drag.to[0] : spec.drag.to;
     return Array(demoSumMoved.length).fill(toId);
-  }, [demoing, isDragSum, demoSumMoved, spec?.drag]);
+  }, [demoing, isDragSum, demoSumMoved, spec]);
 
   const demoPaidSum = useMemo(() => {
     if (!isDragSum || !demoing) return 0;
@@ -905,8 +915,9 @@ export function LessonPlayer({
     };
 
     if (animMs > 0 && val !== snapped) {
-      const snapStart = performance.now();
+      let snapStart: number | undefined;
       const snapLoop = (now: number) => {
+        if (snapStart === undefined) snapStart = now;
         const sp = Math.min(1, (now - snapStart) / animMs);
         const current = val + (snapped - val) * sp;
         setTp((prev) => ({ ...prev, turnValue: current }));
@@ -1123,7 +1134,10 @@ export function LessonPlayer({
   };
 
   const theme = getTheme(animation.themeId);
-  const Stage = template.Stage;
+  const Stage = template?.Stage ?? getTemplate(animation.templateId)?.Stage;
+  if (!Stage) {
+    throw new Error(`Template Stage not found for templateId: ${animation.templateId}`);
+  }
   const step = steps[state.index];
   const stage = (animation.config?.stage as { width: number; height: number } | undefined) ?? {
     width: 800,
@@ -1168,141 +1182,144 @@ export function LessonPlayer({
   }, [engaged, ratio]);
 
   const testApiRef = useRef<LessonTestApi | undefined>(undefined);
-  testApiRef.current = {
-    steps: () => total,
-    goto: (index: number) => {
-      const i = Math.max(0, Math.min(total - 1, Math.floor(index)));
-      act({ type: 'pause' });
-      act({ type: 'seek', index: i });
-      if (tries[i]) {
-        act({ type: 'solve' });
-      }
-      act({ type: 'frame', delta: 1 });
-      act({ type: 'pause' });
-      setTp(freshTry(`${i}:false`, initialTurn, initialPlace?.pos, initialPlace?.rot));
-    },
-    mode: (m: 'watch' | 'follow' | 'self') => {
-      const targetMode: HandsMode = m === 'follow' ? 'guided' : m;
-      if (onModeChange) {
-        onModeChange(targetMode, false, m !== 'watch');
-      } else {
-        act({ type: 'seek', index: 0 });
-        if (m !== 'watch') {
-          act({ type: 'play' });
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    testApiRef.current = {
+      steps: () => total,
+      goto: (index: number) => {
+        const i = Math.max(0, Math.min(total - 1, Math.floor(index)));
+        act({ type: 'pause' });
+        act({ type: 'seek', index: i });
+        if (tries[i]) {
+          act({ type: 'solve' });
         }
-      }
-    },
-    pending: () => (state.waiting && spec ? spec : undefined),
-    solve: async () => {
-      if (!state.waiting || !spec) return;
-      if (spec.choose) {
-        const answers = chooseAnswers(spec.choose);
-        for (const ans of answers) {
-          onChoose(ans);
-          await new Promise((r) => setTimeout(r, 20));
+        act({ type: 'frame', delta: 1 });
+        act({ type: 'pause' });
+        setTp(freshTry(`${i}:false`, initialTurn, initialPlace?.pos, initialPlace?.rot));
+      },
+      mode: (m: 'watch' | 'follow' | 'self') => {
+        const targetMode: HandsMode = m === 'follow' ? 'guided' : m;
+        if (onModeChange) {
+          onModeChange(targetMode, false, m !== 'watch');
+        } else {
+          act({ type: 'seek', index: 0 });
+          if (m !== 'watch') {
+            act({ type: 'play' });
+          }
         }
-      } else if (isDragSum && spec.drag) {
-        const toId = Array.isArray(spec.drag.to) ? spec.drag.to[0] : spec.drag.to;
-        for (const idx of demoSumSequence) {
-          onDrop(idx, toId);
-          await new Promise((r) => setTimeout(r, 20));
-        }
-      } else if (spec.drag) {
-        const needCount = Math.max(1, Math.round(Number(spec.drag.count ?? 1)));
-        const targets = Array.isArray(spec.drag.to) ? spec.drag.to : [spec.drag.to];
-        for (let i = 0; i < needCount; i++) {
-          const target = targets.length > 1 ? targets[i % targets.length] : targets[0];
-          onDrop(i, target);
-          await new Promise((r) => setTimeout(r, 20));
-        }
-      } else if (spec.sort) {
-        for (const item of demoSortSequence) {
-          onDrop(item.index, item.bin);
-          await new Promise((r) => setTimeout(r, 20));
-        }
-      } else if (spec.place) {
-        const def = sceneOf(animation);
-        const frame0 = sceneFrame(def, state.index, 0, 'doing');
-        let targetPos: [number, number] = [0, 0];
-        if (Array.isArray(spec.place.to) && spec.place.to.length === 2) {
-          targetPos = [Number(spec.place.to[0]), Number(spec.place.to[1])];
-        } else if (typeof spec.place.to === 'string') {
-          const destObj = frame0.objects.find((o) => o.id === spec.place!.to);
-          if (destObj) {
-            const p = getPart(destObj.type);
-            if (p) {
-              const b = p.bbox(destObj.props);
-              targetPos = [b.x + b.w / 2, b.y + b.h / 2];
+      },
+      pending: () => (state.waiting && spec ? spec : undefined),
+      solve: async () => {
+        if (!state.waiting || !spec) return;
+        if (spec.choose) {
+          const answers = chooseAnswers(spec.choose);
+          for (const ans of answers) {
+            onChoose(ans);
+            await new Promise((r) => setTimeout(r, 20));
+          }
+        } else if (isDragSum && spec.drag) {
+          const toId = Array.isArray(spec.drag.to) ? spec.drag.to[0] : spec.drag.to;
+          for (const idx of demoSumSequence) {
+            onDrop(idx, toId);
+            await new Promise((r) => setTimeout(r, 20));
+          }
+        } else if (spec.drag) {
+          const needCount = Math.max(1, Math.round(Number(spec.drag.count ?? 1)));
+          const targets = Array.isArray(spec.drag.to) ? spec.drag.to : [spec.drag.to];
+          for (let i = 0; i < needCount; i++) {
+            const target = targets.length > 1 ? targets[i % targets.length] : targets[0];
+            onDrop(i, target);
+            await new Promise((r) => setTimeout(r, 20));
+          }
+        } else if (spec.sort) {
+          for (const item of demoSortSequence) {
+            onDrop(item.index, item.bin);
+            await new Promise((r) => setTimeout(r, 20));
+          }
+        } else if (spec.place) {
+          const def = sceneOf(animation);
+          const frame0 = sceneFrame(def, state.index, 0, 'doing');
+          let targetPos: [number, number] = [0, 0];
+          if (Array.isArray(spec.place.to) && spec.place.to.length === 2) {
+            targetPos = [Number(spec.place.to[0]), Number(spec.place.to[1])];
+          } else if (typeof spec.place.to === 'string') {
+            const destObj = frame0.objects.find((o) => o.id === spec.place!.to);
+            if (destObj) {
+              const p = getPart(destObj.type);
+              if (p) {
+                const b = p.bbox(destObj.props);
+                targetPos = [b.x + b.w / 2, b.y + b.h / 2];
+              }
             }
           }
-        }
-        const targetRot = Number(spec.place.rotate ?? 0);
-        onPlace(targetPos, targetRot, true);
-      } else if (spec.tap) {
-        for (const ans of demoAnswers) {
-          const dot = ans.indexOf('.');
-          if (dot >= 0) {
-            onTap(ans.slice(0, dot), ans.slice(dot + 1));
-          } else {
-            onTap(ans);
+          const targetRot = Number(spec.place.rotate ?? 0);
+          onPlace(targetPos, targetRot, true);
+        } else if (spec.tap) {
+          for (const ans of demoAnswers) {
+            const dot = ans.indexOf('.');
+            if (dot >= 0) {
+              onTap(ans.slice(0, dot), ans.slice(dot + 1));
+            } else {
+              onTap(ans);
+            }
+            await new Promise((r) => setTimeout(r, 20));
           }
-          await new Promise((r) => setTimeout(r, 20));
+        } else if (spec.turn) {
+          onTurn(targetAnswer, true);
         }
-      } else if (spec.turn) {
-        onTurn(targetAnswer, true);
-      }
-      await new Promise((r) => setTimeout(r, 40));
-      if (state.waiting) {
-        act({ type: 'solve' });
-      }
-    },
-    frameObjects: () => {
-      const def = sceneOf(animation);
-      const frame = sceneFrame(def, state.index, state.progress, tryIt?.phase);
-      const result: FrameObjectInfo[] = [];
-      for (const o of frame.objects) {
-        const b = objectBox(o);
-        if (!b) continue;
-        let text: string | undefined;
-        if (o.type === 'text' || o.type === 'label') {
-          text = displayText(o.props);
-        } else if (typeof o.props.text === 'string') {
-          text = displayText(o.props);
-        } else if (typeof o.props.label === 'string') {
-          text = String(o.props.label);
+        await new Promise((r) => setTimeout(r, 40));
+        if (state.waiting) {
+          act({ type: 'solve' });
         }
-        if (!text && typeof document !== 'undefined') {
-          const el = document.querySelector(`[data-part="${o.id}"]`);
-          if (el) {
-            const t = el.textContent?.trim();
-            if (t) text = t;
+      },
+      frameObjects: () => {
+        const def = sceneOf(animation);
+        const frame = sceneFrame(def, state.index, state.progress, tryIt?.phase);
+        const result: FrameObjectInfo[] = [];
+        for (const o of frame.objects) {
+          const b = objectBox(o);
+          if (!b) continue;
+          let text: string | undefined;
+          if (o.type === 'text' || o.type === 'label') {
+            text = displayText(o.props);
+          } else if (typeof o.props.text === 'string') {
+            text = displayText(o.props);
+          } else if (typeof o.props.label === 'string') {
+            text = String(o.props.label);
           }
+          if (!text && typeof document !== 'undefined') {
+            const el = document.querySelector(`[data-part="${o.id}"]`);
+            if (el) {
+              const t = el.textContent?.trim();
+              if (t) text = t;
+            }
+          }
+          result.push({
+            id: o.id,
+            type: o.type,
+            box: b,
+            ...(text !== undefined ? { text } : {}),
+          });
         }
-        result.push({
-          id: o.id,
-          type: o.type,
-          box: b,
-          ...(text !== undefined ? { text } : {}),
-        });
-      }
-      return result;
-    },
-    stage: () => ({ width: stage.width, height: stage.height }),
-    setSpeed: (s) => act({ type: 'setSpeed', speed: s }),
-    setParams: (patch) => {
-      panel?.onChange(patch);
-      act({ type: 'seek', index: 0 });
-      act({ type: 'play' });
-    },
-    getControls: () => panel?.controls ?? (animation.config?.explore as ExploreControl[]) ?? [],
-    isFinished: () => state.finishes > 0,
-    getState: () => ({
-      index: state.index,
-      total,
-      waiting: state.waiting,
-      playing: state.playing,
-    }),
-  };
+        return result;
+      },
+      stage: () => ({ width: stage.width, height: stage.height }),
+      setSpeed: (s) => act({ type: 'setSpeed', speed: s }),
+      setParams: (patch) => {
+        panel?.onChange(patch);
+        act({ type: 'seek', index: 0 });
+        act({ type: 'play' });
+      },
+      getControls: () => panel?.controls ?? (animation.config?.explore as ExploreControl[]) ?? [],
+      isFinished: () => state.finishes > 0,
+      getState: () => ({
+        index: state.index,
+        total,
+        waiting: state.waiting,
+        playing: state.playing,
+      }),
+    };
+  });
 
   useEffect(() => {
     if (import.meta.env.DEV) {

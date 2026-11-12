@@ -46,7 +46,7 @@ export function findScriptLocation(
   }
 
   for (const dir of candidateDirs) {
-    let files: string[] = [];
+    let files: string[];
     try {
       files = readdirSync(dir).filter((f) => f.startsWith('C-') && f.endsWith('.md'));
     } catch {

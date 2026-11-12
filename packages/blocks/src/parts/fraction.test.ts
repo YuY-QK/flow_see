@@ -1,7 +1,7 @@
 import { isValidElement, type ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 import { getTheme } from '@flow-see/core';
-import { findSubitem, fractionBarPart, fractionCirclePart } from '../index';
+import { findSubitem, fractionBarPart, fractionCirclePart, type Subitem } from '../index';
 
 const theme = getTheme('cute');
 const ctx = { theme };
@@ -239,12 +239,12 @@ describe('X6 分数条 / 分数圆扩展', () => {
       const wholes = findSubitem(fractionCirclePart, p, 'whole.*');
       expect(Array.isArray(wholes)).toBe(true);
       expect(wholes).toHaveLength(2);
-      expect((wholes as any[]).map((w) => w.name)).toEqual(['whole.1', 'whole.2']);
+      expect((wholes as Subitem[]).map((w) => w.name)).toEqual(['whole.1', 'whole.2']);
 
       const parts = findSubitem(fractionCirclePart, p, 'part.*');
       expect(Array.isArray(parts)).toBe(true);
       expect(parts).toHaveLength(8);
-      expect((parts as any[]).map((pt) => pt.name)).toEqual([
+      expect((parts as Subitem[]).map((pt) => pt.name)).toEqual([
         'part.1',
         'part.2',
         'part.3',
@@ -258,7 +258,7 @@ describe('X6 分数条 / 分数圆扩展', () => {
       const part7 = findSubitem(fractionCirclePart, p, 'part.7');
       expect(part7).toBeDefined();
       expect(Array.isArray(part7)).toBe(false);
-      expect((part7 as any).name).toBe('part.7');
+      expect((part7 as Subitem).name).toBe('part.7');
     });
 
     it('分数条：wholes = 2, parts = 4 时共 10 个子项（2 个 whole + 8 个 part）', () => {
@@ -269,12 +269,12 @@ describe('X6 分数条 / 分数圆扩展', () => {
       const wholes = findSubitem(fractionBarPart, p, 'whole.*');
       expect(Array.isArray(wholes)).toBe(true);
       expect(wholes).toHaveLength(2);
-      expect((wholes as any[]).map((w) => w.name)).toEqual(['whole.1', 'whole.2']);
+      expect((wholes as Subitem[]).map((w) => w.name)).toEqual(['whole.1', 'whole.2']);
 
       const parts = findSubitem(fractionBarPart, p, 'part.*');
       expect(Array.isArray(parts)).toBe(true);
       expect(parts).toHaveLength(8);
-      expect((parts as any[]).map((pt) => pt.name)).toEqual([
+      expect((parts as Subitem[]).map((pt) => pt.name)).toEqual([
         'part.1',
         'part.2',
         'part.3',
@@ -288,8 +288,8 @@ describe('X6 分数条 / 分数圆扩展', () => {
       const part7 = findSubitem(fractionBarPart, p, 'part.7');
       expect(part7).toBeDefined();
       expect(Array.isArray(part7)).toBe(false);
-      expect((part7 as any).name).toBe('part.7');
-      expect((part7 as any).box).toEqual({
+      expect((part7 as Subitem).name).toBe('part.7');
+      expect((part7 as Subitem).box).toEqual({
         x: 200 - 400 / 2 + (7 - 5) * (400 / 4), // wi = 1, pj = 2 -> 0 + 200 = 200
         y: 200 + (50 + 50 * 0.4) / 2 - 25, // cy1 - 25 = 235 - 25 = 210
         w: 100,

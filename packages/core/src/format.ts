@@ -60,10 +60,9 @@ export function cn(n: number): string {
   const intStr = parts[0];
   const decStr = parts[1];
 
-  let result = '';
   if (intStr === '0' && !decStr) return digits[0];
 
-  result = readInteger(intStr, digits, units, groups, two);
+  let result = readInteger(intStr, digits, units, groups, two);
 
   if (decStr) {
     let decRead = '';

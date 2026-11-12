@@ -252,7 +252,7 @@ export function SceneView({
       at[0] - rotatingHandle.startPointer[0],
       at[1] - rotatingHandle.startPointer[1],
     );
-    const duration = Date.now() - rotatingHandle.startTime;
+    const duration = e.timeStamp - rotatingHandle.startTime;
     const step = sceneStyle().tryIt.rotateStep ?? 45;
     let finalRot = currentRotate;
     if (movedDist < 5 && duration < 300) {
@@ -373,7 +373,7 @@ export function SceneView({
     return obj;
   });
 
-  const currentBox = useMemo(() => {
+  const currentBox = (() => {
     if (!initialPart || !initialTargetObj) return { x: 0, y: 0, w: 0, h: 0 };
     const dx = currentCenter[0] - initialCenter[0];
     const dy = currentCenter[1] - initialCenter[1];
@@ -383,15 +383,7 @@ export function SceneView({
       rotate: currentRotate,
     };
     return initialPart.bbox(curProps);
-  }, [
-    initialPart,
-    initialTargetObj,
-    currentCenter,
-    initialCenter,
-    initialAtX,
-    initialAtY,
-    currentRotate,
-  ]);
+  })();
 
   const hasRotate = placeSpec?.rotate !== undefined;
   const handleDist = Math.max(currentBox.h / 2 + 28, 40);
@@ -410,7 +402,7 @@ export function SceneView({
   const displayRot = `${Math.round(normalizeAngle(currentRotate))}°`;
   const pillW = Math.max(48, displayRot.length * 9 + 18);
 
-  const goalObj = useMemo(() => {
+  const goalObj = (() => {
     if (!isPlacing || !placeSpec?.showGoal || !initialTargetObj || tryIt?.phase === 'solved')
       return null;
     let targetPos: Point = [0, 0];
@@ -443,24 +435,13 @@ export function SceneView({
         highlight: 0,
       },
     };
-  }, [
-    isPlacing,
-    placeSpec?.showGoal,
-    placeSpec?.to,
-    placeSpec?.rotate,
-    initialTargetObj,
-    tryIt?.phase,
-    frame.objects,
-    initialCenter,
-    initialAtX,
-    initialAtY,
-  ]);
+  })();
 
   const isReducedMotion =
     typeof window !== 'undefined' &&
     window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-  const subHints = useMemo(() => {
+  const subHints = (() => {
     if (!doing || !tryIt?.showTarget) return [];
     const res: SubHighlight[] = [];
     if (spec?.choose?.show) {
@@ -518,12 +499,9 @@ export function SceneView({
       }
     }
     return res;
-  }, [doing, tryIt?.showTarget, spec?.choose?.show, spec?.tap, objects, animation.params]);
+  })();
 
-  const allSubHighlights = useMemo(
-    () => [...(frame.subHighlights ?? []), ...subHints],
-    [frame.subHighlights, subHints],
-  );
+  const allSubHighlights = [...(frame.subHighlights ?? []), ...subHints];
   const targetObjects = turnTarget
     ? objects.filter((o) => o.id === turnTarget)
     : objects.filter((o) => !!getPart(o.type)?.handles);
@@ -1092,7 +1070,7 @@ export function SceneView({
                     startPointer: at,
                     startAngle: currentRotate,
                     pointer: e.pointerId,
-                    startTime: Date.now(),
+                    startTime: e.timeStamp,
                   });
                 }}
                 onKeyDown={(e) => {
