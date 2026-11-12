@@ -451,7 +451,7 @@ interface LessonTestApi {
 5. 自己做：`mode('self')`，同上；然后改一次参数（取 `explore` 每个控件的最大值）再做一遍。
 6. 报告：每个知识点一行：三种视口的第 1、中间、最后一步缩略图，问题列表（带步骤号和截图链接）。全部无问题时命令退出码 0，否则 1。
 
-**参数**：`--lesson <id>`（只查一个，可多次）、`--changed`（只查相对 `origin/main` 改动过的知识点文件，CI 用）、`--no-self`（跳过自己做）。
+**参数**：`--lesson <id>`（只查一个，可多次）、`--changed`（只查相对 `origin/develop` 改动过的知识点文件，CI 用；在 `develop` 上和 `origin/main` 比；可用环境变量 `WALK_BASE` 指定基准）、`--no-self`（跳过自己做）。
 
 **测试**
 

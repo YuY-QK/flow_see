@@ -73,21 +73,42 @@ export function parseArgs(argv = process.argv.slice(2)): WalkOptions {
   return options;
 }
 
+function revParse(ref: string, root: string): string | undefined {
+  try {
+    return execSync(`git rev-parse --verify --quiet ${ref}^{commit}`, {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return undefined;
+  }
+}
+
 export function getChangedLessonIds(root = ROOT): string[] {
   try {
     let stdout = '';
-    const diffTargets = ['origin/main', 'main', 'HEAD~1'];
+    // 比较基准：功能分支和 develop 比，develop 自己和 main 比（一个里程碑里改过的全部知识点）。
+    // WALK_BASE 可以指定基准；基准就是当前提交时跳过，换下一个。
+    const head = revParse('HEAD', root);
+    const diffTargets = [
+      process.env.WALK_BASE,
+      'origin/develop',
+      'develop',
+      'origin/main',
+      'main',
+      'HEAD~1',
+    ].filter((x): x is string => Boolean(x));
     for (const target of diffTargets) {
+      const rev = revParse(target, root);
+      if (!rev || rev === head) continue;
       try {
-        const out = execSync(`git diff --name-only ${target} packages/content/lessons/`, {
+        stdout = execSync(`git diff --name-only ${target}...HEAD -- packages/content/lessons/`, {
           cwd: root,
           encoding: 'utf8',
           stdio: ['pipe', 'pipe', 'ignore'],
         });
-        if (out.trim()) {
-          stdout = out;
-          break;
-        }
+        break;
       } catch {
         // try next target
       }

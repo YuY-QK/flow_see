@@ -36,7 +36,11 @@
 - 阶段前缀为 `phase<阶段号>`，阶段号对应 `docs/教学平台方案.md` 的路线（0、1、2…）。
 - `<内容>` 用小写英文单词，以 `-` 连接，简短说明这条分支做什么。
 - 示例：`dev/phase0-monorepo`、`dev/phase0-cloudflare-share`、`dev/phase1-scene-template`、`dev/phase2-lesson-clock`。
-- 不直接在 `main` 上开发；一个分支只做一个阶段内的一件事。
+- 一个分支只做一个阶段内的一件事。
+- **`develop` 是开发主线，`main` 是线上**（推送到 `main` 会自动部署）：
+  - 新分支一律从最新的 `develop` 拉出，做完合并回 `develop`；不直接在 `develop`、`main` 上开发。
+  - 只有一个里程碑（一个批次的零件 + 知识点验收完）完成后，才由维护人把 `develop` 合并到 `main`。
+  - 合并前 `pnpm lint`、`pnpm test`、`pnpm build` 全部通过；CI（`.github/workflows/ci.yml`）在 `develop`、`dev/**` 和合并请求上都会跑。
 
 ## 其他
 

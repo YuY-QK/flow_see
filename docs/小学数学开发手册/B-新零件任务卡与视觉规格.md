@@ -17,7 +17,7 @@
 | `packages/content/lessons/scene.md` | 零件表加一行（属性、`at` 含义、连续属性、子项名、例子） |
 | 样板知识点 | `packages/content/lessons/math/g<年级>/<id>.yaml`，`status: draft`，id 用卡上“样板知识点”写的那个（正是 C 文件里第一个用到它的知识点），内容取 C 脚本的前 2–3 步即可；之后写正式知识点时在它上面补全 |
 
-**分支**：`dev/phase3-block-<type>`。**完成标准**：README 第 3 节 + 零件试验场（F9）里四个主题截图 + 卡上测试全过。
+**分支**：`dev/phase3-block-<type>`（从 `develop` 拉出）。**完成标准**：README 第 3 节 + 零件试验场（F9）里四个主题截图 + 卡上测试全过 + 样板知识点 `pnpm check:lessons --lesson <id>` 通过。样板用到的素材还没有时，先做素材（README 7.1）或在本分支里按 7.1 的规则补上这一个。
 
 **属性表的“默认”**：写进 `site.yaml`；“—”表示必填或没有默认。
 
