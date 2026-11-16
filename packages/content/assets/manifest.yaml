@@ -325,3 +325,68 @@
   source: AI 生成
   tool: Antigravity
   createdAt: 2026-11-13
+- id: para-a
+  file: math/shapes/para-a.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: para-b
+  file: math/shapes/para-b.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: trap-a
+  file: math/shapes/trap-a.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: trap-b
+  file: math/shapes/trap-b.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: rect
+  file: math/shapes/rect.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: square
+  file: math/shapes/square.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: quad
+  file: math/shapes/quad.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: tri-acute-a
+  file: math/shapes/tri-acute-a.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: tri-acute-b
+  file: math/shapes/tri-acute-b.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: tri-right-a
+  file: math/shapes/tri-right-a.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: tri-right-b
+  file: math/shapes/tri-right-b.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: tri-obtuse-a
+  file: math/shapes/tri-obtuse-a.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: tri-obtuse-b
+  file: math/shapes/tri-obtuse-b.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
