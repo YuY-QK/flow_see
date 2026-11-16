@@ -1,0 +1,77 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 交换加数的位置：两堆交换位置，和不变；大数在前更好凑十。按开发手册 C 脚本写成。
+id: commute-add
+title: 交换加数的位置
+summary: 两个数交换位置，和不变；大数在前更好凑十
+status: draft
+duration: 1分钟
+tags: [交换加数, 加法交换, 凑十]
+cover: { text: 3 + 9 = 9 + 3 }
+related: [make-ten, count-on]
+
+template: scene
+stage: { width: 800, height: 360 }
+
+params:
+  a: 3 # 小数
+  b: 9 # 大数
+derived:
+  s: a + b
+  gap: 10 - b # 大数还差几个凑成 10
+  rest: a - gap
+explore:
+  - { param: a, control: slider, label: 小数, min: 2, max: 5 }
+  - { param: b, control: slider, label: 大数, min: 11 - a, max: 9 }
+
+objects:
+  - { id: small, type: counters, count: '{a}', layout: row, size: 40, color: orange, at: [40, 80] }
+  - { id: big, type: counters, count: '{b}', layout: row, size: 40, color: blue, at: ['{60 + a * 40}', 80] }
+  - { id: eq1, type: text, text: '[{a}](@small) + [{b}](@big) = [{s}](blank)', size: 40, at: [620, 190] }
+  - { id: eq2, type: text, text: '[{b}](@big) + [{a}](@small)', size: 40, at: [620, 250], hidden: true }
+  - id: calc # 大数在前，把小数拆开凑十
+    type: split-calc
+    at: [240, 190]
+    a: '{b}'
+    op: +
+    b: '{a}'
+    split: b
+    parts: ['{gap}', '{rest}']
+    first: { join: [a, p], op: +, value: 10 }
+    second: { join: [m, q], op: +, value: '{s}' }
+    show: 0
+    size: 32
+    colors: { a: '@big', b: '@small' }
+    hidden: true
+
+steps:
+  - title: 提出问题
+    say: '{a} 加 {b}，小数在前，不好凑十。'
+    do:
+      - highlight: eq1
+  - title: 交换位置
+    say: 两堆交换位置，一共还是这么多。
+    do:
+      - move: { target: small, to: ['{60 + b * 40}', 80] }
+      - move: { target: big, to: [40, 80], together: true }
+      - show: eq2
+  - title: 大数在前凑十
+    say: 把 {a} 拆成 {gap} 和 {rest}，{b} 和 {gap} 凑成 10。
+    do:
+      - show: calc
+      - set: { target: calc, show: 3, duration: 1.6s }
+  - title: 和不变
+    say: 10 加 {rest} 等于 {s}，{a} + {b} 也等于 {s}。
+    do:
+      - set: { target: calc, blank: [r], duration: 0.3s }
+      - ask: true
+      - set: { target: calc, show: 4, blank: [], duration: 1s }
+      - set: { target: eq1, text: '[{a}](@small) + [{b}](@big) = [{s}](green)' }
+    try:
+      task: '{a} + {b} 等于几？'
+      choose: { answer: '{s}', min: 10, max: 18, show: [calc] }
+      hints:
+        - 10 再加 {rest}。
+
+keyPoints:
+  - 两个数相加，交换位置，和不变
+  - 小数在前时，可以换成大数在前再凑十

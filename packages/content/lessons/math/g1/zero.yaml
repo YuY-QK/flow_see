@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 0 的认识：盘子里的桃一个个吃掉直到没有；0 也是起点。按开发手册 C 脚本写成。
+id: zero
+title: 0 的认识
+summary: 一个也没有用 0 表示，0 也是起点
+status: draft
+duration: 1分钟
+tags: ['0', 零, 没有, 起点]
+cover: { text: '0' }
+related: [count-to-10, order-within-10]
+
+template: scene
+stage: { width: 800, height: 360 }
+
+params: {}
+
+objects:
+  - { id: plate, type: counters, count: 3, layout: grid, cols: 3, capacity: 3, size: 52, color: red, at: [80, 90] }
+  - { id: num, type: text, text: '3', size: 72, at: [420, 130] }
+  - { id: line, type: numberline, from: 0, to: 5, length: 520, labelEvery: 1, at: [140, 290], hidden: true }
+
+steps:
+  - title: 盘子里的桃
+    say: 盘子里有 3 个桃。
+    do:
+      - highlight: plate
+  - title: 吃掉一个
+    say: 吃掉一个，还剩 2 个。
+    do:
+      - set: { target: plate, count: 2 }
+      - set: { target: num, text: '2', together: true }
+  - title: 再吃一个
+    say: 再吃一个，还剩 1 个。
+    do:
+      - set: { target: plate, count: 1 }
+      - set: { target: num, text: '1', together: true }
+  - title: 一个也没有
+    say: 全吃完了，一个也没有，用 0 表示。
+    do:
+      - set: { target: plate, count: 0 }
+      - set: { target: num, text: '[0](blank)', together: true }
+      - ask: true
+      - set: { target: num, text: '0' }
+      - highlight: num
+    try:
+      task: 盘子里还有几个桃？
+      choose: { answer: 0, options: [0, 1, 2] }
+      hints:
+        - 盘子里一个也没有了。
+  - title: 0 是起点
+    say: 尺子和数轴都从 0 开始。
+    do:
+      - show: line
+      - highlight: line
+
+keyPoints:
+  - 一个也没有，用 0 表示
+  - 0 比 1 小
+  - 尺子、数轴上 0 是起点

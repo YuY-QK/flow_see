@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 减法的意义：从一共里拿走一部分，求还剩多少。按开发手册 C 脚本写成。
+id: sub-meaning
+title: 减法的意义
+summary: 从一共里拿走一部分，求还剩多少，用减法
+status: draft
+duration: 1分钟
+tags: [减法, 去掉, 拿走, 还剩, 减号]
+cover: { text: 5 − 2 }
+related: [add-meaning]
+
+template: scene
+stage: { width: 800, height: 360 }
+
+params:
+  a: 6 # 一共
+  b: 2 # 拿走
+derived:
+  r: a - b
+explore:
+  - { param: a, control: slider, label: 一共, min: 2, max: 10 }
+  - { param: b, control: slider, label: 拿走, min: 1, max: a - 1 }
+
+objects:
+  - { id: all, type: counters, count: '{a}', layout: row, size: 48, color: blue, at: [40, 150] }
+  - { id: away, type: tenframe, count: 0, size: 44, color: orange, at: [300, 250] } # 拿走的放这里
+  - { id: eq, type: text, text: '[{a}](blue) − [{b}](orange) = [{r}](blank)', size: 48, at: [620, 80] }
+
+steps:
+  - title: 一共几个
+    say: 一共有 {a} 个，要拿走 {b} 个。
+    do:
+      - highlight: all
+      - split: { target: all, take: '{b}', as: gone }
+      - color: { target: gone, to: orange }
+  - title: 拿走
+    say: 把 {b} 个拿走。
+    do:
+      - ask: true
+      - move: { target: gone, to: away }
+    try:
+      task: 把橙色的 {b} 个拖到下面的框里。
+      drag: { from: gone, to: away, count: '{b}' }
+      hints:
+        - 拖到下面的框里。
+  - title: 还剩几个
+    say: 还剩 {r} 个，写成 {a} − {b} = {r}。
+    do:
+      - highlight: all
+      - ask: true
+      - set: { target: eq, text: '[{a}](blue) − [{b}](orange) = [{r}](green)' }
+    try:
+      task: 还剩几个？
+      choose: { answer: '{r}', min: 0, max: 9, show: [all] }
+
+keyPoints:
+  - 从一共里拿走一部分，求还剩多少，用减法
+  - “−”读作减号

@@ -10,18 +10,18 @@ units:
     domain: number
     lessons:
       - { id: count-to-10, title: 数一数 }
-      - { id: compare-within-10, title: 比大小 }
+      - compare-within-10
       - { id: cardinal-ordinal, title: 几个和第几个 }
-      - { id: zero, title: 0 的认识 }
-      - { id: order-within-10, title: 10 以内数的顺序 }
+      - zero
+      - order-within-10
       - { id: compose-10, title: 10 以内数的组成 }
   - id: add-sub-10
     title: 10 以内的加减法
     term: 1
     domain: number
     lessons:
-      - { id: add-meaning, title: 加法的意义 }
-      - { id: sub-meaning, title: 减法的意义 }
+      - add-meaning
+      - sub-meaning
       - { id: add-sub-by-bond, title: 用数的组成算加减 }
   - id: add-within-20            # 已有
     title: 20 以内的进位加法
@@ -29,8 +29,8 @@ units:
     domain: number
     lessons:
       - make-ten
-      - { id: count-on, title: 点数法与接着数 }
-      - { id: commute-add, title: 交换加数的位置 }
+      - count-on
+      - commute-add
   - id: clock            # 已有
     title: 认识钟表
     term: 1

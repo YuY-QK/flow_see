@@ -1,0 +1,61 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 加法的意义：两堆合到一起，求一共多少。按开发手册 C 脚本写成。
+id: add-meaning
+title: 加法的意义
+summary: 把两部分合起来，用加法
+status: draft
+duration: 1分钟
+tags: [加法, 合起来, 加号, 一共]
+cover: { text: 3 + 2 }
+related: [sub-meaning, add-sub-by-bond]
+
+template: scene
+stage: { width: 800, height: 360 }
+
+params:
+  a: 3 # 左边
+  b: 2 # 右边
+derived:
+  s: a + b
+explore:
+  - { param: a, control: slider, label: 左边, min: 1, max: 8 }
+  - { param: b, control: slider, label: 右边, min: 1, max: 9 - a }
+
+objects:
+  - { id: left, type: counters, count: '{a}', layout: row, size: 48, color: blue, at: [40, 140] }
+  - { id: right, type: counters, count: '{b}', layout: row, size: 48, color: orange, at: [420, 140] }
+  - { id: box, type: tenframe, count: 0, size: 48, at: [40, 250] }
+  - { id: eq, type: text, text: '[{a}](@left) + [{b}](@right) = [{s}](blank)', size: 48, at: [640, 100] }
+
+steps:
+  - title: 两堆
+    say: 左边 {a} 个，右边 {b} 个。
+    do:
+      - highlight: left
+      - highlight: right
+  - title: 合起来
+    say: 把它们合到一起。
+    do:
+      - move: { target: left, to: box }
+      - ask: true
+      - move: { target: right, to: box }
+    try:
+      task: 把橙色圆片也放进十格框。
+      drag: { from: right, to: box, count: '{b}' }
+      hints:
+        - 拖到下面的十格框里。
+  - title: 一共几个
+    say: 一共 {s} 个，写成 {a} + {b} = {s}。
+    do:
+      - highlight: box
+      - ask: true
+      - set: { target: eq, text: '[{a}](blue) + [{b}](orange) = [{s}](green)' }
+    try:
+      task: 一共几个？
+      choose: { answer: '{s}', min: 2, max: 10, show: [box] }
+      hints:
+        - 数一数十格框里有几个。
+
+keyPoints:
+  - 把两部分合起来，求一共有多少，用加法
+  - “+”读作加号

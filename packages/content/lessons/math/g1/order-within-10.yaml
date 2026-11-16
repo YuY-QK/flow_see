@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 10 以内数的顺序：数轴上往右越来越大；前一个少 1，后一个多 1。按开发手册 C 脚本写成。
+id: order-within-10
+title: 10 以内数的顺序
+summary: 数轴上越往右数越大；前一个少 1，后一个多 1
+status: draft
+duration: 1分钟
+tags: [数的顺序, 数轴, 前一个, 后一个]
+cover: { text: 0→10 }
+related: [zero, compare-within-10]
+
+template: scene
+stage: { width: 800, height: 300 }
+
+params:
+  n: 5 # 问哪个数的前一个、后一个
+explore:
+  - { param: n, control: slider, label: 哪个数, min: 1, max: 9 }
+
+objects:
+  - { id: line, type: numberline, from: 0, to: 10, length: 680, labelEvery: 1, pointer: 0, at: [60, 140] }
+  - { id: q, type: text, text: '[?](blank)  [{n}](blue)  [?](blank)', size: 48, at: [400, 240] }
+
+steps:
+  - title: 从 0 跳到 10
+    say: 从 0 开始，一格一格往右跳。
+    do:
+      - repeat: 10
+        do:
+          - hop: { target: line, from: '{i - 1}', to: '{i}', duration: 0.4s }
+  - title: 越往右越大
+    say: 越往右，数越大。
+    do:
+      - highlight: line
+  - title: 前一个
+    say: '{n} 的前一个是 {n - 1}，少 1。'
+    do:
+      - set: { target: line, pointer: '{n}' }
+      - highlight: q
+      - ask: true
+      - set: { target: q, text: '[{n - 1}](orange)  [{n}](blue)  [?](blank)' }
+    try:
+      task: '{n} 前面一个数是几？'
+      choose: { answer: '{n - 1}', min: 0, max: 10 }
+      hints:
+        - 在数轴上往左看一格。
+  - title: 后一个
+    say: '{n} 的后一个是 {n + 1}，多 1。'
+    do:
+      - ask: true
+      - set: { target: q, text: '[{n - 1}](orange)  [{n}](blue)  [{n + 1}](green)' }
+    try:
+      task: '{n} 后面一个数是几？'
+      choose: { answer: '{n + 1}', min: 0, max: 10 }
+      hints:
+        - 往右看一格。
+
+keyPoints:
+  - 数轴上从左往右，数越来越大
+  - 一个数的前一个数比它少 1，后一个数比它多 1
