@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Stalk -->
+  <path d="M75 19 C78 13 83 9 89 10" stroke="#5A3A1A" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+  <!-- Body -->
+  <path d="M75 19 C89 36 88 67 64 84 C46 96 23 90 13 74 C11 71 13 68 17 69 C27 75 44 73 58 62 C73 49 76 33 72 19 Z" fill="#FFD033" stroke="#D97706" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Facet line -->
+  <path d="M73 20 C80 40 72 63 48 72 C34 77 24 73 17 69" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <!-- Tip -->
+  <circle cx="14" cy="72" r="2.5" fill="#5A3A1A"/>
+  <!-- Highlight -->
+  <path d="M79 36 C81 49 74 63 59 72" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" fill="none" opacity="0.35"/>
+</svg>

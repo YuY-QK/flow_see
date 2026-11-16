@@ -53,6 +53,26 @@
   file: math/fruits/apple.svg
   source: 自绘
   createdAt: 2026-11-10
+- id: pear
+  file: math/fruits/pear.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: peach
+  file: math/fruits/peach.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: banana
+  file: math/fruits/banana.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: strawberry
+  file: math/fruits/strawberry.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
 - id: toy-car
   file: math/life/toy-car.svg
   source: 自绘
