@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 回形针 -->
+  <g transform="rotate(-35 50 50)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- 外层深色描边基底 -->
+    <path d="M 68 38 L 68 76 A 18 18 0 0 1 32 76 L 32 24 A 12 12 0 0 1 56 24 L 56 70 A 6 6 0 0 1 44 70 L 44 46" stroke="#0369A1" stroke-width="8"/>
+
+    <!-- 内部亮色胶皮 -->
+    <path d="M 68 38 L 68 76 A 18 18 0 0 1 32 76 L 32 24 A 12 12 0 0 1 56 24 L 56 70 A 6 6 0 0 1 44 70 L 44 46" stroke="#38BDF8" stroke-width="4.5"/>
+
+    <!-- 弯折处微高光 -->
+    <path d="M 35 24 A 10 10 0 0 1 53 19" stroke="#FFFFFF" stroke-width="1.8" opacity="0.6"/>
+  </g>
+</svg>

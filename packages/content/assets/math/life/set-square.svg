@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 三角尺（45°-45°-90° 等腰直角三角板） -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 镂空尺身（带圆角与中心镂空三角形） -->
+    <path d="M 16 20 L 16 80 Q 16 84 20 84 L 80 84 Q 84 84 81 81 L 19 19 Q 16 16 16 20 Z M 28 46 L 28 68 Q 28 72 32 72 L 54 72 Q 57 72 55 70 L 30 45 Q 28 43 28 46 Z" fill-rule="evenodd" fill="#FDE68A" stroke="#D97706" stroke-width="3"/>
+
+    <!-- 竖边刻度线 -->
+    <line x1="16" y1="28" x2="20" y2="28" stroke="#B45309" stroke-width="1.8"/>
+    <line x1="16" y1="36" x2="23" y2="36" stroke="#B45309" stroke-width="1.8"/>
+    <line x1="16" y1="44" x2="20" y2="44" stroke="#B45309" stroke-width="1.8"/>
+    <line x1="16" y1="52" x2="23" y2="52" stroke="#B45309" stroke-width="1.8"/>
+    <line x1="16" y1="60" x2="20" y2="60" stroke="#B45309" stroke-width="1.8"/>
+    <line x1="16" y1="68" x2="23" y2="68" stroke="#B45309" stroke-width="1.8"/>
+    <line x1="16" y1="76" x2="20" y2="76" stroke="#B45309" stroke-width="1.8"/>
+
+    <!-- 底边刻度线 -->
+    <line x1="28" y1="84" x2="28" y2="80" stroke="#B45309" stroke-width="1.8"/>
+    <line x1="36" y1="84" x2="36" y2="77" stroke="#B45309" stroke-width="1.8"/>
+    <line x1="44" y1="84" x2="44" y2="80" stroke="#B45309" stroke-width="1.8"/>
+    <line x1="52" y1="84" x2="52" y2="77" stroke="#B45309" stroke-width="1.8"/>
+    <line x1="60" y1="84" x2="60" y2="80" stroke="#B45309" stroke-width="1.8"/>
+    <line x1="68" y1="84" x2="68" y2="77" stroke="#B45309" stroke-width="1.8"/>
+    <line x1="76" y1="84" x2="76" y2="80" stroke="#B45309" stroke-width="1.8"/>
+
+    <!-- 直角标志 -->
+    <path d="M 22 84 L 22 78 L 16 78" stroke="#B45309" stroke-width="1.5" fill="none"/>
+
+    <!-- 斜边高光 -->
+    <line x1="22" y1="24" x2="76" y2="78" stroke="#FFFFFF" stroke-width="2" opacity="0.45"/>
+  </g>
+</svg>

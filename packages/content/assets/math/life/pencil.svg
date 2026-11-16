@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 30" width="120" height="30">
+  <!-- 铅笔 -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 橡皮擦 -->
+    <path d="M 16 5 L 8 5 C 4 5, 4 25, 8 25 L 16 25 Z" fill="#F472B6" stroke="#DB2777" stroke-width="2.5"/>
+
+    <!-- 金属套箍 -->
+    <rect x="16" y="5" width="12" height="20" fill="#E2E8F0" stroke="#64748B" stroke-width="2.5"/>
+    <line x1="22" y1="5" x2="22" y2="25" stroke="#94A3B8" stroke-width="1.5"/>
+
+    <!-- 铅笔木杆三棱面 -->
+    <rect x="28" y="5" width="66" height="6" fill="#FDE047" stroke="#CA8A04" stroke-width="1.5"/>
+    <rect x="28" y="11" width="66" height="8" fill="#FACC15" stroke="#CA8A04" stroke-width="1.5"/>
+    <rect x="28" y="19" width="66" height="6" fill="#EAB308" stroke="#CA8A04" stroke-width="1.5"/>
+    <rect x="28" y="5" width="66" height="20" fill="none" stroke="#CA8A04" stroke-width="2.5"/>
+
+    <!-- 削开的木头笔头 -->
+    <path d="M 94 5 L 114 15 L 94 25 Q 96 20 94 15 Q 96 10 94 5 Z" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+
+    <!-- 石墨铅笔芯 -->
+    <path d="M 108 12 L 116 15 L 108 18 Z" fill="#374151" stroke="#1F2937" stroke-width="1.5"/>
+
+    <!-- 笔杆高光 -->
+    <line x1="32" y1="8" x2="88" y2="8" stroke="#FFFFFF" stroke-width="1.5" opacity="0.45"/>
+  </g>
+</svg>

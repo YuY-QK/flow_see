@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 礼品盒（长方体） -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 盒子顶面 -->
+    <path d="M 50 18 L 82 36 L 50 54 L 18 36 Z" fill="#FFA8A8" stroke="#C92A2A" stroke-width="3"/>
+    <!-- 盒子左前面 -->
+    <path d="M 18 36 L 50 54 L 50 86 L 18 68 Z" fill="#FF6B6B" stroke="#C92A2A" stroke-width="3"/>
+    <!-- 盒子右前面 -->
+    <path d="M 50 54 L 82 36 L 82 68 L 50 86 Z" fill="#EE5253" stroke="#C92A2A" stroke-width="3"/>
+
+    <!-- 顶面丝带（两条交叉） -->
+    <path d="M 30 25 L 38 29 L 70 47 L 62 43 Z" fill="#FFD43B" stroke="#D97706" stroke-width="1.5"/>
+    <path d="M 30 47 L 38 43 L 70 25 L 62 29 Z" fill="#FFD43B" stroke="#D97706" stroke-width="1.5"/>
+
+    <!-- 侧面丝带 -->
+    <path d="M 31 43 L 37 47 L 37 79 L 31 75 Z" fill="#FFD43B" stroke="#D97706" stroke-width="1.5"/>
+    <path d="M 63 47 L 69 43 L 69 75 L 63 79 Z" fill="#FFD43B" stroke="#D97706" stroke-width="1.5"/>
+
+    <!-- 顶面蝴蝶结 -->
+    <path d="M 50 36 C 36 22, 28 30, 46 38 Z" fill="#FFD43B" stroke="#D97706" stroke-width="2"/>
+    <path d="M 50 36 C 64 22, 72 30, 54 38 Z" fill="#FFD43B" stroke="#D97706" stroke-width="2"/>
+    <circle cx="50" cy="36" r="4.5" fill="#FFE066" stroke="#D97706" stroke-width="2"/>
+    <path d="M 48 38 Q 40 46 38 54" stroke="#D97706" stroke-width="2.5" fill="none"/>
+    <path d="M 52 38 Q 60 46 62 54" stroke="#D97706" stroke-width="2.5" fill="none"/>
+
+    <!-- 高光 -->
+    <path d="M 22 36 L 48 23" stroke="#FFFFFF" stroke-width="2.5" opacity="0.45"/>
+  </g>
+</svg>
