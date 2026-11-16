@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 小猴 -->
+  <!-- 大圆耳朵（左） -->
+  <circle cx="21" cy="44" r="12" fill="#A06237" stroke="#683515" stroke-width="3"/>
+  <circle cx="22" cy="44" r="7" fill="#FFE1B8"/>
+  <!-- 大圆耳朵（右） -->
+  <circle cx="79" cy="44" r="12" fill="#A06237" stroke="#683515" stroke-width="3"/>
+  <circle cx="78" cy="44" r="7" fill="#FFE1B8"/>
+  <!-- 卷卷的尾巴 -->
+  <path d="M 68 76 C 80 76 90 70 90 56 C 90 46 80 44 76 50 C 73 54 78 58 82 56" fill="none" stroke="#683515" stroke-width="5" stroke-linecap="round"/>
+  <!-- 身体 -->
+  <path d="M 31 74 C 29 60 38 54 50 54 C 62 54 71 60 69 74 C 69 85 62 88 50 88 C 38 88 31 85 31 74 Z" fill="#A06237" stroke="#683515" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 肚皮浅色块 -->
+  <ellipse cx="50" cy="74" rx="10" ry="9" fill="#FFE1B8"/>
+  <!-- 头部 -->
+  <circle cx="50" cy="45" r="22" fill="#A06237" stroke="#683515" stroke-width="3"/>
+  <!-- 桃心形浅色脸盘 -->
+  <path d="M 50 40 C 46 34 33 34 33 43 C 33 54 44 60 50 61 C 56 60 67 54 67 43 C 67 34 54 34 50 40 Z" fill="#FFE1B8"/>
+  <!-- 眼睛 -->
+  <circle cx="42" cy="44" r="3.2" fill="#2D3748"/>
+  <circle cx="41" cy="43" r="1" fill="#FFFFFF"/>
+  <circle cx="58" cy="44" r="3.2" fill="#2D3748"/>
+  <circle cx="57" cy="43" r="1" fill="#FFFFFF"/>
+  <!-- 腮红 -->
+  <circle cx="36" cy="50" r="3.5" fill="#FFAAA6"/>
+  <circle cx="64" cy="50" r="3.5" fill="#FFAAA6"/>
+  <!-- 鼻子与微笑嘴巴 -->
+  <ellipse cx="50" cy="50" rx="3" ry="2" fill="#683515"/>
+  <path d="M 44 54 Q 50 58 56 54" fill="none" stroke="#683515" stroke-width="2" stroke-linecap="round"/>
+  <!-- 脚爪 -->
+  <ellipse cx="43" cy="86" rx="5.5" ry="4" fill="#FFE1B8" stroke="#683515" stroke-width="2.5"/>
+  <ellipse cx="57" cy="86" rx="5.5" ry="4" fill="#FFE1B8" stroke="#683515" stroke-width="2.5"/>
+  <!-- 高光 -->
+  <ellipse cx="38" cy="32" rx="4" ry="2" fill="#FFFFFF" opacity="0.3"/>
+</svg>

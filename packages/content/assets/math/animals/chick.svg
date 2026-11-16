@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 小鸡 -->
+  <!-- 小脚丫 -->
+  <path d="M 42 84 L 42 91 M 37 91 L 45 91 M 58 84 L 58 91 M 53 91 L 61 91" stroke="#FB8C00" stroke-width="3" stroke-linecap="round"/>
+  <!-- 头顶呆毛 -->
+  <path d="M 50 20 C 47 11 42 13 45 22 C 48 9 55 9 53 22" fill="none" stroke="#CA8A04" stroke-width="3" stroke-linecap="round"/>
+  <!-- 圆滚滚身体 -->
+  <ellipse cx="50" cy="54" rx="29" ry="31" fill="#FEE440" stroke="#CA8A04" stroke-width="3"/>
+  <!-- 肚皮浅色块 -->
+  <ellipse cx="50" cy="62" rx="18" ry="16" fill="#FFF9C4" opacity="0.6"/>
+  <!-- 小翅膀 -->
+  <path d="M 23 52 C 16 57 16 67 24 68 C 28 68 28 61 25 53 Z" fill="#F7D024" stroke="#CA8A04" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M 77 52 C 84 57 84 67 76 68 C 72 68 72 61 75 53 Z" fill="#F7D024" stroke="#CA8A04" stroke-width="3" stroke-linejoin="round"/>
+  <!-- 眼睛 -->
+  <circle cx="40" cy="46" r="3.5" fill="#2D3748"/>
+  <circle cx="38.5" cy="44.5" r="1.2" fill="#FFFFFF"/>
+  <circle cx="60" cy="46" r="3.5" fill="#2D3748"/>
+  <circle cx="58.5" cy="44.5" r="1.2" fill="#FFFFFF"/>
+  <!-- 腮红 -->
+  <circle cx="32" cy="54" r="4.5" fill="#FFAAA6"/>
+  <circle cx="68" cy="54" r="4.5" fill="#FFAAA6"/>
+  <!-- 尖尖小嘴巴 -->
+  <path d="M 46 50 L 54 50 L 50 57 Z" fill="#FB8C00" stroke="#C25E00" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- 高光 -->
+  <ellipse cx="38" cy="34" rx="5" ry="3" transform="rotate(-20 38 34)" fill="#FFFFFF" opacity="0.45"/>
+</svg>

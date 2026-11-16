@@ -57,3 +57,43 @@
   file: math/life/toy-car.svg
   source: 自绘
   createdAt: 2026-11-10
+- id: rabbit
+  file: math/animals/rabbit.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: cat
+  file: math/animals/cat.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: dog
+  file: math/animals/dog.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: chick
+  file: math/animals/chick.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: duck
+  file: math/animals/duck.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: monkey
+  file: math/animals/monkey.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: bear
+  file: math/animals/bear.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: squirrel
+  file: math/animals/squirrel.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
