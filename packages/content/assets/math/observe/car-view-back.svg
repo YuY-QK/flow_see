@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 玩具车后视图 (car-view-back) - 车尾背面视角 -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 左右后轮 (触地支撑) -->
+    <rect x="16" y="55" width="9" height="20" rx="3.5" fill="#334155" stroke="#0F172A" stroke-width="2.6"/>
+    <rect x="75" y="55" width="9" height="20" rx="3.5" fill="#334155" stroke="#0F172A" stroke-width="2.6"/>
+
+    <!-- 车顶与C柱主体轮廓 -->
+    <path d="M 25 48
+             L 34 27
+             Q 38 25 50 25
+             Q 62 25 66 27
+             L 75 48
+             Z"
+          fill="#3B82F6" stroke="#1D4ED8" stroke-width="2.8"/>
+
+    <!-- 车顶天窗侧边缘 -->
+    <line x1="42" y1="25" x2="58" y2="25" stroke="#93C5FD" stroke-width="2.2"/>
+
+    <!-- 高位刹车灯 -->
+    <rect x="46" y="27" width="8" height="2.2" rx="1" fill="#EF4444"/>
+
+    <!-- 后挡风玻璃 (浅蓝) -->
+    <path d="M 28 47
+             L 36 30
+             Q 40 29 50 29
+             Q 60 29 64 30
+             L 72 47
+             Z"
+          fill="#BAE6FD" stroke="#1D4ED8" stroke-width="2.2"/>
+
+    <!-- 后排头枕 (透过后窗隐约可见) -->
+    <rect x="35" y="38" width="8" height="6" rx="3" fill="#1E293B"/>
+    <rect x="57" y="38" width="8" height="6" rx="3" fill="#1E293B"/>
+
+    <!-- 后车身主体 (后备箱区域) -->
+    <path d="M 22 62
+             L 22 52
+             Q 22 47 27 47
+             L 73 47
+             Q 78 47 78 52
+             L 78 62
+             Z"
+          fill="#3B82F6" stroke="#1D4ED8" stroke-width="2.8"/>
+
+    <!-- 左右后车灯 (红色尾灯) -->
+    <circle cx="28" cy="53" r="4.5" fill="#EF4444" stroke="#B91C1C" stroke-width="2.2"/>
+    <circle cx="72" cy="53" r="4.5" fill="#EF4444" stroke="#B91C1C" stroke-width="2.2"/>
+
+    <!-- 后保险杠 -->
+    <rect x="20" y="59" width="60" height="11" rx="5" fill="#2563EB" stroke="#1D4ED8" stroke-width="2.6"/>
+
+    <!-- 牌照框区域 -->
+    <rect x="41" y="62" width="18" height="5" rx="1.5" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.8"/>
+
+    <!-- 排气管 (右下方金属圆孔) -->
+    <circle cx="70" cy="69" r="2.5" fill="#64748B" stroke="#334155" stroke-width="1.8"/>
+
+    <!-- 左右后视镜背面 -->
+    <path d="M 25 45 L 14 43 Q 12 43 12 47 Q 12 50 15 50 L 24 48 Z" fill="#3B82F6" stroke="#1D4ED8" stroke-width="2"/>
+    <path d="M 75 45 L 86 43 Q 88 43 88 47 Q 88 50 85 50 L 76 48 Z" fill="#3B82F6" stroke="#1D4ED8" stroke-width="2"/>
+
+    <!-- 单处后挡风玻璃高光 -->
+    <path d="M 57 33 L 64 45" stroke="#FFFFFF" stroke-width="2.5" opacity="0.35"/>
+  </g>
+</svg>

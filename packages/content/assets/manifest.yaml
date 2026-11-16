@@ -295,3 +295,33 @@
   source: AI 生成
   tool: Antigravity
   createdAt: 2026-11-13
+- id: car-top
+  file: math/observe/car-top.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: car-view-front
+  file: math/observe/car-view-front.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: car-view-back
+  file: math/observe/car-view-back.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: car-view-left
+  file: math/observe/car-view-left.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: car-view-right
+  file: math/observe/car-view-right.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: car-view-top
+  file: math/observe/car-view-top.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13

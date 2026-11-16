@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 玩具车顶视图 (car-view-top) - 俯视/顶视角度 (与 car-top 严格一致) -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 四个车轮 (外露于车身两侧) -->
+    <rect x="18" y="22" width="7" height="15" rx="3.5" fill="#334155" stroke="#0F172A" stroke-width="2.2"/>
+    <rect x="75" y="22" width="7" height="15" rx="3.5" fill="#334155" stroke="#0F172A" stroke-width="2.2"/>
+    <rect x="18" y="63" width="7" height="15" rx="3.5" fill="#334155" stroke="#0F172A" stroke-width="2.2"/>
+    <rect x="75" y="63" width="7" height="15" rx="3.5" fill="#334155" stroke="#0F172A" stroke-width="2.2"/>
+
+    <!-- 车身主体轮廓 -->
+    <path d="M 34 14
+             Q 50 13 66 14
+             Q 76 14 77 22
+             L 77 78
+             Q 76 86 66 86
+             Q 50 87 34 86
+             Q 24 86 23 78
+             L 23 22
+             Q 24 14 34 14
+             Z"
+          fill="#3B82F6" stroke="#1D4ED8" stroke-width="2.8"/>
+
+    <!-- 后车灯 (车尾顶部两角，红色) -->
+    <path d="M 25 18 Q 28 15 33 15 L 33 21 L 25 21 Z" fill="#EF4444" stroke="#B91C1C" stroke-width="2"/>
+    <path d="M 75 18 Q 72 15 67 15 L 67 21 L 75 21 Z" fill="#EF4444" stroke="#B91C1C" stroke-width="2"/>
+
+    <!-- 后备箱分界线 -->
+    <line x1="33" y1="23" x2="67" y2="23" stroke="#1D4ED8" stroke-width="1.8"/>
+
+    <!-- 后挡风玻璃 (浅蓝) -->
+    <path d="M 33 25 L 67 25 L 65 37 L 35 37 Z" fill="#BAE6FD" stroke="#1D4ED8" stroke-width="2.2"/>
+
+    <!-- 后排头枕 (俯视) -->
+    <rect x="37" y="31" width="7" height="4" rx="2" fill="#1E293B"/>
+    <rect x="56" y="31" width="7" height="4" rx="2" fill="#1E293B"/>
+
+    <!-- 车顶天窗 (深浅蓝玻璃) -->
+    <rect x="38" y="42" width="24" height="14" rx="3" fill="#93C5FD" stroke="#1D4ED8" stroke-width="2.2"/>
+
+    <!-- 前挡风玻璃 (浅蓝) -->
+    <path d="M 34 61 L 66 61 L 68 73 L 32 73 Z" fill="#BAE6FD" stroke="#1D4ED8" stroke-width="2.2"/>
+
+    <!-- 前排头枕 (俯视对称) -->
+    <rect x="37" y="65" width="7" height="4" rx="2" fill="#1E293B"/>
+    <rect x="56" y="65" width="7" height="4" rx="2" fill="#1E293B"/>
+
+    <!-- 前引擎盖筋线 -->
+    <path d="M 36 74 L 38 82" stroke="#1D4ED8" stroke-width="1.8"/>
+    <path d="M 64 74 L 62 82" stroke="#1D4ED8" stroke-width="1.8"/>
+
+    <!-- 前车灯 (车头底部两角，黄色) -->
+    <path d="M 25 82 Q 28 85 33 85 L 33 79 L 25 79 Z" fill="#FACC15" stroke="#D97706" stroke-width="2"/>
+    <path d="M 75 82 Q 72 85 67 85 L 67 79 L 75 79 Z" fill="#FACC15" stroke="#D97706" stroke-width="2"/>
+
+    <!-- 左右后视镜 -->
+    <path d="M 23 58 L 13 56 Q 11 56 11 60 Q 11 63 14 63 L 23 62 Z" fill="#3B82F6" stroke="#1D4ED8" stroke-width="2"/>
+    <path d="M 77 58 L 87 56 Q 89 56 89 60 Q 89 63 86 63 L 77 62 Z" fill="#3B82F6" stroke="#1D4ED8" stroke-width="2"/>
+
+    <!-- 单处前挡高光 -->
+    <path d="M 38 63 L 44 71" stroke="#FFFFFF" stroke-width="2.5" opacity="0.35"/>
+  </g>
+</svg>
