@@ -248,7 +248,7 @@ C 文件里每个知识点一节，格式固定。写配置的人把它**逐项�
 | B9 | balance | 3.3 | | B22 | track | 3.6 | |
 | B10 | ruler | 3.3 | | B23 | fraction-area | 3.6 | |
 | B11 | calendar | 3.3 | | B24 | solid | 3.7 | |
-| B12 | polygon | 3.4 | ✅ | B25 | cube-stack | 3.7 | |
+| B12 | polygon | 3.4 | ✅ | B25 | cube-stack | 3.7 | ✅ |
 | B13 | path | 3.4 | | | | | |
 
-**C 文件（知识点）**：正式知识点 0 个；已有样板草稿：count-to-10、cardinal-ordinal、classify-single、money-intro、money-shopping-1、shapes-compose、parallelogram-area（另有清单外的 clock-half）。知识点的进度在开发文档第 3 节用 ✅ 标。
+**C 文件（知识点）**：正式知识点 0 个；已有样板草稿：count-to-10、cardinal-ordinal、classify-single、money-intro、money-shopping-1、shapes-compose、parallelogram-area、observe-cubes（另有清单外的 clock-half）。知识点的进度在开发文档第 3 节用 ✅ 标。

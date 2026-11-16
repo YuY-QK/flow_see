@@ -2678,4 +2678,104 @@ describe('沿路径移动（follow）', () => {
       expect(covered.has(3)).toBe(true);
     });
   });
+
+  describe('B25 小正方体组合（cube-stack）配置检查', () => {
+    it('cubes 与 fill 二者写一个，不能同时指定也不能都不指定', () => {
+      // 1. 两个都没写
+      const none = checkScene({
+        params: {},
+        objects: [{ id: 'st', type: 'cube-stack', at: [100, 200] }],
+        steps: [{ say: '看', do: [{ wait: '1s' }] }],
+      });
+      expect(none.some((i) => i.message.includes('必须指定 cubes 或 fill'))).toBe(true);
+
+      // 2. 两个都写了
+      const both = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'st',
+            type: 'cube-stack',
+            cubes: [[0, 0, 0]],
+            fill: [2, 2, 2],
+            at: [100, 200],
+          },
+        ],
+        steps: [{ say: '看', do: [{ wait: '1s' }] }],
+      });
+      expect(both.some((i) => i.message.includes('二者写一个，不能同时指定'))).toBe(true);
+    });
+
+    it('cubes 有重复坐标时报错', () => {
+      const dup = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'st',
+            type: 'cube-stack',
+            cubes: [
+              [0, 0, 0],
+              [1, 0, 0],
+              [0, 0, 0],
+            ],
+            at: [100, 200],
+          },
+        ],
+        steps: [{ say: '看', do: [{ wait: '1s' }] }],
+      });
+      expect(dup.some((i) => i.message.includes('小正方体坐标重复：[0, 0, 0]'))).toBe(true);
+    });
+
+    it('cubes 悬空（下方没有方块且 z > 0）报警告', () => {
+      const float = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'st',
+            type: 'cube-stack',
+            cubes: [
+              [0, 0, 0],
+              [1, 0, 1], // (1, 0, 1) 下方 (1, 0, 0) 不存在，悬空
+            ],
+            at: [100, 200],
+          },
+        ],
+        steps: [{ say: '看', do: [{ wait: '1s' }] }],
+      });
+      expect(float.some((i) => i.message.includes('警告：小正方体 [1, 0, 1] 悬空'))).toBe(true);
+    });
+
+    it('合法 cubes 与 fill 配置检查通过', () => {
+      const okCubes = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'st',
+            type: 'cube-stack',
+            cubes: [
+              [0, 0, 0],
+              [0, 0, 1],
+            ],
+            at: [100, 200],
+          },
+        ],
+        steps: [{ say: '看', do: [{ wait: '1s' }] }],
+      });
+      expect(okCubes).toEqual([]);
+
+      const okFill = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'st',
+            type: 'cube-stack',
+            fill: [3, 2, 2],
+            at: [100, 200],
+          },
+        ],
+        steps: [{ say: '看', do: [{ wait: '1s' }] }],
+      });
+      expect(okFill).toEqual([]);
+    });
+  });
 });

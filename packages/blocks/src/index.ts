@@ -25,6 +25,7 @@ import { fractionPart, labelPart, textPart } from './parts/text';
 import { itemSetPart } from './parts/item-set';
 import { polygonPart } from './parts/polygon';
 import { moneyPart } from './parts/money';
+import { cubeStackPart } from './parts/cube-stack';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -116,6 +117,23 @@ export {
   type MoneySlot,
 } from './parts/money';
 
+export {
+  cameraForView,
+  cubeFallOffset,
+  cubeStackLayout,
+  cubeStackPart,
+  cubeStackProjections,
+  cullOccludedCubes,
+  fillCubes,
+  parseView,
+  sortCubesPainter,
+  type CubeCoord,
+  type CubeStackCamera,
+  type CubeStackLabels,
+  type CubeStackLayoutResult,
+  type PlacedCube,
+} from './parts/cube-stack';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -147,6 +165,7 @@ export const PARTS: readonly PartDef[] = [
   itemSetPart,
   polygonPart,
   moneyPart,
+  cubeStackPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */

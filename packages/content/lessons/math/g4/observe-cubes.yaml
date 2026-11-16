@@ -1,0 +1,132 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+# 小正方体组合的三视图：从前面、左面、上面看，看到的形状可能不同。
+# 样板知识点（status: draft，任务卡 B25）
+id: observe-cubes
+title: 小正方体组合的三视图
+summary: 从前面、左面、上面看，看到的形状可能不同
+status: draft
+duration: 1.5分钟
+tags: [观察物体, 三视图, 小正方体, 前面, 上面, 左面]
+cover: { step: 1, text: 三视图 }
+related: [observe-directions, observe-reconstruct]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  k: 1
+
+explore:
+  - param: k
+    control: buttons
+    label: 组合
+    options:
+      - { value: 1, label: 组合一 }
+      - { value: 2, label: 组合二 }
+
+presets:
+  - { label: 组合一, params: { k: 1 } }
+  - { label: 组合二, params: { k: 2 } }
+
+objects:
+  - id: st1
+    type: cube-stack
+    cubes:
+      - [0, 0, 0]
+      - [1, 0, 0]
+      - [2, 0, 0]
+      - [0, 1, 0]
+      - [0, 0, 1]
+    view: iso
+    project: false
+    unit: 50
+    at: [140, 330]
+    opacity: '{k == 1}'
+  - id: st2
+    type: cube-stack
+    cubes:
+      - [0, 0, 0]
+      - [1, 0, 0]
+      - [1, 1, 0]
+      - [1, 0, 1]
+      - [2, 1, 0]
+    view: iso
+    project: false
+    unit: 50
+    at: [140, 330]
+    opacity: '{k == 2}'
+  - id: vf1
+    type: cube-stack
+    cubes:
+      - [0, 0, 0]
+      - [1, 0, 0]
+      - [2, 0, 0]
+      - [0, 1, 0]
+      - [0, 0, 1]
+    view: front
+    unit: 30
+    at: [520, 160]
+    opacity: '{k == 1}'
+    hidden: true
+  - id: vl1
+    type: cube-stack
+    cubes:
+      - [0, 0, 0]
+      - [1, 0, 0]
+      - [2, 0, 0]
+      - [0, 1, 0]
+      - [0, 0, 1]
+    view: left
+    unit: 30
+    at: [720, 160]
+    opacity: '{k == 1}'
+    hidden: true
+  - id: vf2
+    type: cube-stack
+    cubes:
+      - [0, 0, 0]
+      - [1, 0, 0]
+      - [1, 1, 0]
+      - [1, 0, 1]
+      - [2, 1, 0]
+    view: front
+    unit: 30
+    at: [520, 160]
+    opacity: '{k == 2}'
+    hidden: true
+  - id: vl2
+    type: cube-stack
+    cubes:
+      - [0, 0, 0]
+      - [1, 0, 0]
+      - [1, 1, 0]
+      - [1, 0, 1]
+      - [2, 1, 0]
+    view: left
+    unit: 30
+    at: [720, 160]
+    opacity: '{k == 2}'
+    hidden: true
+
+steps:
+  - title: 搭积木
+    say: 用小正方体搭了一个组合。
+    do:
+      - highlight: [st1, st2]
+  - title: 从前面看
+    say: 从前面看，看到的是这样。
+    do:
+      - set: { target: st1, view: front, duration: 1.5s }
+      - set: { target: st2, view: front, duration: 1.5s, together: true }
+      - show: [vf1, vf2]
+  - title: 从左面看
+    say: 从左面看，看到的是这样。
+    do:
+      - set: { target: st1, view: left, duration: 1.5s }
+      - set: { target: st2, view: left, duration: 1.5s, together: true }
+      - show: [vl1, vl2]
+
+keyPoints:
+  - 从不同方向观察物体，看到的形状可能不同
+  - 观察时要站在正前方、正左方、正上方

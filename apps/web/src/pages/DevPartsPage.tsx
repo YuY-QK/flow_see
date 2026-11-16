@@ -53,6 +53,17 @@ function getInitialProps(part: ResolvedPart): Props {
     if (initial.items === undefined) {
       initial.items = [100, 50, 20, 10, 5, '1n', 1, 0.5, 0.1, 0.05, 0.01];
     }
+  } else if (part.type === 'cube-stack') {
+    initial.at = [220, 290];
+    if (initial.cubes === undefined && initial.fill === undefined) {
+      initial.cubes = [
+        [0, 0, 0],
+        [1, 0, 0],
+        [2, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+      ];
+    }
   }
   return initial;
 }

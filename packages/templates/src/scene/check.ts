@@ -66,6 +66,78 @@ function checkProps(
       message: '方格的 cells 和 filled 二者写一个，不能同时指定',
     });
   }
+  if (type === 'cube-stack') {
+    if (props.cubes !== undefined && props.fill !== undefined) {
+      out.push({
+        path: [...path, 'fill'],
+        message: '小正方体组合的 cubes 和 fill 二者写一个，不能同时指定',
+      });
+    } else if (path[0] === 'objects' && props.cubes === undefined && props.fill === undefined) {
+      out.push({
+        path: [...path, 'cubes'],
+        message: '小正方体组合必须指定 cubes 或 fill',
+      });
+    }
+    if (props.cubes !== undefined) {
+      if (!Array.isArray(props.cubes)) {
+        out.push({ path: [...path, 'cubes'], message: 'cubes 必须是坐标列表 [[x, y, z], …]' });
+      } else {
+        const seen = new Set<string>();
+        const cubeSet = new Set<string>();
+        let hasDuplicate = false;
+        props.cubes.forEach((c, idx) => {
+          if (
+            !Array.isArray(c) ||
+            c.length !== 3 ||
+            typeof c[0] !== 'number' ||
+            typeof c[1] !== 'number' ||
+            typeof c[2] !== 'number'
+          ) {
+            out.push({
+              path: [...path, 'cubes', idx],
+              message: '坐标写成 [x, y, z]',
+            });
+            return;
+          }
+          const key = `${c[0]},${c[1]},${c[2]}`;
+          if (seen.has(key)) {
+            hasDuplicate = true;
+            out.push({
+              path: [...path, 'cubes', idx],
+              message: `小正方体坐标重复：[${c.join(', ')}]`,
+            });
+          }
+          seen.add(key);
+          cubeSet.add(key);
+        });
+        if (!hasDuplicate) {
+          props.cubes.forEach((c, idx) => {
+            if (Array.isArray(c) && c.length === 3 && typeof c[2] === 'number' && c[2] > 0) {
+              const belowKey = `${c[0]},${c[1]},${c[2] - 1}`;
+              if (!cubeSet.has(belowKey)) {
+                out.push({
+                  path: [...path, 'cubes', idx],
+                  message: `警告：小正方体 [${c.join(', ')}] 悬空（下方没有方块）`,
+                });
+              }
+            }
+          });
+        }
+      }
+    }
+    if (props.fill !== undefined) {
+      if (
+        !Array.isArray(props.fill) ||
+        props.fill.length !== 3 ||
+        props.fill.some((v) => typeof v !== 'number' || v <= 0 || !Number.isInteger(v))
+      ) {
+        out.push({
+          path: [...path, 'fill'],
+          message: 'fill 必须是正整数三元组 [a, b, h]',
+        });
+      }
+    }
+  }
   const known = new Set<string>([...COMMON_PROPS, ...part.props]);
   for (const [k, v] of Object.entries(props)) {
     if (!known.has(k)) {

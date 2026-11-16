@@ -159,6 +159,12 @@ scene:
         20: brown
         50: green
         100: red
+    cube-stack:                          # 小正方体组合：用斜二测和三视图展示立体堆叠
+      unit: 44
+      view: iso
+      project: false
+      color: blue
+      labels: { front: 从前面看, left: 从左面看, top: 从上面看 }
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:
