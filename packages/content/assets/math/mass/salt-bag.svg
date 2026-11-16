@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 质量素材：盐袋 (salt-bag) -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 顶部压条封口 -->
+    <path d="M 24 16 L 76 16 L 76 22 L 24 22 Z"
+          fill="#0284C7" stroke="#0369A1" stroke-width="3"/>
+    <!-- 顶部热封压纹虚线 -->
+    <line x1="28" y1="19" x2="72" y2="19" stroke="#E0F2FE" stroke-width="2" stroke-dasharray="2 3"/>
+
+    <!-- 包装袋主体 -->
+    <path d="M 24 22 C 20 40 18 64 21 80 L 79 80 C 82 64 80 40 76 22 Z"
+          fill="#0EA5E9" stroke="#0369A1" stroke-width="3"/>
+    
+    <!-- 袋身上的白色波浪拼色块 (食盐包装波浪曲线) -->
+    <path d="M 20 50 Q 34 44 48 50 T 80 48 L 79 72 Q 64 76 50 72 T 21 72 Z"
+          fill="#F0F9FF" stroke="#0284C7" stroke-width="2.5"/>
+    
+    <!-- 底部压条封口 -->
+    <path d="M 21 80 L 79 80 L 79 86 L 21 86 Z"
+          fill="#0284C7" stroke="#0369A1" stroke-width="3"/>
+    <!-- 底部热封压纹虚线 -->
+    <line x1="25" y1="83" x2="75" y2="83" stroke="#E0F2FE" stroke-width="2" stroke-dasharray="2 3"/>
+
+    <!-- 盐晶体图案 (三颗菱形晶体，无文字) -->
+    <!-- 主晶体 -->
+    <path d="M 50 54 L 56 61 L 50 68 L 44 61 Z"
+          fill="#38BDF8" stroke="#0284C7" stroke-width="2"/>
+    <circle cx="50" cy="61" r="1.5" fill="#FFFFFF"/>
+    <!-- 左侧小晶体 -->
+    <path d="M 37 57 L 41 62 L 37 67 L 33 62 Z"
+          fill="#BAE6FD" stroke="#0284C7" stroke-width="1.5"/>
+    <!-- 右侧小晶体 -->
+    <path d="M 63 57 L 67 62 L 63 67 L 59 62 Z"
+          fill="#BAE6FD" stroke="#0284C7" stroke-width="1.5"/>
+
+    <!-- 单处弧形高光 -->
+    <path d="M 25 30 C 24 42 24 60 26 72" stroke="#FFFFFF" stroke-width="3.5" opacity="0.35"/>
+  </g>
+</svg>

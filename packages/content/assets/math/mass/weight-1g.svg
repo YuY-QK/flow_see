@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 质量素材：1克砝码 (weight-1g) -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 底部外展环底座 -->
+    <rect x="23" y="78" width="54" height="9" rx="3"
+          fill="#EAB308" stroke="#A16207" stroke-width="3"/>
+    
+    <!-- 砝码圆柱身 -->
+    <path d="M 27 44 L 73 44 L 73 78 L 27 78 Z"
+          fill="#FACC15" stroke="#A16207" stroke-width="3"/>
+    
+    <!-- 砝码腰线凹槽装饰环 (天平砝码典型环线，无文字) -->
+    <rect x="27" y="58" width="46" height="5"
+          fill="#EAB308" stroke="#A16207" stroke-width="2"/>
+
+    <!-- 顶部圆台溜肩 -->
+    <path d="M 37 35 L 63 35 L 73 44 L 27 44 Z"
+          fill="#FDE047" stroke="#A16207" stroke-width="3"/>
+
+    <!-- 提钮颈部 -->
+    <rect x="44" y="26" width="12" height="9" rx="1.5"
+          fill="#EAB308" stroke="#A16207" stroke-width="2.5"/>
+
+    <!-- 提钮圆头 (供镊子夹取) -->
+    <circle cx="50" cy="20" r="8.5"
+            fill="#FACC15" stroke="#A16207" stroke-width="3"/>
+    <circle cx="50" cy="20" r="3"
+            fill="#FDE047" stroke="#A16207" stroke-width="1.5"/>
+
+    <!-- 单处高光 -->
+    <path d="M 32 47 L 32 75" stroke="#FFFFFF" stroke-width="3.5" opacity="0.4"/>
+  </g>
+</svg>

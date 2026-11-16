@@ -97,3 +97,18 @@
   source: AI 生成
   tool: Antigravity
   createdAt: 2026-11-13
+- id: rice-bag
+  file: math/mass/rice-bag.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: salt-bag
+  file: math/mass/salt-bag.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: weight-1g
+  file: math/mass/weight-1g.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 质量素材：大米袋 (rice-bag) -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 袋口褶皱花边 (扎口上方散开的袋口) -->
+    <path d="M 36 29 C 28 21 26 15 33 13 C 41 15 44 22 50 24 C 56 22 59 15 67 13 C 74 15 72 21 64 29 Z"
+          fill="#F3C998" stroke="#874716" stroke-width="3"/>
+    
+    <!-- 袋身主体 (饱满的麻袋) -->
+    <path d="M 37 32 C 26 36 17 46 17 65 C 17 80 20 87 29 87 L 71 87 C 80 87 83 80 83 65 C 83 46 74 36 63 32 Z"
+          fill="#DE9F5C" stroke="#874716" stroke-width="3"/>
+    
+    <!-- 扎口绳带 -->
+    <path d="M 35 29 C 45 32 55 32 65 29 L 64 34 C 55 37 45 37 36 34 Z"
+          fill="#F59E0B" stroke="#B45309" stroke-width="2.5"/>
+    <!-- 绳结与垂下的绳头 -->
+    <circle cx="50" cy="33" r="3.5" fill="#F59E0B" stroke="#B45309" stroke-width="2.5"/>
+    <path d="M 48 35 Q 43 41 41 46" stroke="#B45309" stroke-width="2.5"/>
+    <path d="M 52 35 Q 57 41 59 45" stroke="#B45309" stroke-width="2.5"/>
+    
+    <!-- 中央布贴图案 (无文字) -->
+    <rect x="36" y="52" width="28" height="22" rx="4"
+          fill="#F7DFBC" stroke="#A75F22" stroke-width="2" stroke-dasharray="3 2"/>
+    <!-- 贴布上的稻穗谷粒简符 -->
+    <path d="M 50 57 L 50 69" stroke="#C27A2E" stroke-width="2"/>
+    <path d="M 50 59 Q 45 57 46 60 Q 48 62 50 61" fill="#D97706" stroke="#A75F22" stroke-width="1.5"/>
+    <path d="M 50 59 Q 55 57 54 60 Q 52 62 50 61" fill="#D97706" stroke="#A75F22" stroke-width="1.5"/>
+    <path d="M 50 63 Q 45 61 46 64 Q 48 66 50 65" fill="#D97706" stroke="#A75F22" stroke-width="1.5"/>
+    <path d="M 50 63 Q 55 61 54 64 Q 52 66 50 65" fill="#D97706" stroke="#A75F22" stroke-width="1.5"/>
+    
+    <!-- 底部两个缝合抓角 -->
+    <path d="M 23 83 L 30 87" stroke="#874716" stroke-width="2.5"/>
+    <path d="M 77 83 L 70 87" stroke="#874716" stroke-width="2.5"/>
+    
+    <!-- 高光 (单处半透明高光) -->
+    <path d="M 23 48 C 20 57 20 68 24 76" stroke="#FFFFFF" stroke-width="4" opacity="0.3"/>
+  </g>
+</svg>
