@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100" width="150" height="100">
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="6" y="5" width="138" height="90" rx="8" fill="#F0FDF4" stroke="#475569" stroke-width="3"/>
+    <path d="M 76 5 C 72 20 62 26 64 40 C 66 52 56 60 52 70 C 48 80 34 86 30 95 L 42 95 C 46 88 58 82 62 72 C 67 62 78 52 76 38 C 74 26 84 18 88 5 Z" fill="#BAE6FD" stroke="#0284C7" stroke-width="2"/>
+    <polygon points="48,22 55,10 62,22" fill="#E2E8F0" stroke="#64748B" stroke-width="2"/>
+    <polygon points="56,22 62,13 68,22" fill="#CBD5E1" stroke="#64748B" stroke-width="2"/>
+    <circle cx="98" cy="20" r="4.5" fill="#86EFAC" stroke="#16A34A" stroke-width="1.5"/>
+    <circle cx="104" cy="22" r="3.5" fill="#86EFAC" stroke="#16A34A" stroke-width="1.5"/>
+    <circle cx="44" cy="78" r="4" fill="#86EFAC" stroke="#16A34A" stroke-width="1.5"/>
+    <path d="M 28 50 C 44 58 56 56 69 49 C 78 44 94 40 118 36" stroke="#B45309" stroke-width="7"/>
+    <path d="M 28 50 C 44 58 56 56 69 49 C 78 44 94 40 118 36" stroke="#FBBF24" stroke-width="4.5"/>
+    <path d="M 28 50 C 44 58 56 56 69 49 C 78 44 94 40 118 36" stroke="#FFFFFF" stroke-width="1" stroke-dasharray="2.5 2"/>
+    <rect x="65" y="44" width="8" height="10" rx="1.5" transform="rotate(-25 69 49)" fill="#F1F5F9" stroke="#334155" stroke-width="2"/>
+    <rect x="18" y="32" width="9" height="18" rx="1.5" fill="#93C5FD" stroke="#1D4ED8" stroke-width="1.8"/>
+    <rect x="29" y="36" width="10" height="14" rx="1.5" fill="#FCA5A5" stroke="#B91C1C" stroke-width="1.8"/>
+    <polygon points="28,36 34,29 40,36" fill="#EF4444" stroke="#B91C1C" stroke-width="1.8"/>
+    <circle cx="28" cy="50" r="4.5" fill="#EF4444" stroke="#991B1B" stroke-width="2"/>
+    <circle cx="28" cy="50" r="1.8" fill="#FFFFFF"/>
+    <rect x="112" y="18" width="11" height="18" rx="1.5" fill="#FDE047" stroke="#B45309" stroke-width="1.8"/>
+    <path d="M 112 18 Q 117.5 11 123 18 Z" fill="#F59E0B" stroke="#B45309" stroke-width="1.8"/>
+    <rect x="125" y="22" width="10" height="14" rx="1.5" fill="#A7F3D0" stroke="#047857" stroke-width="1.8"/>
+    <circle cx="118" cy="36" r="4.5" fill="#EF4444" stroke="#991B1B" stroke-width="2"/>
+    <circle cx="118" cy="36" r="1.8" fill="#FFFFFF"/>
+    <circle cx="18" cy="18" r="8" fill="#FFFFFF" stroke="#475569" stroke-width="1.8"/>
+    <polygon points="18,11 15.5,18 18,16" fill="#EF4444" stroke="#B91C1C" stroke-width="1"/>
+    <polygon points="18,11 20.5,18 18,16" fill="#F87171" stroke="#B91C1C" stroke-width="1"/>
+    <polygon points="18,25 15.5,18 18,20" fill="#94A3B8" stroke="#475569" stroke-width="1"/>
+    <polygon points="18,25 20.5,18 18,20" fill="#CBD5E1" stroke="#475569" stroke-width="1"/>
+    <circle cx="18" cy="18" r="1.5" fill="#1E293B"/>
+    <rect x="88" y="70" width="50" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="2" stroke-dasharray="3 2"/>
+    <line x1="94" y1="80" x2="132" y2="80" stroke="#94A3B8" stroke-width="1.8"/>
+    <line x1="94" y1="76" x2="94" y2="84" stroke="#94A3B8" stroke-width="1.5"/>
+    <line x1="113" y1="77" x2="113" y2="83" stroke="#94A3B8" stroke-width="1.5"/>
+    <line x1="132" y1="76" x2="132" y2="84" stroke="#94A3B8" stroke-width="1.5"/>
+    <path d="M 14 9 L 136 9" stroke="#FFFFFF" stroke-width="3" opacity="0.35"/>
+  </g>
+</svg>

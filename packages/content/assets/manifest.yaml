@@ -225,3 +225,28 @@
   source: AI 生成
   tool: Antigravity
   createdAt: 2026-11-13
+- id: bus
+  file: math/transport/bus.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: truck
+  file: math/transport/truck.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: playground-track
+  file: math/transport/playground-track.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: map-two-cities
+  file: math/transport/map-two-cities.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: lighthouse
+  file: math/transport/lighthouse.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13

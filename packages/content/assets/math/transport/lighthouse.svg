@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 灯塔光束 -->
+    <polygon points="50,27 95,12 95,44 50,30" fill="#FEF08A" opacity="0.35"/>
+    <line x1="50" y1="27" x2="95" y2="12" stroke="#FDE047" stroke-width="1.2" stroke-dasharray="3 2" opacity="0.6"/>
+    <line x1="50" y1="30" x2="95" y2="44" stroke="#FDE047" stroke-width="1.2" stroke-dasharray="3 2" opacity="0.6"/>
+    <polygon points="50,27 5,16 5,40 50,30" fill="#FEF08A" opacity="0.25"/>
+    <line x1="50" y1="27" x2="5" y2="16" stroke="#FDE047" stroke-width="1.2" stroke-dasharray="3 2" opacity="0.5"/>
+    <line x1="50" y1="30" x2="5" y2="40" stroke="#FDE047" stroke-width="1.2" stroke-dasharray="3 2" opacity="0.5"/>
+
+    <!-- 底部海浪与礁石 -->
+    <path d="M 8 93 Q 22 88 36 93 Q 50 98 64 93 Q 78 88 92 93" stroke="#38BDF8" stroke-width="3"/>
+    <path d="M 18 96 Q 32 92 46 96 Q 60 100 74 96 Q 84 93 90 95" stroke="#0284C7" stroke-width="2"/>
+    <path d="M 22 87 Q 35 83 50 83 Q 65 83 78 87 Q 84 90 80 93 L 20 93 Q 16 90 22 87 Z" fill="#475569" stroke="#1E293B" stroke-width="2.5"/>
+
+    <!-- 塔身红白条纹 -->
+    <polygon points="36,83 37.5,72 62.5,72 64,83" fill="#EF4444" stroke="#991B1B" stroke-width="2.5"/>
+    <path d="M 47 83 L 47 77 Q 50 74 53 77 L 53 83 Z" fill="#1E293B" stroke="#0F172A" stroke-width="1.5"/>
+
+    <polygon points="37.5,72 39,60 61,60 62.5,72" fill="#F8FAFC" stroke="#64748B" stroke-width="2.5"/>
+    <rect x="48" y="63" width="4" height="6" rx="1.5" fill="#1E293B" stroke="#0F172A" stroke-width="1.2"/>
+
+    <polygon points="39,60 40.5,48 59.5,48 61,60" fill="#EF4444" stroke="#991B1B" stroke-width="2.5"/>
+    <rect x="48" y="51" width="4" height="6" rx="1.5" fill="#1E293B" stroke="#0F172A" stroke-width="1.2"/>
+
+    <polygon points="40.5,48 42,37 58,37 59.5,48" fill="#F8FAFC" stroke="#64748B" stroke-width="2.5"/>
+
+    <!-- 观景台护栏 -->
+    <rect x="37" y="35" width="26" height="3" rx="1.5" fill="#334155" stroke="#0F172A" stroke-width="2"/>
+    <line x1="38" y1="31" x2="62" y2="31" stroke="#0F172A" stroke-width="1.5"/>
+    <line x1="41" y1="31" x2="41" y2="35" stroke="#0F172A" stroke-width="1.2"/>
+    <line x1="47" y1="31" x2="47" y2="35" stroke="#0F172A" stroke-width="1.2"/>
+    <line x1="53" y1="31" x2="53" y2="35" stroke="#0F172A" stroke-width="1.2"/>
+    <line x1="59" y1="31" x2="59" y2="35" stroke="#0F172A" stroke-width="1.2"/>
+
+    <!-- 灯笼房与光源 -->
+    <rect x="42" y="23" width="16" height="12" rx="1.5" fill="#FEF08A" stroke="#D97706" stroke-width="2"/>
+    <line x1="50" y1="23" x2="50" y2="35" stroke="#B45309" stroke-width="1.5"/>
+    <circle cx="50" cy="28.5" r="3.5" fill="#F59E0B" stroke="#B45309" stroke-width="1.5"/>
+
+    <!-- 穹顶与尖饰 -->
+    <path d="M 40 23 Q 50 13 60 23 Z" fill="#EF4444" stroke="#991B1B" stroke-width="2.5"/>
+    <line x1="50" y1="13" x2="50" y2="8" stroke="#991B1B" stroke-width="2"/>
+    <circle cx="50" cy="8" r="1.5" fill="#F59E0B"/>
+
+    <!-- 高光 -->
+    <ellipse cx="46" cy="18" rx="3" ry="1.8" fill="#FFFFFF" opacity="0.35"/>
+  </g>
+</svg>

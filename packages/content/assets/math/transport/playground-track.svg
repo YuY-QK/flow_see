@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" width="200" height="100">
+  <!-- 交通与场景素材：400米跑道 (playground-track) -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 跑道外圈整体底色 (塑胶红褐色跑道) -->
+    <path d="M 62 8 L 138 8 A 42 42 0 0 1 180 50 A 42 42 0 0 1 138 92 L 62 92 A 42 42 0 0 1 20 50 A 42 42 0 0 1 62 8 Z"
+          fill="#E11D48" stroke="#9F1239" stroke-width="3"/>
+
+    <!-- 跑道内圈足球草坪 (鲜明绿茵场) -->
+    <path d="M 62 30 L 138 30 A 20 20 0 0 1 158 50 A 20 20 0 0 1 138 70 L 62 70 A 20 20 0 0 1 42 50 A 20 20 0 0 1 62 30 Z"
+          fill="#22C55E" stroke="#15803D" stroke-width="2.5"/>
+
+    <!-- 草坪中线与中圈 -->
+    <line x1="100" y1="30" x2="100" y2="70" stroke="#86EFAC" stroke-width="1.5"/>
+    <circle cx="100" cy="50" r="8" stroke="#86EFAC" stroke-width="1.5"/>
+    <!-- 草坪两端球门禁区线 -->
+    <path d="M 62 42 L 54 42 L 54 58 L 62 58" stroke="#86EFAC" stroke-width="1.5"/>
+    <path d="M 138 42 L 146 42 L 146 58 L 138 58" stroke="#86EFAC" stroke-width="1.5"/>
+
+    <!-- 分道线 1 (白实线) -->
+    <path d="M 62 24.5 L 138 24.5 A 25.5 25.5 0 0 1 163.5 50 A 25.5 25.5 0 0 1 138 75.5 L 62 75.5 A 25.5 25.5 0 0 1 36.5 50 A 25.5 25.5 0 0 1 62 24.5 Z"
+          stroke="#FFFFFF" stroke-width="1.2" opacity="0.9"/>
+
+    <!-- 分道线 2 (白实线) -->
+    <path d="M 62 19 L 138 19 A 31 31 0 0 1 169 50 A 31 31 0 0 1 138 81 L 62 81 A 31 31 0 0 1 31 50 A 31 31 0 0 1 62 19 Z"
+          stroke="#FFFFFF" stroke-width="1.2" opacity="0.9"/>
+
+    <!-- 分道线 3 (白实线) -->
+    <path d="M 62 13.5 L 138 13.5 A 36.5 36.5 0 0 1 174.5 50 A 36.5 36.5 0 0 1 138 86.5 L 62 86.5 A 36.5 36.5 0 0 1 25.5 50 A 36.5 36.5 0 0 1 62 13.5 Z"
+          stroke="#FFFFFF" stroke-width="1.2" opacity="0.9"/>
+
+    <!-- 终点线 (直道下方醒目白线) -->
+    <line x1="72" y1="70" x2="72" y2="92" stroke="#FFFFFF" stroke-width="2.5"/>
+
+    <!-- 各道起跑线（阶梯起跑白标示） -->
+    <line x1="68" y1="70" x2="68" y2="75.5" stroke="#FFFFFF" stroke-width="1.8"/>
+    <line x1="62" y1="75.5" x2="62" y2="81" stroke="#FFFFFF" stroke-width="1.8"/>
+    <line x1="55" y1="81" x2="55" y2="86.5" stroke="#FFFFFF" stroke-width="1.8"/>
+    <line x1="47" y1="86.5" x2="47" y2="92" stroke="#FFFFFF" stroke-width="1.8"/>
+
+    <!-- 跑道弯道外缘单处半透明高光 -->
+    <path d="M 52 11 C 36 17 26 31 24 48" stroke="#FFFFFF" stroke-width="3.5" opacity="0.35"/>
+  </g>
+</svg>
