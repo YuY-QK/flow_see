@@ -204,7 +204,7 @@ C 文件里每个知识点一节，格式固定。写配置的人把它**逐项�
 | 地点图标 ✅ | home、school、shop、park、library、hospital、zoo、cinema、museum | route-description、directions-8 |
 | 观察物体 ✅ | car-top（玩具车俯视）、car-view-front、car-view-back、car-view-left、car-view-right、car-view-top | observe-directions |
 | 图形卡片 ✅ | para-a、para-b（平行四边形）、trap-a、trap-b（梯形）、rect、square、quad（一般四边形）、tri-acute-a、tri-acute-b、tri-right-a、tri-right-b、tri-obtuse-a、tri-obtuse-b | parallelogram-trapezoid、triangle-classify、review-shapes-relations |
-| 其他 | leaf（树叶，轮廓清楚）、ant（小蚂蚁，做 path 的 marker）、fist-months（拳头记大月小月示意图） | perimeter-meaning、year-month-day |
+| 其他 ✅ | leaf（树叶，轮廓清楚）、ant（小蚂蚁，做 path 的 marker）、fist-months（拳头记大月小月示意图） | perimeter-meaning、year-month-day |
 
 - 图形卡片（para-a 等）是“画在卡片上的几何图形”，用于分类拖放；几何形状必须准确（平行四边形两组对边严格平行，梯形只有一组），每张卡片 100 × 100，图形居中。
 - 观察物体的五个视图必须和 car-top 是同一辆车（颜色、车型一致）。

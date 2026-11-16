@@ -390,3 +390,18 @@
   source: AI 生成
   tool: Antigravity
   createdAt: 2026-11-13
+- id: leaf
+  file: math/misc/leaf.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: ant
+  file: math/misc/ant.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: fist-months
+  file: math/misc/fist-months.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13

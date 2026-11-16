@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 树叶：轮廓清楚，叶脉清晰，用于认识周长绕圈 -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 叶柄 -->
+    <path d="M 50 82 C 49 87 46 91 43 94" stroke="#166534" stroke-width="3"/>
+
+    <!-- 叶片主体：外周长光滑闭合，无毛刺 -->
+    <path d="
+      M 50 10
+      C 35 22 16 38 16 56
+      C 16 72 32 80 50 82
+      C 68 80 84 72 84 56
+      C 84 38 65 22 50 10
+      Z"
+      fill="#4ADE80" stroke="#166534" stroke-width="2.8"/>
+
+    <!-- 主叶脉 (中脉) -->
+    <path d="M 50 82 L 50 13" stroke="#166534" stroke-width="2.8"/>
+
+    <!-- 侧叶脉 (严格在叶片轮廓内，呈 45° 羽状分支) -->
+    <!-- 第 1 对 (下部) -->
+    <path d="M 50 71 Q 39 67 31 62" stroke="#166534" stroke-width="2.2"/>
+    <path d="M 50 71 Q 61 67 69 62" stroke="#166534" stroke-width="2.2"/>
+
+    <!-- 第 2 对 (中下部) -->
+    <path d="M 50 58 Q 36 53 24 46" stroke="#166534" stroke-width="2.2"/>
+    <path d="M 50 58 Q 64 53 76 46" stroke="#166534" stroke-width="2.2"/>
+
+    <!-- 第 3 对 (中上部) -->
+    <path d="M 50 44 Q 38 39 28 31" stroke="#166534" stroke-width="2.2"/>
+    <path d="M 50 44 Q 62 39 72 31" stroke="#166534" stroke-width="2.2"/>
+
+    <!-- 第 4 对 (上部) -->
+    <path d="M 50 30 Q 42 25 36 19" stroke="#166534" stroke-width="2.2"/>
+    <path d="M 50 30 Q 58 25 64 19" stroke="#166534" stroke-width="2.2"/>
+
+    <!-- 左侧半透明弧形高光 -->
+    <ellipse cx="25" cy="46" rx="3.5" ry="14" transform="rotate(-15 25 46)" fill="#FFFFFF" opacity="0.35"/>
+  </g>
+</svg>

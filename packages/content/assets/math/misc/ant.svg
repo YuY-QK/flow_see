@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 小蚂蚁：俯视，六条腿触角清楚，做 path 的 marker -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 六条腿 (从胸部发出，关节弯曲生动清晰) -->
+    <!-- 后足 (最长，向后外侧伸展) -->
+    <path d="M 45 49 L 24 64 L 16 84" fill="none" stroke="#542314" stroke-width="2.6"/>
+    <path d="M 55 49 L 76 64 L 84 84" fill="none" stroke="#542314" stroke-width="2.6"/>
+
+    <!-- 中足 (向侧方伸展) -->
+    <path d="M 44 45 L 21 48 L 12 56" fill="none" stroke="#542314" stroke-width="2.6"/>
+    <path d="M 56 45 L 79 48 L 88 56" fill="none" stroke="#542314" stroke-width="2.6"/>
+
+    <!-- 前足 (向前侧方伸展) -->
+    <path d="M 45 41 L 26 31 L 16 36" fill="none" stroke="#542314" stroke-width="2.6"/>
+    <path d="M 55 41 L 74 31 L 84 36" fill="none" stroke="#542314" stroke-width="2.6"/>
+
+    <!-- 腹部 (圆润饱满) -->
+    <ellipse cx="50" cy="72" rx="14" ry="16" fill="#A2583E" stroke="#542314" stroke-width="2.8"/>
+    <!-- 腹部分节线 -->
+    <path d="M 39 69 Q 50 74 61 69" fill="none" stroke="#542314" stroke-width="2"/>
+    <path d="M 41 77 Q 50 82 59 77" fill="none" stroke="#542314" stroke-width="2"/>
+
+    <!-- 腹柄结 (连接胸部与腹部的细腰节) -->
+    <ellipse cx="50" cy="54" rx="4.5" ry="3.5" fill="#A2583E" stroke="#542314" stroke-width="2.4"/>
+
+    <!-- 胸部 (中间身体) -->
+    <ellipse cx="50" cy="43" rx="7.5" ry="9" fill="#A2583E" stroke="#542314" stroke-width="2.8"/>
+
+    <!-- 一对膝状触角 (前伸微曲) -->
+    <path d="M 46 19 L 36 12 L 24 11" fill="none" stroke="#542314" stroke-width="2.4"/>
+    <circle cx="23" cy="11" r="1.6" fill="#542314"/>
+    <path d="M 54 19 L 64 12 L 76 11" fill="none" stroke="#542314" stroke-width="2.4"/>
+    <circle cx="77" cy="11" r="1.6" fill="#542314"/>
+
+    <!-- 上颚 (小钳口) -->
+    <path d="M 47 16 Q 49 13 50 15 Q 51 13 53 16" fill="none" stroke="#542314" stroke-width="2"/>
+
+    <!-- 头部 (圆润微椭圆) -->
+    <ellipse cx="50" cy="24" rx="9.5" ry="8.5" fill="#A2583E" stroke="#542314" stroke-width="2.8"/>
+
+    <!-- 眼睛 (生动可爱) -->
+    <circle cx="44" cy="22" r="2.8" fill="#FFFFFF"/>
+    <circle cx="43.5" cy="21.5" r="1.4" fill="#2A160D"/>
+    <circle cx="43" cy="21" r="0.5" fill="#FFFFFF"/>
+    <circle cx="56" cy="22" r="2.8" fill="#FFFFFF"/>
+    <circle cx="56.5" cy="21.5" r="1.4" fill="#2A160D"/>
+    <circle cx="56" cy="21" r="0.5" fill="#FFFFFF"/>
+
+    <!-- 单处半透明高光 (腹部侧上方) -->
+    <ellipse cx="44" cy="67" rx="3.5" ry="7" transform="rotate(-20 44 67)" fill="#FFFFFF" opacity="0.35"/>
+  </g>
+</svg>

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 拳头记大月小月示意图：握拳手势，凸起的指关节标注凹凸结构形象（纯结构，无文字） -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 拳头整体外轮廓（包含手腕收窄、大拇指侧隆起、顶部4凸3凹骨节山峰、小指侧） -->
+    <path d="
+      M 36 88
+      C 26 86 15 76 15 62
+      C 15 51 18 41 24 36
+      C 25 27 28 21 33 21
+      C 37 21 39 29 42 29
+      C 44 29 47 15 52 15
+      C 56 15 58 27 62 27
+      C 65 27 68 19 73 19
+      C 77 19 79 30 82 30
+      C 84 30 87 25 90 27
+      C 93 29 91 52 87 66
+      C 83 78 74 86 64 88
+      Z"
+      fill="#FCD5B5" stroke="#D4956A" stroke-width="2.8"/>
+
+    <!-- 4 个指关节顶部隆起弧线 (强化 4 个“凸”) -->
+    <!-- 食指凸起 (凸 1) -->
+    <path d="M 27 27 Q 33 23 39 27" fill="none" stroke="#D4956A" stroke-width="2.4"/>
+    <!-- 中指凸起 (凸 2 - 最高峰) -->
+    <path d="M 46 21 Q 52 17 58 21" fill="none" stroke="#D4956A" stroke-width="2.4"/>
+    <!-- 无名指凸起 (凸 3) -->
+    <path d="M 67 25 Q 73 21 79 25" fill="none" stroke="#D4956A" stroke-width="2.4"/>
+    <!-- 小指凸起 (凸 4) -->
+    <path d="M 84 32 Q 88 29 91 33" fill="none" stroke="#D4956A" stroke-width="2.2"/>
+
+    <!-- 3 处凹窝向下延伸的骨缝阴影沟 (强化 3 个“凹”) -->
+    <!-- 凹谷 1 (食指-中指之间) -->
+    <path d="M 42 29 C 42 38 41 48 40 58" fill="none" stroke="#D4956A" stroke-width="2.5"/>
+    <!-- 凹谷 2 (中指-无名指之间) -->
+    <path d="M 62 27 C 62 38 62 48 62 58" fill="none" stroke="#D4956A" stroke-width="2.5"/>
+    <!-- 凹谷 3 (无名指-小指之间) -->
+    <path d="M 82 30 C 81 40 80 49 79 58" fill="none" stroke="#D4956A" stroke-width="2.5"/>
+
+    <!-- 四指卷曲指节的横纹（表明手指自然握拢朝向掌心） -->
+    <path d="M 27 40 Q 34 42 40 40" fill="none" stroke="#D4956A" stroke-width="2"/>
+    <path d="M 44 38 Q 52 40 60 38" fill="none" stroke="#D4956A" stroke-width="2"/>
+    <path d="M 64 37 Q 72 39 80 37" fill="none" stroke="#D4956A" stroke-width="2"/>
+    <path d="M 83 39 Q 87 41 90 39" fill="none" stroke="#D4956A" stroke-width="1.8"/>
+
+    <!-- 大拇指前扣轮廓 (拇指紧扣于食指侧下方) -->
+    <path d="M 15 60 C 15 48 23 44 33 46 C 41 48 43 56 41 64 C 38 70 30 72 24 70 C 18 68 15 64 15 60 Z"
+          fill="#FCD5B5" stroke="#D4956A" stroke-width="2.5"/>
+    <!-- 拇指指甲盖 -->
+    <path d="M 33 48 C 37 49 37 54 36 58" fill="none" stroke="#D4956A" stroke-width="1.8"/>
+    <!-- 拇指指节横纹 -->
+    <path d="M 22 47 C 22 56 24 64 25 68" fill="none" stroke="#D4956A" stroke-width="1.8"/>
+
+    <!-- 手腕下部腕横纹 -->
+    <path d="M 40 85 Q 50 87 60 85" fill="none" stroke="#D4956A" stroke-width="2.5"/>
+
+    <!-- 单处半透明高光 (位于隆起最高的中指骨节上) -->
+    <ellipse cx="52" cy="18" rx="3.5" ry="1.8" fill="#FFFFFF" opacity="0.35"/>
+  </g>
+</svg>
