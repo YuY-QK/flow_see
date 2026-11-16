@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: compose-10
+title: 10 以内数的组成
+summary: 一个数可以分成两个数，按顺序分不重复不遗漏
+status: draft
+duration: 1分钟
+tags: [分与合, 数的组成, 分成, 合成]
+recommended: true
+cover: { text: 7=3+4 }
+related: [add-sub-by-bond, make-ten]
+
+template: scene
+stage: { width: 800, height: 400 }
+
+params:
+  n: 6
+explore:
+  - { param: n, control: slider, label: 分哪个数, min: 3, max: 10 }
+
+objects:
+  - id: pile
+    type: counters
+    count: '{n}'
+    layout: row
+    size: 44
+    at: [40, 60]
+  - id: bond
+    type: number-bond
+    whole: '{n}'
+    parts: [1, '{n - 1}']
+    show: 0
+    at: [620, 70]
+  - repeat: '{n - 1}'
+    id: 'w{i}'
+    type: text
+    text: '[{i}](blue) 和 [{n - i}](orange)'
+    size: 26
+    at: ['{60 + floor((i - 1) / 5) * 170}', '{190 + ((i - 1) % 5) * 38}']
+    hidden: true
+  - id: w2q
+    type: text
+    text: '[2](blue) 和 [?](blank)'
+    size: 26
+    at: [60, 228]
+    hidden: true
+
+steps:
+  - title: 分一分
+    say: '{n} 个圆片，分成两堆，可以怎么分？'
+    do:
+      - highlight: pile
+      - set: { target: bond, show: 1 }
+  - title: 先分 1 个
+    say: '左边 1 个，右边 {n - 1} 个。'
+    do:
+      - split: { target: pile, take: 1, as: p1 }
+      - set: { target: bond, show: 2 }
+      - show: w1
+  - title: 再分 2 个
+    say: '左边 2 个，右边 {n - 2} 个。'
+    do:
+      - set: { target: bond, parts: [2, '{n - 2}'], blank: [q] }
+      - show: w2q
+      - ask: true
+      - set: { target: bond, blank: [] }
+      - hide: w2q
+      - show: w2
+    try:
+      task: '{n} 分成 2 和几？'
+      choose:
+        answer: '{n - 2}'
+        min: 1
+        show: [bond]
+      hints:
+        - '{n} 个里拿走 2 个，还剩几个？'
+
+keyPoints:
+  - '{n} 可以分成 1 和 {n - 1}、2 和 {n - 2}……'
+  - 按顺序分，不重复也不遗漏
+  - 两部分合起来就是 {n}

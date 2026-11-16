@@ -238,7 +238,7 @@ C 文件里每个知识点一节，格式固定。写配置的人把它**逐项�
 | 卡 | 零件 | 批次 | 状态 | 卡 | 零件 | 批次 | 状态 |
 |---|---|---|---|---|---|---|---|
 | B1 | item-set | 3.1 | ✅ | B14 | angle | 3.4 | |
-| B2 | number-bond | 3.1 | | B15 | protractor | 3.4 | |
+| B2 | number-bond | 3.1 | ✅ | B15 | protractor | 3.4 | |
 | B3 | base-ten | 3.1 | | B16 | coordinate-grid | 3.4 | |
 | B4 | place-value | 3.1 | | B17 | direction | 3.4 | |
 | B5 | number-chart | 3.1 | | B18 | circle-draw | 3.4 | |

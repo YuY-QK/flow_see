@@ -23,6 +23,7 @@ import { thermometerPart } from './parts/thermometer';
 import { splitCalcPart } from './parts/splitcalc';
 import { fractionPart, labelPart, textPart } from './parts/text';
 import { itemSetPart } from './parts/item-set';
+import { numberBondPart } from './parts/number-bond';
 import { polygonPart } from './parts/polygon';
 import { moneyPart } from './parts/money';
 import { cubeStackPart } from './parts/cube-stack';
@@ -103,6 +104,12 @@ export {
   type ItemSetShapeKind,
   type ItemSlot,
 } from './parts/item-set';
+export {
+  numberBondLayout,
+  numberBondPart,
+  type NumberBondLayout,
+  type NumberBondNode,
+} from './parts/number-bond';
 export { polygonLayout, polygonPart, type PolygonLayoutResult } from './parts/polygon';
 export {
   DEFAULT_MONEY_COLORS,
@@ -175,6 +182,7 @@ export const PARTS: readonly PartDef[] = [
   wirePart,
   thermometerPart,
   itemSetPart,
+  numberBondPart,
   polygonPart,
   moneyPart,
   cubeStackPart,

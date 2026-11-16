@@ -66,6 +66,9 @@ function getInitialProps(part: ResolvedPart): Props {
     }
   } else if (part.type === 'solid') {
     initial.at = [360, 300];
+  } else if (part.type === 'number-bond') {
+    if (initial.whole === undefined) initial.whole = 7;
+    if (initial.parts === undefined) initial.parts = [3, 4];
   }
   return initial;
 }

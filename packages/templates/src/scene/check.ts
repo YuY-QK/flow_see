@@ -168,6 +168,29 @@ function checkProps(
           message: `blank 写成节点名列表，如 [q]；可用的节点：${names.join('、')}`,
         });
     }
+    if (k === 'blank' && type === 'number-bond') {
+      const names = ['whole', 'p', 'q'];
+      if (!Array.isArray(v) || v.some((n) => !names.includes(String(n))))
+        out.push({
+          path: [...path, k],
+          message: `blank 写成子项名列表，如 [q]；可用的子项：${names.join('、')}`,
+        });
+    }
+    if (k === 'dir' && type === 'number-bond') {
+      if (v !== 'down' && v !== 'up') {
+        out.push({ path: [...path, k], message: 'dir 只能是 down 或 up' });
+      }
+    }
+    if (k === 'parts' && type === 'number-bond') {
+      if (!Array.isArray(v) || v.length !== 2) {
+        out.push({ path: [...path, k], message: 'parts 必须是包含两个数的列表，如 [3, 4]' });
+      }
+    }
+    if (k === 'show' && type === 'number-bond') {
+      if (typeof v === 'number' && (v < 0 || v > 2)) {
+        out.push({ path: [...path, k], message: 'show 范围为 0–2' });
+      }
+    }
     if (k === 'text' && typeof v === 'string')
       for (const m of v.matchAll(RICH)) {
         const words = m[2].trim().split(/\s+/).filter(Boolean);
