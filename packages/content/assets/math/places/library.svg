@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 地点图标：图书馆 (library) -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 图书馆主建筑墙体 -->
+    <rect x="18" y="34" width="64" height="48" fill="#E0F2FE" stroke="#0284C7" stroke-width="3"/>
+
+    <!-- 三角形经典门楣山墙 -->
+    <path d="M 14 34 L 50 16 L 86 34 Z" fill="#0284C7" stroke="#0369A1" stroke-width="3"/>
+    <!-- 檐下横梁饰带 -->
+    <rect x="14" y="34" width="72" height="4.5" fill="#0369A1" stroke="#0C4A6E" stroke-width="2"/>
+
+    <!-- 标志性大书本标志 (展开的书卷，无文字) -->
+    <!-- 书本封底垫层 -->
+    <path d="M 33 55 C 38 53 45 52 50 56 C 55 52 62 53 67 55" fill="none" stroke="#D97706" stroke-width="2.5"/>
+    <!-- 左侧页面 -->
+    <path d="M 50 46 C 44 42 37 43 33 44.5 L 33 53.5 C 37 52 44 51 50 55 Z" fill="#FFFFFF" stroke="#0369A1" stroke-width="2"/>
+    <!-- 右侧页面 -->
+    <path d="M 50 46 C 56 42 63 43 67 44.5 L 67 53.5 C 63 52 56 51 50 55 Z" fill="#FFFFFF" stroke="#0369A1" stroke-width="2"/>
+    <!-- 书脊书签红丝带 -->
+    <path d="M 49 55 L 49 60 L 51 58.5 L 53 60 L 53 55 Z" fill="#EF4444"/>
+
+    <!-- 左右两侧拱形落地窗 -->
+    <!-- 左窗 -->
+    <path d="M 23 48 C 23 44 31 44 31 48 L 31 66 L 23 66 Z" fill="#BAE6FD" stroke="#0284C7" stroke-width="2"/>
+    <line x1="23" y1="57" x2="31" y2="57" stroke="#0284C7" stroke-width="1.6"/>
+    <!-- 右窗 -->
+    <path d="M 69 48 C 69 44 77 44 77 48 L 77 66 L 69 66 Z" fill="#BAE6FD" stroke="#0284C7" stroke-width="2"/>
+    <line x1="69" y1="57" x2="77" y2="57" stroke="#0284C7" stroke-width="1.6"/>
+
+    <!-- 典雅古典立柱 (两对对称排列) -->
+    <rect x="34" y="38.5" width="4" height="43.5" fill="#F1F5F9" stroke="#64748B" stroke-width="1.8"/>
+    <rect x="62" y="38.5" width="4" height="43.5" fill="#F1F5F9" stroke="#64748B" stroke-width="1.8"/>
+
+    <!-- 拱形主大门 -->
+    <path d="M 41 64 C 41 57 59 57 59 64 L 59 82 L 41 82 Z" fill="#78350F" stroke="#451A03" stroke-width="2.5"/>
+    <line x1="50" y1="58" x2="50" y2="82" stroke="#451A03" stroke-width="2"/>
+    <circle cx="47" cy="72" r="1.2" fill="#FBBF24"/>
+    <circle cx="53" cy="72" r="1.2" fill="#FBBF24"/>
+
+    <!-- 大台阶 (双层基座) -->
+    <rect x="15" y="82" width="70" height="3" fill="#CBD5E1" stroke="#475569" stroke-width="2"/>
+    <rect x="11" y="85" width="78" height="3" fill="#94A3B8" stroke="#334155" stroke-width="2"/>
+
+    <!-- 门楣屋顶单处半透明高光 -->
+    <path d="M 22 31 L 47 18" stroke="#FFFFFF" stroke-width="3" opacity="0.35"/>
+
+    <!-- 地基底线 -->
+    <line x1="9" y1="88" x2="91" y2="88" stroke="#334155" stroke-width="3"/>
+  </g>
+</svg>

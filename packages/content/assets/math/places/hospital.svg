@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 地点图标：医院 (hospital) -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 医院主楼与左右副楼墙体 -->
+    <rect x="14" y="38" width="18" height="48" fill="#F1F5F9" stroke="#475569" stroke-width="3"/>
+    <rect x="68" y="38" width="18" height="48" fill="#F1F5F9" stroke="#475569" stroke-width="3"/>
+    <rect x="32" y="18" width="36" height="68" fill="#F8FAFC" stroke="#475569" stroke-width="3"/>
+
+    <!-- 楼顶天际线压顶檐条 (医用天蓝色) -->
+    <rect x="30" y="16" width="40" height="4" rx="1" fill="#0EA5E9" stroke="#0284C7" stroke-width="2.5"/>
+    <rect x="12" y="36" width="21" height="4" rx="1" fill="#0EA5E9" stroke="#0284C7" stroke-width="2.5"/>
+    <rect x="67" y="36" width="21" height="4" rx="1" fill="#0EA5E9" stroke="#0284C7" stroke-width="2.5"/>
+
+    <!-- 标志性红十字圆徽标 (无文字) -->
+    <circle cx="50" cy="32" r="9" fill="#FFFFFF" stroke="#DC2626" stroke-width="2.5"/>
+    <!-- 红十字实体 -->
+    <path d="M 47.5 25 L 52.5 25 L 52.5 29.5 L 57 29.5 L 57 34.5 L 52.5 34.5 L 52.5 39 L 47.5 39 L 47.5 34.5 L 43 34.5 L 43 29.5 L 47.5 29.5 Z"
+          fill="#EF4444" stroke="#DC2626" stroke-width="1.2"/>
+
+    <!-- 主楼门厅上方病房窗户 -->
+    <rect x="37" y="47" width="8" height="11" rx="1" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.8"/>
+    <rect x="55" y="47" width="8" height="11" rx="1" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.8"/>
+
+    <!-- 左右副楼窗户排布 -->
+    <!-- 左楼 -->
+    <rect x="18" y="46" width="10" height="9" rx="1" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.6"/>
+    <rect x="18" y="63" width="10" height="9" rx="1" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.6"/>
+    <!-- 右楼 -->
+    <rect x="72" y="46" width="10" height="9" rx="1" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.6"/>
+    <rect x="72" y="63" width="10" height="9" rx="1" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.6"/>
+
+    <!-- 急诊/大门雨棚雨搭 -->
+    <rect x="36" y="64" width="28" height="4" rx="1" fill="#38BDF8" stroke="#0284C7" stroke-width="2.5"/>
+
+    <!-- 自动双开感应玻璃大门 -->
+    <rect x="40" y="68" width="20" height="18" rx="1" fill="#BAE6FD" stroke="#0284C7" stroke-width="2.5"/>
+    <line x1="50" y1="68" x2="50" y2="86" stroke="#0284C7" stroke-width="2"/>
+    <rect x="42" y="71" width="6" height="12" fill="#E0F2FE"/>
+    <rect x="52" y="71" width="6" height="12" fill="#E0F2FE"/>
+
+    <!-- 主楼单处半透明侧边高光 -->
+    <line x1="34" y1="22" x2="34" y2="44" stroke="#FFFFFF" stroke-width="3" opacity="0.35"/>
+
+    <!-- 地基与阶梯 -->
+    <line x1="10" y1="86" x2="90" y2="86" stroke="#334155" stroke-width="3"/>
+    <rect x="36" y="86" width="28" height="2.5" rx="1" fill="#CBD5E1" stroke="#64748B" stroke-width="1.5"/>
+  </g>
+</svg>

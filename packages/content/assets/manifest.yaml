@@ -250,3 +250,48 @@
   source: AI 生成
   tool: Antigravity
   createdAt: 2026-11-13
+- id: home
+  file: math/places/home.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: school
+  file: math/places/school.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: shop
+  file: math/places/shop.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: park
+  file: math/places/park.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: library
+  file: math/places/library.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: hospital
+  file: math/places/hospital.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: zoo
+  file: math/places/zoo.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: cinema
+  file: math/places/cinema.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: museum
+  file: math/places/museum.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13

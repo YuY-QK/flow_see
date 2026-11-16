@@ -201,7 +201,7 @@ C 文件里每个知识点一节，格式固定。写配置的人把它**逐项�
 | 生活物品 ✅ | gift-box、cube-toy、can、ball（立体图形实物）、tri-block（三棱柱积木）、toy-car、schoolbag、pencil-box、pencil、basketball、stone、paperclip、set-square（三角尺） | solids-intro、shapes-2d-intro、money-shopping-1/2、measure-length、clock-direction、volume-meaning、gram-kilogram、angle-intro |
 | 质量 ✅ | rice-bag（100 千克大米袋）、salt-bag（500 克盐袋）、weight-1g（1 克砝码） | ton、gram-kilogram |
 | 交通与场景 ✅ | bus、truck、playground-track（400 米跑道）、map-two-cities（虚构两城地图，带比例尺位置留白）、lighthouse | continuous-add-sub、ton、length-units、map-scale、direction-distance |
-| 地点图标 | home、school、shop、park、library、hospital、zoo、cinema、museum | route-description、directions-8 |
+| 地点图标 ✅ | home、school、shop、park、library、hospital、zoo、cinema、museum | route-description、directions-8 |
 | 观察物体 | car-top（玩具车俯视）、car-view-front、car-view-back、car-view-left、car-view-right、car-view-top | observe-directions |
 | 图形卡片 | para-a、para-b（平行四边形）、trap-a、trap-b（梯形）、rect、square、quad（一般四边形）、tri-acute-a、tri-acute-b、tri-right-a、tri-right-b、tri-obtuse-a、tri-obtuse-b | parallelogram-trapezoid、triangle-classify、review-shapes-relations |
 | 其他 | leaf（树叶，轮廓清楚）、ant（小蚂蚁，做 path 的 marker）、fist-months（拳头记大月小月示意图） | perimeter-meaning、year-month-day |

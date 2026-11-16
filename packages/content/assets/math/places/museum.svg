@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 地点图标：博物馆 (museum) -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 柱廊后方背景墙与青铜大门 -->
+    <rect x="18" y="40" width="64" height="36" fill="#CBD5E1"/>
+    <path d="M 43 50 C 43 45 57 45 57 50 L 57 76 L 43 76 Z" fill="#92400E" stroke="#451A03" stroke-width="2.2"/>
+    <line x1="50" y1="46" x2="50" y2="76" stroke="#451A03" stroke-width="1.8"/>
+    <circle cx="47" cy="63" r="1.2" fill="#FBBF24"/>
+    <circle cx="53" cy="63" r="1.2" fill="#FBBF24"/>
+
+    <!-- 四根古典罗马立柱 (柱身、柱头、柱础) -->
+    <!-- 罗马柱 1 -->
+    <rect x="18" y="40" width="10" height="3" rx="1" fill="#F8FAFC" stroke="#475569" stroke-width="1.6"/>
+    <rect x="20" y="43" width="6" height="30" fill="#FFFFFF" stroke="#475569" stroke-width="2"/>
+    <line x1="23" y1="44" x2="23" y2="72" stroke="#CBD5E1" stroke-width="1.2"/>
+    <rect x="18" y="73" width="10" height="3" rx="1" fill="#E2E8F0" stroke="#475569" stroke-width="1.6"/>
+    <!-- 罗马柱 2 -->
+    <rect x="35" y="40" width="10" height="3" rx="1" fill="#F8FAFC" stroke="#475569" stroke-width="1.6"/>
+    <rect x="37" y="43" width="6" height="30" fill="#FFFFFF" stroke="#475569" stroke-width="2"/>
+    <line x1="40" y1="44" x2="40" y2="72" stroke="#CBD5E1" stroke-width="1.2"/>
+    <rect x="35" y="73" width="10" height="3" rx="1" fill="#E2E8F0" stroke="#475569" stroke-width="1.6"/>
+    <!-- 罗马柱 3 -->
+    <rect x="55" y="40" width="10" height="3" rx="1" fill="#F8FAFC" stroke="#475569" stroke-width="1.6"/>
+    <rect x="57" y="43" width="6" height="30" fill="#FFFFFF" stroke="#475569" stroke-width="2"/>
+    <line x1="60" y1="44" x2="60" y2="72" stroke="#CBD5E1" stroke-width="1.2"/>
+    <rect x="55" y="73" width="10" height="3" rx="1" fill="#E2E8F0" stroke="#475569" stroke-width="1.6"/>
+    <!-- 罗马柱 4 -->
+    <rect x="72" y="40" width="10" height="3" rx="1" fill="#F8FAFC" stroke="#475569" stroke-width="1.6"/>
+    <rect x="74" y="43" width="6" height="30" fill="#FFFFFF" stroke="#475569" stroke-width="2"/>
+    <line x1="77" y1="44" x2="77" y2="72" stroke="#CBD5E1" stroke-width="1.2"/>
+    <rect x="72" y="73" width="10" height="3" rx="1" fill="#E2E8F0" stroke="#475569" stroke-width="1.6"/>
+
+    <!-- 柱顶横梁饰带 -->
+    <rect x="14" y="34" width="72" height="6" fill="#E2E8F0" stroke="#475569" stroke-width="2.5"/>
+    <line x1="23" y1="35" x2="23" y2="39" stroke="#94A3B8" stroke-width="1.5"/>
+    <line x1="40" y1="35" x2="40" y2="39" stroke="#94A3B8" stroke-width="1.5"/>
+    <line x1="60" y1="35" x2="60" y2="39" stroke="#94A3B8" stroke-width="1.5"/>
+    <line x1="77" y1="35" x2="77" y2="39" stroke="#94A3B8" stroke-width="1.5"/>
+
+    <!-- 古典三角形山墙 -->
+    <path d="M 12 34 L 50 14 L 88 34 Z" fill="#F8FAFC" stroke="#475569" stroke-width="3"/>
+    <polygon points="50,9 52,14 48,14" fill="#F59E0B" stroke="#B45309" stroke-width="1.5"/>
+    <circle cx="50" cy="25" r="4.5" fill="#FEF08A" stroke="#D97706" stroke-width="1.8"/>
+
+    <!-- 山墙左斜边单处半透明高光 -->
+    <path d="M 19 31 L 47 17" stroke="#FFFFFF" stroke-width="3" opacity="0.35"/>
+
+    <!-- 宏伟三层大台阶 -->
+    <rect x="14" y="76" width="72" height="4" fill="#E2E8F0" stroke="#475569" stroke-width="2"/>
+    <rect x="10" y="80" width="80" height="4" fill="#CBD5E1" stroke="#475569" stroke-width="2"/>
+    <rect x="6" y="84" width="88" height="4" fill="#94A3B8" stroke="#334155" stroke-width="2.5"/>
+
+    <!-- 地基底线 -->
+    <line x1="4" y1="88" x2="96" y2="88" stroke="#1E293B" stroke-width="3"/>
+  </g>
+</svg>

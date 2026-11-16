@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 地点图标：动物园 (zoo) -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 拱门后方热带丛林树叶与灌木 -->
+    <path d="M 28 48 C 22 40 32 30 40 34 C 42 40 34 48 28 48 Z" fill="#22C55E" stroke="#15803D" stroke-width="2"/>
+    <path d="M 72 48 C 78 40 68 30 60 34 C 58 40 66 48 72 48 Z" fill="#22C55E" stroke="#15803D" stroke-width="2"/>
+    <path d="M 40 40 C 44 32 56 32 60 40 C 56 46 44 46 40 40 Z" fill="#16A34A" stroke="#14532D" stroke-width="2"/>
+
+    <!-- 左右石质门柱主体 -->
+    <rect x="14" y="46" width="10" height="40" fill="#D97706" stroke="#92400E" stroke-width="2.5"/>
+    <rect x="76" y="46" width="10" height="40" fill="#D97706" stroke="#92400E" stroke-width="2.5"/>
+    <!-- 柱头柱帽 -->
+    <rect x="12" y="43" width="14" height="4" rx="1" fill="#B45309" stroke="#78350F" stroke-width="2"/>
+    <rect x="74" y="43" width="14" height="4" rx="1" fill="#B45309" stroke="#78350F" stroke-width="2"/>
+    <!-- 柱顶三角彩旗 (红色彩旗) -->
+    <line x1="19" y1="43" x2="19" y2="34" stroke="#475569" stroke-width="1.8"/>
+    <polygon points="19,34 27,38 19,42" fill="#EF4444" stroke="#B91C1C" stroke-width="1.5"/>
+    <line x1="81" y1="43" x2="81" y2="34" stroke="#475569" stroke-width="1.8"/>
+    <polygon points="81,34 73,38 81,42" fill="#EF4444" stroke="#B91C1C" stroke-width="1.5"/>
+
+    <!-- 标志性跨度拱门主体 (圆拱门) -->
+    <path d="M 14 50 L 14 44 C 14 23 86 23 86 44 L 86 50 L 76 50 C 76 31 24 31 24 50 Z"
+          fill="#F59E0B" stroke="#B45309" stroke-width="3"/>
+
+    <!-- 拱门中央动物标志 (萌版小狮子头像，无文字) -->
+    <!-- 狮子鬃毛 -->
+    <circle cx="50" cy="19" r="10.5" fill="#EA580C" stroke="#9A3412" stroke-width="2.2"/>
+    <!-- 小圆耳朵 -->
+    <circle cx="43" cy="12" r="2.5" fill="#FCD34D" stroke="#B45309" stroke-width="1.5"/>
+    <circle cx="57" cy="12" r="2.5" fill="#FCD34D" stroke="#B45309" stroke-width="1.5"/>
+    <!-- 脸部圆面 -->
+    <circle cx="50" cy="19" r="7.5" fill="#FCD34D" stroke="#D97706" stroke-width="1.8"/>
+    <!-- 眼睛与嘴巴 -->
+    <circle cx="47" cy="18" r="1" fill="#78350F"/>
+    <circle cx="53" cy="18" r="1" fill="#78350F"/>
+    <ellipse cx="50" cy="22" rx="3" ry="2" fill="#FEF3C7"/>
+    <polygon points="49,20.5 51,20.5 50,22" fill="#78350F"/>
+
+    <!-- 铁艺镂空大门 -->
+    <!-- 左扇铁门 -->
+    <rect x="25" y="58" width="23" height="28" fill="none" stroke="#334155" stroke-width="2.2"/>
+    <line x1="31" y1="58" x2="31" y2="86" stroke="#475569" stroke-width="1.8"/>
+    <line x1="37" y1="58" x2="37" y2="86" stroke="#475569" stroke-width="1.8"/>
+    <line x1="43" y1="58" x2="43" y2="86" stroke="#475569" stroke-width="1.8"/>
+    <!-- 右扇铁门 -->
+    <rect x="52" y="58" width="23" height="28" fill="none" stroke="#334155" stroke-width="2.2"/>
+    <line x1="58" y1="58" x2="58" y2="86" stroke="#475569" stroke-width="1.8"/>
+    <line x1="64" y1="58" x2="64" y2="86" stroke="#475569" stroke-width="1.8"/>
+    <line x1="70" y1="58" x2="70" y2="86" stroke="#475569" stroke-width="1.8"/>
+
+    <!-- 拱门单处半透明圆弧高光 -->
+    <path d="M 23 37 C 29 27 41 24 52 24" fill="none" stroke="#FFFFFF" stroke-width="3" opacity="0.35"/>
+
+    <!-- 地基与柱脚 -->
+    <line x1="10" y1="86" x2="90" y2="86" stroke="#78350F" stroke-width="3"/>
+    <rect x="12" y="84" width="14" height="3" rx="1" fill="#92400E" stroke="#78350F" stroke-width="1.8"/>
+    <rect x="74" y="84" width="14" height="3" rx="1" fill="#92400E" stroke="#78350F" stroke-width="1.8"/>
+  </g>
+</svg>

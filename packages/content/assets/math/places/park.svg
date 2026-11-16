@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 地点图标：公园 (park) -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 背景远景草坡 -->
+    <path d="M 8 86 C 14 74 26 70 42 72 C 60 74 76 66 92 86 Z" fill="#22C55E" stroke="#15803D" stroke-width="2.5"/>
+
+    <!-- 右侧小树树干与树冠 -->
+    <path d="M 77 78 L 77 56 L 80 56 L 80 78 Z" fill="#78350F" stroke="#451A03" stroke-width="2"/>
+    <circle cx="78" cy="46" r="12" fill="#22C55E" stroke="#15803D" stroke-width="2.5"/>
+    <circle cx="75" cy="40" r="9" fill="#4ADE80" stroke="#15803D" stroke-width="2"/>
+
+    <!-- 公园复古路灯 -->
+    <line x1="48" y1="44" x2="48" y2="78" stroke="#334155" stroke-width="2.5"/>
+    <path d="M 44 44 L 48 37 L 52 44 Z" fill="#1E293B" stroke="#0F172A" stroke-width="1.8"/>
+    <polygon points="45,44 51,44 50,49 46,49" fill="#FEF08A" stroke="#334155" stroke-width="1.5"/>
+
+    <!-- 左侧大树树干与分叉 -->
+    <path d="M 24 78 Q 27 62 26 48 L 32 48 Q 31 62 34 78 Z" fill="#78350F" stroke="#451A03" stroke-width="2.5"/>
+    <path d="M 29 56 Q 35 52 38 46" fill="none" stroke="#451A03" stroke-width="2"/>
+
+    <!-- 左侧大树茂密树冠 (连绵云朵状) -->
+    <path d="M 15 42 C 9 37 10 26 17 22 C 18 14 28 12 34 16 C 40 12 49 15 51 23 C 58 28 56 39 50 44 C 48 50 38 52 32 48 C 24 51 17 48 15 42 Z"
+          fill="#16A34A" stroke="#14532D" stroke-width="3"/>
+
+    <!-- 前景草坪 -->
+    <path d="M 8 86 C 18 78 38 80 58 78 C 72 76 84 80 92 86 Z" fill="#4ADE80" stroke="#15803D" stroke-width="3"/>
+
+    <!-- 公园长椅 (木质横条与铁艺椅腿) -->
+    <!-- 铁艺椅腿与扶手 -->
+    <path d="M 57 71 C 55 71 55 76 55 83" fill="none" stroke="#1E293B" stroke-width="2.5"/>
+    <path d="M 77 71 C 75 71 75 76 75 83" fill="none" stroke="#1E293B" stroke-width="2.5"/>
+    <line x1="55" y1="83" x2="58" y2="83" stroke="#1E293B" stroke-width="2"/>
+    <line x1="75" y1="83" x2="78" y2="83" stroke="#1E293B" stroke-width="2"/>
+    <!-- 靠背木条两根 -->
+    <rect x="56" y="66" width="22" height="3" rx="1" fill="#F59E0B" stroke="#B45309" stroke-width="1.8"/>
+    <rect x="56" y="70.5" width="22" height="3" rx="1" fill="#F59E0B" stroke="#B45309" stroke-width="1.8"/>
+    <!-- 坐垫木板 -->
+    <rect x="54" y="75" width="26" height="3.5" rx="1" fill="#F59E0B" stroke="#B45309" stroke-width="2"/>
+
+    <!-- 草坪上的彩色小花朵 -->
+    <circle cx="18" cy="82" r="2" fill="#F43F5E"/>
+    <circle cx="38" cy="83" r="2" fill="#FACC15"/>
+    <circle cx="86" cy="83" r="2" fill="#F43F5E"/>
+
+    <!-- 主树冠单处半透明高光 -->
+    <ellipse cx="25" cy="23" rx="6" ry="3.5" transform="rotate(-20 25 23)" fill="#FFFFFF" opacity="0.35"/>
+
+    <!-- 地面基准线 -->
+    <line x1="6" y1="86" x2="94" y2="86" stroke="#14532D" stroke-width="3"/>
+  </g>
+</svg>

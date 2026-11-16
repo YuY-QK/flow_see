@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 地点图标：商店/超市 (shop) -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 商店建筑主体墙面 -->
+    <rect x="18" y="32" width="64" height="54" fill="#CCFBF1" stroke="#0F766E" stroke-width="3"/>
+
+    <!-- 顶部店招标牌 (无文字，带购物提袋标志) -->
+    <rect x="18" y="18" width="64" height="14" rx="2" fill="#F59E0B" stroke="#B45309" stroke-width="3"/>
+    <!-- 提袋标志 -->
+    <rect x="46" y="23" width="8" height="6.5" rx="1" fill="#FFFFFF"/>
+    <path d="M 47.5 23 C 47.5 20.5 52.5 20.5 52.5 23" fill="none" stroke="#FFFFFF" stroke-width="1.6"/>
+
+    <!-- 经典红白条纹波浪雨棚 (5条红 + 4条白对称分布) -->
+    <!-- 雨棚底色与条纹 -->
+    <path d="M 15 32 L 85 32 L 85 46 C 82.5 49 77.5 49 75 46 C 72.5 49 67.5 49 65 46 C 62.5 49 57.5 49 55 46 C 52.5 49 47.5 49 45 46 C 42.5 49 37.5 49 35 46 C 32.5 49 27.5 49 25 46 C 22.5 49 17.5 49 15 46 Z"
+          fill="#FFFFFF" stroke="#B91C1C" stroke-width="3"/>
+    <!-- 红色色块条纹 -->
+    <path d="M 15 32 L 25 32 L 25 46 C 22.5 49 17.5 49 15 46 Z" fill="#EF4444"/>
+    <path d="M 35 32 L 45 32 L 45 46 C 42.5 49 37.5 49 35 46 Z" fill="#EF4444"/>
+    <path d="M 55 32 L 65 32 L 65 46 C 62.5 49 57.5 49 55 46 Z" fill="#EF4444"/>
+    <path d="M 75 32 L 85 32 L 85 46 C 82.5 49 77.5 49 75 46 Z" fill="#EF4444"/>
+    <!-- 雨棚条纹分隔线与下边缘描边加强 -->
+    <line x1="25" y1="32" x2="25" y2="46" stroke="#B91C1C" stroke-width="1.8"/>
+    <line x1="35" y1="32" x2="35" y2="46" stroke="#B91C1C" stroke-width="1.8"/>
+    <line x1="45" y1="32" x2="45" y2="46" stroke="#B91C1C" stroke-width="1.8"/>
+    <line x1="55" y1="32" x2="55" y2="46" stroke="#B91C1C" stroke-width="1.8"/>
+    <line x1="65" y1="32" x2="65" y2="46" stroke="#B91C1C" stroke-width="1.8"/>
+    <line x1="75" y1="32" x2="75" y2="46" stroke="#B91C1C" stroke-width="1.8"/>
+
+    <!-- 大展示橱窗 -->
+    <rect x="22" y="52" width="30" height="26" rx="2" fill="#E0F2FE" stroke="#0284C7" stroke-width="2.5"/>
+    <!-- 橱窗货架与展品 (红苹果、橙子、饮料罐) -->
+    <line x1="24" y1="71" x2="50" y2="71" stroke="#94A3B8" stroke-width="1.8"/>
+    <circle cx="29" cy="67" r="3" fill="#EF4444"/>
+    <path d="M 29 64 C 29 62 31 62 31 63" fill="none" stroke="#15803D" stroke-width="1.2"/>
+    <circle cx="36" cy="67" r="3.2" fill="#F97316"/>
+    <rect x="42" y="62" width="5" height="9" rx="1" fill="#10B981" stroke="#047857" stroke-width="1.2"/>
+
+    <!-- 橱窗单处半透明玻璃反光高光 -->
+    <path d="M 25 55 L 32 55 L 26 73 L 23 73 Z" fill="#FFFFFF" opacity="0.35"/>
+
+    <!-- 玻璃出入门 -->
+    <rect x="58" y="52" width="20" height="34" rx="1" fill="#BAE6FD" stroke="#0284C7" stroke-width="2.5"/>
+    <rect x="61" y="55" width="14" height="15" rx="1" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.5"/>
+    <line x1="62" y1="68" x2="62" y2="76" stroke="#D97706" stroke-width="2.5"/>
+
+    <!-- 地基与门前台阶 -->
+    <line x1="12" y1="86" x2="88" y2="86" stroke="#475569" stroke-width="3"/>
+    <rect x="56" y="86" width="24" height="2.5" rx="1" fill="#CBD5E1" stroke="#64748B" stroke-width="1.5"/>
+  </g>
+</svg>
