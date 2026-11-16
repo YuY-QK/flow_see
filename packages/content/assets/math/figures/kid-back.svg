@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 四个方向观察的小朋友 - 背面 -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 耳朵露出两侧 -->
+    <circle cx="33" cy="27" r="3.2" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+    <circle cx="67" cy="27" r="3.2" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+    <!-- 后脑勺整齐发型 -->
+    <circle cx="50" cy="27" r="14" fill="#4A2E18" stroke="#2E1A0C" stroke-width="3"/>
+    <path d="M38 35 Q50 40 62 35" fill="none" stroke="#2E1A0C" stroke-width="2.5"/>
+    <ellipse cx="46" cy="18" rx="4" ry="2" transform="rotate(-15 46 18)" fill="#FFFFFF" opacity="0.35"/>
+    <!-- 脖子肤色 -->
+    <path d="M44 38 L56 38 L56 42 L44 42 Z" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+    <!-- 蓝色T恤背面 -->
+    <path d="M37 42 L63 42 L60 67 L40 67 Z" fill="#2F6FE4" stroke="#1A4CB0" stroke-width="3"/>
+    <path d="M45 42 Q50 45 55 42" fill="none" stroke="#1A4CB0" stroke-width="2"/>
+    <!-- 双臂背面视角 -->
+    <path d="M37 44 L31 60" stroke="#1A4CB0" stroke-width="5"/>
+    <path d="M37 44 L31 60" stroke="#2F6FE4" stroke-width="2.5"/>
+    <circle cx="30" cy="62" r="3" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+    <path d="M63 44 L69 60" stroke="#1A4CB0" stroke-width="5"/>
+    <path d="M63 44 L69 60" stroke="#2F6FE4" stroke-width="2.5"/>
+    <circle cx="70" cy="62" r="3" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+    <!-- 短裤背面 -->
+    <path d="M39 67 L61 67 L63 79 L53 79 L50 72 L47 79 L37 79 Z" fill="#334155" stroke="#1E293B" stroke-width="3"/>
+    <line x1="50" y1="67" x2="50" y2="72" stroke="#1E293B" stroke-width="2"/>
+    <!-- 双腿 -->
+    <line x1="43" y1="79" x2="43" y2="86" stroke="#D4956A" stroke-width="5"/>
+    <line x1="43" y1="79" x2="43" y2="86" stroke="#FCD5B5" stroke-width="2.5"/>
+    <line x1="57" y1="79" x2="57" y2="86" stroke="#D4956A" stroke-width="5"/>
+    <line x1="57" y1="79" x2="57" y2="86" stroke="#FCD5B5" stroke-width="2.5"/>
+    <!-- 红色鞋后跟 -->
+    <ellipse cx="43" cy="87" rx="5" ry="3.5" fill="#E5484D" stroke="#B8282D" stroke-width="2"/>
+    <line x1="38" y1="89" x2="48" y2="89" stroke="#FFFFFF" stroke-width="2"/>
+    <ellipse cx="57" cy="87" rx="5" ry="3.5" fill="#E5484D" stroke="#B8282D" stroke-width="2"/>
+    <line x1="52" y1="89" x2="62" y2="89" stroke="#FFFFFF" stroke-width="2"/>
+  </g>
+</svg>

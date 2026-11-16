@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 女孩（行走侧面，朝左迈步） -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 马尾辫 (甩在右后方，高马尾活力十足) -->
+    <path d="M56 21 C65 17 77 21 75 33 C71 32 67 26 56 25 Z" fill="#4E342E" stroke="#321E1A" stroke-width="3"/>
+    <circle cx="57" cy="21" r="3" fill="#F28C28" stroke="#C25A00" stroke-width="2"/>
+    <!-- 后方手臂 (后摆) -->
+    <path d="M56 47 L69 55" stroke="#D4956A" stroke-width="6"/>
+    <path d="M56 47 L69 55" stroke="#FCD5B5" stroke-width="3"/>
+    <circle cx="70" cy="56" r="3" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+    <!-- 后方腿 (后蹬) -->
+    <path d="M55 68 L68 82" stroke="#5B3BA8" stroke-width="7"/>
+    <path d="M55 68 L68 82" stroke="#7C5CE0" stroke-width="4"/>
+    <path d="M65 83 L76 83 Q78 83 77 87 L64 87 Q63 84 65 83 Z" fill="#F28C28" stroke="#C25A00" stroke-width="2.5"/>
+    <line x1="64" y1="87" x2="77" y2="87" stroke="#FFFFFF" stroke-width="2"/>
+    <!-- 前方腿 (前迈) -->
+    <path d="M47 68 L34 83" stroke="#5B3BA8" stroke-width="7"/>
+    <path d="M47 68 L34 83" stroke="#7C5CE0" stroke-width="4"/>
+    <path d="M27 84 L38 84 Q40 84 39 88 L25 88 Q25 85 27 84 Z" fill="#F28C28" stroke="#C25A00" stroke-width="2.5"/>
+    <line x1="25" y1="88" x2="39" y2="88" stroke="#FFFFFF" stroke-width="2"/>
+    <!-- 躯干 (粉色上衣与紫色百褶裙) -->
+    <path d="M41 43 L62 43 L59 61 L44 61 Z" fill="#E85D9E" stroke="#B33270" stroke-width="3"/>
+    <path d="M42 61 L61 61 L65 70 L38 70 Z" fill="#7C5CE0" stroke="#5B3BA8" stroke-width="3"/>
+    <!-- 头部 (朝左) -->
+    <circle cx="51" cy="25" r="14" fill="#FCD5B5" stroke="#D4956A" stroke-width="3"/>
+    <!-- 齐刘海与发型 -->
+    <path d="M37 25 C37 13 45 12 54 12 C62 12 66 16 66 25 C62 21 57 20 50 20 C44 20 39 21 37 25 Z" fill="#4E342E" stroke="#321E1A" stroke-width="3"/>
+    <ellipse cx="49" cy="16" rx="3.5" ry="1.8" transform="rotate(15 49 16)" fill="#FFFFFF" opacity="0.35"/>
+    <circle cx="58" cy="26" r="3" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+    <!-- 甜美开朗表情 -->
+    <circle cx="49" cy="24" r="2.2" fill="#2E1A0C"/>
+    <circle cx="40" cy="24" r="2" fill="#2E1A0C"/>
+    <path d="M47 29 Q43 34 39 29 Z" fill="#E5484D" stroke="#2E1A0C" stroke-width="2"/>
+    <circle cx="44" cy="31" r="2.5" fill="#FF9E7A" opacity="0.55"/>
+    <!-- 前方手臂 (前摆) -->
+    <path d="M52 47 L38 56" stroke="#D4956A" stroke-width="6"/>
+    <path d="M52 47 L38 56" stroke="#FCD5B5" stroke-width="3"/>
+    <circle cx="37" cy="57" r="3" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+  </g>
+</svg>

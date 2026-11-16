@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 坐着的小朋友（小） -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 耳朵 -->
+    <circle cx="32" cy="34" r="3.5" fill="#FCD5B5" stroke="#D4956A" stroke-width="2.5"/>
+    <circle cx="68" cy="34" r="3.5" fill="#FCD5B5" stroke="#D4956A" stroke-width="2.5"/>
+    <!-- 头部肤色 -->
+    <circle cx="50" cy="33" r="16" fill="#FCD5B5" stroke="#D4956A" stroke-width="3"/>
+    <!-- 头发 -->
+    <path d="M34 32 C34 18 41 16 50 16 C59 16 66 18 66 32 C63 24 57 23 50 23 C43 23 37 24 34 32 Z" fill="#4A2E18" stroke="#2E1A0C" stroke-width="3"/>
+    <ellipse cx="44" cy="20" rx="4" ry="2" transform="rotate(-15 44 20)" fill="#FFFFFF" opacity="0.35"/>
+    <!-- 五官表情 -->
+    <circle cx="43" cy="34" r="2.2" fill="#2E1A0C"/>
+    <circle cx="57" cy="34" r="2.2" fill="#2E1A0C"/>
+    <path d="M46 39 Q50 43 54 39" fill="none" stroke="#2E1A0C" stroke-width="2.5"/>
+    <circle cx="39" cy="39" r="3" fill="#FF9E7A" opacity="0.55"/>
+    <circle cx="61" cy="39" r="3" fill="#FF9E7A" opacity="0.55"/>
+    <!-- 上衣 (橙色T恤) -->
+    <path d="M37 49 L43 45 L57 45 L63 49 L62 67 L38 67 Z" fill="#F28C28" stroke="#C25A00" stroke-width="3"/>
+    <path d="M46 45 Q50 49 54 45" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>
+    <!-- 手臂 (乖巧放在腿上) -->
+    <path d="M37 51 Q31 59 40 65" fill="none" stroke="#D4956A" stroke-width="6"/>
+    <path d="M37 51 Q31 59 40 65" fill="none" stroke="#FCD5B5" stroke-width="3"/>
+    <circle cx="40" cy="65" r="3" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+    <path d="M63 51 Q69 59 60 65" fill="none" stroke="#D4956A" stroke-width="6"/>
+    <path d="M63 51 Q69 59 60 65" fill="none" stroke="#FCD5B5" stroke-width="3"/>
+    <circle cx="60" cy="65" r="3" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+    <!-- 坐着的双腿 (蓝色短裤/长裤) -->
+    <path d="M33 67 L67 67 Q71 76 67 82 L33 82 Q29 76 33 67 Z" fill="#2F6FE4" stroke="#1A4CB0" stroke-width="3"/>
+    <line x1="50" y1="69" x2="50" y2="82" stroke="#1A4CB0" stroke-width="2.5"/>
+    <!-- 红色小鞋 -->
+    <path d="M32 83 L42 83 Q45 83 45 87 L30 87 Q29 84 32 83 Z" fill="#E5484D" stroke="#B8282D" stroke-width="2.5"/>
+    <line x1="30" y1="87" x2="45" y2="87" stroke="#FFFFFF" stroke-width="2"/>
+    <path d="M68 83 L58 83 Q55 83 55 87 L70 87 Q71 84 68 83 Z" fill="#E5484D" stroke="#B8282D" stroke-width="2.5"/>
+    <line x1="55" y1="87" x2="70" y2="87" stroke="#FFFFFF" stroke-width="2"/>
+  </g>
+</svg>

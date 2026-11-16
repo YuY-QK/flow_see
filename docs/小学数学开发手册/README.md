@@ -197,7 +197,7 @@ C 文件里每个知识点一节，格式固定。写配置的人把它**逐项�
 |---|---|---|
 | 水果 | apple、pear、peach、banana、strawberry | count-to-10、classify-count、pictograph、data-collect-1 |
 | 小动物 ✅ | rabbit、cat、dog、chick、duck、monkey、bear、squirrel | cardinal-ordinal、compare-size-weight |
-| 人物 | kid（坐着的小朋友，小）、kid-walk、kid-seat、kid-front、kid-back、kid-left、kid-right（四个方向观察的小朋友）、boy、girl（行走侧面） | continuous-add-sub、route-description、coordinate-pairs、observe-directions、meeting-problem、review-word-problems |
+| 人物 ✅ | kid（坐着的小朋友，小）、kid-walk、kid-seat、kid-front、kid-back、kid-left、kid-right（四个方向观察的小朋友）、boy、girl（行走侧面） | continuous-add-sub、route-description、coordinate-pairs、observe-directions、meeting-problem、review-word-problems |
 | 生活物品 ✅ | gift-box、cube-toy、can、ball（立体图形实物）、tri-block（三棱柱积木）、toy-car、schoolbag、pencil-box、pencil、basketball、stone、paperclip、set-square（三角尺） | solids-intro、shapes-2d-intro、money-shopping-1/2、measure-length、clock-direction、volume-meaning、gram-kilogram、angle-intro |
 | 质量 ✅ | rice-bag（100 千克大米袋）、salt-bag（500 克盐袋）、weight-1g（1 克砝码） | ton、gram-kilogram |
 | 交通与场景 | bus、truck、playground-track（400 米跑道）、map-two-cities（虚构两城地图，带比例尺位置留白）、lighthouse | continuous-add-sub、ton、length-units、map-scale、direction-distance |

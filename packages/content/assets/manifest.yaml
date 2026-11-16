@@ -160,3 +160,48 @@
   file: math/life/set-square.svg
   source: 自绘
   createdAt: 2026-11-13
+- id: kid
+  file: math/figures/kid.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: kid-walk
+  file: math/figures/kid-walk.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: kid-seat
+  file: math/figures/kid-seat.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: kid-front
+  file: math/figures/kid-front.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: kid-back
+  file: math/figures/kid-back.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: kid-left
+  file: math/figures/kid-left.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: kid-right
+  file: math/figures/kid-right.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: boy
+  file: math/figures/boy.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13
+- id: girl
+  file: math/figures/girl.svg
+  source: AI 生成
+  tool: Antigravity
+  createdAt: 2026-11-13

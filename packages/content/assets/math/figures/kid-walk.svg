@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 行走的小朋友 -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 后方手臂 (后摆) -->
+    <path d="M43 48 L30 56" stroke="#D4956A" stroke-width="6"/>
+    <path d="M43 48 L30 56" stroke="#FCD5B5" stroke-width="3"/>
+    <circle cx="29" cy="57" r="3" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+    <!-- 后方腿 (后蹬步) -->
+    <path d="M45 68 L33 82" stroke="#1A4CB0" stroke-width="7"/>
+    <path d="M45 68 L33 82" stroke="#2F6FE4" stroke-width="4"/>
+    <path d="M26 84 L37 84 Q39 84 38 88 L25 88 Q24 85 26 84 Z" fill="#E5484D" stroke="#B8282D" stroke-width="2.5"/>
+    <line x1="25" y1="88" x2="38" y2="88" stroke="#FFFFFF" stroke-width="2"/>
+    <!-- 书包 (背在背部后方) -->
+    <rect x="23" y="40" width="14" height="22" rx="4" fill="#F28C28" stroke="#C25A00" stroke-width="3"/>
+    <line x1="27" y1="47" x2="33" y2="47" stroke="#C25A00" stroke-width="2"/>
+    <!-- 前方腿 (向前大步迈出) -->
+    <path d="M53 68 L66 83" stroke="#1A4CB0" stroke-width="7"/>
+    <path d="M53 68 L66 83" stroke="#2F6FE4" stroke-width="4"/>
+    <path d="M63 84 L74 84 Q76 84 75 88 L61 88 Q61 85 63 84 Z" fill="#E5484D" stroke="#B8282D" stroke-width="2.5"/>
+    <line x1="61" y1="88" x2="75" y2="88" stroke="#FFFFFF" stroke-width="2"/>
+    <!-- 躯干 (绿色上衣) -->
+    <path d="M37 44 L59 44 L56 68 L39 68 Z" fill="#2EA36B" stroke="#1A6C44" stroke-width="3"/>
+    <!-- 书包肩带 -->
+    <path d="M35 43 C41 43 47 48 46 56" fill="none" stroke="#C25A00" stroke-width="2.5"/>
+    <!-- 头部 (3/4 侧面朝右) -->
+    <circle cx="50" cy="26" r="14" fill="#FCD5B5" stroke="#D4956A" stroke-width="3"/>
+    <path d="M36 25 C36 14 44 13 52 13 C60 13 64 17 64 25 C61 21 56 21 50 21 C44 21 39 22 36 25 Z" fill="#4A2E18" stroke="#2E1A0C" stroke-width="3"/>
+    <ellipse cx="46" cy="17" rx="3.5" ry="1.8" transform="rotate(-15 46 17)" fill="#FFFFFF" opacity="0.35"/>
+    <circle cx="42" cy="27" r="3" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+    <!-- 双眼与开朗微笑 (3/4视角) -->
+    <circle cx="51" cy="25" r="2.1" fill="#2E1A0C"/>
+    <circle cx="60" cy="25" r="2" fill="#2E1A0C"/>
+    <path d="M54 30 Q58 34 62 30" fill="none" stroke="#2E1A0C" stroke-width="2.2"/>
+    <circle cx="56" cy="32" r="2.5" fill="#FF9E7A" opacity="0.55"/>
+    <!-- 前方手臂 (前摆) -->
+    <path d="M47 48 L61 57" stroke="#D4956A" stroke-width="6"/>
+    <path d="M47 48 L61 57" stroke="#FCD5B5" stroke-width="3"/>
+    <circle cx="62" cy="58" r="3" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+  </g>
+</svg>

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 四个方向观察的小朋友 - 右侧面 -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 后方左臂 (微露) -->
+    <path d="M50 44 L44 59" stroke="#1A4CB0" stroke-width="5"/>
+    <path d="M50 44 L44 59" stroke="#2F6FE4" stroke-width="2.5"/>
+    <!-- 后方左腿 -->
+    <path d="M47 79 L47 86" stroke="#D4956A" stroke-width="5"/>
+    <path d="M47 79 L47 86" stroke="#FCD5B5" stroke-width="2.5"/>
+    <path d="M52 85 L42 85 Q40 85 40 89 L53 89 Q54 86 52 85 Z" fill="#E5484D" stroke="#B8282D" stroke-width="2"/>
+    <line x1="40" y1="89" x2="53" y2="89" stroke="#FFFFFF" stroke-width="1.8"/>
+    <!-- 躯干 (蓝色T恤) -->
+    <path d="M63 42 L39 42 L43 67 L59 67 Z" fill="#2F6FE4" stroke="#1A4CB0" stroke-width="3"/>
+    <!-- 短裤 -->
+    <path d="M60 67 L42 67 L44 79 L62 79 Z" fill="#334155" stroke="#1E293B" stroke-width="3"/>
+    <!-- 前方右腿 -->
+    <path d="M57 79 L57 86" stroke="#D4956A" stroke-width="6"/>
+    <path d="M57 79 L57 86" stroke="#FCD5B5" stroke-width="3"/>
+    <path d="M65 85 L53 85 Q51 85 51 89 L66 89 Q67 86 65 85 Z" fill="#E5484D" stroke="#B8282D" stroke-width="2"/>
+    <line x1="51" y1="89" x2="66" y2="89" stroke="#FFFFFF" stroke-width="1.8"/>
+    <!-- 前方手臂 -->
+    <path d="M56 44 L63 60" stroke="#1A4CB0" stroke-width="5"/>
+    <path d="M56 44 L63 60" stroke="#2F6FE4" stroke-width="2.5"/>
+    <circle cx="64" cy="62" r="3" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+    <!-- 头部 (侧面朝右，3/4视角) -->
+    <circle cx="52" cy="27" r="14" fill="#FCD5B5" stroke="#D4956A" stroke-width="3"/>
+    <path d="M66 26 C66 14 57 13 49 13 C41 13 37 17 37 27 C37 36 44 36 44 36 C47 29 52 24 59 25 Z" fill="#4A2E18" stroke="#2E1A0C" stroke-width="3"/>
+    <ellipse cx="51" cy="17" rx="3.5" ry="1.8" transform="rotate(15 51 17)" fill="#FFFFFF" opacity="0.35"/>
+    <circle cx="47" cy="28" r="3" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+    <!-- 双眼与微笑 (朝右) -->
+    <circle cx="60" cy="26" r="2.1" fill="#2E1A0C"/>
+    <circle cx="52" cy="26" r="1.9" fill="#2E1A0C"/>
+    <path d="M63 31 Q59 34 55 31" fill="none" stroke="#2E1A0C" stroke-width="2.2"/>
+    <circle cx="58" cy="32" r="2.5" fill="#FF9E7A" opacity="0.55"/>
+  </g>
+</svg>

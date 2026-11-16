@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 男孩（行走侧面，朝右迈步） -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 后方手臂 (后摆) -->
+    <path d="M44 47 L31 55" stroke="#D4956A" stroke-width="6"/>
+    <path d="M44 47 L31 55" stroke="#FCD5B5" stroke-width="3"/>
+    <circle cx="30" cy="56" r="3" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+    <!-- 后方腿 (后蹬) -->
+    <path d="M45 68 L32 82" stroke="#1E293B" stroke-width="7"/>
+    <path d="M45 68 L32 82" stroke="#334155" stroke-width="4"/>
+    <path d="M25 83 L36 83 Q38 83 37 87 L24 87 Q23 84 25 83 Z" fill="#2EA36B" stroke="#1A6C44" stroke-width="2.5"/>
+    <line x1="24" y1="87" x2="37" y2="87" stroke="#FFFFFF" stroke-width="2"/>
+    <!-- 前方腿 (前迈) -->
+    <path d="M53 68 L66 83" stroke="#1E293B" stroke-width="7"/>
+    <path d="M53 68 L66 83" stroke="#334155" stroke-width="4"/>
+    <path d="M63 84 L74 84 Q76 84 75 88 L61 88 Q61 85 63 84 Z" fill="#2EA36B" stroke="#1A6C44" stroke-width="2.5"/>
+    <line x1="61" y1="88" x2="75" y2="88" stroke="#FFFFFF" stroke-width="2"/>
+    <!-- 躯干 (蓝色运动T恤) -->
+    <path d="M38 43 L59 43 L56 68 L40 68 Z" fill="#2F6FE4" stroke="#1A4CB0" stroke-width="3"/>
+    <!-- 头部 (朝右，开朗自信) -->
+    <circle cx="49" cy="25" r="14" fill="#FCD5B5" stroke="#D4956A" stroke-width="3"/>
+    <!-- 帅气阳光短发 (带一缕翘起碎发) -->
+    <path d="M35 24 C35 13 44 12 53 12 C61 12 65 16 65 24 C61 20 56 21 50 20 C43 20 38 21 35 24 Z" fill="#4A2E18" stroke="#2E1A0C" stroke-width="3"/>
+    <path d="M53 12 L57 8 L55 13" stroke="#2E1A0C" stroke-width="2.5" fill="#4A2E18"/>
+    <ellipse cx="45" cy="16" rx="3.5" ry="1.8" transform="rotate(-15 45 16)" fill="#FFFFFF" opacity="0.35"/>
+    <circle cx="42" cy="26" r="3" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+    <!-- 充满活力的双眼与笑脸 -->
+    <circle cx="51" cy="24" r="2.2" fill="#2E1A0C"/>
+    <circle cx="60" cy="24" r="2" fill="#2E1A0C"/>
+    <path d="M53 29 Q57 34 61 29 Z" fill="#E5484D" stroke="#2E1A0C" stroke-width="2"/>
+    <circle cx="56" cy="31" r="2.5" fill="#FF9E7A" opacity="0.55"/>
+    <!-- 前方手臂 (前摆) -->
+    <path d="M48 47 L62 56" stroke="#D4956A" stroke-width="6"/>
+    <path d="M48 47 L62 56" stroke="#FCD5B5" stroke-width="3"/>
+    <circle cx="63" cy="57" r="3" fill="#FCD5B5" stroke="#D4956A" stroke-width="2"/>
+  </g>
+</svg>
