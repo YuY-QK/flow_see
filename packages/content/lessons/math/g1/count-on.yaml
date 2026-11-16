@@ -1,0 +1,61 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 点数法与接着数：记住大数，在数轴上往后跳小数那么多下。配置见开发文档 5.7。
+id: count-on
+title: 点数法与接着数
+summary: 不用从 1 数起，记住大数，接着往后数
+status: draft
+duration: 1分钟
+tags: [接着数, 点数法, 进位加法, 加法, 数轴]
+cover: { text: 9 + 4 }
+related: [make-ten, commute-add]
+
+template: scene
+stage: { width: 800, height: 360 }
+
+params:
+  a: 9 # 大数
+  b: 4 # 小数
+derived:
+  sum: a + b
+explore:
+  - { param: a, control: slider, label: 大数, min: 6, max: 9 }
+  - { param: b, control: slider, label: 小数, min: 11 - a, max: 9 }
+
+objects:
+  - { id: big, type: counters, count: '{a}', layout: tenframe, color: blue, size: 40, at: [60, 50] }
+  - { id: small, type: counters, count: '{b}', layout: row, color: orange, size: 40, at: [60, 160] }
+  - { id: line, type: numberline, from: 0, to: 20, step: 1, labelEvery: 1, length: 680, at: [60, 300], pointer: 0 }
+  - { id: eq, type: text, text: '[{a}](@big) + [{b}](@small) = [{sum}](blank)', at: [620, 110], size: 40 }
+
+steps:
+  - title: 提出问题
+    say: '{a} 加 {b} 等于几？不用从 1 开始数。'
+    do:
+      - highlight: eq
+  - title: 记住大数
+    say: 先记住大数 {a}，指针直接跳到 {a}。
+    do:
+      - set: { target: line, pointer: '{a}', duration: 1s }
+      - highlight: [big, line]
+  - title: 接着往后数
+    say: 再往后数 {b} 下，每数一下，拿走一个橙色圆片。
+    do:
+      - repeat: '{b}'
+        do:
+          - hop: { target: line, from: '{a + i - 1}', to: '{a + i}', label: '{i}' }
+          - set: { target: small, count: '{b - i}', together: true }
+  - title: 得出结果
+    say: 指针停在 {sum}，所以 {a} 加 {b} 等于 {sum}。
+    do:
+      - highlight: line
+      - ask: true
+      - set: { target: eq, text: '[{a}](@big) + [{b}](@small) = {sum}' }
+    try:
+      task: 指针停在几？{a} + {b} 等于几？
+      choose: { answer: '{sum}', min: 10, max: 18, show: [line] }
+      hints:
+        - 看看指针最后停在哪个数上。
+
+keyPoints:
+  - 加法可以从大数接着往后数，数几下就是加几
+  - '{a} + {b}：从 {a} 往后数 {b} 下，到 {sum}'

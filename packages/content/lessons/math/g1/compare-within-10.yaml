@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+# 比大小：上下两排一一对应，多出来的那边多。按开发手册 C 脚本写成。
+id: compare-within-10
+title: 比大小
+summary: 一个对一个，多出来的那边就多
+status: draft
+duration: 1分钟
+tags: [比大小, 大于, 小于, 等于, 一一对应]
+cover: { text: 5 > 3 }
+related: [count-to-10]
+
+template: scene
+stage: { width: 800, height: 360 }
+
+params:
+  a: 5 # 上面几个
+  b: 3 # 下面几个
+explore:
+  - { param: a, control: slider, label: 上面几个, min: 1, max: 9 }
+  - { param: b, control: slider, label: 下面几个, min: 1, max: 9 }
+
+objects:
+  - { id: top, type: counters, count: '{a}', layout: row, size: 48, color: blue, at: [60, 70] }
+  - { id: bottom, type: counters, count: '{b}', layout: row, size: 48, color: orange, at: [60, 190] }
+  - repeat: '{min(a, b)}' # 每一对连一条虚线
+    id: 'l{i}'
+    type: line
+    from: ['{84 + (i - 1) * 48}', 118]
+    to: ['{84 + (i - 1) * 48}', 190]
+    dashed: true
+    color: line
+    hidden: true
+  - id: sign
+    type: text
+    text: '[{a}](@top) [>](blank) [{b}](@bottom)'
+    size: 56
+    at: [640, 150]
+
+steps:
+  - title: 哪边多
+    say: 上面 {a} 个，下面 {b} 个，哪边多？
+    do:
+      - highlight: top
+      - highlight: bottom
+  - title: 一个对一个
+    say: 一个对一个连起来。
+    do:
+      - repeat: '{min(a, b)}'
+        do:
+          - show: { target: 'l{i}', duration: 0.3s }
+  - title: 多出来的
+    say: "{sel(a == b, '一样多，用等号。', '多出来的那边多。')}"
+    do:
+      - highlight: sign
+      - ask: true
+      - set: { target: sign, text: "[{a}](@top) {sel(a > b, '>', sel(a < b, '<', '='))} [{b}](@bottom)" }
+    try:
+      task: '{a} 和 {b} 中间填什么？'
+      choose:
+        answer: "{sel(a > b, '>', sel(a < b, '<', '='))}"
+        options: ['>', '=', '<']
+      hints:
+        - 开口朝着多的那边。
+  - title: 记一记
+    say: 大于号、小于号，开口朝着大数。
+    do:
+      - highlight: sign
+
+keyPoints:
+  - 一个对一个，多出来的那边多
+  - 开口朝着大数，尖尖对着小数
+  - 同样多用“=”
