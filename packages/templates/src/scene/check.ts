@@ -3,6 +3,7 @@ import {
   BALANCE_KINDS,
   BASE_TEN_STYLES,
   COMMON_PROPS,
+  COORDINATE_GRID_ORIGINS,
   COUNTER_LAYOUTS,
   COUNTER_SHAPES,
   ITEM_SET_LAYOUTS,
@@ -720,6 +721,64 @@ function checkProps(
       if (k === 'size') {
         if (typeof v === 'number' && v <= 0) {
           out.push({ path: [...path, k], message: 'size 必须大于 0' });
+        }
+      }
+    }
+    if (part.type === 'coordinate-grid') {
+      if (k === 'cols' && typeof v === 'number' && (!Number.isInteger(v) || v <= 0)) {
+        out.push({ path: [...path, k], message: 'cols 必须是正整数' });
+      }
+      if (k === 'rows' && typeof v === 'number' && (!Number.isInteger(v) || v <= 0)) {
+        out.push({ path: [...path, k], message: 'rows 必须是正整数' });
+      }
+      if (k === 'cell' && typeof v === 'number' && v <= 0) {
+        out.push({ path: [...path, k], message: 'cell 必须大于 0' });
+      }
+      if (
+        k === 'origin' &&
+        typeof v === 'string' &&
+        !(COORDINATE_GRID_ORIGINS as readonly unknown[]).includes(v)
+      ) {
+        out.push({
+          path: [...path, k],
+          message: `origin 只能是 ${COORDINATE_GRID_ORIGINS.join('、')}`,
+        });
+      }
+      if (k === 'axisLabels') {
+        if (
+          !Array.isArray(v) ||
+          v.length !== 2 ||
+          typeof v[0] !== 'string' ||
+          typeof v[1] !== 'string'
+        ) {
+          out.push({ path: [...path, k], message: 'axisLabels 必须是两个文字 [列轴名, 行轴名]' });
+        }
+      }
+      if (k === 'points') {
+        if (!Array.isArray(v)) {
+          out.push({ path: [...path, k], message: 'points 必须是列表' });
+        } else {
+          v.forEach((ptItem, idx) => {
+            if (!ptItem || typeof ptItem !== 'object') {
+              out.push({ path: [...path, k, idx], message: '点位必须是对象' });
+              return;
+            }
+            const pObj = ptItem as Record<string, unknown>;
+            if (
+              !Array.isArray(pObj.at) ||
+              pObj.at.length !== 2 ||
+              typeof pObj.at[0] !== 'number' ||
+              typeof pObj.at[1] !== 'number'
+            ) {
+              out.push({ path: [...path, k, idx, 'at'], message: '点位 at 必须是 [列, 行]' });
+            }
+            if (pObj.color !== undefined && !colorOk(pObj.color, alive)) {
+              out.push({
+                path: [...path, k, idx, 'color'],
+                message: '颜色写颜色名、#RRGGBB，或 "@零件id"',
+              });
+            }
+          });
         }
       }
     }

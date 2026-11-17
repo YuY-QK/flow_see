@@ -1,0 +1,105 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+# 描述简单路线：说清楚从哪里出发、向哪个方向走、走多远、到哪里
+id: route-description
+title: 描述简单路线
+summary: 说清楚从哪里出发、向哪个方向走、走多远、到哪里
+status: draft
+duration: 2分钟
+tags: [路线, 方向, 位置]
+cover: { text: 路线图 }
+related: [directions-8, direction-distance]
+
+template: scene
+stage: { width: 800, height: 450 }
+
+objects:
+  - id: grid
+    type: coordinate-grid
+    cols: 12
+    rows: 8
+    cell: 50
+    origin: top-left
+    color: line
+    at: [100, 30]
+  - id: home
+    type: image
+    asset: home
+    width: 60
+    height: 60
+    at: [150, 380]
+  - id: shop
+    type: image
+    asset: shop
+    width: 60
+    height: 60
+    at: [350, 380]
+  - id: park
+    type: image
+    asset: park
+    width: 60
+    height: 60
+    at: [350, 180]
+  - id: school
+    type: image
+    asset: school
+    width: 60
+    height: 60
+    at: [650, 180]
+  - id: route1
+    type: line
+    from: [150, 380]
+    to: [350, 380]
+    width: 6
+    color: accent
+    hidden: true
+  - id: route2
+    type: line
+    from: [350, 380]
+    to: [350, 180]
+    width: 6
+    color: accent
+    hidden: true
+  - id: kid
+    type: image
+    asset: kid-walk
+    width: 40
+    height: 40
+    at: [150, 380]
+  - id: n
+    type: label
+    text: 'N ↑'
+    size: 24
+    at: [740, 70]
+    color: ink
+
+steps:
+  - title: 上学的路
+    say: 小明从家去学校，怎么走？
+    do:
+      - highlight: home
+      - highlight: school
+      - highlight: n
+  - title: 第一段
+    say: 从家向东走 200 米到商店。
+    do:
+      - show: route1
+      - move: { target: kid, to: [350, 380], duration: 1s }
+      - highlight: shop
+  - title: 第二段
+    say: 到了商店，小明接下来该往哪个方向走去公园？
+    do:
+      - show: route2
+      - move: { target: kid, to: [350, 180], duration: 1s }
+      - highlight: park
+      - ask: true
+    try:
+      task: 从商店到公园，向哪个方向走？
+      choose:
+        answer: 北
+        options: [东, 南, 西, 北]
+      hints:
+        - 地图上往上是北。
+
+keyPoints:
+  - 描述路线要说清：从哪里出发，向什么方向走，走多远，到达哪里
+  - 回来时方向相反

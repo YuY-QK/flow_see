@@ -142,6 +142,24 @@ function getInitialProps(part: ResolvedPart): Props {
     if (initial.length === undefined) initial.length = 180;
     if (initial.label === undefined) initial.label = true;
     if (initial.kindLabel === undefined) initial.kindLabel = true;
+  } else if (part.type === 'coordinate-grid') {
+    initial.at = [160, 60];
+    if (initial.cols === undefined) initial.cols = 8;
+    if (initial.rows === undefined) initial.rows = 6;
+    if (initial.cell === undefined) initial.cell = 50;
+    if (initial.labels === undefined) initial.labels = true;
+    if (initial.origin === undefined) initial.origin = 'bottom-left';
+    if (initial.axisLabels === undefined)
+      initial.axisLabels = [t('dev.axis_col'), t('dev.axis_row')];
+    if (
+      initial.points === undefined ||
+      (Array.isArray(initial.points) && initial.points.length === 0)
+    ) {
+      initial.points = [
+        { at: [3, 2], label: 'A(3,2)', color: 'blue' },
+        { at: [6, 4], label: 'B(6,4)', color: 'orange' },
+      ];
+    }
   }
   return initial;
 }
@@ -164,7 +182,7 @@ function getRange(
   if (prop === 'reveal') {
     return { min: 0, max: 10, step: 0.1 };
   }
-  if (prop === 'cols') {
+  if (prop === 'cols' || prop === 'rows') {
     return { min: 1, max: 20, step: 1 };
   }
   if (prop === 'cell') {

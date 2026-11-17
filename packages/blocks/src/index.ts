@@ -38,6 +38,7 @@ import { balancePart } from './parts/balance';
 import { tablePart } from './parts/table';
 import { calendarPart } from './parts/calendar';
 import { anglePart } from './parts/angle';
+import { coordinateGridPart } from './parts/coordinate-grid';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -280,6 +281,18 @@ export {
   type AngleRayLayout,
 } from './parts/angle';
 
+export {
+  COORDINATE_GRID_ORIGINS,
+  coordinateGridLayout,
+  coordinateGridPart,
+  gridPoint,
+  type CoordinateGridLabelItem,
+  type CoordinateGridLayout,
+  type CoordinateGridOrigin,
+  type CoordinateGridPointDef,
+  type CoordinateGridPointLayout,
+} from './parts/coordinate-grid';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -324,6 +337,7 @@ export const PARTS: readonly PartDef[] = [
   tablePart,
   calendarPart,
   anglePart,
+  coordinateGridPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */

@@ -577,6 +577,8 @@ clockTemplate:
 dev:
   title: 零件试验场
   parts_list: 零件列表
+  axis_col: 列
+  axis_row: 行
   theme: 主题
   ui_theme: 界面
   theme_light: 浅色
