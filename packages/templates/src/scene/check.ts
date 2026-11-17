@@ -302,6 +302,7 @@ function checkProps(
     if (k === 'cutParts' && part.type === 'solid') {
       if (typeof v === 'number' && (!Number.isInteger(v) || v < 2 || v % 2 !== 0))
         out.push({ path: [...path, k], message: '圆柱切分份数 cutParts 必须是大于等于 2 的偶数' });
+    }
     if (part.type === 'place-value') {
       if (k === 'style' && !(PLACE_VALUE_STYLES as readonly unknown[]).includes(v)) {
         out.push({
