@@ -64,6 +64,8 @@ function getInitialProps(part: ResolvedPart): Props {
         [0, 0, 1],
       ];
     }
+  } else if (part.type === 'solid') {
+    initial.at = [360, 300];
   }
   return initial;
 }
@@ -101,6 +103,18 @@ function getRange(
         prop === 'opacity' ||
         prop === 'extend'));
 
+  if (prop === 'view') {
+    return { min: -1, max: 1, step: 0.05 };
+  }
+  if (prop === 'net') {
+    return { min: 1, max: 11, step: 1 };
+  }
+  if (prop === 'cutParts') {
+    return { min: 2, max: 32, step: 2 };
+  }
+  if (prop === 'unfold' || prop === 'water' || prop === 'sweep' || prop === 'cutT') {
+    return { min: 0, max: 1, step: 0.01 };
+  }
   if (isZeroToOne) {
     return { min: 0, max: 1, step: 0.01 };
   }

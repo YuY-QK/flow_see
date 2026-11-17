@@ -257,6 +257,19 @@ function checkProps(
       if (!Array.isArray(v) || v.length !== 2 || !isPoint(v[0]) || !isPoint(v[1]))
         out.push({ path: [...path, k], message: '剪开线 cut 要写成两个坐标 [[x1, y1], [x2, y2]]' });
     }
+    if (k === 'kind' && part.type === 'solid') {
+      const kinds = ['cuboid', 'cube', 'cylinder', 'cone', 'sphere'];
+      if (!kinds.includes(String(v)))
+        out.push({ path: [...path, k], message: `立体图形的 kind 只能是 ${kinds.join('、')}` });
+    }
+    if (k === 'net' && part.type === 'solid') {
+      if (typeof v === 'number' && (!Number.isInteger(v) || v < 1 || v > 11))
+        out.push({ path: [...path, k], message: '正方体展开图 net 必须是 1 到 11 的整数' });
+    }
+    if (k === 'cutParts' && part.type === 'solid') {
+      if (typeof v === 'number' && (!Number.isInteger(v) || v < 2 || v % 2 !== 0))
+        out.push({ path: [...path, k], message: '圆柱切分份数 cutParts 必须是大于等于 2 的偶数' });
+    }
     if (k === 'cells' && part.type === 'grid') {
       if (!Array.isArray(v)) {
         out.push({ path: [...path, k], message: 'cells 必须是坐标列表 [[行, 列], …]' });

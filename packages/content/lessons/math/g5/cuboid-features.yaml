@@ -1,0 +1,89 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+# 长方体、正方体的特征：认识面、棱、顶点，相对的面完全相同，相对的棱长度相等。
+# 样板知识点（status: draft，任务卡 B24）
+id: cuboid-features
+title: 长方体、正方体的特征
+summary: 6 个面、12 条棱、8 个顶点；相对的面完全相同，相对的棱长度相等
+status: draft
+duration: 2分钟
+tags: [长方体, 正方体, 面, 棱, 顶点, 长宽高]
+cover: { step: 1, text: '6面12棱8顶点' }
+related: [solids-intro, cuboid-net, cuboid-surface]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  a: 5
+  b: 3
+  h: 2
+
+explore:
+  - { param: a, control: slider, label: 长, min: 3, max: 6 }
+  - { param: b, control: slider, label: 宽, min: 2, max: '{a}' }
+  - { param: h, control: slider, label: 高, min: 1, max: 4 }
+
+presets:
+  - { label: 5 × 3 × 2, params: { a: 5, b: 3, h: 2 } }
+  - { label: 4 × 4 × 4, params: { a: 4, b: 4, h: 4 } }
+  - { label: 6 × 3 × 2, params: { a: 6, b: 3, h: 2 } }
+
+objects:
+  - id: box
+    type: solid
+    kind: cuboid
+    a: '{a}'
+    b: '{b}'
+    h: '{h}'
+    unit: 40
+    view: 0.5
+    edgeLabels:
+      a: '长 {a}'
+      b: '宽 {b}'
+      h: '高 {h}'
+    at: [300, 360]
+  - id: cnt
+    type: text
+    text: '面：[6](blank)　棱：[12](blank)　顶点：[8](blank)'
+    size: 24
+    at: [600, 100]
+
+steps:
+  - title: 面
+    say: 长方体有 6 个面，相对的面完全相同。
+    do:
+      - highlight: box.face.front
+      - highlight: box.face.back
+      - highlight: box.face.top
+      - highlight: box.face.bottom
+      - highlight: box.face.left
+      - highlight: box.face.right
+      - set: { target: cnt, text: '面：6　棱：[12](blank)　顶点：[8](blank)' }
+  - title: 棱
+    say: 两个面相交的线段是棱，一共 12 条，分成 3 组，每组 4 条长度相等。
+    try:
+      choose:
+        answer: 12
+        options: [6, 8, 12]
+      task: 长方体有几条棱？
+      hints:
+        - 上面 4 条、下面 4 条，竖着的还有几条？
+    do:
+      - ask: true
+      - repeat: 12
+        do:
+          - highlight: { target: 'box.edge.{i}', duration: 0.2s }
+      - set: { target: cnt, text: '面：6　棱：12　顶点：[8](blank)' }
+  - title: 顶点
+    say: 三条棱相交的点是顶点，一共 8 个。
+    do:
+      - repeat: 8
+        do:
+          - highlight: { target: 'box.v{i}', duration: 0.2s }
+      - set: { target: cnt, text: '面：6　棱：12　顶点：8' }
+
+keyPoints:
+  - 长方体有 6 个面、12 条棱、8 个顶点；相对的面完全相同，相对的棱长度相等
+  - 相交于一个顶点的三条棱的长度分别叫长、宽、高
+  - 正方体是特殊的长方体

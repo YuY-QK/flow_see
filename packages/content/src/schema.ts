@@ -115,6 +115,14 @@ const sceneStyleSchema = z
       })
       .strict()
       .describe('动手做时舞台上的拖动与交互'),
+    solid: z
+      .object({
+        obliqueAngle: z.number().positive().describe('斜二测的斜角（度）'),
+        depthRatio: z.number().positive().describe('进深缩短比例'),
+        hiddenDash: z.string().describe('隐藏棱虚线样式'),
+      })
+      .strict()
+      .describe('伪 3D 零件（solid、cube-stack）的斜二测与隐藏棱参数'),
     parts: z
       .record(z.string(), z.record(z.string(), z.unknown()))
       .describe('各零件的默认属性，键是零件 type'),

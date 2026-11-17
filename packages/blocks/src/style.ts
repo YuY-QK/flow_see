@@ -55,6 +55,12 @@ export interface SceneStyle {
     placeTolerance: number;
     rotateStep: number;
   };
+  /** 伪 3D 零件（solid、cube-stack）的斜二测与隐藏棱参数 */
+  solid?: {
+    obliqueAngle: number;
+    depthRatio: number;
+    hiddenDash: string;
+  };
   /** 各零件的默认属性：零件 type → 属性 */
   parts: Record<string, Record<string, unknown>>;
 }

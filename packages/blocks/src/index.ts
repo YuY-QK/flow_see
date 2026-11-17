@@ -26,6 +26,7 @@ import { itemSetPart } from './parts/item-set';
 import { polygonPart } from './parts/polygon';
 import { moneyPart } from './parts/money';
 import { cubeStackPart } from './parts/cube-stack';
+import { solidPart } from './parts/solid';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -116,6 +117,17 @@ export {
   type MoneyLayoutKind,
   type MoneySlot,
 } from './parts/money';
+export {
+  CUBE_NETS,
+  solidLayout,
+  solidPart,
+  type CubeNet,
+  type FaceName,
+  type SolidEdgeDef,
+  type SolidFaceDef,
+  type SolidKind,
+  type SolidLayoutResult,
+} from './parts/solid';
 
 export {
   cameraForView,
@@ -166,6 +178,7 @@ export const PARTS: readonly PartDef[] = [
   polygonPart,
   moneyPart,
   cubeStackPart,
+  solidPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */

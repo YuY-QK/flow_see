@@ -630,6 +630,32 @@
           "additionalProperties": false,
           "description": "动手做时舞台上的拖动与交互"
         },
+        "solid": {
+          "type": "object",
+          "properties": {
+            "obliqueAngle": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "斜二测的斜角（度）"
+            },
+            "depthRatio": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "进深缩短比例"
+            },
+            "hiddenDash": {
+              "type": "string",
+              "description": "隐藏棱虚线样式"
+            }
+          },
+          "required": [
+            "obliqueAngle",
+            "depthRatio",
+            "hiddenDash"
+          ],
+          "additionalProperties": false,
+          "description": "伪 3D 零件（solid、cube-stack）的斜二测与隐藏棱参数"
+        },
         "parts": {
           "type": "object",
           "propertyNames": {
@@ -660,6 +686,7 @@
         "counterBorder",
         "counterShadow",
         "tryIt",
+        "solid",
         "parts"
       ],
       "additionalProperties": false

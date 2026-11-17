@@ -110,6 +110,10 @@ scene:
     snapMs: 200                        # 吸附时长
     placeTolerance: 24                 # 放置容差
     rotateStep: 45                     # 旋转步进角度
+  solid:                               # 伪 3D 画法
+    obliqueAngle: 30                   # 斜二测的斜角（度）
+    depthRatio: 0.5                    # 进深缩短比例
+    hiddenDash: "6 5"                  # 隐藏棱虚线
   parts:                               # 各零件的默认属性；知识点里写了就用知识点的
     text: { size: 36, color: ink, weight: bold }
     fraction: { size: 40, color: ink }
@@ -165,6 +169,25 @@ scene:
       project: false
       color: blue
       labels: { front: 从前面看, left: 从左面看, top: 从上面看 }
+    solid:                             # 立体图形（伪 3D）
+      kind: cuboid
+      a: 4
+      b: 3
+      h: 2
+      r: 2
+      unit: 40
+      view: 0.5
+      faces: { front: blue, top: orange, right: green, back: blue, bottom: orange, left: green }
+      faceLabels: {}
+      edgeLabels: {}
+      hiddenEdges: true
+      unfold: 0
+      net: 1
+      water: 0
+      sweep: 1
+      cutParts: 16
+      cutT: 0
+      labels: { front: 前, back: 后, top: 上, bottom: 下, left: 左, right: 右 }
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:
