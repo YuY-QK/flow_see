@@ -210,6 +210,17 @@ scene:
       underline: true
       notes: []
       size: 36
+    ruler:                               # 直尺：长度测量、毫米/厘米刻度、局部放大镜
+      from: 0
+      to: 10
+      unit: cm
+      length: 600
+      minor: 10
+      zoomAt: 0
+      zoomScale: 1
+      objectFrom: 0
+      objectLength: 3
+      objectColor: orange
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:

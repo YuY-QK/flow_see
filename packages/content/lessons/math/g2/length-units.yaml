@@ -1,0 +1,65 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: length-units
+title: 分米、毫米、千米
+summary: 10 毫米 = 1 厘米，10 厘米 = 1 分米，10 分米 = 1 米，1000 米 = 1 千米
+status: draft
+duration: 1分钟
+tags: [长度单位, 毫米, 分米, 千米, 米, 厘米]
+cover: { text: 1dm=10cm }
+related: [measure-length, decimal-intro]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 420 }
+
+objects:
+  - id: r
+    type: ruler
+    from: 0
+    to: 12
+    unit: cm
+    length: 720
+    minor: 10
+    zoomAt: 3
+    zoomScale: 1
+    at: [40, 120]
+  - id: seg
+    type: line
+    from: [40, 100]
+    to: [640, 100]
+    width: 6
+    color: orange
+    draw: 0
+  - id: chain
+    type: text
+    text: 1 厘米 = 10 毫米　1 分米 = 10 厘米
+    size: 28
+    at: [400, 300]
+    hidden: true
+  - id: km
+    type: text
+    text: 1 千米 = [1000](blank) 米
+    size: 34
+    at: [400, 380]
+    hidden: true
+
+steps:
+  - title: 放大看
+    say: 放大看 1 厘米，里面有 10 小格，每格 1 毫米。
+    do:
+      - set: { target: r, zoomScale: 5, duration: 1s }
+  - title: 毫米
+    say: 很短的东西用毫米，1 厘米 = 10 毫米。
+    do:
+      - show: chain
+      - set: { target: r, zoomScale: 1, duration: 0.5s }
+  - title: 分米
+    say: 10 厘米是 1 分米。
+    do:
+      - set: { target: seg, draw: 1, duration: 1.5s }
+
+keyPoints:
+  - 1 厘米 = 10 毫米
+  - 1 分米 = 10 厘米
+  - 1 米 = 10 分米
+  - 1 千米 = 1000 米

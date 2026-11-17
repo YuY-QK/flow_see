@@ -91,6 +91,13 @@ function getInitialProps(part: ResolvedPart): Props {
       initial.expr = '36 + (48 − 12) × 2';
     }
     if (initial.show === undefined) initial.show = 4;
+  } else if (part.type === 'ruler') {
+    initial.at = [100, 160];
+    if (initial.objectShape === undefined && initial.objectAsset === undefined) {
+      initial.objectShape = 'rect';
+      initial.objectFrom = 2;
+      initial.objectLength = 3;
+    }
   }
   return initial;
 }
@@ -103,6 +110,9 @@ function getRange(
 ): { min: number; max: number; step: number } {
   if (prop === 'places') {
     return { min: 0, max: 8, step: 1 };
+  }
+  if (prop === 'zoomScale') {
+    return { min: 1, max: 10, step: 0.5 };
   }
   if (prop === 'decimals') {
     return { min: 0, max: 3, step: 1 };

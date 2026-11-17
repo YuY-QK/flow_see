@@ -10,6 +10,7 @@ import {
   NUMBER_CHART_MARK_STYLES,
   PART_TYPES,
   PLACE_VALUE_STYLES,
+  RULER_UNITS,
   SHAPE_KINDS,
   findSubitem,
   getPart,
@@ -152,6 +153,48 @@ function checkProps(
       });
     }
   }
+  if (type === 'ruler') {
+    if (props.from !== undefined && props.to !== undefined) {
+      if (typeof props.from === 'number' && typeof props.to === 'number' && props.from >= props.to) {
+        out.push({
+          path: [...path, 'from'],
+          message: '直尺的 from 必须小于 to',
+        });
+      }
+    }
+    if (props.minor !== undefined) {
+      if (typeof props.minor === 'number' && (props.minor < 1 || !Number.isInteger(props.minor))) {
+        out.push({
+          path: [...path, 'minor'],
+          message: '直尺的 minor 必须是大于等于 1 的整数',
+        });
+      }
+    }
+    if (props.length !== undefined) {
+      if (typeof props.length === 'number' && props.length <= 0) {
+        out.push({
+          path: [...path, 'length'],
+          message: '直尺的 length 必须大于 0',
+        });
+      }
+    }
+    if (props.zoomScale !== undefined) {
+      if (typeof props.zoomScale === 'number' && props.zoomScale < 1) {
+        out.push({
+          path: [...path, 'zoomScale'],
+          message: '直尺的 zoomScale 不能小于 1',
+        });
+      }
+    }
+    if (props.objectLength !== undefined) {
+      if (typeof props.objectLength === 'number' && props.objectLength <= 0) {
+        out.push({
+          path: [...path, 'objectLength'],
+          message: '直尺物体的 objectLength 必须大于 0',
+        });
+      }
+    }
+  }
   const known = new Set<string>([...COMMON_PROPS, ...part.props]);
   for (const [k, v] of Object.entries(props)) {
     if (!known.has(k)) {
@@ -247,6 +290,14 @@ function checkProps(
         out.push({
           path: [...path, k],
           message: `十进制块的 style 只能是 ${BASE_TEN_STYLES.join('、')}`,
+        });
+      }
+    }
+    if (k === 'unit' && part.type === 'ruler') {
+      if (!(RULER_UNITS as readonly unknown[]).includes(v)) {
+        out.push({
+          path: [...path, k],
+          message: `直尺的 unit 只能是 ${RULER_UNITS.join('、')}`,
         });
       }
     }

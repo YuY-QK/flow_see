@@ -32,6 +32,7 @@ import { placeValuePart } from './parts/place-value';
 import { baseTenPart } from './parts/base-ten';
 import { numberChartPart } from './parts/number-chart';
 import { exprStepsPart } from './parts/expr-steps';
+import { rulerPart } from './parts/ruler';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -203,6 +204,18 @@ export {
   type NumberChartRow,
 } from './parts/number-chart';
 
+export {
+  RULER_UNITS,
+  rulerLayout,
+  rulerPart,
+  rulerX,
+  type RulerLayout,
+  type RulerMagnifierLayout,
+  type RulerObjectLayout,
+  type RulerTick,
+  type RulerUnit,
+} from './parts/ruler';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -241,6 +254,7 @@ export const PARTS: readonly PartDef[] = [
   baseTenPart,
   numberChartPart,
   exprStepsPart,
+  rulerPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */
