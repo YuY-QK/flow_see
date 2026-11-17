@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: count-to-100
+title: 数数：十个十是一百
+summary: 10 根捆成一捆是 1 个十，10 个十是一百
+status: draft
+duration: 1分钟
+tags: [数数, 一百, 十个一, 捆小棒, 计数单位]
+cover: { text: 10个十 }
+related: [place-value-100, tens-add-sub]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 400 }
+
+objects:
+  - id: sticks
+    type: base-ten
+    style: stick
+    ones: 0
+    tens: 0
+    columns: true
+    at: [80, 60]
+  - id: cnt
+    type: text
+    text: '{value}'
+    value: 0
+    size: 56
+    at: [660, 120]
+  - id: note
+    type: label
+    text: 10 个一是 1 个十
+    at: [660, 220]
+    hidden: true
+
+steps:
+  - title: 一根一根数
+    say: 一根一根数小棒：1、2、3……9。
+    do:
+      - set: { target: sticks, ones: 9, duration: 3s, ease: linear }
+      - count: { target: cnt, from: 0, to: 9, duration: 3s, together: true }
+  - title: 满十捆一捆
+    say: 再添一根是 10 根，捆成一捆，是 1 个十。
+    do:
+      - set: { target: sticks, ones: 10 }
+      - set: { target: cnt, value: 10, together: true }
+      - show: note
+      - ask: true
+      - set: { target: sticks, ones: 0, tens: 1 }
+    try:
+      task: 10 根了，点一下把它们捆起来。
+      tap:
+        answer: sticks.ones
+        among: [sticks.ones]
+      hints:
+        - 点个位那一堆小棒。
+  - title: 一捆一捆数
+    say: 一捆一捆地数：一十、二十……九十。
+    do:
+      - repeat: 8
+        do:
+          - set: { target: sticks, tens: '{i + 1}', duration: 0.4s }
+          - set: { target: cnt, value: '{(i + 1) * 10}', together: true }
+
+keyPoints:
+  - 10 个一是 1 个十
+  - 10 个十是一百
+  - 数到九十九，再添一就是一百

@@ -1,5 +1,6 @@
 // 场景模板的配置检查（pnpm content:check 调用）：零件类型和属性、动作写法、引用的零件是否存在。
 import {
+  BASE_TEN_STYLES,
   COMMON_PROPS,
   COUNTER_LAYOUTS,
   COUNTER_SHAPES,
@@ -210,6 +211,14 @@ function checkProps(
           });
         }
       }
+    if (k === 'style' && part.type === 'base-ten') {
+      if (!(BASE_TEN_STYLES as readonly unknown[]).includes(v)) {
+        out.push({
+          path: [...path, k],
+          message: `十进制块的 style 只能是 ${BASE_TEN_STYLES.join('、')}`,
+        });
+      }
+    }
     if (k === 'layout') {
       if (part.type === 'item-set') {
         if (!(ITEM_SET_LAYOUTS as readonly unknown[]).includes(v))
@@ -548,6 +557,16 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
     tries: lesson.steps.map((st) => st.try),
   };
 
+  const baseTenStates = new Map<string, { ones: number; tens: number }>();
+  objects.forEach((o) => {
+    if (o.type === 'base-ten' && typeof o.id === 'string') {
+      baseTenStates.set(o.id, {
+        ones: typeof o.ones === 'number' ? o.ones : 0,
+        tens: typeof o.tens === 'number' ? o.tens : 0,
+      });
+    }
+  });
+
   lesson.steps.forEach((step, si) => {
     if (step.try) checkTry(def, si, alive, objects, (lesson.params ?? {}) as Record<string, unknown>, out);
     if (step.try?.choose?.show) checkChooseShow(step.try.choose.show, si, alive, objects, out);
@@ -721,6 +740,23 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
                     }
                   });
                 }
+              }
+            }
+            if (tt === 'base-ten') {
+              const cur = baseTenStates.get(t);
+              if (cur) {
+                if (patch.ones !== undefined && patch.tens !== undefined) {
+                  const nextOnes = typeof patch.ones === 'number' ? patch.ones : cur.ones;
+                  const diff = nextOnes - cur.ones;
+                  if (diff !== 0 && diff !== 10 && diff !== -10) {
+                    out.push({
+                      path: [...path, verb, 'ones'],
+                      message: `十进制块一次捆或拆只能改一个十（ones 变化量应为 0 或 ±10，当前为 ${diff}）`,
+                    });
+                  }
+                }
+                if (typeof patch.ones === 'number') cur.ones = patch.ones;
+                if (typeof patch.tens === 'number') cur.tens = patch.tens;
               }
             }
           }

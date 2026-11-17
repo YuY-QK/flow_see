@@ -73,6 +73,9 @@ function getInitialProps(part: ResolvedPart): Props {
     if (initial.value === undefined || initial.value === 0) {
       initial.value = 35;
     }
+  } else if (part.type === 'base-ten') {
+    if (initial.ones === undefined) initial.ones = 3;
+    if (initial.tens === undefined) initial.tens = 1;
   }
   return initial;
 }

@@ -29,6 +29,7 @@ import { moneyPart } from './parts/money';
 import { cubeStackPart } from './parts/cube-stack';
 import { solidPart } from './parts/solid';
 import { placeValuePart } from './parts/place-value';
+import { baseTenPart } from './parts/base-ten';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -166,6 +167,20 @@ export {
   type PlaceValueStyleKind,
 } from './parts/place-value';
 
+export {
+  BASE_TEN_STYLES,
+  baseTenLayout,
+  baseTenPart,
+  cubeMetrics,
+  type BaseTenBlockItem,
+  type BaseTenBundleItem,
+  type BaseTenColumn,
+  type BaseTenLayout,
+  type BaseTenStickItem,
+  type BaseTenStyle,
+  type BaseTenTransition,
+} from './parts/base-ten';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -201,6 +216,7 @@ export const PARTS: readonly PartDef[] = [
   cubeStackPart,
   solidPart,
   placeValuePart,
+  baseTenPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */

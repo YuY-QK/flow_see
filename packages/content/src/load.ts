@@ -401,9 +401,9 @@ export function loadContent(
       }
       return v;
     });
-    // {i} 是重复（repeat）里的第几份，由场景模板展开时代入
+    // {i} 是重复（repeat）里的第几份，由场景模板展开时代入；{value} 是 text 零件中由 count/value 代入
     for (const n of used)
-      if (!known.has(n) && n !== 'i')
+      if (!known.has(n) && n !== 'i' && n !== 'value')
         err(name, `配置里的 {${n}} 不是 params 或 derived 中的参数`);
     lesson.steps.forEach((st, si) => {
       if (st.repeat !== undefined) {
