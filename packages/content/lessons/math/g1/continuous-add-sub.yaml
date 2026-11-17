@@ -1,0 +1,94 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: continuous-add-sub
+title: 连加、连减与加减混合
+summary: 从左往右一步一步算，上一步的得数接着算
+status: draft
+duration: 1分钟
+tags: [连加, 连减, 加减混合, 运算顺序]
+cover: { text: 8+5−3 }
+related: [two-digit-add]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  a: 8
+  b: 5
+  c: 3
+derived:
+  m: a + b
+  r: a + b - c
+explore:
+  - { param: a, control: slider, label: 车上原来, min: 3, max: 10 }
+  - { param: b, control: slider, label: 上车, min: 1, max: 6 }
+  - { param: c, control: slider, label: 下车, min: 1, max: '{a + b - 1}' }
+
+objects:
+  - id: bus
+    type: image
+    asset: bus
+    width: 460
+    height: 200
+    at: [260, 160]
+  - id: people
+    type: item-set
+    items:
+      - { repeat: '{m}', asset: kid }
+    layout: grid
+    cols: 8
+    size: 34
+    show: '{a}'
+    at: [70, 100]
+  - id: eq
+    type: expr-steps
+    lines:
+      - '{a} + {b} − {c}'
+      - '{m} − {c}'
+      - '{r}'
+    show: 1
+    underline: true
+    at: [540, 60]
+
+steps:
+  - title: 车上原来
+    say: 车上原来有 {a} 人。
+    do:
+      - highlight: people
+  - title: 上车
+    say: 到站了，上来 {b} 人。
+    do:
+      - set: { target: people, show: '{m}', duration: 1.5s }
+  - title: 先算前两个
+    say: 从左往右，先算 {a} + {b} = {m}。
+    do:
+      - highlight: eq.op.1
+      - ask: true
+      - set: { target: eq, show: 2 }
+    try:
+      task: 车上现在有几人？
+      choose:
+        answer: '{m}'
+        min: 2
+        max: 20
+        show: [eq]
+      hints:
+        - 从左往右，先算前两个数相加。
+  - title: 下车
+    say: 又下去 {c} 人，{m} − {c} = {r}。
+    do:
+      - set: { target: people, show: '{r}', duration: 1.5s }
+      - ask: true
+      - set: { target: eq, show: 3 }
+    try:
+      task: 现在车上有几人？
+      choose:
+        answer: '{r}'
+        min: 0
+        max: 19
+        show: [eq]
+      hints:
+        - 用刚才的结果接着算。
+
+keyPoints:
+  - 连加、连减、加减混合，都从左往右依次算
+  - 前一步的得数是下一步的开头

@@ -205,6 +205,11 @@ scene:
         groups: [个级, 万级, 亿级]
         point: 小数点
       color: blue
+    expr-steps:                          # 递等式：四则混合运算的运算顺序、简便运算、连加连减
+      show: 1
+      underline: true
+      notes: []
+      size: 36
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:

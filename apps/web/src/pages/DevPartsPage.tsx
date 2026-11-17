@@ -85,6 +85,12 @@ function getInitialProps(part: ResolvedPart): Props {
       ];
       initial.reveal = 2;
     }
+  } else if (part.type === 'expr-steps') {
+    initial.at = [160, 100];
+    if (initial.expr === undefined && initial.lines === undefined) {
+      initial.expr = '36 + (48 − 12) × 2';
+    }
+    if (initial.show === undefined) initial.show = 4;
   }
   return initial;
 }

@@ -31,6 +31,7 @@ import { solidPart } from './parts/solid';
 import { placeValuePart } from './parts/place-value';
 import { baseTenPart } from './parts/base-ten';
 import { numberChartPart } from './parts/number-chart';
+import { exprStepsPart } from './parts/expr-steps';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -181,6 +182,13 @@ export {
   type BaseTenStyle,
   type BaseTenTransition,
 } from './parts/base-ten';
+export {
+  exprStepsLayout,
+  exprStepsPart,
+  type ExprStepsLayoutResult,
+  type ExprStepsLine,
+  type ExprStepsOpSubitem,
+} from './parts/expr-steps';
 
 export {
   NUMBER_CHART_MARK_STYLES,
@@ -232,6 +240,7 @@ export const PARTS: readonly PartDef[] = [
   placeValuePart,
   baseTenPart,
   numberChartPart,
+  exprStepsPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */

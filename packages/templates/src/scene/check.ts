@@ -16,6 +16,7 @@ import {
   isColor,
   isCounters,
   isPoint,
+  exprStepsLayout,
   parseClockTime,
   parseDenomination,
   type Props,
@@ -141,6 +142,16 @@ function checkProps(
       }
     }
   }
+  if (type === 'expr-steps' && path[0] === 'objects') {
+    const hasExpr = props.expr !== undefined && String(props.expr).trim() !== '';
+    const hasLines = Array.isArray(props.lines) && props.lines.length > 0;
+    if (!hasExpr && !hasLines) {
+      out.push({
+        path,
+        message: '递等式（expr-steps）必须提供 expr 或 lines 中的一个',
+      });
+    }
+  }
   const known = new Set<string>([...COMMON_PROPS, ...part.props]);
   for (const [k, v] of Object.entries(props)) {
     if (!known.has(k)) {
@@ -192,6 +203,25 @@ function checkProps(
     if (k === 'show' && type === 'number-bond') {
       if (typeof v === 'number' && (v < 0 || v > 2)) {
         out.push({ path: [...path, k], message: 'show 范围为 0–2' });
+      }
+    }
+    if (k === 'expr' && type === 'expr-steps') {
+      if (typeof v !== 'string' || v.trim() === '') {
+        out.push({ path: [...path, k], message: 'expr 必须是非空算式文字' });
+      } else if (!v.includes('{')) {
+        try {
+          exprStepsLayout({ expr: v });
+        } catch (e) {
+          out.push({
+            path: [...path, k],
+            message: (e as Error).message || 'expr 解析失败',
+          });
+        }
+      }
+    }
+    if (k === 'lines' && type === 'expr-steps') {
+      if (!Array.isArray(v) || v.length === 0) {
+        out.push({ path: [...path, k], message: 'lines 必须是非空文字列表' });
       }
     }
     if (k === 'text' && typeof v === 'string')
