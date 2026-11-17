@@ -265,6 +265,27 @@ scene:
       origin: bottom-left
       points: []
       color: line
+    direction:                          # 方向标 / 方位图：八方向罗盘、几点钟方向、方位角
+      mode: compass
+      radius: 140
+      pointer: 0
+      showPointer: true
+      targets: []
+      labels:
+        N: 北
+        NE: 东北
+        E: 东
+        SE: 东南
+        S: 南
+        SW: 西南
+        W: 西
+        NW: 西北
+        beiPian: 北偏东
+        nanPian: 南偏东
+        km: 千米
+        oClock: 点钟
+        me: 我
+        target: 目标
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:

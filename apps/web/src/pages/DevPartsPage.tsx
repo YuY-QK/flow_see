@@ -160,6 +160,14 @@ function getInitialProps(part: ResolvedPart): Props {
         { at: [6, 4], label: 'B(6,4)', color: 'orange' },
       ];
     }
+  } else if (part.type === 'direction') {
+    initial.at = [400, 225];
+    if (initial.targets === undefined || (Array.isArray(initial.targets) && initial.targets.length === 0)) {
+      initial.targets = [
+        { bearing: 45, distance: 120, label: 'Park', asset: 'park' },
+        { bearing: 225, distance: 120, label: 'School', asset: 'school' },
+      ];
+    }
   }
   return initial;
 }

@@ -782,6 +782,43 @@ function checkProps(
         }
       }
     }
+    if (part.type === 'direction') {
+      if (k === 'mode') {
+        const validModes = ['compass', 'clock', 'bearing'];
+        if (typeof v === 'string' && !validModes.includes(v)) {
+          out.push({
+            path: [...path, k],
+            message: `direction 的 mode 只能是 compass、clock 或 bearing，收到了 "${v}"`,
+          });
+        }
+      }
+      if (k === 'radius') {
+        if (typeof v === 'number' && v <= 0) {
+          out.push({ path: [...path, k], message: 'direction 的 radius 必须大于 0' });
+        }
+      }
+      if (k === 'targets') {
+        if (!Array.isArray(v)) {
+          out.push({ path: [...path, k], message: 'direction 的 targets 必须是列表' });
+        } else {
+          v.forEach((t, i) => {
+            if (!t || typeof t !== 'object') {
+              out.push({ path: [...path, k, i], message: 'targets 的每一项必须是对象' });
+            }
+          });
+        }
+      }
+      if (k === 'scaleBar') {
+        if (!v || typeof v !== 'object' || Array.isArray(v)) {
+          out.push({ path: [...path, k], message: 'scaleBar 必须是对象 { km, px }' });
+        } else {
+          const sb = v as Record<string, unknown>;
+          if (sb.km === undefined || sb.px === undefined) {
+            out.push({ path: [...path, k], message: 'scaleBar 必须包含 km 和 px 属性' });
+          }
+        }
+      }
+    }
   }
 }
 

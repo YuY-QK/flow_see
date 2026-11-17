@@ -1,0 +1,69 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: directions-8
+title: 东、南、西、北与八个方向
+summary: 面向太阳升起的方向是东；地图上上北下南、左西右东
+status: draft
+duration: 1分钟
+tags: [方向, 东南西北, 东北, 西南, 地图]
+cover: { text: N }
+related: [route-description, clock-direction, direction-distance]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  t: 2
+presets:
+  - { label: 东北, params: { t: 2 } }
+  - { label: 西南, params: { t: 6 } }
+
+objects:
+  - id: rose
+    type: direction
+    mode: compass
+    radius: 120
+    pointer: 0
+    at: [220, 230]
+  - id: map
+    type: direction
+    mode: compass
+    radius: 150
+    showPointer: false
+    at: [580, 230]
+    targets:
+      - { bearing: 0, distance: 150, asset: library, label: 图书馆 }
+      - { bearing: 45, distance: 150, asset: park, label: 公园 }
+      - { bearing: 90, distance: 150, asset: shop, label: 商店 }
+      - { bearing: 135, distance: 150, asset: hospital, label: 医院 }
+      - { bearing: 180, distance: 150, asset: school, label: 学校 }
+      - { bearing: 225, distance: 150, asset: zoo, label: 动物园 }
+      - { bearing: 270, distance: 150, asset: cinema, label: 电影院 }
+      - { bearing: 315, distance: 150, asset: museum, label: 博物馆 }
+    hidden: true
+  - id: sun
+    type: image
+    asset: sun
+    width: 60
+    height: 60
+    at: [380, 230]
+
+steps:
+  - title: 太阳升起的地方
+    say: 早晨面向太阳，前面是东，后面是西。
+    do:
+      - set: { target: rose, pointer: 90, duration: 1s }
+      - highlight: rose.dir.E
+  - title: 左北右南
+    say: 面向东，左手是北，右手是南。
+    do:
+      - highlight: [rose.dir.N, rose.dir.S]
+  - title: 地图上的方向
+    say: 地图上通常是上北、下南、左西、右东。
+    do:
+      - set: { target: rose, pointer: 0, duration: 1s }
+
+keyPoints:
+  - 早晨面向太阳，前东后西、左北右南
+  - 地图上一般上北下南、左西右东
+  - 东北、西北、东南、西南在两个方向的中间

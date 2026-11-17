@@ -39,6 +39,7 @@ import { tablePart } from './parts/table';
 import { calendarPart } from './parts/calendar';
 import { anglePart } from './parts/angle';
 import { coordinateGridPart } from './parts/coordinate-grid';
+import { directionPart } from './parts/direction';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -293,6 +294,29 @@ export {
   type CoordinateGridPointLayout,
 } from './parts/coordinate-grid';
 
+export {
+  COMPASS_DIRS,
+  COMPASS_LABEL_GAP,
+  COMPASS_LABEL_SIZE,
+  CLOCK_NUM_SIZE,
+  TARGET_ICON_SIZE,
+  directionLayout,
+  directionPart,
+  directionPoint,
+  labelsOf as directionLabelsOf,
+  type ClockNumberLayout,
+  type ClockTickLayout,
+  type CompassArrowLayout,
+  type CompassDirLabelLayout,
+  type DirectionLabels,
+  type DirectionLayoutResult,
+  type DirectionMode,
+  type DirectionScaleBar,
+  type DirectionTarget,
+  type ScaleBarLayout,
+  type TargetLayout,
+} from './parts/direction';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -338,6 +362,7 @@ export const PARTS: readonly PartDef[] = [
   calendarPart,
   anglePart,
   coordinateGridPart,
+  directionPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */
