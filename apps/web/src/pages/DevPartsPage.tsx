@@ -76,6 +76,15 @@ function getInitialProps(part: ResolvedPart): Props {
   } else if (part.type === 'base-ten') {
     if (initial.ones === undefined) initial.ones = 3;
     if (initial.tens === undefined) initial.tens = 1;
+  } else if (part.type === 'number-chart') {
+    initial.at = [210, 30];
+    if (initial.marks === undefined || (Array.isArray(initial.marks) && initial.marks.length === 0)) {
+      initial.marks = [
+        { multiplesOf: 2, color: 'blue', style: 'fill' },
+        { multiplesOf: 5, color: 'orange', style: 'circle' },
+      ];
+      initial.reveal = 2;
+    }
   }
   return initial;
 }
@@ -91,6 +100,15 @@ function getRange(
   }
   if (prop === 'decimals') {
     return { min: 0, max: 3, step: 1 };
+  }
+  if (prop === 'reveal') {
+    return { min: 0, max: 10, step: 0.1 };
+  }
+  if (prop === 'cols') {
+    return { min: 1, max: 20, step: 1 };
+  }
+  if (prop === 'cell') {
+    return { min: 10, max: 80, step: 1 };
   }
   if (handle && typeof handle.min === 'number' && typeof handle.max === 'number') {
     const isSmall = handle.max - handle.min <= 1;

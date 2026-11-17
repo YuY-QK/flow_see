@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: order-compare-100
+title: 数的顺序与大小比较
+summary: 百数表横看多 1、竖看多 10；比大小先比十位
+status: draft
+duration: 1分钟
+tags: [百数表, 数的顺序, 比大小, 十位]
+cover: { text: 百数表 }
+related: [place-value-100, count-to-100]
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  a: 47
+  b: 52
+explore:
+  - { param: a, control: slider, label: 第一个数, min: 10, max: 99 }
+  - { param: b, control: slider, label: 第二个数, min: 10, max: 99 }
+
+objects:
+  - id: chart
+    type: number-chart
+    from: 1
+    to: 100
+    cols: 10
+    cell: 38
+    at: [20, 30]
+  - id: cmp
+    type: text
+    text: '[{a}](blue) [>](blank) [{b}](orange)'
+    size: 44
+    at: [600, 200]
+    hidden: true
+
+steps:
+  - title: 百数表
+    say: 1 到 100 排成一张表，一行 10 个。
+    do:
+      - highlight: chart
+  - title: 横着看
+    say: 横着往右，每次多 1。
+    do:
+      - highlight: chart.row.3
+  - title: 竖着看
+    say: 竖着往下，每次多 10。
+    do:
+      - highlight: chart.col.7
+
+keyPoints:
+  - 百数表横着看相邻两个数差 1，竖着看差 10
+  - 比两位数先比十位，十位相同再比个位

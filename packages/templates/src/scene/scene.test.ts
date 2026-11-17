@@ -2777,5 +2777,56 @@ describe('沿路径移动（follow）', () => {
       });
       expect(okFill).toEqual([]);
     });
+
+    it('B5 百数表（number-chart）配置检查', () => {
+      // 合法配置
+      const okIssues = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'chart',
+            type: 'number-chart',
+            from: 1,
+            to: 100,
+            cols: 10,
+            cell: 38,
+            marks: [
+              { multiplesOf: 2, color: 'blue', style: 'fill' },
+              { multiplesOf: 5, color: 'orange', style: 'circle', keepSelf: true },
+            ],
+            reveal: 1.5,
+            at: [20, 30],
+          },
+        ],
+        steps: [{ say: '看百数表', do: [{ wait: '1s' }] }],
+      });
+      expect(okIssues).toEqual([]);
+
+      // 非法属性检查
+      const badIssues = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'chart',
+            type: 'number-chart',
+            from: 1.5,
+            cols: -2,
+            cell: 0,
+            reveal: -1,
+            marks: [
+              { multiplesOf: -3, style: 'invalid-style' },
+            ],
+            at: [20, 30],
+          },
+        ],
+        steps: [{ say: '看百数表', do: [{ wait: '1s' }] }],
+      });
+      expect(badIssues.some((i) => i.message.includes('from 必须是整数'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('cols 必须是正整数'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('cell 必须大于 0'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('reveal 不能为负数'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('multiplesOf 必须是正整数'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('标记的 style 只能是'))).toBe(true);
+    });
   });
 });

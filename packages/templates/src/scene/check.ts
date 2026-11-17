@@ -7,6 +7,7 @@ import {
   ITEM_SET_LAYOUTS,
   ITEM_SET_SHAPES,
   MONEY_LAYOUTS,
+  NUMBER_CHART_MARK_STYLES,
   PART_TYPES,
   PLACE_VALUE_STYLES,
   SHAPE_KINDS,
@@ -352,6 +353,65 @@ function checkProps(
               message: `value 的小数位数超过 decimals（${decimals}）`,
             });
           }
+        }
+      }
+    }
+    if (part.type === 'number-chart') {
+      if (k === 'from' && typeof v === 'number' && !Number.isInteger(v)) {
+        out.push({ path: [...path, k], message: 'from 必须是整数' });
+      }
+      if (k === 'to' && typeof v === 'number' && !Number.isInteger(v)) {
+        out.push({ path: [...path, k], message: 'to 必须是整数' });
+      }
+      if (k === 'cols' && typeof v === 'number' && (!Number.isInteger(v) || v <= 0)) {
+        out.push({ path: [...path, k], message: 'cols 必须是正整数' });
+      }
+      if (k === 'cell' && typeof v === 'number' && v <= 0) {
+        out.push({ path: [...path, k], message: 'cell 必须大于 0' });
+      }
+      if (k === 'size' && typeof v === 'number' && v <= 0) {
+        out.push({ path: [...path, k], message: 'size 必须大于 0' });
+      }
+      if (k === 'reveal' && typeof v === 'number' && v < 0) {
+        out.push({ path: [...path, k], message: 'reveal 不能为负数' });
+      }
+      if (k === 'marks') {
+        if (!Array.isArray(v)) {
+          out.push({ path: [...path, k], message: 'marks 必须是列表' });
+        } else {
+          v.forEach((m, idx) => {
+            if (!m || typeof m !== 'object') {
+              out.push({ path: [...path, k, idx], message: '标记必须是对象' });
+              return;
+            }
+            const mark = m as Record<string, unknown>;
+            if (
+              mark.multiplesOf !== undefined &&
+              (typeof mark.multiplesOf !== 'number' ||
+                !Number.isInteger(mark.multiplesOf) ||
+                mark.multiplesOf <= 0)
+            ) {
+              out.push({
+                path: [...path, k, idx, 'multiplesOf'],
+                message: 'multiplesOf 必须是正整数',
+              });
+            }
+            if (
+              mark.style !== undefined &&
+              !(NUMBER_CHART_MARK_STYLES as readonly unknown[]).includes(mark.style)
+            ) {
+              out.push({
+                path: [...path, k, idx, 'style'],
+                message: `标记的 style 只能是 ${NUMBER_CHART_MARK_STYLES.join('、')}`,
+              });
+            }
+            if (mark.color !== undefined && !colorOk(mark.color, alive)) {
+              out.push({
+                path: [...path, k, idx, 'color'],
+                message: `颜色写颜色名、#RRGGBB，或 "@零件id"`,
+              });
+            }
+          });
         }
       }
     }

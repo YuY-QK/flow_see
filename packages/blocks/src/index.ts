@@ -30,6 +30,7 @@ import { cubeStackPart } from './parts/cube-stack';
 import { solidPart } from './parts/solid';
 import { placeValuePart } from './parts/place-value';
 import { baseTenPart } from './parts/base-ten';
+import { numberChartPart } from './parts/number-chart';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -181,6 +182,19 @@ export {
   type BaseTenTransition,
 } from './parts/base-ten';
 
+export {
+  NUMBER_CHART_MARK_STYLES,
+  numberChartLayout,
+  numberChartPart,
+  type NumberChartCell,
+  type NumberChartCellMark,
+  type NumberChartCol,
+  type NumberChartLayout,
+  type NumberChartMarkDef,
+  type NumberChartMarkStyle,
+  type NumberChartRow,
+} from './parts/number-chart';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -217,6 +231,7 @@ export const PARTS: readonly PartDef[] = [
   solidPart,
   placeValuePart,
   baseTenPart,
+  numberChartPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */
