@@ -26,7 +26,7 @@ steps:
 
 公共属性：`id`（必填）、`type`（必填）、`at: [x, y]`、`hidden: true`（开始时隐藏，用 `show` 让它出现）、`opacity`、`scale`、`rotate`（度）、`color`、`note`（备注，不显示）。
 
-`at` 的含义：**计数块、十格框、方格是左上角，数轴是最左端，其他零件是中心。**
+`at` 的含义：**计数块、十格框、方格、表格是左上角，数轴是最左端，其他零件是中心。**
 
 颜色：`blue` `orange` `red` `green` `purple` `yellow` `pink` `brown` `gray` `white` `black`，跟随动画主题的 `ink` `dim` `accent` `line`，或 `#RRGGBB`。
 
@@ -69,6 +69,7 @@ steps:
 | `cube-stack`                       | 小正方体组合                                                        | `cubes`（格坐标列表 `[[x, y, z], …]`）或 `fill`（`[a, b, h]` 铺满）、`unit`（边长，默认 44）、`view`（视角：`iso` / `front` / `left` / `top` 或 0–3 连续值）、`project`（布尔，默认 false，右侧画三视图）、`count`（连续属性，已放下个数，小数为下落过程）、`color`（主色，默认 blue）、`labels`（三视图标题对象）；`at` 是底面前左角。连续属性：`view`、`count`。子项：`cube.<n>`（第 n 个方块在当前视图下的包围盒）、`layer.<z>`（第 z 层包围盒）。例见 [math/g4/observe-cubes.yaml](./math/g4/observe-cubes.yaml) |
 | `solid`                            | 立体图形（长方体、正方体、圆柱、圆锥、球）                          | `kind`（`cuboid` / `cube` / `cylinder` / `cone` / `sphere`，默认 `cuboid`）、`a`、`b`、`h`（长宽高单位长度，默认 4、3、2）、`r`（底面半径，默认 2）、`unit`（1 单位长度像素，默认 40）、`view`（-1–1 连续，默认 0.5）、`faces`（各面颜色）、`faceLabels`（各面文字）、`edgeLabels`（棱长文字）、`hiddenEdges`（隐藏棱虚线，默认 true）、`unfold`（展开进度 0–1）、`net`（正方体 11 种展开图类型 1–11）、`water`（装水高度比例 0–1）、`sweep`（旋转扫出进度 0–1）、`cutParts`（圆柱切分份数，偶数，默认 16）、`cutT`（圆柱切拼长方体进度 0–1）、`labels`（面名称对象）；`at` 是底面前下棱的中点。子项：`face.<面名>`、`edge.<1–12>`、`v<1–8>`、`height`。例见 [math/g5/cuboid-features.yaml](./math/g5/cuboid-features.yaml) |
 | `expr-steps`                       | 递等式（混合运算、简便运算、连加连减）                              | `expr`（算式文字，自动生成各行）或 `lines`（文字列表，手写每一行，第 2 行起自动在行首加“=”；二者写一个）、`show`（连续属性，已写出行数，小数为下一行淡入进度）、`underline`（布尔，默认 true，在每行先算部分画下划线）、`notes`（文字列表，每行右侧说明，字号 22）、`size`（字号，默认 36）；`at` 是第一行文字基线左端。子项：`line.<n>`（第 n 行包围盒）、`op.<n>`（第一行第 n 个运算符及其两边数的范围）。例见 [math/g1/continuous-add-sub.yaml](./math/g1/continuous-add-sub.yaml) |
+| `table`                            | 表格 / 统计表                                                        | `rows`（二维文字数组，支持颜色、`blank`、`frac`、`sup`）、`header`（布尔，默认 `true`，第一行表头加粗底色）、`headerCol`（布尔，默认 `false`，第一列表头加粗底色）、`diagonal`（`[右上文字, 左下文字]`，左上角斜线表头）、`colWidth`（数字或数组，默认 96）、`rowHeight`（数字，默认 48）、`tally`（布尔，默认 `false`，非表头数字格画“正”字）、`show`（连续属性，已出现单元格数，默认 9999）、`tallyShow`（连续属性，正字已写笔画数，默认 9999）、`size`（字号，默认 24）；`at` 是左上角。子项：`cell.<行>.<列>`、`row.<n>`、`col.<n>`。例见 [math/g1/data-collect-1.yaml](./math/g1/data-collect-1.yaml) |
 
 ## 子项
 

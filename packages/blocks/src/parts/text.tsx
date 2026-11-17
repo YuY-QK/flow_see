@@ -116,8 +116,9 @@ type Refs = Record<string, { color?: unknown; highlight?: number }>;
  * 每段的宽度按 textWidth 估算（和包围盒一致）；每一段单独居中画在自己估算出的中心，
  * 所以底块一定和字对齐，不受真实字体宽度和估算有出入的影响。
  */
-function RichLine({
+export function RichLine({
   p,
+  text,
   theme,
   x,
   y,
@@ -125,7 +126,8 @@ function RichLine({
   fill,
   weight,
 }: {
-  p: Props;
+  p?: Props;
+  text?: string;
   theme: Theme;
   x: number;
   y: number;
@@ -133,8 +135,9 @@ function RichLine({
   fill: string;
   weight: string;
 }) {
-  const spans = richSpans(rawText(p));
-  const refs = (p.refs ?? {}) as Refs;
+  const raw = text !== undefined ? text : p ? rawText(p) : '';
+  const spans = richSpans(raw);
+  const refs = (p?.refs ?? {}) as Refs;
   const widths = spans.map((sp) => spanWidth(sp, size));
   const total = widths.reduce((w, v) => w + v, 0);
   // 每段的起点：前面各段宽度之和（纯计算，不在渲染里改变量）

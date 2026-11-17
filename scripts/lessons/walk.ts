@@ -433,24 +433,34 @@ export async function runWalk(opts: WalkOptions = {}): Promise<number> {
     });
 
     const safeGetState = async () => {
-      return page.evaluate(() => {
-        const testObj = (window as unknown as { __lessonTest?: LessonTestApi }).__lessonTest;
-        if (!testObj) throw new Error('Lesson player unmounted or crashed (window.__lessonTest is undefined)');
-        return testObj.getState?.() ?? {
-          index: 0,
-          total: 0,
-          waiting: false,
-          playing: false,
-        };
-      });
+      for (let attempt = 0; attempt < 20; attempt++) {
+        const res = await page.evaluate(() => {
+          const testObj = (window as unknown as { __lessonTest?: LessonTestApi }).__lessonTest;
+          if (!testObj) return null;
+          return testObj.getState?.() ?? {
+            index: 0,
+            total: 0,
+            waiting: false,
+            playing: false,
+          };
+        });
+        if (res !== null) return res;
+        await page.waitForTimeout(50);
+      }
+      throw new Error('Lesson player unmounted or crashed (window.__lessonTest is undefined)');
     };
 
     const safeSolve = async () => {
-      return page.evaluate(async () => {
-        const testObj = (window as unknown as { __lessonTest?: LessonTestApi }).__lessonTest;
-        if (!testObj) throw new Error('Lesson player unmounted or crashed (window.__lessonTest is undefined)');
-        return testObj.solve();
-      });
+      for (let attempt = 0; attempt < 20; attempt++) {
+        const res = await page.evaluate(async () => {
+          const testObj = (window as unknown as { __lessonTest?: LessonTestApi }).__lessonTest;
+          if (!testObj) return null;
+          return testObj.solve();
+        });
+        if (res !== null) return res;
+        await page.waitForTimeout(50);
+      }
+      throw new Error('Lesson player unmounted or crashed (window.__lessonTest is undefined)');
     };
 
     const url = `${baseUrl}/learn/${item.grade}/${item.subject}/${lessonId}`;

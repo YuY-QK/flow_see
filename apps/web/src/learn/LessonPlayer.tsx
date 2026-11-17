@@ -1323,7 +1323,7 @@ export function LessonPlayer({
 
   useEffect(() => {
     if (import.meta.env.DEV) {
-      window.__lessonTest = {
+      const api: LessonTestApi = {
         steps: () => testApiRef.current!.steps(),
         goto: (i) => testApiRef.current!.goto(i),
         mode: (m) => testApiRef.current!.mode(m),
@@ -1343,8 +1343,11 @@ export function LessonPlayer({
             playing: false,
           },
       };
+      window.__lessonTest = api;
       return () => {
-        delete window.__lessonTest;
+        if (window.__lessonTest === api) {
+          delete window.__lessonTest;
+        }
       };
     }
   }, []);

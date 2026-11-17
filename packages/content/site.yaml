@@ -232,6 +232,16 @@ scene:
       labels: { unit: 克, left: 左侧, right: 右侧 }
       width: 360
       maxTilt: 15
+    table:                              # 表格 / 统计表：统计表、口诀表、正反比例对应表、关系对照表、正字记录
+      rows: []
+      header: true
+      headerCol: false
+      colWidth: 96
+      rowHeight: 48
+      tally: false
+      show: 9999
+      tallyShow: 9999
+      size: 24
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:

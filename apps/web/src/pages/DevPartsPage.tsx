@@ -105,6 +105,14 @@ function getInitialProps(part: ResolvedPart): Props {
     if (initial.right === undefined) initial.right = 3;
     if (initial.leftItems === undefined) initial.leftItems = ['apple', 'apple'];
     if (initial.rightItems === undefined) initial.rightItems = ['pear'];
+  } else if (part.type === 'table') {
+    initial.at = [160, 120];
+    if (initial.rows === undefined || (Array.isArray(initial.rows) && initial.rows.length === 0)) {
+      initial.rows = [
+        ['Item', 'A', 'B', 'C'],
+        ['Count', '7', '4', '5'],
+      ];
+    }
   }
   return initial;
 }

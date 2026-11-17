@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+id: data-collect-1
+title: 简单数据的收集与整理
+summary: 一票画一笔，整理成统计表
+status: draft
+duration: 1分钟
+tags: [数据收集, 统计表, 投票, 正字]
+cover: { text: 正正 }
+related: [classify-single, survey-table]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  a: 7
+  b: 4
+  c: 5
+
+presets:
+  - { label: '7, 4, 5', params: { a: 7, b: 4, c: 5 } }
+  - { label: '3, 8, 6', params: { a: 3, b: 8, c: 6 } }
+  - { label: '6, 5, 9', params: { a: 6, b: 5, c: 9 } }
+
+objects:
+  - id: fruits
+    type: item-set
+    items:
+      - { asset: apple }
+      - { asset: banana }
+      - { asset: strawberry }
+    layout: row
+    size: 64
+    gap: 66
+    at: [190, 40]
+  - id: rec
+    type: table
+    rows:
+      - [水果, 苹果, 香蕉, 草莓]
+      - [记录, '{a}', '{b}', '{c}']
+    headerCol: true
+    tally: true
+    tallyShow: 0
+    colWidth: 130
+    at: [60, 150]
+  - id: cnt
+    type: table
+    rows:
+      - [票数, '[{a}](blank)', '[{b}](blank)', '[{c}](blank)']
+    header: false
+    headerCol: true
+    colWidth: 130
+    at: [60, 250]
+
+steps:
+  - title: 投票
+    say: 大家最喜欢哪种水果？每人投一票。
+    do:
+      - highlight: fruits
+  - title: 画正字
+    say: 一票画一笔，五笔是一个“正”。
+    do:
+      - set:
+          target: rec
+          tallyShow: '{a + b + c}'
+          duration: 4s
+          ease: linear
+  - title: 数一数
+    say: 苹果有几票？一个“正”是 5 票。
+    do:
+      - highlight: rec.cell.2.2
+      - ask: true
+    try:
+      task: 苹果有几票？
+      choose:
+        answer: '{a}'
+        min: 1
+        max: 10
+        show: [rec.cell.2.2]
+      hints:
+        - 一个“正”是 5 票。
+  - title: 填好统计表
+    say: 填好票数，就能看出哪种最多。
+    do:
+      - set:
+          target: cnt
+          rows:
+            - [票数, '{a}', '{b}', '{c}']
+      - highlight: cnt
+
+keyPoints:
+  - 收集数据可以用画“正”字的方法记录
+  - 整理成统计表，一眼就能看出多少

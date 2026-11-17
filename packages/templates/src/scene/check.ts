@@ -545,6 +545,78 @@ function checkProps(
         });
       }
     }
+    if (part.type === 'table') {
+      if (k === 'rows') {
+        if (!Array.isArray(v)) {
+          out.push({ path: [...path, k], message: 'rows 必须是二维数组 [[…], […]]' });
+        } else {
+          v.forEach((row, rIdx) => {
+            if (!Array.isArray(row)) {
+              out.push({ path: [...path, k, rIdx], message: 'rows 的每一行必须是数组' });
+            } else {
+              row.forEach((cell, cIdx) => {
+                if (typeof cell === 'string') {
+                  for (const m of cell.matchAll(RICH)) {
+                    const words = m[2].trim().split(/\s+/).filter(Boolean);
+                    const bad = words.find(
+                      (w) => w !== 'blank' && w !== 'sup' && w !== 'frac' && !colorOk(w, alive),
+                    );
+                    if (!words.length || bad) {
+                      out.push({
+                        path: [...path, k, rIdx, cIdx],
+                        message: `单元格文字里的 [${m[1]}](${m[2]})：括号里写颜色名、#RRGGBB、"@零件id"、blank、sup 或 frac${bad ? `（${bad} 不认识）` : ''}`,
+                      });
+                    }
+                  }
+                }
+              });
+            }
+          });
+        }
+      }
+      if (k === 'diagonal') {
+        if (
+          !Array.isArray(v) ||
+          v.length !== 2 ||
+          typeof v[0] !== 'string' ||
+          typeof v[1] !== 'string'
+        ) {
+          out.push({
+            path: [...path, k],
+            message: 'diagonal 必须是包含两个文字的数组 [右上文字, 左下文字]',
+          });
+        }
+      }
+      if (k === 'colWidth') {
+        if (typeof v !== 'number' && !Array.isArray(v)) {
+          out.push({ path: [...path, k], message: 'colWidth 必须是数字或数组' });
+        } else if (typeof v === 'number' && v <= 0) {
+          out.push({ path: [...path, k], message: 'colWidth 必须大于 0' });
+        } else if (Array.isArray(v) && v.some((w) => typeof w !== 'number' || w <= 0)) {
+          out.push({ path: [...path, k], message: 'colWidth 数组中的列宽必须大于 0' });
+        }
+      }
+      if (k === 'rowHeight') {
+        if (typeof v !== 'number' || v <= 0) {
+          out.push({ path: [...path, k], message: 'rowHeight 必须大于 0' });
+        }
+      }
+      if (k === 'show') {
+        if (typeof v === 'number' && v < 0) {
+          out.push({ path: [...path, k], message: 'show 不能小于 0' });
+        }
+      }
+      if (k === 'tallyShow') {
+        if (typeof v === 'number' && v < 0) {
+          out.push({ path: [...path, k], message: 'tallyShow 不能小于 0' });
+        }
+      }
+      if (k === 'size') {
+        if (typeof v === 'number' && v <= 0) {
+          out.push({ path: [...path, k], message: 'size 必须大于 0' });
+        }
+      }
+    }
   }
 }
 

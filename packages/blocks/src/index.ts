@@ -34,6 +34,7 @@ import { numberChartPart } from './parts/number-chart';
 import { exprStepsPart } from './parts/expr-steps';
 import { rulerPart } from './parts/ruler';
 import { balancePart } from './parts/balance';
+import { tablePart } from './parts/table';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -74,7 +75,7 @@ export {
   shapePart,
   type LineLayout,
 } from './parts/shapes';
-export { displayText, richSpans, textPart } from './parts/text';
+export { displayText, richSpans, textPart, RichLine } from './parts/text';
 export { blankRect, markRect } from './parts/markRect';
 export { circleCutLayout, type CircleCutLayout } from './parts/circlecut';
 export {
@@ -230,6 +231,20 @@ export {
   type BalanceLayout,
 } from './parts/balance';
 
+export {
+  parseTallyValue,
+  tableLayout,
+  tablePart,
+  type TableCell,
+  type TableCellDiagonal,
+  type TableCellTally,
+  type TableCol,
+  type TableGridLine,
+  type TableLayout,
+  type TableRow,
+  type TallyStroke,
+} from './parts/table';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -270,6 +285,7 @@ export const PARTS: readonly PartDef[] = [
   exprStepsPart,
   rulerPart,
   balancePart,
+  tablePart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */
