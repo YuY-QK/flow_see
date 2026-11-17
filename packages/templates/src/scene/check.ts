@@ -7,6 +7,7 @@ import {
   ITEM_SET_SHAPES,
   MONEY_LAYOUTS,
   PART_TYPES,
+  PLACE_VALUE_STYLES,
   SHAPE_KINDS,
   findSubitem,
   getPart,
@@ -292,6 +293,57 @@ function checkProps(
     if (k === 'cutParts' && part.type === 'solid') {
       if (typeof v === 'number' && (!Number.isInteger(v) || v < 2 || v % 2 !== 0))
         out.push({ path: [...path, k], message: '圆柱切分份数 cutParts 必须是大于等于 2 的偶数' });
+    if (part.type === 'place-value') {
+      if (k === 'style' && !(PLACE_VALUE_STYLES as readonly unknown[]).includes(v)) {
+        out.push({
+          path: [...path, k],
+          message: `计数器的 style 只能是 ${PLACE_VALUE_STYLES.join('、')}`,
+        });
+      }
+      if (k === 'value' && typeof v === 'number' && Number.isFinite(v)) {
+        const places = typeof props.places === 'number' ? Math.round(props.places) : 2;
+        const decimals = typeof props.decimals === 'number' ? Math.round(props.decimals) : 0;
+        const intPart = Math.floor(Math.abs(v));
+        const maxInt = Math.pow(10, places + 1) - 1;
+        if (intPart > maxInt) {
+          out.push({
+            path: [...path, k],
+            message: `value 的位数超过 places（${places}）`,
+          });
+        }
+        if (decimals >= 0) {
+          const scaled = v * Math.pow(10, decimals);
+          if (Math.abs(scaled - Math.round(scaled)) > 1e-4) {
+            out.push({
+              path: [...path, k],
+              message: `value 的小数位数超过 decimals（${decimals}）`,
+            });
+          }
+        }
+      }
+      if (k === 'places' && typeof v === 'number' && typeof props.value === 'number') {
+        const places = Math.round(v);
+        const intPart = Math.floor(Math.abs(props.value));
+        const maxInt = Math.pow(10, places + 1) - 1;
+        if (intPart > maxInt) {
+          out.push({
+            path: [...path, 'value'],
+            message: `value 的位数超过 places（${places}）`,
+          });
+        }
+      }
+      if (k === 'decimals' && typeof v === 'number' && typeof props.value === 'number') {
+        const decimals = Math.round(v);
+        if (decimals >= 0) {
+          const scaled = props.value * Math.pow(10, decimals);
+          if (Math.abs(scaled - Math.round(scaled)) > 1e-4) {
+            out.push({
+              path: [...path, 'value'],
+              message: `value 的小数位数超过 decimals（${decimals}）`,
+            });
+          }
+        }
+      }
     }
     if (k === 'cells' && part.type === 'grid') {
       if (!Array.isArray(v)) {

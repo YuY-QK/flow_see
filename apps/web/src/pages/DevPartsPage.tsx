@@ -69,6 +69,10 @@ function getInitialProps(part: ResolvedPart): Props {
   } else if (part.type === 'number-bond') {
     if (initial.whole === undefined) initial.whole = 7;
     if (initial.parts === undefined) initial.parts = [3, 4];
+  } else if (part.type === 'place-value') {
+    if (initial.value === undefined || initial.value === 0) {
+      initial.value = 35;
+    }
   }
   return initial;
 }
@@ -79,6 +83,12 @@ function getRange(
   defaultVal: unknown,
   handle?: Handle,
 ): { min: number; max: number; step: number } {
+  if (prop === 'places') {
+    return { min: 0, max: 8, step: 1 };
+  }
+  if (prop === 'decimals') {
+    return { min: 0, max: 3, step: 1 };
+  }
   if (handle && typeof handle.min === 'number' && typeof handle.max === 'number') {
     const isSmall = handle.max - handle.min <= 1;
     return {

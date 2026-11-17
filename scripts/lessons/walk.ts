@@ -352,7 +352,7 @@ export async function runWalk(opts: WalkOptions = {}): Promise<number> {
     console.log(`Starting Vite dev server on port ${port}...`);
     serverProc = spawn('pnpm', ['--filter', '@flow-see/web', 'dev', '--port', String(port), '--strictPort'], {
       cwd: root,
-      stdio: 'pipe',
+      stdio: 'inherit',
       detached: process.platform !== 'win32',
     });
 

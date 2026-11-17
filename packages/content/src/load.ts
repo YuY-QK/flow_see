@@ -17,6 +17,7 @@ import {
   type WhenStepCoverage,
 } from '@flow-see/core/params.ts';
 import { chooseAnswers, chooseOptions, type ChooseSpec } from '@flow-see/core/choose.ts';
+import { configureTexts } from '@flow-see/core/texts.ts';
 import { fillParams } from '@flow-see/core/fill.ts';
 import {
   isValidTextFunc,
@@ -280,6 +281,7 @@ export function loadContent(
   const help = site ? readYaml(root, join(root, site.help.faq), 'help', issues) : undefined;
   const style = site ? readYaml(root, join(root, site.style), 'style', issues) : undefined;
   const texts = site ? readYaml(root, join(root, site.texts), 'texts', issues) : undefined;
+  if (texts) configureTexts(texts as TextsConfig, { strict: false });
   const assets = readYaml(root, join(root, 'assets', 'manifest.yaml'), 'manifest', issues) ?? [];
 
   const gradeIds = new Set(grades?.grades.map((g) => g.id));

@@ -1,0 +1,86 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: place-value-100
+title: 数的组成与读写
+summary: 十位写几个十，个位写几个一
+status: draft
+duration: 1分钟
+tags: [数位, 十位, 个位, 计数器, 读数, 写数]
+cover: { text: '35' }
+related: [count-to-100, order-compare-100]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  t: 3
+  o: 5
+derived:
+  n: t * 10 + o
+explore:
+  - { param: t, control: slider, label: 几个十, min: 1, max: 9 }
+  - { param: o, control: slider, label: 几个一, min: 0, max: 9 }
+
+objects:
+  - id: abacus
+    type: place-value
+    value: 0
+    places: 1
+    style: abacus
+    at: [320, 200]
+  - id: num
+    type: text
+    text: '[{n}](blank)'
+    size: 56
+    at: [580, 200]
+
+steps:
+  - title: 拨十位
+    say: 计数器十位上拨 {t} 颗珠子。
+    do:
+      - highlight: abacus.d1
+      - ask: true
+      - set: { target: abacus, value: '{t * 10}' }
+    try:
+      task: 十位上拨几颗？
+      choose:
+        answer: '{t}'
+        min: 1
+        max: 9
+        show: [abacus.d1]
+      hints:
+        - 十位上表示有几个十。
+  - title: 拨个位
+    say: 个位上拨 {o} 颗。
+    do:
+      - highlight: abacus.d0
+      - ask: true
+      - set: { target: abacus, value: '{n}' }
+    try:
+      task: 个位上拨几颗？
+      choose:
+        answer: '{o}'
+        min: 0
+        max: 9
+        show: [abacus.d0]
+      hints:
+        - 个位上表示有几个一。
+  - title: 写出来
+    say: 这个数是 {n}，读作{cn(n)}。
+    do:
+      - highlight: abacus
+      - ask: true
+      - set: { target: num, text: '{n}' }
+    try:
+      task: 这个数是多少？
+      choose:
+        answer: '{n}'
+        min: 10
+        max: 99
+        show: [abacus]
+      hints:
+        - 十位和个位合起来是多少？
+
+keyPoints:
+  - 两位数由几个十和几个一组成
+  - 十位上的数表示几个十，个位上的数表示几个一
+  - 哪一位一个也没有，写 0 占位

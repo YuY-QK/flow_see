@@ -28,6 +28,7 @@ import { polygonPart } from './parts/polygon';
 import { moneyPart } from './parts/money';
 import { cubeStackPart } from './parts/cube-stack';
 import { solidPart } from './parts/solid';
+import { placeValuePart } from './parts/place-value';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -153,6 +154,18 @@ export {
   type PlacedCube,
 } from './parts/cube-stack';
 
+export {
+  PLACE_VALUE_STYLES,
+  placeValueLayout,
+  placeValuePart,
+  type BeadInfo,
+  type GroupHeader,
+  type PlaceColumn,
+  type PlaceValueLabels,
+  type PlaceValueLayout,
+  type PlaceValueStyleKind,
+} from './parts/place-value';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -187,6 +200,7 @@ export const PARTS: readonly PartDef[] = [
   moneyPart,
   cubeStackPart,
   solidPart,
+  placeValuePart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */
