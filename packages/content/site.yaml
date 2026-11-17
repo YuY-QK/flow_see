@@ -221,6 +221,17 @@ scene:
       objectFrom: 0
       objectLength: 3
       objectColor: orange
+    balance:                             # 天平与秤：托盘天平、跷跷板、台秤
+      kind: beam
+      left: 0
+      right: 0
+      leftItems: []
+      rightItems: []
+      max: 1000
+      unit: 克
+      labels: { unit: 克, left: 左侧, right: 右侧 }
+      width: 360
+      maxTilt: 15
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:

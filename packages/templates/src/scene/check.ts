@@ -1,5 +1,6 @@
 // 场景模板的配置检查（pnpm content:check 调用）：零件类型和属性、动作写法、引用的零件是否存在。
 import {
+  BALANCE_KINDS,
   BASE_TEN_STYLES,
   COMMON_PROPS,
   COUNTER_LAYOUTS,
@@ -384,6 +385,20 @@ function checkProps(
     if (k === 'cutParts' && part.type === 'solid') {
       if (typeof v === 'number' && (!Number.isInteger(v) || v < 2 || v % 2 !== 0))
         out.push({ path: [...path, k], message: '圆柱切分份数 cutParts 必须是大于等于 2 的偶数' });
+    }
+    if (part.type === 'balance') {
+      if (k === 'kind' && !(BALANCE_KINDS as readonly unknown[]).includes(v)) {
+        out.push({
+          path: [...path, k],
+          message: `天平的 kind 只能是 ${BALANCE_KINDS.join('、')}`,
+        });
+      }
+      if ((k === 'leftItems' || k === 'rightItems') && !Array.isArray(v)) {
+        out.push({
+          path: [...path, k],
+          message: `${k} 必须是素材 id 列表`,
+        });
+      }
     }
     if (part.type === 'place-value') {
       if (k === 'style' && !(PLACE_VALUE_STYLES as readonly unknown[]).includes(v)) {

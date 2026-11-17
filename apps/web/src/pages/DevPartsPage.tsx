@@ -98,6 +98,13 @@ function getInitialProps(part: ResolvedPart): Props {
       initial.objectFrom = 2;
       initial.objectLength = 3;
     }
+  } else if (part.type === 'balance') {
+    initial.at = [400, 340];
+    if (initial.kind === undefined) initial.kind = 'beam';
+    if (initial.left === undefined) initial.left = 2;
+    if (initial.right === undefined) initial.right = 3;
+    if (initial.leftItems === undefined) initial.leftItems = ['apple', 'apple'];
+    if (initial.rightItems === undefined) initial.rightItems = ['pear'];
   }
   return initial;
 }
@@ -125,6 +132,9 @@ function getRange(
   }
   if (prop === 'cell') {
     return { min: 10, max: 80, step: 1 };
+  }
+  if (prop === 'maxTilt') {
+    return { min: 0, max: 45, step: 1 };
   }
   if (handle && typeof handle.min === 'number' && typeof handle.max === 'number') {
     const isSmall = handle.max - handle.min <= 1;

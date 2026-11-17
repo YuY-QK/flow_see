@@ -33,6 +33,7 @@ import { baseTenPart } from './parts/base-ten';
 import { numberChartPart } from './parts/number-chart';
 import { exprStepsPart } from './parts/expr-steps';
 import { rulerPart } from './parts/ruler';
+import { balancePart } from './parts/balance';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -216,6 +217,19 @@ export {
   type RulerUnit,
 } from './parts/ruler';
 
+export {
+  BALANCE_KINDS,
+  balanceDialAngle,
+  balanceLayout,
+  balancePart,
+  balanceTilt,
+  type BalanceDialTick,
+  type BalanceItemSlot,
+  type BalanceKind,
+  type BalanceLabels,
+  type BalanceLayout,
+} from './parts/balance';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -255,6 +269,7 @@ export const PARTS: readonly PartDef[] = [
   numberChartPart,
   exprStepsPart,
   rulerPart,
+  balancePart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */

@@ -1,0 +1,88 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: compare-size-weight
+title: 比大小、比轻重
+summary: 叠起来比大小，往下沉的一边重
+status: draft
+duration: 1分钟
+tags: [比大小, 比轻重, 天平, 跷跷板]
+cover: { text: '重 轻' }
+related: [compare-height-length, gram-kilogram]
+
+template: scene
+stage: { width: 800, height: 400 }
+
+objects:
+  - id: big
+    type: shape
+    shape: circle
+    radius: 80
+    color: orange
+    at: [200, 160]
+  - id: small
+    type: shape
+    shape: circle
+    radius: 56
+    color: blue
+    at: [440, 160]
+  - id: sw
+    type: balance
+    kind: seesaw
+    left: 1
+    right: 1
+    leftItems: [bear]
+    rightItems: [rabbit]
+    width: 420
+    at: [400, 360]
+    hidden: true
+  - id: scale
+    type: balance
+    kind: beam
+    left: 5
+    right: 5
+    width: 360
+    at: [400, 360]
+    hidden: true
+
+steps:
+  - title: 哪个大
+    say: 两个圆，哪个大？
+    do:
+      - highlight: big
+      - highlight: small
+  - title: 叠在一起比
+    say: 叠在一起，大的能把小的盖住。
+    do:
+      - ask: true
+      - move: { target: small, to: [200, 160] }
+    try:
+      task: 点出大的那个圆。
+      tap:
+        answer: big
+        among: [big, small]
+  - title: 跷跷板
+    say: 小熊和小兔坐跷跷板。
+    do:
+      - hide: [big, small]
+      - show: sw
+  - title: 往下沉的重
+    say: 小熊那边沉下去了，小熊重。
+    do:
+      - set: { target: sw, left: 3, duration: 1s }
+      - ask: true
+    try:
+      task: 哪边重？点一点。
+      tap:
+        answer: sw.left
+        among: [sw.left, sw.right]
+      hints:
+        - 往下沉的那边重。
+  - title: 天平也一样
+    say: 天平也是往下沉的一边重，平了就一样重。
+    do:
+      - hide: sw
+      - show: scale
+
+keyPoints:
+  - 比大小可以叠在一起比
+  - 比轻重看哪边往下沉
+  - 天平平了就一样重
