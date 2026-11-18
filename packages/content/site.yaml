@@ -242,6 +242,19 @@ scene:
       show: 9999
       tallyShow: 9999
       size: 24
+    calendar:                            # 日历与时间周期：年月日、平年闰年、大月小月、星期排布
+      year: 2026
+      month: 1
+      marks: []
+      markColor: red
+      weekStart: 0
+      show: 12
+      cell: 48
+      labels:
+        weekdays: [日, 一, 二, 三, 四, 五, 六]
+        month: '{m} 月'
+        days: '{d} 天'
+        title: '{y} 年 {m} 月'
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:

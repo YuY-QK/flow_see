@@ -2828,5 +2828,60 @@ describe('沿路径移动（follow）', () => {
       expect(badIssues.some((i) => i.message.includes('multiplesOf 必须是正整数'))).toBe(true);
       expect(badIssues.some((i) => i.message.includes('标记的 style 只能是'))).toBe(true);
     });
+
+    it('B11 日历（calendar）配置检查', () => {
+      // 合法配置
+      const okIssues = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'cal1',
+            type: 'calendar',
+            year: 2026,
+            month: 5,
+            weekStart: 0,
+            cell: 40,
+            marks: [[5, 28], [5, 29]],
+            markColor: 'red',
+            at: [40, 40],
+          },
+          {
+            id: 'cal2',
+            type: 'calendar',
+            year: 2026,
+            month: 'all',
+            show: 12,
+            at: [60, 30],
+          },
+        ],
+        steps: [{ say: '看日历', do: [{ wait: '1s' }] }],
+      });
+      expect(okIssues).toEqual([]);
+
+      // 非法属性检查
+      const badIssues = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'calBad',
+            type: 'calendar',
+            month: 13,
+            weekStart: 2,
+            cell: -10,
+            show: -1,
+            marks: 'invalid',
+            markColor: 'invalid-color-12345',
+            at: [0, 0],
+          },
+        ],
+        steps: [{ say: '看日历', do: [{ wait: '1s' }] }],
+      });
+      expect(badIssues.some((i) => i.message.includes('month 必须是 1 到 12 的整数或'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('weekStart 必须是 0'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('cell 必须大于 0'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('show 不能小于 0'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('marks 必须是二维数组'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('markColor 写颜色名'))).toBe(true);
+    });
   });
 });

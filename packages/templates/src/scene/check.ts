@@ -196,6 +196,70 @@ function checkProps(
       }
     }
   }
+  if (type === 'calendar') {
+    if (props.month !== undefined) {
+      if (typeof props.month === 'number') {
+        if (!Number.isInteger(props.month) || props.month < 1 || props.month > 12) {
+          out.push({
+            path: [...path, 'month'],
+            message: "日历的 month 必须是 1 到 12 的整数或 'all'",
+          });
+        }
+      } else if (props.month !== 'all') {
+        out.push({
+          path: [...path, 'month'],
+          message: "日历的 month 必须是 1 到 12 的整数或 'all'",
+        });
+      }
+    }
+    if (props.weekStart !== undefined) {
+      if (props.weekStart !== 0 && props.weekStart !== 1) {
+        out.push({
+          path: [...path, 'weekStart'],
+          message: '日历的 weekStart 必须是 0（周日开头）或 1（周一开头）',
+        });
+      }
+    }
+    if (props.cell !== undefined) {
+      if (typeof props.cell === 'number' && props.cell <= 0) {
+        out.push({
+          path: [...path, 'cell'],
+          message: '日历的 cell 必须大于 0',
+        });
+      }
+    }
+    if (props.show !== undefined) {
+      if (typeof props.show === 'number' && props.show < 0) {
+        out.push({
+          path: [...path, 'show'],
+          message: '日历的 show 不能小于 0',
+        });
+      }
+    }
+    if (props.marks !== undefined) {
+      if (!Array.isArray(props.marks)) {
+        out.push({
+          path: [...path, 'marks'],
+          message: '日历的 marks 必须是二维数组 [[月, 日], …]',
+        });
+      } else {
+        props.marks.forEach((m, idx) => {
+          if (!Array.isArray(m) || m.length < 2 || typeof m[0] !== 'number' || typeof m[1] !== 'number') {
+            out.push({
+              path: [...path, 'marks', idx],
+              message: 'marks 每一项必须是 [月, 日]，如 [5, 28]',
+            });
+          }
+        });
+      }
+    }
+    if (props.markColor !== undefined && !colorOk(props.markColor, alive)) {
+      out.push({
+        path: [...path, 'markColor'],
+        message: 'markColor 写颜色名、#RRGGBB 或 "@零件id"',
+      });
+    }
+  }
   const known = new Set<string>([...COMMON_PROPS, ...part.props]);
   for (const [k, v] of Object.entries(props)) {
     if (!known.has(k)) {

@@ -113,6 +113,14 @@ function getInitialProps(part: ResolvedPart): Props {
         ['Count', '7', '4', '5'],
       ];
     }
+  } else if (part.type === 'calendar') {
+    initial.at = [230, 40];
+    if (initial.year === undefined) initial.year = 2026;
+    if (initial.month === undefined) initial.month = 5;
+    if (initial.weekStart === undefined) initial.weekStart = 0;
+    if (initial.cell === undefined) initial.cell = 48;
+    if (initial.marks === undefined) initial.marks = [[5, 1], [5, 4], [5, 28]];
+    if (initial.markColor === undefined) initial.markColor = 'red';
   }
   return initial;
 }
@@ -140,6 +148,12 @@ function getRange(
   }
   if (prop === 'cell') {
     return { min: 10, max: 80, step: 1 };
+  }
+  if (prop === 'weekStart') {
+    return { min: 0, max: 1, step: 1 };
+  }
+  if (prop === 'year') {
+    return { min: 1900, max: 2100, step: 1 };
   }
   if (prop === 'maxTilt') {
     return { min: 0, max: 45, step: 1 };

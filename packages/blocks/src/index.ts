@@ -35,6 +35,7 @@ import { exprStepsPart } from './parts/expr-steps';
 import { rulerPart } from './parts/ruler';
 import { balancePart } from './parts/balance';
 import { tablePart } from './parts/table';
+import { calendarPart } from './parts/calendar';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -244,6 +245,19 @@ export {
   type TableRow,
   type TallyStroke,
 } from './parts/table';
+export {
+  calendarLayout,
+  calendarPart,
+  daysInMonth,
+  getDayOfWeek,
+  isLeapYear,
+  FALLBACK_CALENDAR_LABELS,
+  type CalendarDayItem,
+  type CalendarLabels,
+  type CalendarLayout,
+  type CalendarMonthBarItem,
+  type CalendarWeekdayHeader,
+} from './parts/calendar';
 
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
@@ -286,6 +300,7 @@ export const PARTS: readonly PartDef[] = [
   rulerPart,
   balancePart,
   tablePart,
+  calendarPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */
