@@ -72,4 +72,30 @@ describe('DevPartsPage', () => {
     expect(names).toContain('cell.1.1');
     expect(names).toContain('cell.3.4');
   });
+
+  it('provides non-empty initial demo props for item-set and polygon via ?part=', () => {
+    const prevWindow = (globalThis as { window?: unknown }).window;
+    try {
+      (globalThis as { window?: unknown }).window = {
+        location: { search: '?part=item-set' },
+      };
+      const itemSetHtml = renderToStaticMarkup(createElement(DevPartsPage));
+      expect(itemSetHtml).toContain('data-bbox="true"');
+      expect(itemSetHtml).toContain('apple');
+
+      (globalThis as { window?: unknown }).window = {
+        location: { search: '?part=polygon' },
+      };
+      const polygonHtml = renderToStaticMarkup(createElement(DevPartsPage));
+      expect(polygonHtml).toContain('data-bbox="true"');
+      expect(polygonHtml).toContain('>A<');
+      expect(polygonHtml).toContain('>D<');
+    } finally {
+      if (prevWindow === undefined) {
+        delete (globalThis as { window?: unknown }).window;
+      } else {
+        (globalThis as { window?: unknown }).window = prevWindow;
+      }
+    }
+  });
 });

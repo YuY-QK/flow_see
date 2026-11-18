@@ -246,6 +246,45 @@ function getInitialProps(part: ResolvedPart): Props {
       initial.ticks = [1, 5];
     }
     initial.reveal = 3;
+  } else if (part.type === 'item-set') {
+    initial.at = [220, 180];
+    if (
+      initial.items === undefined ||
+      (Array.isArray(initial.items) && initial.items.length === 0)
+    ) {
+      initial.items = [
+        { asset: 'apple', label: '1' },
+        { asset: 'pear', label: '2' },
+        { asset: 'peach', label: '3' },
+        { asset: 'banana', label: '4' },
+        { asset: 'strawberry', label: '5' },
+      ];
+    }
+  } else if (part.type === 'polygon') {
+    initial.at = [220, 120];
+    if (
+      initial.points === undefined ||
+      (Array.isArray(initial.points) && initial.points.length === 0)
+    ) {
+      initial.points = [
+        [60, 0],
+        [340, 0],
+        [280, 180],
+        [0, 180],
+      ];
+    }
+    if (
+      initial.vertexLabels === undefined ||
+      (Array.isArray(initial.vertexLabels) && initial.vertexLabels.length === 0)
+    ) {
+      initial.vertexLabels = ['A', 'B', 'C', 'D'];
+    }
+    if (
+      initial.heights === undefined ||
+      (Array.isArray(initial.heights) && initial.heights.length === 0)
+    ) {
+      initial.heights = [{ from: 1, to: 3 }];
+    }
   }
   return initial;
 }
