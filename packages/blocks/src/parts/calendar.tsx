@@ -339,7 +339,9 @@ export const calendarPart: PartDef = {
           items.push({
             name: `month.${bar.month}`,
             value: bar.month,
-            box: bar.box,
+            // 子项只包住横条所在的那一条（高 = 横条高），不包整行：高亮框会在子项外再扩 scene.highlight.padY，
+            // 包整行（32）时会盖住上下相邻月份；只包横条时外扩后正好留在本行内
+            box: { x: bar.box.x, y: bar.barBox.y, w: bar.box.w, h: bar.barBox.h },
           });
         }
       }

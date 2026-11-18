@@ -491,7 +491,7 @@
   - `tag` = label，`'{p} 元'`，at [140, 200]
   - `wallet` = money，items [5, 1, 1, 1, 1, 1, '10n']，layout row，size 0.8，at [40, 290]
   - `tray` = shape rect，width 260，height 110，fill false，stroke line，at [620, 150]
-  - `eq` = text，`'10 − {p} = [{back}](blank)（元）'`，size 36，at [580, 330]，hidden
+  - `eq` = text，`'10 − {p} = [{back}](blank)（元）'`，size 36，at [400, 392]（放在钱包下方居中，不和钱、右下角菜单按钮重叠），hidden
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|

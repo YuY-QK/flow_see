@@ -49,7 +49,7 @@ objects:
     type: text
     text: '10 − {p} = [{back}](blank)（元）'
     size: 36
-    at: [580, 330]
+    at: [400, 392]
     hidden: true
 
 steps:

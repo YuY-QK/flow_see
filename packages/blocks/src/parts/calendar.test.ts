@@ -281,6 +281,12 @@ describe('calendar 零件单元测试', () => {
       expect(bar3).toBeDefined();
       expect((bar3 as { value?: number }).value).toBe(3);
 
+      // 子项只包住横条高度，相邻月份子项之间留有空隙（高亮框外扩后不盖住相邻月份）
+      const bar4 = findSubitem(calendarPart, p, 'month.4') as { box: { y: number; h: number } };
+      const b3 = (bar3 as { box: { y: number; h: number } }).box;
+      expect(b3.h).toBe(18);
+      expect(bar4.box.y - (b3.y + b3.h)).toBe(14);
+
       // 通配符查找
       const allBars = findSubitem(calendarPart, p, 'month.*');
       expect(Array.isArray(allBars)).toBe(true);

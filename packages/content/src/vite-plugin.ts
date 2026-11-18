@@ -2,7 +2,7 @@
 //   import { content } from 'virtual:content'          目录索引 + 站点配置（首屏）
 //   loadLesson(id) → import('virtual:content/lesson/<id>')  知识点完整内容（按需）
 // 开发时改了配置文件，浏览器自动刷新；配置有错时在页面上显示错误。
-import { join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Plugin, ViteDevServer } from 'vite';
 import { buildIndex } from './catalog';
@@ -35,9 +35,18 @@ export function contentPlugin(opts: { root?: string } = {}): Plugin {
     configResolved(config) {
       dev = config.command === 'serve';
     },
-    // index.html 里的 %SITE_NAME% 换成 site.yaml 的网站名称
-    transformIndexHtml(html) {
-      return html.replaceAll('%SITE_NAME%', bundle().site.site.name);
+    // index.html 里的 %SITE_NAME% 换成 site.yaml 的网站名称，%SITE_LOGO% 换成网站图标（site.logo）的地址。
+    // 放在 pre 阶段：构建时 Vite 随后会把图标当作素材处理（带哈希）；开发时用 /@fs/ 直接读文件
+    transformIndexHtml: {
+      order: 'pre',
+      handler(html, ctx) {
+        const site = bundle().site.site;
+        const file = join(root, site.logo);
+        const logo = dev
+          ? '/@fs/' + file.replace(/^\//, '')
+          : relative(dirname(ctx.filename), file).replaceAll('\\', '/');
+        return html.replaceAll('%SITE_NAME%', site.name).replaceAll('%SITE_LOGO%', logo);
+      },
     },
     resolveId(id) {
       if (id === INDEX_ID || id.startsWith(LESSON_PREFIX)) return '\0' + id;
