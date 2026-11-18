@@ -302,9 +302,9 @@
 - 元信息：summary：10 根捆成一捆是 1 个十，10 个十是一百；tags [数数, 一百, 十个一, 捆小棒, 计数单位]；cover “10个十”；related [place-value-100, tens-add-sub]；recommended
 - 舞台：800 × 400；无参数
 - 零件：
-  - `sticks` = base-ten，style stick，ones 0，tens 0，columns true，at [80, 60]
-  - `cnt` = text，text `'{value}'`，value 0，size 56，at [660, 120]
-  - `note` = label，text `10 个一是 1 个十`，at [660, 220]，hidden
+  - `sticks` = base-ten，style stick，ones 0，tens 0，columns true，at [40, 60]
+  - `cnt` = text，text `'{value}'`，value 0，size 56，at [664, 120]
+  - `note` = label，text `10 个一是 1 个十`，at [664, 220]，hidden
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|
@@ -447,9 +447,9 @@
 - 元信息：summary：从左往右一步一步算，上一步的得数接着算；tags [连加, 连减, 加减混合, 运算顺序]；cover “8+5−3”；related [two-digit-add]
 - 舞台：800 × 420；params `a: 8`、`b: 5`、`c: 3`；derived `m: a + b`、`r: a + b - c`；explore a 滑块“车上原来” 3–10，b 滑块“上车” 1–6，c 滑块“下车” 1–`a + b - 1`
 - 零件：
-  - `bus` = image asset bus，width 460，height 200，at [260, 160]
-  - `people` = item-set，items `[{ repeat: '{m}', asset: kid }]`，layout grid，cols 8，size 34，show `{a}`，at [70, 100]
-  - `eq` = expr-steps，lines [`'{a} + {b} − {c}'`, `'{m} − {c}'`, `'{r}'`]，show 1，underline true，at [540, 60]
+  - `bus` = image asset bus，width 540，height 270，at [270, 220]
+  - `people` = item-set，items `[{ repeat: '{m}', asset: kid }]`，layout grid，cols 8，size 25，show `{a}`，at [85, 171]
+  - `eq` = expr-steps，lines [`'{a} + {b} − {c}'`, `'{m} − {c}'`, `'{r}'`]，show 1，underline true，at [550, 70]
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|

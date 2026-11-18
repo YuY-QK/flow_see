@@ -410,7 +410,7 @@
 - 元信息：summary：一年 12 个月，大月 31 天，小月 30 天，2 月特殊；tags [年月日, 大月, 小月, 日历]；cover “大月小月”；related [leap-year, elapsed-days]；recommended
 - 舞台：800 × 450；params `y: 2026`
 - 零件：
-  - `cal` = calendar，year `{y}`，month all，show 0，at [60, 30]
+  - `cal` = calendar，year `{y}`，month all，show 0，at [70, 50]
   - `fist` = image asset fist-months（拳头记忆法示意图），width 220，height 160，at [620, 300]，hidden
   - `q` = text，`'大月有 [7](blank) 个'`，size 30，at [620, 120]
 
@@ -526,7 +526,7 @@
 - 零件：
   - `rose` = direction，mode compass，radius 120，pointer 0，at [220, 230]，targets []
   - `map` = direction，mode compass，radius 150，showPointer false，at [580, 230]，targets [{ bearing: 0, distance: 150, asset: library, label: 图书馆 }, { bearing: 45, distance: 150, asset: park, label: 公园 }, { bearing: 90, distance: 150, asset: shop, label: 商店 }, { bearing: 135, distance: 150, asset: hospital, label: 医院 }, { bearing: 180, distance: 150, asset: school, label: 学校 }, { bearing: 225, distance: 150, asset: zoo, label: 动物园 }, { bearing: 270, distance: 150, asset: cinema, label: 电影院 }, { bearing: 315, distance: 150, asset: museum, label: 博物馆 }]，hidden
-  - `sun` = image asset sun，width 60，height 60，at [380, 230]
+  - `sun` = image asset sun，width 60，height 60，at [445, 230]
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|

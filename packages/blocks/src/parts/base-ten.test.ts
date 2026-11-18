@@ -307,4 +307,74 @@ describe('B3 十进制块（base-ten）', () => {
       ),
     ).toBe(false);
   });
+
+  it('7. columns: true 时个数为 0 的列不画位名，其余位名在各自列正下方且包围盒不重叠', () => {
+    const Render = baseTenPart.Render as (p: { p: unknown; ctx: unknown }) => ReactNode;
+
+    const boxesOverlap = (
+      a: { x: number; y: number; w: number; h: number },
+      b: { x: number; y: number; w: number; h: number },
+    ) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+
+    // 场景 A：ones、tens 有值，hundreds、thousands 为 0（带完整默认 labels）
+    const props = {
+      at: [80, 60] as [number, number],
+      style: 'stick' as const,
+      ones: 3,
+      tens: 1,
+      hundreds: 0,
+      thousands: 0,
+      columns: true,
+      labels: ['个', '十', '百', '千'],
+      unit: 16,
+    };
+
+    const layout = baseTenLayout(props);
+    const colsWithLabel = layout.columnList.filter((c) => c.labelBox !== undefined);
+    expect(colsWithLabel.map((c) => c.label)).toEqual(['十', '个']);
+
+    const [tensCol, onesCol] = colsWithLabel;
+    expect(tensCol.labelBox).toBeDefined();
+    expect(onesCol.labelBox).toBeDefined();
+    if (tensCol.labelBox && onesCol.labelBox) {
+      // 位名各自居中于所属列正下方
+      expect(tensCol.labelBox.x + tensCol.labelBox.w / 2).toBeCloseTo(
+        tensCol.contentBox.x + tensCol.contentBox.w / 2,
+        4,
+      );
+      expect(onesCol.labelBox.x + onesCol.labelBox.w / 2).toBeCloseTo(
+        onesCol.contentBox.x + onesCol.contentBox.w / 2,
+        4,
+      );
+      // 两个位名包围盒不重叠
+      expect(boxesOverlap(tensCol.labelBox, onesCol.labelBox)).toBe(false);
+    }
+
+    const rendered = Render({ p: props, ctx: { theme } });
+    const textEls = flatten(rendered).filter((el) => el.type === 'text');
+    expect(textEls.map((el) => el.props.children)).toEqual(['十', '个']);
+
+    // 场景 B：中间列与末尾列为 0（thousands=1, hundreds=0, tens=2, ones=0）时，个数为 0 的列也不画位名
+    const sparseProps = {
+      at: [60, 50] as [number, number],
+      style: 'block' as const,
+      thousands: 1,
+      hundreds: 0,
+      tens: 2,
+      ones: 0,
+      columns: true,
+      labels: ['个', '十', '百', '千'],
+      unit: 12,
+    };
+    const sparseLayout = baseTenLayout(sparseProps);
+    const sparseLabeled = sparseLayout.columnList.filter((c) => c.labelBox !== undefined);
+    expect(sparseLabeled.map((c) => c.label)).toEqual(['千', '十']);
+    if (sparseLabeled[0].labelBox && sparseLabeled[1].labelBox) {
+      expect(boxesOverlap(sparseLabeled[0].labelBox, sparseLabeled[1].labelBox)).toBe(false);
+    }
+    const sparseTextEls = flatten(Render({ p: sparseProps, ctx: { theme } })).filter(
+      (el) => el.type === 'text',
+    );
+    expect(sparseTextEls.map((el) => el.props.children)).toEqual(['千', '十']);
+  });
 });

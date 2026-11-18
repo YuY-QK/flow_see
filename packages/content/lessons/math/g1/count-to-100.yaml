@@ -19,17 +19,17 @@ objects:
     ones: 0
     tens: 0
     columns: true
-    at: [80, 60]
+    at: [40, 60]
   - id: cnt
     type: text
     text: '{value}'
     value: 0
     size: 56
-    at: [660, 120]
+    at: [664, 120]
   - id: note
     type: label
     text: 10 个一是 1 个十
-    at: [660, 220]
+    at: [664, 220]
     hidden: true
 
 steps:

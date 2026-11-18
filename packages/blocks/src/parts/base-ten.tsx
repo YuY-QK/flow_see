@@ -176,14 +176,11 @@ export function baseTenLayout(p: Props): BaseTenLayout {
 
   // 2. 确定激活的数位
   const activePlaces: number[] = [];
-  const explicitLabels = Array.isArray(p.labels) ? p.labels : undefined;
   if (columns) {
-    if (thousandsCount > 0 || (explicitLabels && explicitLabels.length >= 4)) {
+    if (thousandsCount > 0) {
       activePlaces.push(3, 2, 1, 0);
-    } else if (hundredsCount > 0 || (explicitLabels && explicitLabels.length === 3)) {
+    } else if (hundredsCount > 0) {
       activePlaces.push(2, 1, 0);
-    } else if (explicitLabels && explicitLabels.length === 1) {
-      activePlaces.push(0);
     } else {
       activePlaces.push(1, 0);
     }
@@ -214,6 +211,8 @@ export function baseTenLayout(p: Props): BaseTenLayout {
   interface PlaceLayoutResult {
     place: number;
     name: BaseTenPlaceName;
+    x: number;
+    y: number;
     w: number;
     h: number;
     count: number;
@@ -254,7 +253,7 @@ export function baseTenLayout(p: Props): BaseTenLayout {
             });
           }
         }
-        return { place, name, w: maxRowW, h: totalH, count: total, items };
+        return { place, name, x: startX, y: startY, w: maxRowW, h: totalH, count: total, items };
       } else if (place === 1) {
         // tens 捆
         const maxCols = columns ? 5 : 10;
@@ -290,7 +289,7 @@ export function baseTenLayout(p: Props): BaseTenLayout {
             });
           }
         }
-        return { place, name, w: maxRowW, h: totalH, count: total, items };
+        return { place, name, x: startX, y: startY, w: maxRowW, h: totalH, count: total, items };
       } else if (place === 2) {
         // hundreds 大捆 (10捆并列)
         const total = Math.floor(count);
@@ -306,7 +305,7 @@ export function baseTenLayout(p: Props): BaseTenLayout {
             box: { x, y, w: bigW, h: bigH },
           });
         }
-        return { place, name, w: maxRowW, h: bigH, count: total, items };
+        return { place, name, x: startX, y: startY, w: maxRowW, h: bigH, count: total, items };
       } else {
         // thousands
         const total = Math.floor(count);
@@ -321,7 +320,7 @@ export function baseTenLayout(p: Props): BaseTenLayout {
             box: { x, y, w: tW, h: bundleH },
           });
         }
-        return { place, name, w: maxRowW, h: bundleH, count: total, items };
+        return { place, name, x: startX, y: startY, w: maxRowW, h: bundleH, count: total, items };
       }
     } else {
       // block 方块
@@ -351,7 +350,7 @@ export function baseTenLayout(p: Props): BaseTenLayout {
             });
           }
         }
-        return { place, name, w: maxRowW, h: totalH, count: total, items };
+        return { place, name, x: startX, y: startY, w: maxRowW, h: totalH, count: total, items };
       } else if (place === 1) {
         // 十：条 unit x 10*unit
         const maxCols = 5;
@@ -379,7 +378,7 @@ export function baseTenLayout(p: Props): BaseTenLayout {
             });
           }
         }
-        return { place, name, w: maxRowW, h: totalH, count: total, items };
+        return { place, name, x: startX, y: startY, w: maxRowW, h: totalH, count: total, items };
       } else if (place === 2) {
         // 百：片 10*unit x 10*unit
         const maxCols = 3;
@@ -408,7 +407,7 @@ export function baseTenLayout(p: Props): BaseTenLayout {
             });
           }
         }
-        return { place, name, w: maxRowW, h: totalH, count: total, items };
+        return { place, name, x: startX, y: startY, w: maxRowW, h: totalH, count: total, items };
       } else {
         // 千：立方体 斜二测
         const total = Math.floor(count);
@@ -423,7 +422,7 @@ export function baseTenLayout(p: Props): BaseTenLayout {
             box: { x, y, w: cubeMetric.totalW, h: cubeMetric.totalH },
           });
         }
-        return { place, name, w: maxRowW, h: totalH, count: total, items };
+        return { place, name, x: startX, y: startY, w: maxRowW, h: totalH, count: total, items };
       }
     }
   }
@@ -458,19 +457,23 @@ export function baseTenLayout(p: Props): BaseTenLayout {
     const tensRes = results.find((r) => r.place === 1);
     const onesRes = results.find((r) => r.place === 0);
 
-    const targetTensX = tensRes ? tensRes.items[0]?.box.x ?? at[0] : at[0];
-    const targetTensY = tensRes ? tensRes.items[0]?.box.y ?? at[1] : at[1];
-    const incomingBundleX =
-      targetTensX + stableTens * (bundleW + bundleGap);
+    const targetTensX = tensRes ? tensRes.x : at[0];
+    const targetTensY = tensRes ? tensRes.y : at[1];
+    const tensMaxCols = columns ? 5 : 10;
+    const incomingCol = stableTens % tensMaxCols;
+    const incomingRow = Math.floor(stableTens / tensMaxCols);
+    const incomingBundleX = targetTensX + incomingCol * (bundleW + bundleGap);
+    const incomingBundleY = targetTensY + incomingRow * (bundleH + bundleRowGap);
 
     const onesStartX = onesRes
       ? onesRes.items.length > 0
-        ? (onesRes.items[onesRes.items.length - 1]?.box.x ?? at[0]) + stickW + stickGap
-        : onesRes.w > 0
-          ? onesRes.items[0]?.box.x ?? at[0]
-          : at[0]
+        ? (onesRes.items[onesRes.items.length - 1]?.box.x ?? onesRes.x) + stickW + stickGap
+        : onesRes.x
       : at[0] + 100;
-    const onesStartY = onesRes?.items[0]?.box.y ?? startY;
+    const onesStartY =
+      onesRes && onesRes.items.length > 0
+        ? (onesRes.items[onesRes.items.length - 1]?.box.y ?? onesRes.y)
+        : (onesRes?.y ?? startY);
 
     if (e <= 0.5) {
       // 前 50% 并拢
@@ -497,7 +500,7 @@ export function baseTenLayout(p: Props): BaseTenLayout {
       // 后 50% 移动并出现绳子
       const u = (e - 0.5) / 0.5;
       const curBundleX = (1 - u) * onesStartX + u * incomingBundleX;
-      const curBundleY = (1 - u) * onesStartY + u * targetTensY;
+      const curBundleY = (1 - u) * onesStartY + u * incomingBundleY;
 
       const movingSticks: BaseTenStickItem[] = [];
       for (let k = 0; k < 10; k++) {
@@ -529,28 +532,37 @@ export function baseTenLayout(p: Props): BaseTenLayout {
     }
   }
 
-  // 构造 BaseTenColumn 列表
+  // 构造 BaseTenColumn 列表：个数为 0 的列不画位名，其余列的位名在各自列的正下方
   const labelY = startY + maxContentH + unit;
   const labelH = 22;
 
   const columnList: BaseTenColumn[] = results.map((res) => {
-    const lbl = labels[res.place] ?? '';
-    const colX = res.items[0]?.box.x ?? at[0];
+    const rawLbl = labels[res.place] ?? '';
+    const hasLabel = columns && res.count > 0 && rawLbl.length > 0;
+    const lbl = hasLabel ? rawLbl : undefined;
+    const colX = res.x;
     const contentBox: Box = {
       x: colX,
       y: startY,
-      w: Math.max(res.w, columns && lbl ? textWidth(lbl, 22) : res.w),
+      w: res.w,
       h: maxContentH,
     };
 
     let labelBox: Box | undefined;
-    const totalColBox = { ...contentBox };
+    let totalColBox: Box = { ...contentBox };
 
-    if (columns && lbl) {
+    if (hasLabel && lbl) {
       const lw = textWidth(lbl, 22);
       const lx = contentBox.x + contentBox.w / 2 - lw / 2;
       labelBox = { x: lx, y: labelY, w: lw, h: labelH };
-      totalColBox.h = maxContentH + unit + labelH;
+      const minX = Math.min(contentBox.x, labelBox.x);
+      const maxX = Math.max(contentBox.x + contentBox.w, labelBox.x + labelBox.w);
+      totalColBox = {
+        x: minX,
+        y: startY,
+        w: maxX - minX,
+        h: maxContentH + unit + labelH,
+      };
     }
 
     return {
@@ -565,12 +577,14 @@ export function baseTenLayout(p: Props): BaseTenLayout {
     };
   });
 
-  // 计算全局整体包围盒
+  // 计算全局整体包围盒（仅包含有内容的列及过渡中的小棒）
   const allBoxes: Box[] = [];
   for (const col of columnList) {
-    allBoxes.push(col.box);
-    for (const it of col.items) {
-      allBoxes.push(it.box);
+    if (col.count > 0) {
+      allBoxes.push(col.box);
+      for (const it of col.items) {
+        allBoxes.push(it.box);
+      }
     }
   }
 
@@ -585,7 +599,7 @@ export function baseTenLayout(p: Props): BaseTenLayout {
 
   let totalBox: Box;
   if (allBoxes.length === 0) {
-    totalBox = { x: at[0], y: at[1], w: unit * 4, h: maxContentH + (columns ? unit + labelH : 0) };
+    totalBox = { x: at[0], y: at[1], w: unit * 4, h: maxContentH };
   } else {
     const minX = Math.min(...allBoxes.map((b) => b.x));
     const minY = Math.min(...allBoxes.map((b) => b.y));
@@ -637,6 +651,7 @@ export const baseTenPart: PartDef = {
   },
   subitems(p) {
     const layout = baseTenLayout(p);
+    const rawLabels = labelsOf(p);
     const subs: Subitem[] = [];
 
     // 1. 各列 box（ones, tens, hundreds, thousands）
@@ -644,7 +659,7 @@ export const baseTenPart: PartDef = {
       subs.push({
         name: col.name,
         box: col.box,
-        label: col.label || col.name,
+        label: col.label || rawLabels[col.place] || col.name,
         disabled: false,
       });
 
@@ -957,10 +972,10 @@ export const baseTenPart: PartDef = {
                 }
               })}
 
-              {/* 列标签（columns: true 时） */}
-              {layout.columns && col.labelBox && col.label ? (
+              {/* 列标签（columns: true 时，仅个数大于 0 的列在正下方画位名） */}
+              {layout.columns && col.count > 0 && col.labelBox && col.label ? (
                 <text
-                  x={col.box.x + col.box.w / 2}
+                  x={col.contentBox.x + col.contentBox.w / 2}
                   y={col.labelBox.y}
                   textAnchor="middle"
                   dominantBaseline="hanging"

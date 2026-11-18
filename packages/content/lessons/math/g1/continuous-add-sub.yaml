@@ -27,18 +27,18 @@ objects:
   - id: bus
     type: image
     asset: bus
-    width: 460
-    height: 200
-    at: [260, 160]
+    width: 540
+    height: 270
+    at: [270, 220]
   - id: people
     type: item-set
     items:
       - { repeat: '{m}', asset: kid }
     layout: grid
     cols: 8
-    size: 34
+    size: 25
     show: '{a}'
-    at: [70, 100]
+    at: [85, 171]
   - id: eq
     type: expr-steps
     lines:
@@ -47,7 +47,7 @@ objects:
       - '{r}'
     show: 1
     underline: true
-    at: [540, 60]
+    at: [550, 70]
 
 steps:
   - title: 车上原来

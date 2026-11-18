@@ -46,7 +46,7 @@ objects:
     asset: sun
     width: 60
     height: 60
-    at: [380, 230]
+    at: [445, 230]
 
 steps:
   - title: 太阳升起的地方
