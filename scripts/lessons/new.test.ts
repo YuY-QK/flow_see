@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process';
-import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -18,6 +18,18 @@ describe('lesson:new scaffold', () => {
     if (existsSync(join(ROOT, 'docs'))) {
       cpSync(join(ROOT, 'docs'), join(tempDir, 'docs'), { recursive: true });
     }
+    // 测试用的知识点在真实内容里可能已经写好了：在临时目录里还原成“还没写”的样子
+    // （删掉 yaml，课程目录里改回 { id, title } 写法），测试就不受内容进度影响
+    const content = join(tempDir, 'packages', 'content');
+    rmSync(join(content, 'lessons', 'math', 'g1', 'compare-within-10.yaml'), { force: true });
+    const curriculum = join(content, 'curriculum', 'math', 'grade1.yaml');
+    writeFileSync(
+      curriculum,
+      readFileSync(curriculum, 'utf8').replace(
+        /^ {6}- compare-within-10$/m,
+        '      - { id: compare-within-10, title: 比大小 }',
+      ),
+    );
   });
 
   afterEach(() => {
