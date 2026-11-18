@@ -247,4 +247,152 @@ describe('solid 立体图形零件（任务卡 B24）', () => {
     expect(sphere.subitems.some((s) => s.name === 'face.side')).toBe(true);
     expect(sphere.sphere?.r).toBe(120);
   });
+
+  it('11. view 为 0.5、unfold 为 0 时，顶面 4 个顶点为 v5/v6/v7/v8（与正面共用 v5/v6）且为平行四边形', () => {
+    const layout = solidLayout({
+      kind: 'cuboid',
+      a: 5,
+      b: 3,
+      h: 2,
+      unit: 40,
+      view: 0.5,
+      unfold: 0,
+      at: [300, 360],
+    });
+
+    const [, , , , v5, v6, v7, v8] = layout.vertices;
+    const topPts = layout.faces.top.points;
+    const frontPts = layout.faces.front.points;
+
+    expect(topPts).toHaveLength(4);
+    // 顶面 4 个顶点就是 v5、v6、v7、v8
+    expect(topPts).toEqual([v5, v6, v7, v8]);
+    // 与正面（[v1, v2, v6, v5]）共用 v5、v6
+    expect(topPts[0]).toEqual(frontPts[3]);
+    expect(topPts[1]).toEqual(frontPts[2]);
+
+    // 两组对边向量相等（平行四边形）
+    const edgeFront = [topPts[1][0] - topPts[0][0], topPts[1][1] - topPts[0][1]]; // v5 -> v6
+    const edgeBack = [topPts[2][0] - topPts[3][0], topPts[2][1] - topPts[3][1]]; // v8 -> v7
+    expect(edgeFront[0]).toBeCloseTo(edgeBack[0], 6);
+    expect(edgeFront[1]).toBeCloseTo(edgeBack[1], 6);
+
+    const edgeLeft = [topPts[3][0] - topPts[0][0], topPts[3][1] - topPts[0][1]]; // v5 -> v8
+    const edgeRight = [topPts[2][0] - topPts[1][0], topPts[2][1] - topPts[1][1]]; // v6 -> v7
+    expect(edgeLeft[0]).toBeCloseTo(edgeRight[0], 6);
+    expect(edgeLeft[1]).toBeCloseTo(edgeRight[1], 6);
+
+    // 斜向右上后方（非退化、非竖直长方形）
+    expect(edgeLeft[0]).toBeGreaterThan(0);
+    expect(edgeLeft[1]).toBeLessThan(0);
+    const cross = edgeFront[0] * edgeLeft[1] - edgeFront[1] * edgeLeft[0];
+    expect(Math.abs(cross)).toBeGreaterThan(0);
+  });
+
+  it('12. view 为 -0.5、unfold 为 0 时，顶面 4 个顶点同样为 v5/v6/v7/v8 且为平行四边形', () => {
+    const layout = solidLayout({
+      kind: 'cuboid',
+      a: 5,
+      b: 3,
+      h: 2,
+      unit: 40,
+      view: -0.5,
+      unfold: 0,
+      at: [300, 360],
+    });
+
+    const [, , , , v5, v6, v7, v8] = layout.vertices;
+    const topPts = layout.faces.top.points;
+    const frontPts = layout.faces.front.points;
+
+    expect(topPts).toHaveLength(4);
+    // 顶面 4 个顶点就是 v5、v6、v7、v8
+    expect(topPts).toEqual([v5, v6, v7, v8]);
+    // 与正面（[v1, v2, v6, v5]）共用 v5、v6
+    expect(topPts[0]).toEqual(frontPts[3]);
+    expect(topPts[1]).toEqual(frontPts[2]);
+
+    // 两组对边向量相等（平行四边形）
+    const edgeFront = [topPts[1][0] - topPts[0][0], topPts[1][1] - topPts[0][1]]; // v5 -> v6
+    const edgeBack = [topPts[2][0] - topPts[3][0], topPts[2][1] - topPts[3][1]]; // v8 -> v7
+    expect(edgeFront[0]).toBeCloseTo(edgeBack[0], 6);
+    expect(edgeFront[1]).toBeCloseTo(edgeBack[1], 6);
+
+    const edgeLeft = [topPts[3][0] - topPts[0][0], topPts[3][1] - topPts[0][1]]; // v5 -> v8
+    const edgeRight = [topPts[2][0] - topPts[1][0], topPts[2][1] - topPts[1][1]]; // v6 -> v7
+    expect(edgeLeft[0]).toBeCloseTo(edgeRight[0], 6);
+    expect(edgeLeft[1]).toBeCloseTo(edgeRight[1], 6);
+
+    // 斜向左上后方（非退化、非竖直长方形）
+    expect(edgeLeft[0]).toBeLessThan(0);
+    expect(edgeLeft[1]).toBeLessThan(0);
+    const cross = edgeFront[0] * edgeLeft[1] - edgeFront[1] * edgeLeft[0];
+    expect(Math.abs(cross)).toBeGreaterThan(0);
+  });
+
+  it('13. 长方体展开过程中顶面始终与后面连在公共棱 v7-v8 上，unfold=1 时完整展平', () => {
+    for (const view of [0.5, -0.5]) {
+      for (const unfold of [0, 0.25, 0.5, 0.75, 1]) {
+        const layout = solidLayout({
+          kind: 'cuboid',
+          a: 4,
+          b: 3,
+          h: 2,
+          unit: 40,
+          view,
+          unfold,
+          at: [400, 300],
+        });
+        const topPts = layout.faces.top.points;
+        const backPts = layout.faces.back.points;
+        // backPts = [v4, v3, v7, v8], topPts = [v5Top, v6Top, v7, v8]
+        expect(topPts[2][0]).toBeCloseTo(backPts[2][0], 6);
+        expect(topPts[2][1]).toBeCloseTo(backPts[2][1], 6);
+        expect(topPts[3][0]).toBeCloseTo(backPts[3][0], 6);
+        expect(topPts[3][1]).toBeCloseTo(backPts[3][1], 6);
+      }
+    }
+
+    // unfold = 1 时：底面 y∈[180,300]，后面 y∈[100,180]，顶面 y∈[-20,100]（高 D=120，宽 L=160）
+    const unfolded = solidLayout({
+      kind: 'cuboid',
+      a: 4,
+      b: 3,
+      h: 2,
+      unit: 40,
+      view: 0.5,
+      unfold: 1,
+      at: [400, 300],
+    });
+    const topPts = unfolded.faces.top.points;
+    expect(topPts[0][0]).toBeCloseTo(320);
+    expect(topPts[0][1]).toBeCloseTo(-20);
+    expect(topPts[1][0]).toBeCloseTo(480);
+    expect(topPts[1][1]).toBeCloseTo(-20);
+    expect(topPts[2][0]).toBeCloseTo(480);
+    expect(topPts[2][1]).toBeCloseTo(100);
+    expect(topPts[3][0]).toBeCloseTo(320);
+    expect(topPts[3][1]).toBeCloseTo(100);
+  });
+
+  it('14. 闭合态下 bbox 包住 edgeLabels 文字和顶点子项', () => {
+    const layout = solidLayout({
+      kind: 'cuboid',
+      a: 5,
+      b: 3,
+      h: 2,
+      unit: 40,
+      view: 0.5,
+      unfold: 0,
+      edgeLabels: { a: '长 5', b: '宽 3', h: '高 2' },
+      at: [300, 360],
+    });
+    expect(layout.edgeLabelItems).toHaveLength(3);
+    for (const item of layout.edgeLabelItems!) {
+      expect(item.box.x).toBeGreaterThanOrEqual(layout.bbox.x);
+      expect(item.box.y).toBeGreaterThanOrEqual(layout.bbox.y);
+      expect(item.box.x + item.box.w).toBeLessThanOrEqual(layout.bbox.x + layout.bbox.w);
+      expect(item.box.y + item.box.h).toBeLessThanOrEqual(layout.bbox.y + layout.bbox.h);
+    }
+  });
 });

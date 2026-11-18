@@ -7,6 +7,7 @@ import {
   num,
   pt,
   str,
+  textWidth,
   type Box,
   type PartContext,
   type PartDef,
@@ -169,6 +170,18 @@ export interface SolidLayoutResult {
     rx?: number;
     ry?: number;
   };
+  edgeLabelItems?: { key: 'a' | 'b' | 'h'; text: string; x: number; y: number; box: Box }[];
+}
+
+function estimateLabelWidth(raw: string, size: number): number {
+  const plain = richSpans(raw)
+    .map((sp) => sp.text)
+    .join('');
+  try {
+    return Math.max(24, textWidth(plain, size));
+  } catch {
+    return Math.max(24, plain.length * size * 0.8);
+  }
 }
 
 function boundingBoxOfPoints(pts: Point[], pad = 0): Box {
@@ -302,6 +315,7 @@ export function solidLayout(p: Props): SolidLayoutResult {
   let sphereInfo: SolidLayoutResult['sphere'];
   let cylinderCutInfo: SolidLayoutResult['cylinderCut'];
   let waterSurface: SolidLayoutResult['waterSurface'];
+  let edgeLabelItems: SolidLayoutResult['edgeLabelItems'];
 
   if (kind === 'cuboid' || kind === 'cube') {
     // 投影变换参数（含 unfold 插值）
@@ -416,11 +430,14 @@ export function solidLayout(p: Props): SolidLayoutResult {
     const rightPts: Point[] = [v2, v3, v7Right, v6Right];
 
     const phiTopRel = u <= 0.6 ? 0 : (Math.PI / 2) * ((u - 0.6) / 0.4);
-    const yTopRot = yBackRot + D * Math.cos(phiBack + phiTopRel);
-    const zTopRot = zBackRot + D * Math.sin(phiBack + phiTopRel);
-    const v7Top = project3D(L / 2, yTopRot, zTopRot);
-    const v8Top = project3D(-L / 2, yTopRot, zTopRot);
-    const topPts: Point[] = [v8, v7, v7Top, v8Top];
+    const phiTop = phiBack + phiTopRel;
+    // 闭合时（u = 0）顶面从后上棱（y = H, z = D）朝前（-z 方向）延伸 D 到前上棱（y = H, z = 0）；
+    // 随两级铰链转过 phiTop（0 → π），向量 (0, -D) 在 (y, z) 平面内旋转为 (D·sin, -D·cos)。
+    const yTopRot = yBackRot + D * Math.sin(phiTop);
+    const zTopRot = zBackRot - D * Math.cos(phiTop);
+    const v5Top = project3D(-L / 2, yTopRot, zTopRot);
+    const v6Top = project3D(L / 2, yTopRot, zTopRot);
+    const topPts: Point[] = [v5Top, v6Top, v7, v8];
 
     // 正方体 11 种展开图的处理（u > 0 时插值到目标网格）
     const facePointsMap: Record<'bottom' | 'top' | 'front' | 'back' | 'left' | 'right', Point[]> = {
@@ -493,7 +510,40 @@ export function solidLayout(p: Props): SolidLayoutResult {
       };
     }
 
-    bbox = unionBoxes(allFaceBoxes, 8);
+    // 棱长文字标签包围盒（闭合态下绘制，纳入零件整体 bbox 以免手机端贴合裁切文字或顶点高亮框）
+    const bboxParts: Box[] = [...allFaceBoxes];
+    if (u === 0) {
+      for (const s of subitems) {
+        bboxParts.push(s.box);
+      }
+      const rawEdgeLabels = (p.edgeLabels as Record<string, string> | undefined) ?? {};
+      const labelSize = 22;
+      const items: NonNullable<SolidLayoutResult['edgeLabelItems']> = [];
+      if (rawEdgeLabels.a) {
+        const lx = (v1[0] + v2[0]) / 2;
+        const ly = v1[1] + 22;
+        const lBox = boxAround(lx, ly, estimateLabelWidth(rawEdgeLabels.a, labelSize), labelSize + 4);
+        items.push({ key: 'a', text: rawEdgeLabels.a, x: lx, y: ly, box: lBox });
+        bboxParts.push(lBox);
+      }
+      if (rawEdgeLabels.b) {
+        const lx = view >= 0 ? (v2[0] + v3[0]) / 2 + 28 : (v1[0] + v4[0]) / 2 - 28;
+        const ly = view >= 0 ? (v2[1] + v3[1]) / 2 + 16 : (v1[1] + v4[1]) / 2 + 16;
+        const lBox = boxAround(lx, ly, estimateLabelWidth(rawEdgeLabels.b, labelSize), labelSize + 4);
+        items.push({ key: 'b', text: rawEdgeLabels.b, x: lx, y: ly, box: lBox });
+        bboxParts.push(lBox);
+      }
+      if (rawEdgeLabels.h) {
+        const lx = v1[0] - 30;
+        const ly = (v1[1] + v5[1]) / 2;
+        const lBox = boxAround(lx, ly, estimateLabelWidth(rawEdgeLabels.h, labelSize), labelSize + 4);
+        items.push({ key: 'h', text: rawEdgeLabels.h, x: lx, y: ly, box: lBox });
+        bboxParts.push(lBox);
+      }
+      if (items.length > 0) edgeLabelItems = items;
+    }
+
+    bbox = unionBoxes(bboxParts, 8);
   } else if (kind === 'cylinder') {
     const R = r * unit;
     const rx = R;
@@ -703,6 +753,7 @@ export function solidLayout(p: Props): SolidLayoutResult {
     sphere: sphereInfo,
     cylinderCut: cylinderCutInfo,
     waterSurface,
+    edgeLabelItems,
   };
 }
 
@@ -770,7 +821,6 @@ const SolidRender: ComponentType<{ p: Props; ctx: PartContext }> = ({ p, ctx }) 
   const theme = ctx.theme;
   const userFaces = (p.faces as Record<string, string> | undefined) ?? {};
   const faceLabels = (p.faceLabels as Record<string, string> | undefined) ?? {};
-  const edgeLabels = (p.edgeLabels as Record<string, string> | undefined) ?? {};
 
   let hiddenDash = '6 5';
   let counterDarken = 0.45;
@@ -811,10 +861,12 @@ const SolidRender: ComponentType<{ p: Props; ctx: PartContext }> = ({ p, ctx }) 
     const hiddenEdges = L.edges.filter((e) => !e.visible && L.hiddenEdges);
     const visibleEdges = L.edges.filter((e) => e.visible);
 
-    // 面渲染顺序：若在 3D 下，按由深至浅画
+    // 面渲染顺序：按由深至浅（画家算法），展开过程中顶面位于最上方最后绘制，避免被后方侧面遮挡
     const faceRenderOrder: string[] =
       L.unfold > 0
-        ? ['bottom', 'back', 'top', 'left', 'right', 'front']
+        ? L.view >= 0
+          ? ['bottom', 'back', 'left', 'right', 'front', 'top']
+          : ['bottom', 'back', 'right', 'left', 'front', 'top']
         : L.view > 0
           ? ['bottom', 'back', 'left', 'front', 'top', 'right']
           : ['bottom', 'back', 'right', 'front', 'top', 'left'];
@@ -908,43 +960,18 @@ const SolidRender: ComponentType<{ p: Props; ctx: PartContext }> = ({ p, ctx }) 
         })}
 
         {/* 棱长文字标签（a: 长, b: 宽, h: 高） */}
-        {L.unfold === 0 && (
+        {L.unfold === 0 && L.edgeLabelItems && (
           <g>
-            {edgeLabels.a && (
+            {L.edgeLabelItems.map((item) => (
               <RenderRichLabel
-                text={edgeLabels.a}
-                x={(L.vertices[0][0] + L.vertices[1][0]) / 2}
-                y={L.vertices[0][1] + 20}
+                key={`el-${item.key}`}
+                text={item.text}
+                x={item.x}
+                y={item.y}
                 size={22}
                 fill={ink}
               />
-            )}
-            {edgeLabels.b && (
-              <RenderRichLabel
-                text={edgeLabels.b}
-                x={
-                  L.view > 0
-                    ? (L.vertices[1][0] + L.vertices[2][0]) / 2 + 16
-                    : (L.vertices[0][0] + L.vertices[3][0]) / 2 - 16
-                }
-                y={
-                  L.view > 0
-                    ? (L.vertices[1][1] + L.vertices[2][1]) / 2 + 12
-                    : (L.vertices[0][1] + L.vertices[3][1]) / 2 + 12
-                }
-                size={22}
-                fill={ink}
-              />
-            )}
-            {edgeLabels.h && (
-              <RenderRichLabel
-                text={edgeLabels.h}
-                x={L.vertices[0][0] - 24}
-                y={(L.vertices[0][1] + L.vertices[4][1]) / 2}
-                size={22}
-                fill={ink}
-              />
-            )}
+            ))}
           </g>
         )}
       </g>
