@@ -44,6 +44,7 @@ import { circleDrawPart } from './parts/circle-draw';
 import { chancePart } from './parts/chance';
 import { chartPart } from './parts/chart';
 import { protractorPart } from './parts/protractor';
+import { fractionAreaPart } from './parts/fraction-area';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -410,6 +411,19 @@ export {
   type ProtractorTick,
 } from './parts/protractor';
 
+export {
+  FRACTION_AREA_BORDER_WIDTH,
+  FRACTION_AREA_COL_OPACITY,
+  FRACTION_AREA_GRID_WIDTH,
+  FRACTION_AREA_OVERLAP_OPACITY,
+  FRACTION_AREA_ROW_OPACITY,
+  fractionAreaLayout,
+  fractionAreaPart,
+  type FractionAreaCell,
+  type FractionAreaGridLine,
+  type FractionAreaLayout,
+} from './parts/fraction-area';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -460,6 +474,7 @@ export const PARTS: readonly PartDef[] = [
   chancePart,
   chartPart,
   protractorPart,
+  fractionAreaPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */

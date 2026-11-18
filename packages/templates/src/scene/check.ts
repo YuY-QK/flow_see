@@ -1043,6 +1043,83 @@ function checkProps(
         }
       }
     }
+    if (part.type === 'fraction-area') {
+      const isParamExpr = typeof v === 'string' && v.includes('{');
+      if ((k === 'rows' || k === 'cols') && !isParamExpr) {
+        if (typeof v !== 'number' || !Number.isInteger(v) || v <= 0) {
+          out.push({
+            path: [...path, k],
+            message: `面积模型的 ${k} 必须是正整数`,
+          });
+        }
+      }
+      if (k === 'size' && !isParamExpr) {
+        if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) {
+          out.push({
+            path: [...path, k],
+            message: '面积模型的 size 必须大于 0',
+          });
+        }
+      }
+      if (k === 'shadeRows' && !isParamExpr) {
+        if (typeof v !== 'number' || !Number.isFinite(v) || v < 0) {
+          out.push({
+            path: [...path, k],
+            message: '面积模型的 shadeRows 不能小于 0',
+          });
+        } else {
+          const effRows =
+            typeof props.rows === 'number' && Number.isInteger(props.rows) && props.rows > 0
+              ? props.rows
+              : path[0] === 'objects' && props.rows === undefined
+                ? Number(part.defaults.rows ?? 3)
+                : undefined;
+          if (effRows !== undefined && v > effRows) {
+            out.push({
+              path: [...path, k],
+              message: `面积模型的 shadeRows（${v}）不能超过 rows（${effRows}）`,
+            });
+          }
+        }
+      }
+      if (k === 'shadeCols' && !isParamExpr) {
+        if (typeof v !== 'number' || !Number.isFinite(v) || v < 0) {
+          out.push({
+            path: [...path, k],
+            message: '面积模型的 shadeCols 不能小于 0',
+          });
+        } else {
+          const effCols =
+            typeof props.cols === 'number' && Number.isInteger(props.cols) && props.cols > 0
+              ? props.cols
+              : path[0] === 'objects' && props.cols === undefined
+                ? Number(part.defaults.cols ?? 5)
+                : undefined;
+          if (effCols !== undefined && v > effCols) {
+            out.push({
+              path: [...path, k],
+              message: `面积模型的 shadeCols（${v}）不能超过 cols（${effCols}）`,
+            });
+          }
+        }
+      }
+      if ((k === 'color2' || k === 'overlapColor') && !isParamExpr) {
+        if (!colorOk(v, alive)) {
+          out.push({
+            path: [...path, k],
+            message: `${k} 写颜色名、#RRGGBB 或 "@零件id"`,
+          });
+        }
+      }
+      if (k === 'grid' && !isParamExpr) {
+        if (typeof v !== 'boolean') {
+          out.push({
+            path: [...path, k],
+            message: '面积模型的 grid 必须是布尔值',
+          });
+        }
+      }
+    }
   }
   if (type === 'chance' && path[0] === 'objects') {
     const effKind = typeof props.kind === 'string' ? props.kind : 'bag';
@@ -1555,6 +1632,50 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
                 }
                 if (typeof patch.ones === 'number') cur.ones = patch.ones;
                 if (typeof patch.tens === 'number') cur.tens = patch.tens;
+              }
+            }
+            if (tt === 'fraction-area') {
+              const orig = objects.find((o) => o.id === t);
+              const faPart = getPart('fraction-area');
+              if (orig && faPart) {
+                if (
+                  patch.rows === undefined &&
+                  typeof patch.shadeRows === 'number' &&
+                  Number.isFinite(patch.shadeRows) &&
+                  patch.shadeRows >= 0
+                ) {
+                  const effRows =
+                    typeof orig.rows === 'number' && Number.isInteger(orig.rows) && orig.rows > 0
+                      ? orig.rows
+                      : orig.rows === undefined
+                        ? Number(faPart.defaults.rows ?? 3)
+                        : undefined;
+                  if (effRows !== undefined && patch.shadeRows > effRows) {
+                    out.push({
+                      path: [...path, verb, 'shadeRows'],
+                      message: `面积模型的 shadeRows（${patch.shadeRows}）不能超过 rows（${effRows}）`,
+                    });
+                  }
+                }
+                if (
+                  patch.cols === undefined &&
+                  typeof patch.shadeCols === 'number' &&
+                  Number.isFinite(patch.shadeCols) &&
+                  patch.shadeCols >= 0
+                ) {
+                  const effCols =
+                    typeof orig.cols === 'number' && Number.isInteger(orig.cols) && orig.cols > 0
+                      ? orig.cols
+                      : orig.cols === undefined
+                        ? Number(faPart.defaults.cols ?? 5)
+                        : undefined;
+                  if (effCols !== undefined && patch.shadeCols > effCols) {
+                    out.push({
+                      path: [...path, verb, 'shadeCols'],
+                      message: `面积模型的 shadeCols（${patch.shadeCols}）不能超过 cols（${effCols}）`,
+                    });
+                  }
+                }
               }
             }
           }

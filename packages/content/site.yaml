@@ -327,6 +327,16 @@ scene:
       pointRadius: 6
       labels:
         average: 平均
+    fraction-area:                      # 分数与小数面积模型：行涂色、列涂色与重叠区
+      rows: 3
+      cols: 5
+      shadeRows: 0
+      shadeCols: 0
+      size: 300
+      color: blue
+      color2: orange
+      overlapColor: green
+      grid: true
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:

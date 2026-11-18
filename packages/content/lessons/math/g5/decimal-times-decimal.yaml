@@ -1,0 +1,96 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+# 小数乘小数：用百格面积模型理解 0.x × 0.y 的算理与积的小数位数规律。
+# 样板知识点（status: draft，任务卡 B23）
+id: decimal-times-decimal
+title: 小数乘小数
+summary: 0.3 × 0.4 是 1 的十分之三的十分之四，是 12 个 0.01；积的小数位数等于因数小数位数之和
+status: draft
+duration: 2分钟
+tags: [小数乘小数, 面积模型, 积的小数位数]
+cover: { step: 3, text: '0.3×0.4' }
+related: [decimal-times-int, fraction-times]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  x: 3
+  y: 4
+
+derived:
+  p: x * y
+
+explore:
+  - { param: x, control: slider, label: 横着取几行, min: 1, max: 9 }
+  - { param: y, control: slider, label: 竖着取几列, min: 1, max: 9 }
+
+objects:
+  - id: sq
+    type: fraction-area
+    rows: 10
+    cols: 10
+    shadeRows: 0
+    shadeCols: 0
+    size: 300
+    at: [60, 60]
+  - id: t1
+    type: text
+    text: '0.{x} × 0.{y} = [{p / 100}](blank)'
+    size: 34
+    at: [560, 120]
+  - id: rule
+    type: text
+    text: '1 位 + 1 位 = 2 位小数'
+    size: 26
+    at: [560, 200]
+    hidden: true
+  - id: calc
+    type: column-calc
+    a: '{x / 10}'
+    b: '{y / 10}'
+    op: ×
+    show: 0
+    at: [600, 320]
+    hidden: true
+
+steps:
+  - title: 边长 1 的正方形
+    say: 一个边长 1 的正方形，平均分成 100 个小格，每格是 0.01。
+    do:
+      - highlight: sq
+
+  - title: 取 0.{x}
+    say: 横着取 0.{x}，就是 {x} 行。
+    do:
+      - set: { target: sq, shadeRows: '{x}', duration: 1s }
+
+  - title: 再取 0.{y}
+    say: 竖着取 0.{y}，就是 {y} 列；重叠的部分就是 0.{x} × 0.{y}。
+    do:
+      - set: { target: sq, shadeCols: '{y}', duration: 1s }
+      - highlight: sq.overlap
+
+  - title: 数一数
+    say: 重叠部分有 {p} 个 0.01，是 {p / 100}。
+    try:
+      task: 重叠部分是多少？
+      choose:
+        answer: '{p / 100}'
+        options: ['{p / 100}', '{p / 10}', '{p}']
+      hints:
+        - 数一数有几个小格，每格 0.01。
+    do:
+      - ask: true
+      - set: { target: t1, text: '0.{x} × 0.{y} = {p / 100}' }
+
+  - title: 小数位数
+    say: 两个因数各有一位小数，积就有两位小数。
+    do:
+      - show: rule
+      - show: calc
+      - set: { target: calc, show: 99 }
+
+keyPoints:
+  - 小数乘小数，先按整数乘法算出积，再看因数中一共有几位小数，就从积的右边起数出几位点上小数点
+  - 乘得的积的小数位数不够时，在前面用 0 补足，再点小数点

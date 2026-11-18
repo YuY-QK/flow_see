@@ -196,6 +196,10 @@ function getInitialProps(part: ResolvedPart): Props {
     if (initial.rotate === undefined) initial.rotate = 0;
     if (initial.scale === undefined) initial.scale = 'both';
     if (initial.highlight === undefined) initial.highlight = 'none';
+  } else if (part.type === 'fraction-area') {
+    initial.at = [250, 75];
+    if (!initial.shadeRows) initial.shadeRows = 2;
+    if (!initial.shadeCols) initial.shadeCols = 3;
   }
   return initial;
 }
@@ -227,6 +231,9 @@ function getRange(
   }
   if (prop === 'cols' || prop === 'rows') {
     return { min: 1, max: 20, step: 1 };
+  }
+  if (prop === 'shadeRows' || prop === 'shadeCols') {
+    return { min: 0, max: 20, step: 0.1 };
   }
   if (prop === 'cell') {
     return { min: 10, max: 80, step: 1 };
