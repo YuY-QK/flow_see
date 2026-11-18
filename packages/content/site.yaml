@@ -349,6 +349,17 @@ scene:
       labels:
         gap: '还差 {d} {u}'
         minute: '第 {n} 分'
+    tape-diagram:                        # 线段图：倍、和差、分数应用题、工程问题、比、百分数、运算定律
+      segLabels: []
+      segColors: []
+      rowLabels: []
+      unit: 60
+      rowGap: 70
+      braces: []
+      ticks: []
+      reveal: 9999
+      fill: 0
+      labelPos: above
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:

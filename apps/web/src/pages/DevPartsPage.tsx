@@ -213,6 +213,39 @@ function getInitialProps(part: ResolvedPart): Props {
       ];
     }
     if (!initial.t) initial.t = 2;
+  } else if (part.type === 'tape-diagram') {
+    initial.at = [180, 150];
+    if (initial.lens === undefined || (Array.isArray(initial.lens) && initial.lens.length === 0)) {
+      initial.lens = [
+        [3, 2],
+        [5],
+      ];
+    }
+    if (
+      initial.segLabels === undefined ||
+      (Array.isArray(initial.segLabels) && initial.segLabels.length === 0)
+    ) {
+      initial.segLabels = [['3', '2'], ['5']];
+    }
+    if (
+      initial.rowLabels === undefined ||
+      (Array.isArray(initial.rowLabels) && initial.rowLabels.length === 0)
+    ) {
+      initial.rowLabels = ['A', 'B'];
+    }
+    if (
+      initial.braces === undefined ||
+      (Array.isArray(initial.braces) && initial.braces.length === 0)
+    ) {
+      initial.braces = [{ row: 2, from: 1, to: 1, label: '?', side: 'bottom' }];
+    }
+    if (
+      initial.ticks === undefined ||
+      (Array.isArray(initial.ticks) && initial.ticks.length === 0)
+    ) {
+      initial.ticks = [1, 5];
+    }
+    initial.reveal = 3;
   }
   return initial;
 }
@@ -232,6 +265,9 @@ function getRange(
   }
   if (partType === 'chance' && prop === 'size') {
     return { min: 0.4, max: 2, step: 0.05 };
+  }
+  if (partType === 'tape-diagram' && prop === 'fill') {
+    return { min: 0, max: 1, step: 0.05 };
   }
   if (prop === 'places') {
     return { min: 0, max: 8, step: 1 };

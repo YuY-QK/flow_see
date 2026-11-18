@@ -46,6 +46,7 @@ import { chartPart } from './parts/chart';
 import { protractorPart } from './parts/protractor';
 import { fractionAreaPart } from './parts/fraction-area';
 import { trackPart } from './parts/track';
+import { tapeDiagramPart } from './parts/tape-diagram';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -451,6 +452,35 @@ export {
   type TrackTraveledLineLayout,
 } from './parts/track';
 
+export {
+  DEFAULT_SEG_COLORS,
+  TAPE_BRACE_GAP,
+  TAPE_BRACE_HEIGHT,
+  TAPE_BRACE_LABEL_OFFSET,
+  TAPE_BRACE_SIDES,
+  TAPE_END_TICK_HEIGHT,
+  TAPE_FILL_HEIGHT,
+  TAPE_FONT_SIZE,
+  TAPE_LABEL_POSITIONS,
+  TAPE_ROW_LABEL_GAP,
+  TAPE_SEG_LABEL_OFFSET,
+  TAPE_STROKE_WIDTH,
+  TAPE_SUB_TICK_HEIGHT,
+  buildCurlyBracePath,
+  normalizeTapeDiagramProps,
+  tapeDiagramLayout,
+  tapeDiagramPart,
+  type TapeBraceLayout,
+  type TapeBraceSide,
+  type TapeBraceSpec,
+  type TapeDiagramLayout,
+  type TapeFillBarLayout,
+  type TapeLabelPos,
+  type TapeRowLayout,
+  type TapeSegmentLayout,
+  type TapeTickLayout,
+} from './parts/tape-diagram';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -503,6 +533,7 @@ export const PARTS: readonly PartDef[] = [
   protractorPart,
   fractionAreaPart,
   trackPart,
+  tapeDiagramPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */

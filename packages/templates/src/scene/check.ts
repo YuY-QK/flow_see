@@ -18,6 +18,8 @@ import {
   PROTRACTOR_SCALES,
   RULER_UNITS,
   SHAPE_KINDS,
+  TAPE_BRACE_SIDES,
+  TAPE_LABEL_POSITIONS,
   findSubitem,
   getPart,
   isColor,
@@ -60,6 +62,124 @@ const colorOk = (v: unknown, alive: Map<string, string>) =>
 const RICH = /\[([^\]]*)\]\(([^)]*)\)/g;
 
 const ID = /^[A-Za-z_][\w-]*$/;
+
+/** 解析静态数字或数字字符串；若是含 '{' 的动态参数表达式则返回 undefined，非法值返回 NaN */
+function parseStaticNum(v: unknown): number | undefined {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : NaN;
+  if (typeof v === 'string') {
+    if (v.includes('{')) return undefined;
+    if (v.trim() === '') return NaN;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : NaN;
+  }
+  return NaN;
+}
+
+function checkRichMarkup(
+  text: string,
+  path: (string | number)[],
+  alive: Map<string, string>,
+  out: ConfigIssue[],
+) {
+  for (const m of text.matchAll(RICH)) {
+    const words = m[2].trim().split(/\s+/).filter(Boolean);
+    const bad = words.find(
+      (w) => w !== 'blank' && w !== 'sup' && w !== 'frac' && !colorOk(w, alive),
+    );
+    if (!words.length || bad) {
+      out.push({
+        path,
+        message: `文字里的 [${m[1]}](${m[2]})：括号里写颜色名、#RRGGBB、"@零件id"、blank、sup 或 frac${bad ? `（${bad} 不认识）` : ''}`,
+      });
+    }
+    if (words.includes('frac') && !m[1].includes('{') && !/^(?:-?\d+\s+)?-?\d+\/\d+$/.test(m[1].trim())) {
+      out.push({
+        path,
+        message: `文字里的 [${m[1]}](${m[2]})：frac 的内容必须是 a/b 或 w a/b（整数）`,
+      });
+    }
+  }
+}
+
+function checkTapeDiagramAgainstLens(
+  effLens: unknown[],
+  props: Record<string, unknown>,
+  path: (string | number)[],
+  out: ConfigIssue[],
+) {
+  if (Array.isArray(props.segLabels)) {
+    if (props.segLabels.length !== effLens.length) {
+      out.push({
+        path: [...path, 'segLabels'],
+        message: `线段图的 segLabels 行数（${props.segLabels.length}）与 lens 行数（${effLens.length}）不一致`,
+      });
+    } else {
+      props.segLabels.forEach((row, rIdx) => {
+        const lensRow = effLens[rIdx];
+        if (Array.isArray(row) && Array.isArray(lensRow) && row.length !== lensRow.length) {
+          out.push({
+            path: [...path, 'segLabels', rIdx],
+            message: `线段图的 segLabels 第 ${rIdx + 1} 行段数（${row.length}）与 lens 第 ${rIdx + 1} 行段数（${lensRow.length}）不一致`,
+          });
+        }
+      });
+    }
+  }
+
+  if (Array.isArray(props.segColors)) {
+    if (props.segColors.length !== effLens.length) {
+      out.push({
+        path: [...path, 'segColors'],
+        message: `线段图的 segColors 行数（${props.segColors.length}）与 lens 行数（${effLens.length}）不一致`,
+      });
+    } else {
+      props.segColors.forEach((row, rIdx) => {
+        const lensRow = effLens[rIdx];
+        if (Array.isArray(row) && Array.isArray(lensRow) && row.length !== lensRow.length) {
+          out.push({
+            path: [...path, 'segColors', rIdx],
+            message: `线段图的 segColors 第 ${rIdx + 1} 行段数（${row.length}）与 lens 第 ${rIdx + 1} 行段数（${lensRow.length}）不一致`,
+          });
+        }
+      });
+    }
+  }
+
+  if (Array.isArray(props.braces)) {
+    props.braces.forEach((br, idx) => {
+      if (!br || typeof br !== 'object' || Array.isArray(br)) return;
+      const rec = br as Record<string, unknown>;
+      const rN = parseStaticNum(rec.row);
+      if (rN !== undefined && Number.isInteger(rN) && rN >= 1) {
+        if (rN > effLens.length) {
+          out.push({
+            path: [...path, 'braces', idx, 'row'],
+            message: `线段图大括号的 row（${rN}）越界，总行数为 ${effLens.length}`,
+          });
+        } else {
+          const lensRow = effLens[rN - 1];
+          if (Array.isArray(lensRow)) {
+            const segCount = lensRow.length;
+            const fN = parseStaticNum(rec.from);
+            const tN = parseStaticNum(rec.to);
+            if (fN !== undefined && Number.isInteger(fN) && fN > segCount) {
+              out.push({
+                path: [...path, 'braces', idx, 'from'],
+                message: `线段图大括号的段序号 from（${fN}）越界，第 ${rN} 行只有 ${segCount} 段`,
+              });
+            }
+            if (tN !== undefined && Number.isInteger(tN) && tN > segCount) {
+              out.push({
+                path: [...path, 'braces', idx, 'to'],
+                message: `线段图大括号的段序号 to（${tN}）越界，第 ${rN} 行只有 ${segCount} 段`,
+              });
+            }
+          }
+        }
+      }
+    });
+  }
+}
 
 /** 零件属性的取值检查（只查容易写错、写错后画面会出问题的） */
 function checkProps(
@@ -1028,7 +1148,7 @@ function checkProps(
       if (k === 'show' && typeof v === 'number' && (v < 0 || v > 1)) {
         out.push({ path: [...path, k], message: '统计图的 show 必须在 0–1 范围内' });
       }
-      if (k === 'colors') {
+        if ( k === 'colors') {
         if (!Array.isArray(v)) {
           out.push({ path: [...path, k], message: '统计图的 colors 必须是颜色列表' });
         } else {
@@ -1207,6 +1327,183 @@ function checkProps(
         }
       }
     }
+    if (part.type === 'tape-diagram') {
+      if (k === 'lens') {
+        if (!Array.isArray(v)) {
+          out.push({ path: [...path, k], message: '线段图的 lens 必须是二维数列表，如 [[3, 2], [5]]' });
+        } else {
+          v.forEach((row, rIdx) => {
+            if (!Array.isArray(row)) {
+              out.push({ path: [...path, k, rIdx], message: 'lens 的每一行必须是数列表' });
+            } else {
+              row.forEach((segVal, sIdx) => {
+                const n = parseStaticNum(segVal);
+                if (n !== undefined && (!Number.isFinite(n) || n < 0)) {
+                  out.push({
+                    path: [...path, k, rIdx, sIdx],
+                    message: 'lens 里的段长度必须是非负数',
+                  });
+                }
+              });
+            }
+          });
+        }
+      }
+      if (k === 'segLabels') {
+        if (!Array.isArray(v)) {
+          out.push({ path: [...path, k], message: '线段图的 segLabels 必须是二维文字列表' });
+        } else {
+          v.forEach((row, rIdx) => {
+            if (!Array.isArray(row)) {
+              out.push({ path: [...path, k, rIdx], message: 'segLabels 的每一行必须是文字列表' });
+            } else {
+              row.forEach((cell, sIdx) => {
+                if (typeof cell === 'string') {
+                  checkRichMarkup(cell, [...path, k, rIdx, sIdx], alive, out);
+                }
+              });
+            }
+          });
+        }
+      }
+      if (k === 'segColors') {
+        if (!Array.isArray(v)) {
+          out.push({ path: [...path, k], message: '线段图的 segColors 必须是二维颜色列表' });
+        } else {
+          v.forEach((row, rIdx) => {
+            if (!Array.isArray(row)) {
+              out.push({ path: [...path, k, rIdx], message: 'segColors 的每一行必须是颜色列表' });
+            } else {
+              row.forEach((c, sIdx) => {
+                const isDyn = typeof c === 'string' && c.includes('{');
+                if (!isDyn && !colorOk(c, alive)) {
+                  out.push({
+                    path: [...path, k, rIdx, sIdx],
+                    message: '颜色写颜色名、#RRGGBB 或 "@零件id"',
+                  });
+                }
+              });
+            }
+          });
+        }
+      }
+      if (k === 'rowLabels') {
+        if (!Array.isArray(v)) {
+          out.push({ path: [...path, k], message: '线段图的 rowLabels 必须是文字列表' });
+        } else {
+          v.forEach((lbl, idx) => {
+            if (typeof lbl === 'string') {
+              checkRichMarkup(lbl, [...path, k, idx], alive, out);
+            }
+          });
+        }
+      }
+      if (k === 'ticks') {
+        if (!Array.isArray(v)) {
+          out.push({ path: [...path, k], message: '线段图的 ticks 必须是正整数列表' });
+        } else {
+          v.forEach((tk, idx) => {
+            const n = parseStaticNum(tk);
+            if (n !== undefined && (!Number.isInteger(n) || n < 1)) {
+              out.push({
+                path: [...path, k, idx],
+                message: '线段图的 ticks 每一项必须是大于等于 1 的整数',
+              });
+            }
+          });
+        }
+      }
+      if ((k === 'unit' || k === 'rowGap') && parseStaticNum(v) !== undefined) {
+        const n = parseStaticNum(v)!;
+        if (!Number.isFinite(n) || n <= 0) {
+          out.push({ path: [...path, k], message: `线段图的 ${k} 必须大于 0` });
+        }
+      }
+      if (k === 'reveal' && parseStaticNum(v) !== undefined) {
+        const n = parseStaticNum(v)!;
+        if (!Number.isFinite(n) || n < 0) {
+          out.push({ path: [...path, k], message: '线段图的 reveal 不能小于 0' });
+        }
+      }
+      if (k === 'fill' && parseStaticNum(v) !== undefined) {
+        const n = parseStaticNum(v)!;
+        if (!Number.isFinite(n) || n < 0 || n > 1) {
+          out.push({ path: [...path, k], message: '线段图的 fill 必须在 0–1 范围内' });
+        }
+      }
+      if (k === 'labelPos') {
+        const isDyn = typeof v === 'string' && v.includes('{');
+        if (!isDyn && !(TAPE_LABEL_POSITIONS as readonly unknown[]).includes(v)) {
+          out.push({
+            path: [...path, k],
+            message: `线段图的 labelPos 只能是 ${TAPE_LABEL_POSITIONS.join('、')}`,
+          });
+        }
+      }
+      if (k === 'braces') {
+        if (!Array.isArray(v)) {
+          out.push({ path: [...path, k], message: '线段图的 braces 必须是列表' });
+        } else {
+          v.forEach((br, idx) => {
+            if (!br || typeof br !== 'object' || Array.isArray(br)) {
+              out.push({ path: [...path, k, idx], message: 'braces 的每一项必须是对象 { row, from, to, label, side }' });
+              return;
+            }
+            const rec = br as Record<string, unknown>;
+            const rN = parseStaticNum(rec.row);
+            const fN = parseStaticNum(rec.from);
+            const tN = parseStaticNum(rec.to);
+            if (rN !== undefined && (!Number.isInteger(rN) || rN < 1)) {
+              out.push({
+                path: [...path, k, idx, 'row'],
+                message: '线段图大括号的 row 必须是大于等于 1 的整数（从 1 开始）',
+              });
+            }
+            if (fN !== undefined && (!Number.isInteger(fN) || fN < 1)) {
+              out.push({
+                path: [...path, k, idx, 'from'],
+                message: '线段图大括号的段序号 from 必须是大于等于 1 的整数（从 1 开始）',
+              });
+            }
+            if (tN !== undefined && (!Number.isInteger(tN) || tN < 1)) {
+              out.push({
+                path: [...path, k, idx, 'to'],
+                message: '线段图大括号的段序号 to 必须是大于等于 1 的整数（从 1 开始）',
+              });
+            }
+            if (
+              fN !== undefined &&
+              Number.isInteger(fN) &&
+              fN >= 1 &&
+              tN !== undefined &&
+              Number.isInteger(tN) &&
+              tN >= 1 &&
+              fN > tN
+            ) {
+              out.push({
+                path: [...path, k, idx, 'from'],
+                message: `线段图大括号的 from（${fN}）不能大于 to（${tN}）`,
+              });
+            }
+            if (rec.side !== undefined) {
+              const isDyn = typeof rec.side === 'string' && rec.side.includes('{');
+              if (!isDyn && !(TAPE_BRACE_SIDES as readonly unknown[]).includes(rec.side)) {
+                out.push({
+                  path: [...path, k, idx, 'side'],
+                  message: `线段图大括号的 side 只能是 ${TAPE_BRACE_SIDES.join('、')}`,
+                });
+              }
+            }
+            if (typeof rec.label === 'string') {
+              checkRichMarkup(rec.label, [...path, k, idx, 'label'], alive, out);
+            }
+          });
+        }
+      }
+    }
+  }
+  if (type === 'tape-diagram' && Array.isArray(props.lens)) {
+    checkTapeDiagramAgainstLens(props.lens, props, path, out);
   }
   if (type === 'chance' && path[0] === 'objects') {
     const effKind = typeof props.kind === 'string' ? props.kind : 'bag';
@@ -1702,6 +1999,12 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
                     }
                   });
                 }
+              }
+            }
+            if (tt === 'tape-diagram' && patch.lens === undefined) {
+              const orig = objects.find((o) => o.id === t);
+              if (orig && Array.isArray(orig.lens)) {
+                checkTapeDiagramAgainstLens(orig.lens, patch, [...path, verb], out);
               }
             }
             if (tt === 'base-ten') {

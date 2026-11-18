@@ -1,0 +1,115 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+# 倍的认识与应用：把一个数看作一份，另一个数有几个这样的一份就是几倍。
+# 样板知识点（status: draft，任务卡 B21）
+id: times-concept
+title: 倍的认识与应用
+summary: 把一个数看作一份，另一个数有几个这样的一份就是几倍
+status: draft
+duration: 2分钟
+tags: [倍, 几倍, 求一个数的几倍, 线段图]
+cover: { step: 4, text: 3倍 }
+keyPoints:
+  - 求一个数是另一个数的几倍，就是看它里面有几个另一个数，用除法
+  - 求一个数的几倍是多少，用乘法
+related: [mult-meaning, divide-by-table]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  u: 2
+  k: 4
+derived:
+  w: u * k
+explore:
+  - { param: u, control: slider, label: 胡萝卜几根, min: 2, max: 5 }
+  - { param: k, control: slider, label: 几倍, min: 2, max: 6 }
+
+objects:
+  - id: carrot
+    type: counters
+    count: '{u}'
+    layout: row
+    size: 36
+    color: orange
+    at: [140, 60]
+  - id: radish
+    type: counters
+    count: '{w}'
+    layout: row
+    size: 36
+    color: blue
+    at: [140, 140]
+  - id: rl1
+    type: label
+    text: 胡萝卜
+    at: [70, 78]
+  - id: rl2
+    type: label
+    text: 白萝卜
+    at: [70, 158]
+  - id: tape
+    type: tape-diagram
+    lens:
+      - ['{u}']
+      - ['{w}']
+    segColors:
+      - [orange]
+      - [blue]
+    ticks: [1, '{k}']
+    rowLabels: [胡萝卜, 白萝卜]
+    unit: 30
+    at: [140, 260]
+    hidden: true
+  - id: eq
+    type: text
+    text: '{w} ÷ {u} = [{k}](blank)'
+    size: 36
+    at: [580, 260]
+
+steps:
+  - title: 一份
+    say: 胡萝卜 {u} 根，把 {u} 根看作一份。
+    do:
+      - highlight: carrot
+  - title: 圈一圈
+    say: 白萝卜每 {u} 根圈一圈，圈出 {k} 份。
+    do:
+      - repeat: '{k}'
+        do:
+          - split:
+              target: radish
+              take: '{u}'
+              as: 'grp{i}'
+              offset: ['{(k - i) * 8}', 0]
+  - title: 几倍
+    say: 白萝卜有 {k} 个 {u} 根，是胡萝卜的 {k} 倍。
+    do:
+      - ask: true
+      - repeat: '{k}'
+        do:
+          - highlight: { target: 'grp{i}', together: true }
+    try:
+      task: 白萝卜是胡萝卜的几倍？
+      choose:
+        answer: '{k}'
+        min: 2
+        max: 9
+      hints:
+        - 数一数圈出了几份。
+  - title: 线段图
+    say: 画成线段图：一份是 {u}，白萝卜有 {k} 份。
+    do:
+      - show: tape
+  - title: 列算式
+    say: 求几倍用除法：{w} ÷ {u} = {k}。
+    do:
+      - ask: true
+      - set: { target: eq, text: '{w} ÷ {u} = {k}' }
+    try:
+      task: '{w} ÷ {u} 等于几？'
+      choose:
+        answer: '{k}'
+        min: 2
+        max: 9
