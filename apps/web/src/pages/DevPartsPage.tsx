@@ -174,6 +174,16 @@ function getInitialProps(part: ResolvedPart): Props {
     initial.radii = 1;
     initial.radiusLabel = true;
     initial.diameter = true;
+  } else if (part.type === 'chance') {
+    initial.at = [260, 225];
+    if (initial.items === undefined) {
+      initial.items = [
+        { color: 'red', count: 3 },
+        { color: 'yellow', count: 1 },
+      ];
+    }
+    if (!initial.draw) initial.draw = 4;
+    if (initial.tally === undefined) initial.tally = true;
   }
   return initial;
 }
@@ -183,7 +193,14 @@ function getRange(
   val: number,
   defaultVal: unknown,
   handle?: Handle,
+  partType?: string,
 ): { min: number; max: number; step: number } {
+  if (partType === 'chance' && prop === 'draw') {
+    return { min: 0, max: 20, step: 0.1 };
+  }
+  if (partType === 'chance' && prop === 'size') {
+    return { min: 0.4, max: 2, step: 0.05 };
+  }
   if (prop === 'places') {
     return { min: 0, max: 8, step: 1 };
   }
@@ -784,7 +801,13 @@ export function DevPartsPage() {
                         : typeof defaultVal === 'number'
                           ? defaultVal
                           : 0;
-                    const { min, max, step } = getRange(propKey, numVal, defaultVal, handle);
+                    const { min, max, step } = getRange(
+                      propKey,
+                      numVal,
+                      defaultVal,
+                      handle,
+                      currentPart.type,
+                    );
 
                     return (
                       <div key={propKey} className={s.fieldGroup}>

@@ -1,0 +1,91 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+# 一定、可能、不可能：认识随机现象的三种结果（确定性与不确定性）。
+# 样板知识点（status: draft，任务卡 B20）
+id: possibility-certain
+title: 一定、可能、不可能
+summary: 事情的发生有一定、可能、不可能三种情况
+status: draft
+duration: 2分钟
+tags: [可能性, 一定, 可能, 不可能, 摸球]
+cover: { step: 2, text: '摸球' }
+related: [possibility-size, fair-game]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+objects:
+  - id: b1
+    type: chance
+    kind: bag
+    items:
+      - { color: red, count: 4 }
+    results: [red, red, red]
+    draw: 0
+    at: [105, 225]
+  - id: n1
+    type: label
+    text: 4 个红球
+    at: [105, 100]
+
+  - id: b2
+    type: chance
+    kind: bag
+    items:
+      - { color: red, count: 2 }
+      - { color: yellow, count: 2 }
+    results: [red, yellow, yellow]
+    draw: 0
+    at: [355, 225]
+  - id: n2
+    type: label
+    text: 2 红 2 黄
+    at: [355, 100]
+
+  - id: b3
+    type: chance
+    kind: bag
+    items:
+      - { color: yellow, count: 4 }
+    results: [yellow, yellow, yellow]
+    draw: 0
+    at: [605, 225]
+  - id: n3
+    type: label
+    text: 4 个黄球
+    at: [605, 100]
+
+steps:
+  - title: 三个袋子
+    say: 三个袋子里装着不同的球。
+    do:
+      - highlight: n1
+      - highlight: n2
+      - highlight: n3
+
+  - title: 一定
+    say: 第一个袋子全是红球，摸出的一定是红球。
+    do:
+      - set: { target: b1, draw: 3, duration: 3s, ease: linear }
+
+  - title: 可能
+    say: 第二个袋子有红有黄，可能摸到红球，也可能摸到黄球。
+    do:
+      - set: { target: b2, draw: 3, duration: 3s, ease: linear }
+
+  - title: 不可能
+    say: 第三个袋子没有红球，不可能摸到红球。
+    try:
+      choose:
+        answer: 不可能
+        options: [一定, 可能, 不可能]
+      task: 从第三个袋子里摸红球，结果是？
+      hints:
+        - 看看第三个袋子上面写着装了什么颜色的球。
+    do:
+      - ask: true
+      - set: { target: b3, draw: 3, duration: 3s, ease: linear }
+
+keyPoints:
+  - 有些事情一定会发生，有些事情可能发生，有些事情不可能发生
+  - 摸球时，袋子里有什么颜色的球，才可能摸到什么颜色

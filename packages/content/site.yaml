@@ -301,6 +301,16 @@ scene:
         r: r
         d: d
         circumference: 周长
+    chance:                             # 摸球 / 转盘 / 硬币：随机现象、可能性大小、游戏公平性
+      kind: bag
+      seed: 1
+      draw: 0
+      tally: false
+      size: 1
+      labels:
+        heads: 正面
+        tails: 反面
+        times: '{n} 次'
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:

@@ -41,6 +41,7 @@ import { anglePart } from './parts/angle';
 import { coordinateGridPart } from './parts/coordinate-grid';
 import { directionPart } from './parts/direction';
 import { circleDrawPart } from './parts/circle-draw';
+import { chancePart } from './parts/chance';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -330,6 +331,36 @@ export {
   type CircleDrawRollLayout,
 } from './parts/circle-draw';
 
+export {
+  BAG_BALL_RADIUS,
+  CHANCE_KINDS,
+  COIN_FACES,
+  COIN_RADIUS,
+  MAX_BAG_BALLS_PER_ROW,
+  SPINNER_RADIUS,
+  chanceLabelsOf,
+  chanceLayout,
+  chancePart,
+  chancePolarPoint,
+  generateChanceResults,
+  mulberry32,
+  type ChanceActiveBallLayout,
+  type ChanceBagLayout,
+  type ChanceCoinLayout,
+  type ChanceDrawnBallLayout,
+  type ChanceHandLayout,
+  type ChanceItem,
+  type ChanceKind,
+  type ChanceLabels,
+  type ChanceLayoutResult,
+  type ChanceSectorLayout,
+  type ChanceSpinnerLayout,
+  type ChanceTallyLayout,
+  type ChanceTallyRowLayout,
+  type CoinFace,
+  type GenerateChanceOptions,
+} from './parts/chance';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -377,6 +408,7 @@ export const PARTS: readonly PartDef[] = [
   coordinateGridPart,
   directionPart,
   circleDrawPart,
+  chancePart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */

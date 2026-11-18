@@ -2,6 +2,8 @@
 import {
   BALANCE_KINDS,
   BASE_TEN_STYLES,
+  CHANCE_KINDS,
+  COIN_FACES,
   COMMON_PROPS,
   COORDINATE_GRID_ORIGINS,
   COUNTER_LAYOUTS,
@@ -850,6 +852,136 @@ function checkProps(
         }
       }
     }
+    if (part.type === 'chance') {
+      const effKind = typeof props.kind === 'string' ? props.kind : 'bag';
+      if (k === 'kind' && !(CHANCE_KINDS as readonly unknown[]).includes(v)) {
+        out.push({
+          path: [...path, k],
+          message: `chance 的 kind 只能是 ${CHANCE_KINDS.join('、')}`,
+        });
+      }
+      if (k === 'size' && typeof v === 'number' && v <= 0) {
+        out.push({ path: [...path, k], message: 'chance 的 size 必须大于 0' });
+      }
+      if (k === 'draw' && typeof v === 'number' && v < 0) {
+        out.push({ path: [...path, k], message: 'chance 的 draw 不能小于 0' });
+      }
+      if (k === 'seed' && typeof v === 'number' && !Number.isInteger(v)) {
+        out.push({ path: [...path, k], message: 'chance 的 seed 必须是整数' });
+      }
+      if (k === 'tally' && typeof v !== 'boolean') {
+        out.push({ path: [...path, k], message: 'chance 的 tally 必须是布尔值' });
+      }
+      if (k === 'items') {
+        if (!Array.isArray(v)) {
+          out.push({ path: [...path, k], message: 'chance 的 items 必须是列表 [{ color, count }]' });
+        } else {
+          let totalCount = 0;
+          let allNumeric = v.length > 0;
+          v.forEach((it, idx) => {
+            if (!it || typeof it !== 'object' || Array.isArray(it)) {
+              out.push({ path: [...path, k, idx], message: 'items 的每一项必须是对象 { color, count }' });
+              allNumeric = false;
+              return;
+            }
+            const item = it as Record<string, unknown>;
+            if (item.color === undefined || !colorOk(item.color, alive)) {
+              out.push({
+                path: [...path, k, idx, 'color'],
+                message: 'items 里的 color 写颜色名、#RRGGBB 或 "@零件id"',
+              });
+            }
+            if (typeof item.count === 'number') {
+              if (!Number.isFinite(item.count) || item.count < 0) {
+                out.push({
+                  path: [...path, k, idx, 'count'],
+                  message: 'items 里的 count 不能小于 0',
+                });
+              } else {
+                totalCount += item.count;
+              }
+            } else if (typeof item.count !== 'string' || !item.count.includes('{')) {
+              allNumeric = false;
+              out.push({
+                path: [...path, k, idx, 'count'],
+                message: 'items 里的 count 必须是非负数',
+              });
+            } else {
+              allNumeric = false;
+            }
+          });
+          if ((effKind === 'bag' || effKind === 'spinner') && allNumeric && totalCount <= 0) {
+            out.push({
+              path: [...path, k],
+              message: 'chance 在 bag / spinner 模式下 items 的总数量必须大于 0',
+            });
+          }
+        }
+      }
+      if (k === 'results') {
+        if (!Array.isArray(v)) {
+          out.push({ path: [...path, k], message: 'chance 的 results 必须是列表' });
+        } else if (effKind === 'coin') {
+          v.forEach((resItem, idx) => {
+            if (typeof resItem !== 'string') {
+              out.push({
+                path: [...path, k, idx],
+                message: `coin 模式的 results 只能是 ${COIN_FACES.join(' 或 ')}`,
+              });
+            } else if (!resItem.includes('{') && !(COIN_FACES as readonly string[]).includes(resItem)) {
+              out.push({
+                path: [...path, k, idx],
+                message: `coin 模式的 results 只能是 ${COIN_FACES.join(' 或 ')}，收到了 "${resItem}"`,
+              });
+            }
+          });
+        } else if (effKind === 'bag' || effKind === 'spinner') {
+          const itemList = Array.isArray(props.items) ? props.items : undefined;
+          const colorCounts = new Map<string, number>();
+          if (itemList) {
+            for (const it of itemList) {
+              if (it && typeof it === 'object' && !Array.isArray(it)) {
+                const rec = it as Record<string, unknown>;
+                if (typeof rec.color === 'string') {
+                  const prev = colorCounts.get(rec.color) ?? 0;
+                  const add = typeof rec.count === 'number' ? rec.count : 1;
+                  colorCounts.set(rec.color, prev + add);
+                }
+              }
+            }
+          }
+          v.forEach((resItem, idx) => {
+            if (typeof resItem !== 'string') {
+              out.push({
+                path: [...path, k, idx],
+                message: 'results 里的每一项必须是颜色名字符串',
+              });
+            } else if (!resItem.includes('{') && itemList) {
+              if (!colorCounts.has(resItem)) {
+                out.push({
+                  path: [...path, k, idx],
+                  message: `results 里的颜色 "${resItem}" 不在 items 中`,
+                });
+              } else if ((colorCounts.get(resItem) ?? 0) <= 0) {
+                out.push({
+                  path: [...path, k, idx],
+                  message: `items 中 count 为 0 的颜色 "${resItem}" 不能出现在 results 中`,
+                });
+              }
+            }
+          });
+        }
+      }
+    }
+  }
+  if (type === 'chance' && path[0] === 'objects') {
+    const effKind = typeof props.kind === 'string' ? props.kind : 'bag';
+    if ((effKind === 'bag' || effKind === 'spinner') && props.items === undefined) {
+      out.push({
+        path: [...path, 'items'],
+        message: 'chance 在 bag / spinner 模式下必须指定 items',
+      });
+    }
   }
 }
 
@@ -1164,6 +1296,45 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
           for (const t of targets) {
             const tt = alive.get(t);
             if (tt) checkProps(tt, patch, [...path, verb], out, alive);
+            if (tt === 'chance' && Array.isArray(patch.results) && patch.items === undefined) {
+              const orig = objects.find((o) => o.id === t);
+              if (orig) {
+                const effKind =
+                  typeof patch.kind === 'string'
+                    ? patch.kind
+                    : typeof orig.kind === 'string'
+                      ? orig.kind
+                      : 'bag';
+                if ((effKind === 'bag' || effKind === 'spinner') && Array.isArray(orig.items)) {
+                  const colorCounts = new Map<string, number>();
+                  for (const it of orig.items) {
+                    if (it && typeof it === 'object' && !Array.isArray(it)) {
+                      const rec = it as Record<string, unknown>;
+                      if (typeof rec.color === 'string') {
+                        const prev = colorCounts.get(rec.color) ?? 0;
+                        const add = typeof rec.count === 'number' ? rec.count : 1;
+                        colorCounts.set(rec.color, prev + add);
+                      }
+                    }
+                  }
+                  (patch.results as unknown[]).forEach((resItem, idx) => {
+                    if (typeof resItem === 'string' && !resItem.includes('{')) {
+                      if (!colorCounts.has(resItem)) {
+                        out.push({
+                          path: [...path, verb, 'results', idx],
+                          message: `results 里的颜色 "${resItem}" 不在 items 中`,
+                        });
+                      } else if ((colorCounts.get(resItem) ?? 0) <= 0) {
+                        out.push({
+                          path: [...path, verb, 'results', idx],
+                          message: `items 中 count 为 0 的颜色 "${resItem}" 不能出现在 results 中`,
+                        });
+                      }
+                    }
+                  });
+                }
+              }
+            }
             if (tt === 'grid') {
               const orig = objects.find((o) => o.id === t);
               if (orig) {
