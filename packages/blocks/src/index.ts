@@ -40,6 +40,7 @@ import { calendarPart } from './parts/calendar';
 import { anglePart } from './parts/angle';
 import { coordinateGridPart } from './parts/coordinate-grid';
 import { directionPart } from './parts/direction';
+import { circleDrawPart } from './parts/circle-draw';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -317,6 +318,18 @@ export {
   type TargetLayout,
 } from './parts/direction';
 
+export {
+  CIRCLE_DRAW_LABEL_SIZE,
+  CIRCLE_DRAW_STROKE_WIDTH,
+  circleDrawLayout,
+  circleDrawPart,
+  defaultCircleDrawLabels,
+  type CircleDrawCompassLayout,
+  type CircleDrawLabels,
+  type CircleDrawLayout,
+  type CircleDrawRollLayout,
+} from './parts/circle-draw';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -363,6 +376,7 @@ export const PARTS: readonly PartDef[] = [
   anglePart,
   coordinateGridPart,
   directionPart,
+  circleDrawPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */

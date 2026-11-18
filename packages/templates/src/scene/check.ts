@@ -819,6 +819,37 @@ function checkProps(
         }
       }
     }
+    if (part.type === 'circle-draw') {
+      const isParamExpr = typeof v === 'string' && v.includes('{');
+      if (k === 'radius' && !isParamExpr) {
+        if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) {
+          out.push({ path: [...path, k], message: 'circle-draw 的 radius 必须大于 0' });
+        }
+      }
+      if ((k === 'draw' || k === 'roll') && !isParamExpr) {
+        if (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 1) {
+          out.push({ path: [...path, k], message: `circle-draw 的 ${k} 必须在 0 到 1 之间` });
+        }
+      }
+      if (k === 'radii' && !isParamExpr) {
+        if (typeof v !== 'number' || !Number.isInteger(v) || v < 0) {
+          out.push({ path: [...path, k], message: 'circle-draw 的 radii 必须是大于等于 0 的整数' });
+        }
+      }
+      if (
+        (k === 'compass' || k === 'center' || k === 'radiusLabel' || k === 'diameter') &&
+        !isParamExpr
+      ) {
+        if (typeof v !== 'boolean') {
+          out.push({ path: [...path, k], message: `circle-draw 的 ${k} 必须是布尔值` });
+        }
+      }
+      if (k === 'labels') {
+        if (!v || typeof v !== 'object' || Array.isArray(v)) {
+          out.push({ path: [...path, k], message: 'circle-draw 的 labels 必须是对象' });
+        }
+      }
+    }
   }
 }
 

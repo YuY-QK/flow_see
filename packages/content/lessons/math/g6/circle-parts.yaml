@@ -1,0 +1,110 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: circle-parts
+title: 圆的认识
+summary: 圆心决定位置，半径决定大小；同一个圆里直径是半径的 2 倍
+status: draft
+duration: 1.5分钟
+tags: [圆, 圆心, 半径, 直径, 圆规]
+cover: { text: O r d }
+related: [circle-circumference, circle-area]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  r: 3
+
+derived:
+  R: r * 40
+  D: 2 * r
+  xLeft: 260 - r * 40
+  xRight: 260 + r * 40
+  yTop: 210 - r * 40
+  x3a: round(260 - r * 40 * 0.7071)
+  y3a: round(210 + r * 40 * 0.7071)
+  x3b: round(260 + r * 40 * 0.9397)
+  y3b: round(210 - r * 40 * 0.342)
+
+presets:
+  - { label: 2 厘米, params: { r: 2 } }
+  - { label: 3 厘米, params: { r: 3 } }
+  - { label: 4 厘米, params: { r: 4 } }
+
+objects:
+  - id: c
+    type: circle-draw
+    radius: '{R}'
+    draw: 0
+    compass: true
+    center: true
+    radii: 0
+    diameter: false
+    at: [260, 210]
+  - id: d2
+    type: line
+    from: [260, 210]
+    to: [260, '{yTop}']
+    color: orange
+    hidden: true
+  - id: d3
+    type: line
+    from: ['{x3a}', '{y3a}']
+    to: ['{x3b}', '{y3b}']
+    color: purple
+    hidden: true
+  - id: d1
+    type: line
+    from: ['{xLeft}', 210]
+    to: ['{xRight}', 210]
+    color: green
+    hidden: true
+  - id: eq
+    type: text
+    text: 'd = 2r = [{D}](blank) 厘米'
+    size: 30
+    at: [600, 200]
+
+steps:
+  - title: 画圆
+    say: 用圆规画圆：针尖固定的点是圆心，两脚张开的距离是半径。
+    do:
+      - set: { target: c, draw: 1, duration: 3s }
+  - title: 无数条半径
+    say: 从圆心到圆上任意一点都是半径，有无数条，长度都相等。
+    do:
+      - set: { target: c, compass: false, radii: 8, radiusLabel: true }
+  - title: 直径
+    say: 通过圆心、两端在圆上的线段是直径，是半径的 2 倍。
+    do:
+      - set: { target: c, radii: 0, radiusLabel: false }
+      - set: { target: c, diameter: true }
+      - ask: true
+      - set: { target: eq, text: 'd = 2r = {D} 厘米' }
+    try:
+      task: '半径 {r} 厘米，直径是多少厘米？'
+      choose:
+        answer: '{D}'
+        min: 2
+        max: 10
+        show: [c.diameter]
+      hints:
+        - 同一个圆里，直径是半径的 2 倍。
+  - title: 认一认
+    say: 哪条是直径？
+    do:
+      - set: { target: c, diameter: false, duration: 0s }
+      - show: [d1, d2, d3]
+      - ask: true
+      - highlight: d1
+    try:
+      task: 点出直径。
+      tap:
+        answer: d1
+        among: [d1, d2, d3]
+      hints:
+        - 要通过圆心，两端都在圆上。
+
+keyPoints:
+  - 圆心决定圆的位置，半径决定圆的大小
+  - 在同一个圆里，有无数条半径和直径，所有半径都相等，直径是半径的 2 倍

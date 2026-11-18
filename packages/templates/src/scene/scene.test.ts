@@ -2950,4 +2950,56 @@ describe('沿路径移动（follow）', () => {
       expect(badIssues.some((i) => i.message.includes('路径的 width 必须大于 0'))).toBe(true);
     });
   });
+
+  describe('B18 circle-draw 零件属性校验', () => {
+    it('合法的 circle-draw 配置与子项引用通过，非法属性报错', () => {
+      const okIssues = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'c1',
+            type: 'circle-draw',
+            at: [260, 210],
+            radius: 100,
+            draw: 0.5,
+            compass: true,
+            radii: 4,
+            radiusLabel: true,
+            diameter: true,
+            roll: 0.25,
+          },
+        ],
+        steps: [
+          {
+            say: '画圆',
+            do: [
+              { set: { target: 'c1', draw: 1, roll: 1 } },
+              { highlight: ['c1.center', 'c1.radius', 'c1.diameter'] },
+            ],
+          },
+        ],
+      });
+      expect(okIssues).toEqual([]);
+
+      const badIssues = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'c2',
+            type: 'circle-draw',
+            at: [260, 210],
+            radius: -10,
+            draw: 1.5,
+            roll: -0.2,
+            radii: 2.5,
+          },
+        ],
+        steps: [{ say: '测试', do: [{ wait: '1s' }] }],
+      });
+      expect(badIssues.some((i) => i.message.includes('radius 必须大于 0'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('draw 必须在 0 到 1 之间'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('roll 必须在 0 到 1 之间'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('radii 必须是大于等于 0 的整数'))).toBe(true);
+    });
+  });
 });

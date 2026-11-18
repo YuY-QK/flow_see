@@ -168,6 +168,12 @@ function getInitialProps(part: ResolvedPart): Props {
         { bearing: 225, distance: 120, label: 'School', asset: 'school' },
       ];
     }
+  } else if (part.type === 'circle-draw') {
+    initial.at = [380, 240];
+    initial.compass = true;
+    initial.radii = 1;
+    initial.radiusLabel = true;
+    initial.diameter = true;
   }
   return initial;
 }
@@ -241,8 +247,11 @@ function getRange(
   if (prop === 'cutParts') {
     return { min: 2, max: 32, step: 2 };
   }
-  if (prop === 'unfold' || prop === 'water' || prop === 'sweep' || prop === 'cutT') {
+  if (prop === 'unfold' || prop === 'water' || prop === 'sweep' || prop === 'cutT' || prop === 'roll') {
     return { min: 0, max: 1, step: 0.01 };
+  }
+  if (prop === 'radii') {
+    return { min: 0, max: 16, step: 1 };
   }
   if (isZeroToOne) {
     return { min: 0, max: 1, step: 0.01 };

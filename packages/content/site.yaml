@@ -286,6 +286,21 @@ scene:
         oClock: 点钟
         me: 我
         target: 目标
+    circle-draw:                        # 圆规画圆 / 圆的认识：动态画圆、圆心/半径/直径标注、圆滚一周测周长
+      radius: 120
+      draw: 1
+      compass: false
+      center: true
+      radii: 0
+      radiusLabel: false
+      diameter: false
+      roll: 0
+      color: blue
+      labels:
+        center: O
+        r: r
+        d: d
+        circumference: 周长
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:
