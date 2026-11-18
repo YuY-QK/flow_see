@@ -3,7 +3,8 @@
 id: count-on
 title: 点数法与接着数
 summary: 不用从 1 数起，记住大数，接着往后数
-status: draft
+status: reviewed
+reviewedAt: 2026-11-18
 duration: 1分钟
 tags: [接着数, 点数法, 进位加法, 加法, 数轴]
 cover: { text: 9 + 4 }
@@ -24,7 +25,7 @@ explore:
 objects:
   - { id: big, type: counters, count: '{a}', layout: tenframe, color: blue, size: 40, at: [60, 50] }
   - { id: small, type: counters, count: '{b}', layout: row, color: orange, size: 40, at: [60, 160] }
-  - { id: line, type: numberline, from: 0, to: 20, step: 1, labelEvery: 1, length: 680, at: [60, 300], pointer: 0 }
+  - { id: line, type: numberline, from: 0, to: 20, step: 1, labelEvery: 1, length: 580, at: [60, 250], pointer: 0 }
   - { id: eq, type: text, text: '[{a}](@big) + [{b}](@small) = [{sum}](blank)', at: [620, 110], size: 40 }
 
 steps:

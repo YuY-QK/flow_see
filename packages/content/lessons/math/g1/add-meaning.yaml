@@ -3,7 +3,8 @@
 id: add-meaning
 title: 加法的意义
 summary: 把两部分合起来，用加法
-status: draft
+status: reviewed
+reviewedAt: 2026-11-18
 duration: 1分钟
 tags: [加法, 合起来, 加号, 一共]
 cover: { text: 3 + 2 }

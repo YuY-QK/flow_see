@@ -3,7 +3,8 @@
 id: compare-within-10
 title: 比大小
 summary: 一个对一个，多出来的那边就多
-status: draft
+status: reviewed
+reviewedAt: 2026-11-18
 duration: 1分钟
 tags: [比大小, 大于, 小于, 等于, 一一对应]
 cover: { text: 5 > 3 }

@@ -70,8 +70,8 @@
 - 舞台：800 × 360；无参数
 - 零件：
   - `plate` = counters，count 3，layout grid，cols 3，capacity 3，size 52，color red，at [80, 90]
-  - `num` = text，text `3`，size 72，at [420, 130]
-  - `line` = numberline，from 0，to 5，length 520，labelEvery 1，at [140, 290]，hidden
+  - `num` = text，text `3`，size 72，at [600, 130]
+  - `line` = numberline，from 0，to 5，length 400，labelEvery 1，at [120, 240]（数字放右边、数轴缩短，手机上不和右下角菜单按钮重叠），hidden
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|

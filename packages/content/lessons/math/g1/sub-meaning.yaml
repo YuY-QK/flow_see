@@ -3,7 +3,8 @@
 id: sub-meaning
 title: 减法的意义
 summary: 从一共里拿走一部分，求还剩多少，用减法
-status: draft
+status: reviewed
+reviewedAt: 2026-11-18
 duration: 1分钟
 tags: [减法, 去掉, 拿走, 还剩, 减号]
 cover: { text: 5 − 2 }

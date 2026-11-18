@@ -3,7 +3,8 @@
 id: zero
 title: 0 的认识
 summary: 一个也没有用 0 表示，0 也是起点
-status: draft
+status: reviewed
+reviewedAt: 2026-11-18
 duration: 1分钟
 tags: ['0', 零, 没有, 起点]
 cover: { text: '0' }
@@ -16,8 +17,8 @@ params: {}
 
 objects:
   - { id: plate, type: counters, count: 3, layout: grid, cols: 3, capacity: 3, size: 52, color: red, at: [80, 90] }
-  - { id: num, type: text, text: '3', size: 72, at: [420, 130] }
-  - { id: line, type: numberline, from: 0, to: 5, length: 520, labelEvery: 1, at: [140, 290], hidden: true }
+  - { id: num, type: text, text: '3', size: 72, at: [600, 130] }
+  - { id: line, type: numberline, from: 0, to: 5, length: 400, labelEvery: 1, at: [120, 240], hidden: true }
 
 steps:
   - title: 盘子里的桃
