@@ -80,7 +80,11 @@ export function initialObject(raw: Props): SceneObject | undefined {
   if (!id || !type || !part) return undefined;
   const props: Props = { ...part.defaults, ...(part.normalize?.(raw) ?? raw) };
   props.opacity = raw.hidden === true ? 0 : num(raw.opacity, 1);
-  props.highlight = 0;
+  if (part.props.includes('highlight')) {
+    props._hl = 0;
+  } else {
+    props.highlight = 0;
+  }
   return { id, type: part.type, props };
 }
 
@@ -348,7 +352,9 @@ function apply(world: World, a: SceneAction, p: number, current: boolean, startW
             };
           }
         } else {
-          o.props.highlight = Math.max(num(o.props.highlight, 0), e);
+          const part = getPart(o.type);
+          const hlKey = part?.props.includes('highlight') ? '_hl' : 'highlight';
+          o.props[hlKey] = Math.max(num(o.props[hlKey], 0), e);
           // color：这一次高亮框的颜色（不写用动画主题的强调色）
           if (typeof args.color === 'string') o.props.hlColor = args.color;
           else delete o.props.hlColor;
@@ -379,7 +385,9 @@ function apply(world: World, a: SceneAction, p: number, current: boolean, startW
             }
           }
         } else {
-          o.props.highlight = num(o.props.highlight, 0) * (1 - e);
+          const part = getPart(o.type);
+          const hlKey = part?.props.includes('highlight') ? '_hl' : 'highlight';
+          o.props[hlKey] = num(o.props[hlKey], 0) * (1 - e);
         }
       }
       return;
@@ -910,8 +918,12 @@ function linkRefs(world: World) {
     });
     if (!ids.size) continue;
     const refs: Record<string, { color: unknown; highlight: number }> = {};
-    for (const id of ids)
-      refs[id] = { color: colorOf(id), highlight: num(world.get(id)?.props.highlight, 0) };
+    for (const id of ids) {
+      const refObj = world.get(id);
+      const refPart = refObj ? getPart(refObj.type) : undefined;
+      const refHlKey = refPart?.props.includes('highlight') ? '_hl' : 'highlight';
+      refs[id] = { color: colorOf(id), highlight: num(refObj?.props[refHlKey], 0) };
+    }
     o.props = { ...o.props, refs };
     if (typeof o.props.color === 'string' && o.props.color.startsWith('@'))
       o.props.color = colorOf(o.props.color.slice(1));

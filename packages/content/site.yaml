@@ -257,6 +257,7 @@ scene:
         days: '{d} 天'
         title: '{y} 年 {m} 月'
     angle: { from: 0, size: 60, length: 180, arc: true, label: false, rays: false, color: ink, arcColor: accent, kindLabel: false, labels: { acute: 锐角, right: 直角, obtuse: 钝角, straight: 平角, round: 周角 } }   # 角：from 起始边方向（逆时针为正）；size 角大小；length 边长；arc 角弧；label 度数；rays 射线箭头；kindLabel 角的种类
+    protractor: { radius: 180, rotate: 0, scale: both, highlight: none }   # 量角器：radius 半径；rotate 绕底边中心旋转角度（逆时针为正）；scale 内外圈（inner/outer/both）；highlight 高亮整圈或某刻度
     coordinate-grid:                     # 方格纸 / 数对格
       cols: 10
       rows: 8

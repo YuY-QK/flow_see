@@ -3002,4 +3002,69 @@ describe('沿路径移动（follow）', () => {
       expect(badIssues.some((i) => i.message.includes('radii 必须是大于等于 0 的整数'))).toBe(true);
     });
   });
+
+  describe('protractor 场景与配置衔接（任务卡 B15）', () => {
+    it('initialObject 保留 protractor.highlight 属性并使用 _hl 记录通用高亮框', () => {
+      const def: SceneDef = {
+        stage: { width: 800, height: 450 },
+        objects: [
+          {
+            id: 'prot',
+            type: 'protractor',
+            radius: 180,
+            rotate: 30,
+            scale: 'outer',
+            highlight: 'outer',
+            at: [400, 300],
+          },
+        ],
+        steps: [[{ highlight: 'prot' }], [{ set: { target: 'prot', highlight: 65 } }]],
+      };
+
+      const o0 = obj(def, 0, 1, 'prot')!;
+      expect(o0.props.highlight).toBe('outer');
+      expect(o0.props._hl).toBe(1);
+
+      const o1 = obj(def, 1, 1, 'prot')!;
+      expect(o1.props.highlight).toBe(65);
+      expect(o1.props._hl).toBe(0);
+    });
+
+    it('checkScene 校验 protractor 的 radius、scale、highlight 合法性', () => {
+      const ok = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'prot',
+            type: 'protractor',
+            radius: 200,
+            rotate: 30,
+            scale: 'both',
+            highlight: 'none',
+            at: [400, 300],
+          },
+        ],
+        steps: [{ say: '选外圈', do: [{ set: { target: 'prot', highlight: 'outer' } }] }],
+      });
+      expect(ok).toEqual([]);
+
+      const bad = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'prot',
+            type: 'protractor',
+            radius: -10,
+            scale: 'middle',
+            highlight: 220,
+            at: [400, 300],
+          },
+        ],
+        steps: [{ say: '测试', do: [{ wait: '1s' }] }],
+      });
+      expect(bad.some((i) => i.message.includes('量角器的 radius 必须大于 0'))).toBe(true);
+      expect(bad.some((i) => i.message.includes('量角器的 scale 只能是'))).toBe(true);
+      expect(bad.some((i) => i.message.includes('量角器的 highlight 只能是'))).toBe(true);
+    });
+  });
 });

@@ -14,9 +14,10 @@ export function objectBox(o: SceneObject): Box | undefined {
   if (!(b.w >= 0) || !(b.h >= 0) || ![b.x, b.y].every(Number.isFinite)) return undefined;
   const cx = b.x + b.w / 2;
   const cy = b.y + b.h / 2;
-  const scale = Math.abs(num(o.props.scale, 1));
-  const rad = (num(o.props.rotate, 0) * Math.PI) / 180;
-  const hl = num(o.props.highlight, 0) > 0;
+  const scale = part.props.includes('scale') ? 1 : Math.abs(num(o.props.scale, 1));
+  const rad = part.props.includes('rotate') ? 0 : (num(o.props.rotate, 0) * Math.PI) / 180;
+  const hlRaw = part.props.includes('highlight') ? o.props._hl : o.props.highlight;
+  const hl = num(hlRaw, 0) > 0;
   const { padX, padY } = sceneStyle().highlight;
   // 高亮框跟零件一起缩放、旋转，所以先算上外扩再变换
   const w = (b.w + (hl ? padX * 2 : 0)) * scale;

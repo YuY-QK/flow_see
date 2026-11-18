@@ -1,0 +1,91 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+# 用量角器量角：中心对顶点，0 刻度线对一条边，看另一条边；从 0 起的那一圈读数。
+# 样板知识点（status: draft，任务卡 B15）
+id: protractor-use
+title: 用量角器量角
+summary: 中心对顶点，0 刻度线对一条边，看另一条边；从 0 起的那一圈读数
+status: draft
+duration: 1.5分钟
+tags: [量角器, 量角, 度数, 内圈, 外圈]
+cover: { text: 量角器 }
+related: [angle-measure-1, draw-angle]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  g: 65
+
+explore:
+  - param: g
+    control: slider
+    label: 角的度数
+    min: 10
+    max: 170
+    step: 5
+
+objects:
+  - id: prot
+    type: protractor
+    radius: 200
+    rotate: 30
+    at: [500, 300]
+  - id: ang
+    type: angle
+    from: 0
+    size: '{g}'
+    length: 260
+    arc: false
+    at: [300, 330]
+  - id: ans
+    type: text
+    text: '这个角是 [{g}](blank)°'
+    size: 34
+    at: [620, 80]
+
+steps:
+  - title: 要量的角
+    say: 用量角器量这个角。
+    do:
+      - highlight: ang
+  - title: 中心对顶点
+    say: 量角器的中心对准角的顶点。
+    do:
+      - move: { target: prot, to: [300, 330] }
+  - title: 0 刻度线对边
+    say: 转一转，让 0 刻度线和角的一条边重合。
+    do:
+      - ask: true
+      - set: { target: prot, rotate: 0 }
+    try:
+      task: 转动量角器，让 0 刻度线和下面的边对齐。
+      turn:
+        target: prot
+        prop: rotate
+        answer: 0
+        tolerance: 2
+        step: 1
+      hints:
+        - 底边那条直线要和角的边重合。
+  - title: 选哪一圈
+    say: 这条边对着外圈的 0，所以读外圈。
+    do:
+      - set: { target: prot, highlight: outer }
+  - title: 读数
+    say: 另一条边对着 {g}，这个角是 {g} 度。
+    do:
+      - ask: true
+      - set: { target: ans, text: '这个角是 {g}°' }
+    try:
+      task: 这个角是多少度？
+      choose:
+        answer: '{g}'
+        options: ['{g}', '{180 - g}', '{g + 10}']
+      hints:
+        - 从 0 开始的那一圈读。
+
+keyPoints:
+  - 量角时，量角器的中心和角的顶点重合，0 刻度线和角的一条边重合
+  - 角的另一条边对着几，这个角就是几度
+  - 从哪一圈的 0 开始，就读哪一圈

@@ -190,6 +190,12 @@ function getInitialProps(part: ResolvedPart): Props {
     if (initial.values === undefined) initial.values = [24, 16, 30, 12];
     if (initial.unit === undefined || initial.unit === 1) initial.unit = 5;
     if (initial.showValues === undefined) initial.showValues = true;
+  } else if (part.type === 'protractor') {
+    initial.at = [400, 320];
+    if (initial.radius === undefined) initial.radius = 180;
+    if (initial.rotate === undefined) initial.rotate = 0;
+    if (initial.scale === undefined) initial.scale = 'both';
+    if (initial.highlight === undefined) initial.highlight = 'none';
   }
   return initial;
 }
@@ -779,8 +785,9 @@ export function DevPartsPage() {
                     (currentVal === undefined && typeof defaultVal === 'boolean');
 
                   const isNum =
-                    typeof currentVal === 'number' ||
-                    (currentVal === undefined && typeof defaultVal === 'number');
+                    typeof defaultVal !== 'string' &&
+                    (typeof currentVal === 'number' ||
+                      (currentVal === undefined && typeof defaultVal === 'number'));
 
                   if (isBool) {
                     const checked =
@@ -906,60 +913,64 @@ export function DevPartsPage() {
               </div>
 
               {/* scale */}
-              <div className={s.fieldGroup}>
-                <div className={s.fieldLabel}>
-                  <span className={s.propName}>scale</span>
-                  <span>{props.scale !== undefined ? Number(props.scale) : 1}</span>
+              {!currentPart?.props.includes('scale') ? (
+                <div className={s.fieldGroup}>
+                  <div className={s.fieldLabel}>
+                    <span className={s.propName}>scale</span>
+                    <span>{props.scale !== undefined ? Number(props.scale) : 1}</span>
+                  </div>
+                  <div className={s.numberControl}>
+                    <input
+                      type="range"
+                      className={s.slider}
+                      min={0.2}
+                      max={3}
+                      step={0.1}
+                      value={props.scale !== undefined ? Number(props.scale) : 1}
+                      onChange={(e) => updateProp('scale', Number(e.target.value))}
+                    />
+                    <input
+                      type="number"
+                      className={s.numberInput}
+                      min={0.2}
+                      max={3}
+                      step={0.1}
+                      value={props.scale !== undefined ? Number(props.scale) : 1}
+                      onChange={(e) => updateProp('scale', Number(e.target.value))}
+                    />
+                  </div>
                 </div>
-                <div className={s.numberControl}>
-                  <input
-                    type="range"
-                    className={s.slider}
-                    min={0.2}
-                    max={3}
-                    step={0.1}
-                    value={props.scale !== undefined ? Number(props.scale) : 1}
-                    onChange={(e) => updateProp('scale', Number(e.target.value))}
-                  />
-                  <input
-                    type="number"
-                    className={s.numberInput}
-                    min={0.2}
-                    max={3}
-                    step={0.1}
-                    value={props.scale !== undefined ? Number(props.scale) : 1}
-                    onChange={(e) => updateProp('scale', Number(e.target.value))}
-                  />
-                </div>
-              </div>
+              ) : null}
 
               {/* rotate */}
-              <div className={s.fieldGroup}>
-                <div className={s.fieldLabel}>
-                  <span className={s.propName}>rotate</span>
-                  <span>{props.rotate !== undefined ? Number(props.rotate) : 0}°</span>
+              {!currentPart?.props.includes('rotate') ? (
+                <div className={s.fieldGroup}>
+                  <div className={s.fieldLabel}>
+                    <span className={s.propName}>rotate</span>
+                    <span>{props.rotate !== undefined ? Number(props.rotate) : 0}°</span>
+                  </div>
+                  <div className={s.numberControl}>
+                    <input
+                      type="range"
+                      className={s.slider}
+                      min={0}
+                      max={360}
+                      step={1}
+                      value={props.rotate !== undefined ? Number(props.rotate) : 0}
+                      onChange={(e) => updateProp('rotate', Number(e.target.value))}
+                    />
+                    <input
+                      type="number"
+                      className={s.numberInput}
+                      min={0}
+                      max={360}
+                      step={1}
+                      value={props.rotate !== undefined ? Number(props.rotate) : 0}
+                      onChange={(e) => updateProp('rotate', Number(e.target.value))}
+                    />
+                  </div>
                 </div>
-                <div className={s.numberControl}>
-                  <input
-                    type="range"
-                    className={s.slider}
-                    min={0}
-                    max={360}
-                    step={1}
-                    value={props.rotate !== undefined ? Number(props.rotate) : 0}
-                    onChange={(e) => updateProp('rotate', Number(e.target.value))}
-                  />
-                  <input
-                    type="number"
-                    className={s.numberInput}
-                    min={0}
-                    max={360}
-                    step={1}
-                    value={props.rotate !== undefined ? Number(props.rotate) : 0}
-                    onChange={(e) => updateProp('rotate', Number(e.target.value))}
-                  />
-                </div>
-              </div>
+              ) : null}
             </div>
           </div>
         </aside>

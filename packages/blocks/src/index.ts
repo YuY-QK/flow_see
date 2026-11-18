@@ -43,6 +43,7 @@ import { directionPart } from './parts/direction';
 import { circleDrawPart } from './parts/circle-draw';
 import { chancePart } from './parts/chance';
 import { chartPart } from './parts/chart';
+import { protractorPart } from './parts/protractor';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -388,6 +389,27 @@ export {
   type ChartXYLayout,
 } from './parts/chart';
 
+export {
+  INNER_FONT_SIZE,
+  INNER_LABEL_INSET,
+  MAJOR_TICK_LEN,
+  MID_TICK_LEN,
+  MINOR_TICK_LEN,
+  OUTER_FONT_SIZE,
+  OUTER_LABEL_INSET,
+  PROTRACTOR_SCALES,
+  ROTATE_HANDLE_OFFSET,
+  protractorLayout,
+  protractorPart,
+  protractorPoint,
+  type ProtractorHighlight,
+  type ProtractorHighlightLine,
+  type ProtractorLayout,
+  type ProtractorScale,
+  type ProtractorScaleLabel,
+  type ProtractorTick,
+} from './parts/protractor';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -437,6 +459,7 @@ export const PARTS: readonly PartDef[] = [
   circleDrawPart,
   chancePart,
   chartPart,
+  protractorPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */

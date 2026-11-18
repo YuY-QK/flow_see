@@ -15,6 +15,7 @@ import {
   NUMBER_CHART_MARK_STYLES,
   PART_TYPES,
   PLACE_VALUE_STYLES,
+  PROTRACTOR_SCALES,
   RULER_UNITS,
   SHAPE_KINDS,
   findSubitem,
@@ -278,6 +279,43 @@ function checkProps(
         out.push({
           path: [...path, 'length'],
           message: '角的 length 必须大于 0',
+        });
+      }
+    }
+  }
+  if (type === 'protractor') {
+    if (props.radius !== undefined) {
+      if (typeof props.radius !== 'number' || !Number.isFinite(props.radius) || props.radius <= 0) {
+        out.push({
+          path: [...path, 'radius'],
+          message: '量角器的 radius 必须大于 0',
+        });
+      }
+    }
+    if (props.rotate !== undefined) {
+      if (typeof props.rotate !== 'number' || !Number.isFinite(props.rotate)) {
+        out.push({
+          path: [...path, 'rotate'],
+          message: '量角器的 rotate 必须是数字',
+        });
+      }
+    }
+    if (props.scale !== undefined) {
+      if (!(PROTRACTOR_SCALES as readonly unknown[]).includes(props.scale)) {
+        out.push({
+          path: [...path, 'scale'],
+          message: `量角器的 scale 只能是 ${PROTRACTOR_SCALES.join('、')}`,
+        });
+      }
+    }
+    if (props.highlight !== undefined) {
+      const h = props.highlight;
+      const okStr = h === 'none' || h === 'inner' || h === 'outer';
+      const okNum = typeof h === 'number' && Number.isFinite(h) && h >= 0 && h <= 180;
+      if (!okStr && !okNum) {
+        out.push({
+          path: [...path, 'highlight'],
+          message: "量角器的 highlight 只能是 'none'、'inner'、'outer' 或 0–180 的度数",
         });
       }
     }

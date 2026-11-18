@@ -353,7 +353,9 @@ export function SceneView({
       };
     }
     if (doing && tryIt?.showTarget && hint.has(o.id)) {
-      obj = { ...obj, props: { ...obj.props, highlight: 1 } };
+      const pDef = getPart(o.type);
+      const hlKey = pDef?.props.includes('highlight') ? '_hl' : 'highlight';
+      obj = { ...obj, props: { ...obj.props, [hlKey]: 1 } };
     }
     if ((isTurning || tryIt?.turnValue !== undefined) && turnProp && o.id === turnTarget) {
       obj = { ...obj, props: { ...obj.props, [turnProp]: tryIt?.turnValue ?? o.props[turnProp] } };
@@ -697,9 +699,9 @@ export function SceneView({
             const part = getPart(targetObj.type);
             if (!part?.handles) return null;
             const handles = part.handles(targetObj.props);
-            const activeHandles = turnProp
-              ? handles.filter((h) => h.prop === turnProp)
-              : handles;
+            const activeHandles = (
+              turnProp ? handles.filter((h) => h.prop === turnProp) : handles
+            ).filter((h) => !h.apply);
             const hr = sceneStyle().tryIt.turnHandle;
             return activeHandles.map((handle, handleIdx) => {
               const currentVal =
@@ -1163,9 +1165,10 @@ function PartView({
   const b = part.bbox(o.props);
   const cx = b.x + b.w / 2;
   const cy = b.y + b.h / 2;
-  const scale = num(o.props.scale, 1);
-  const rotate = num(o.props.rotate, 0);
-  const hl = Math.max(0, Math.min(1, num(o.props.highlight, 0)));
+  const scale = part.props.includes('scale') ? 1 : num(o.props.scale, 1);
+  const rotate = part.props.includes('rotate') ? 0 : num(o.props.rotate, 0);
+  const hlRaw = part.props.includes('highlight') ? o.props._hl : o.props.highlight;
+  const hl = Math.max(0, Math.min(1, num(hlRaw, 0)));
   const selfTransform =
     scale !== 1 || rotate !== 0
       ? `translate(${cx} ${cy}) rotate(${rotate}) scale(${scale}) translate(${-cx} ${-cy})`
