@@ -1,0 +1,86 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: classify-count
+title: 分类后数一数
+summary: 分好的东西排整齐，哪类多一眼看出来
+status: draft
+duration: 1分钟
+tags: [分类, 统计, 比多少, 象形]
+cover: { text: ▮▮▯ }
+related: [classify-single, pictograph]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  a: 5
+  b: 3
+  c: 4
+
+derived:
+  most: 'a > b && a > c ? 1 : (b > c ? 2 : 3)'
+
+presets:
+  - { label: 苹果最多, params: { a: 5, b: 3, c: 4 } }
+  - { label: 梨最多, params: { a: 2, b: 6, c: 4 } }
+  - { label: 桃最多, params: { a: 3, b: 4, c: 6 } }
+
+objects:
+  - id: pile
+    type: item-set
+    items:
+      - { repeat: '{a}', asset: apple }
+      - { repeat: '{b}', asset: pear }
+      - { repeat: '{c}', asset: peach }
+    layout: pile
+    size: 48
+    at: [60, 80]
+  - id: pic
+    type: chart
+    kind: picto
+    categories: [苹果, 梨, 桃]
+    values: ['{a}', '{b}', '{c}']
+    icon: [apple, pear, peach]
+    width: 300
+    height: 280
+    show: 0
+    at: [390, 345]
+
+steps:
+  - title: 水果有多少
+    say: 一堆水果，哪种最多？
+    do:
+      - highlight: pile
+
+  - title: 排成一列一列
+    say: 每种排成一列，底下对齐。
+    do:
+      - set:
+          target: pic
+          show: 1
+          duration: 2s
+      - set:
+          target: pile
+          opacity: 0.3
+          together: true
+
+  - title: 哪种最多
+    say: 最高的那一列最多。
+    do:
+      - ask: true
+      - highlight: pic.col.{most}
+    try:
+      task: 点出最多的那种水果。
+      tap:
+        answer: pic.col.{most}
+        among: [pic.col.*]
+      hints:
+        - 看哪一列最高。
+
+  - title: 差几个
+    say: 苹果和梨差 {abs(a - b)} 个。
+    do:
+      - highlight: [pic.col.1, pic.col.2]
+
+keyPoints:
+  - 分好的东西排成一列一列，底下对齐，就能比出多少
+  - 最高的一列最多

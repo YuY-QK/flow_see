@@ -42,6 +42,7 @@ import { coordinateGridPart } from './parts/coordinate-grid';
 import { directionPart } from './parts/direction';
 import { circleDrawPart } from './parts/circle-draw';
 import { chancePart } from './parts/chance';
+import { chartPart } from './parts/chart';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -361,6 +362,32 @@ export {
   type GenerateChanceOptions,
 } from './parts/chance';
 
+export {
+  CHART_KINDS,
+  chartLabelsOf,
+  chartLayout,
+  chartPart,
+  piePoint,
+  type ChartAverageLine,
+  type ChartAxisNameLabel,
+  type ChartAxisTick,
+  type ChartBarItem,
+  type ChartCategoryLabel,
+  type ChartColumnItem,
+  type ChartKind,
+  type ChartLabels,
+  type ChartLayout,
+  type ChartLegendItem,
+  type ChartLineSeries,
+  type ChartPictoColumn,
+  type ChartPictoIcon,
+  type ChartPieLayout,
+  type ChartPieSlice,
+  type ChartPointItem,
+  type ChartValueLabel,
+  type ChartXYLayout,
+} from './parts/chart';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -409,6 +436,7 @@ export const PARTS: readonly PartDef[] = [
   directionPart,
   circleDrawPart,
   chancePart,
+  chartPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */

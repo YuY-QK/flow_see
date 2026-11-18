@@ -3,6 +3,7 @@ import {
   BALANCE_KINDS,
   BASE_TEN_STYLES,
   CHANCE_KINDS,
+  CHART_KINDS,
   COIN_FACES,
   COMMON_PROPS,
   COORDINATE_GRID_ORIGINS,
@@ -973,6 +974,37 @@ function checkProps(
         }
       }
     }
+    if (part.type === 'chart') {
+      if (k === 'kind' && !(CHART_KINDS as readonly unknown[]).includes(v)) {
+        out.push({
+          path: [...path, k],
+          message: `统计图的 kind 只能是 ${CHART_KINDS.join('、')}`,
+        });
+      }
+      if (k === 'unit' && typeof v === 'number' && v <= 0) {
+        out.push({ path: [...path, k], message: '统计图的 unit 必须大于 0' });
+      }
+      if ((k === 'width' || k === 'height') && typeof v === 'number' && v <= 0) {
+        out.push({ path: [...path, k], message: `统计图的 ${k} 必须大于 0` });
+      }
+      if (k === 'show' && typeof v === 'number' && (v < 0 || v > 1)) {
+        out.push({ path: [...path, k], message: '统计图的 show 必须在 0–1 范围内' });
+      }
+      if (k === 'colors') {
+        if (!Array.isArray(v)) {
+          out.push({ path: [...path, k], message: '统计图的 colors 必须是颜色列表' });
+        } else {
+          v.forEach((c, idx) => {
+            if (!colorOk(c, alive)) {
+              out.push({
+                path: [...path, k, idx],
+                message: '颜色写颜色名、#RRGGBB 或 "@零件id"',
+              });
+            }
+          });
+        }
+      }
+    }
   }
   if (type === 'chance' && path[0] === 'objects') {
     const effKind = typeof props.kind === 'string' ? props.kind : 'bag';
@@ -980,6 +1012,65 @@ function checkProps(
       out.push({
         path: [...path, 'items'],
         message: 'chance 在 bag / spinner 模式下必须指定 items',
+      });
+    }
+  }
+  if (type === 'chart') {
+    const chartKind = typeof props.kind === 'string' ? props.kind : 'bar';
+    if (
+      chartKind !== 'xy' &&
+      Array.isArray(props.values) &&
+      Array.isArray(props.categories) &&
+      props.values.length !== props.categories.length
+    ) {
+      out.push({
+        path: [...path, 'values'],
+        message: `统计图的 values 长度（${props.values.length}）与 categories 长度（${props.categories.length}）不一致`,
+      });
+    }
+    if (
+      (chartKind === 'bar2' || chartKind === 'line2') &&
+      Array.isArray(props.values2)
+    ) {
+      if (
+        Array.isArray(props.categories) &&
+        Array.isArray(props.values2) &&
+        props.values2.length !== props.categories.length
+      ) {
+        out.push({
+          path: [...path, 'values2'],
+          message: `复式统计图的 values2 长度（${props.values2.length}）与 categories 长度（${props.categories.length}）不一致`,
+        });
+      } else if (
+        !Array.isArray(props.categories) &&
+        Array.isArray(props.values) &&
+        props.values2.length !== props.values.length
+      ) {
+        out.push({
+          path: [...path, 'values2'],
+          message: `复式统计图的 values2 长度（${props.values2.length}）与 values 长度（${props.values.length}）不一致`,
+        });
+      }
+    }
+    if (chartKind === 'pie' && Array.isArray(props.values)) {
+      props.values.forEach((val, idx) => {
+        if (typeof val === 'number' && val < 0) {
+          out.push({
+            path: [...path, 'values', idx],
+            message: '扇形统计图（pie）的 values 不能有负数',
+          });
+        }
+      });
+    }
+    if (
+      chartKind === 'xy' &&
+      Array.isArray(props.xs) &&
+      Array.isArray(props.values) &&
+      props.xs.length !== props.values.length
+    ) {
+      out.push({
+        path: [...path, 'values'],
+        message: `坐标图（xy）的 xs 长度（${props.xs.length}）与 values 长度（${props.values.length}）不一致`,
       });
     }
   }
@@ -1330,6 +1421,42 @@ export function checkScene(raw: LessonLike): ConfigIssue[] {
                           message: `items 中 count 为 0 的颜色 "${resItem}" 不能出现在 results 中`,
                         });
                       }
+                    }
+                  });
+                }
+              }
+            }
+            if (tt === 'chart') {
+              const orig = objects.find((o) => o.id === t);
+              if (orig) {
+                const effKind =
+                  typeof patch.kind === 'string'
+                    ? patch.kind
+                    : typeof orig.kind === 'string'
+                      ? orig.kind
+                      : 'bar';
+                const effCats = Array.isArray(patch.categories)
+                  ? patch.categories
+                  : orig.categories;
+                if (
+                  effKind !== 'xy' &&
+                  Array.isArray(patch.values) &&
+                  !Array.isArray(patch.categories) &&
+                  Array.isArray(effCats) &&
+                  patch.values.length !== effCats.length
+                ) {
+                  out.push({
+                    path: [...path, verb, 'values'],
+                    message: `统计图的 values 长度（${patch.values.length}）与 categories 长度（${effCats.length}）不一致`,
+                  });
+                }
+                if (effKind === 'pie' && patch.kind === undefined && Array.isArray(patch.values)) {
+                  patch.values.forEach((val, idx) => {
+                    if (typeof val === 'number' && val < 0) {
+                      out.push({
+                        path: [...path, verb, 'values', idx],
+                        message: '扇形统计图（pie）的 values 不能有负数',
+                      });
                     }
                   });
                 }

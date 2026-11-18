@@ -311,6 +311,21 @@ scene:
         heads: 正面
         tails: 反面
         times: '{n} 次'
+    chart:                              # 统计图：象形、单/复式条形、单/复式折线、扇形、坐标图
+      kind: bar
+      colors: [blue, orange]
+      unit: 1
+      width: 480
+      height: 300
+      average: false
+      icon: dot
+      showValues: false
+      show: 1
+      line: true
+      barRatio: 0.6
+      pointRadius: 6
+      labels:
+        average: 平均
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:

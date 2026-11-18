@@ -184,6 +184,12 @@ function getInitialProps(part: ResolvedPart): Props {
     }
     if (!initial.draw) initial.draw = 4;
     if (initial.tally === undefined) initial.tally = true;
+  } else if (part.type === 'chart') {
+    initial.at = [140, 370];
+    if (initial.categories === undefined) initial.categories = ['A', 'B', 'C', 'D'];
+    if (initial.values === undefined) initial.values = [24, 16, 30, 12];
+    if (initial.unit === undefined || initial.unit === 1) initial.unit = 5;
+    if (initial.showValues === undefined) initial.showValues = true;
   }
   return initial;
 }
