@@ -200,6 +200,19 @@ function getInitialProps(part: ResolvedPart): Props {
     initial.at = [250, 75];
     if (!initial.shadeRows) initial.shadeRows = 2;
     if (!initial.shadeCols) initial.shadeCols = 3;
+  } else if (part.type === 'track') {
+    initial.at = [100, 225];
+    if (initial.distance === undefined) initial.distance = 500;
+    if (
+      initial.movers === undefined ||
+      (Array.isArray(initial.movers) && initial.movers.length === 0)
+    ) {
+      initial.movers = [
+        { from: 0, speed: 60, asset: 'boy', label: '60 m/min' },
+        { from: 1, speed: 40, asset: 'girl', label: '40 m/min' },
+      ];
+    }
+    if (!initial.t) initial.t = 2;
   }
   return initial;
 }
@@ -211,6 +224,9 @@ function getRange(
   handle?: Handle,
   partType?: string,
 ): { min: number; max: number; step: number } {
+  if (partType === 'track' && prop === 't') {
+    return { min: 0, max: 10, step: 0.1 };
+  }
   if (partType === 'chance' && prop === 'draw') {
     return { min: 0, max: 20, step: 0.1 };
   }

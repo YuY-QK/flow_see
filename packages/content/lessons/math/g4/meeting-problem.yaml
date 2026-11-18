@@ -1,0 +1,99 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+# 相遇问题：两人相向而行，每分钟一起走“速度和”，路程 = 速度和 × 时间。
+# 样板知识点（status: draft，任务卡 B22）
+id: meeting-problem
+title: 相遇问题
+summary: 两人相向而行，每分钟一起走“速度和”，路程 = 速度和 × 时间
+status: draft
+duration: 1.5分钟
+tags: [相遇问题, 行程问题, 速度和]
+cover: { text: 相遇 }
+related: [mixed-apply]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  v1: 60
+  v2: 40
+  t: 5
+
+derived:
+  s: (v1 + v2) * t
+
+explore:
+  - param: v1
+    control: slider
+    label: 小明速度
+    min: 40
+    max: 80
+    step: 10
+  - param: v2
+    control: slider
+    label: 小红速度
+    min: 30
+    max: 70
+    step: 10
+  - param: t
+    control: slider
+    label: 几分相遇
+    min: 3
+    max: 8
+    step: 1
+
+objects:
+  - id: tr
+    type: track
+    length: 550
+    distance: '{s}'
+    unitText: 米
+    ends: [小明家, 小红家]
+    movers:
+      - { from: 0, speed: '{v1}', asset: boy, label: '{v1} 米/分' }
+      - { from: 1, speed: '{v2}', asset: girl, label: '{v2} 米/分' }
+    t: 0
+    showGap: true
+    at: [125, 168]
+  - id: eq
+    type: expr-steps
+    lines:
+      - '({v1} + {v2}) × {t}'
+      - '{v1 + v2} × {t}'
+      - '{s}（米）'
+    size: 28
+    show: 0
+    at: [305, 338]
+
+steps:
+  - title: 同时出发
+    say: 两人从两家同时出发，相向而行，{t} 分钟后相遇。
+    do:
+      - highlight: tr
+  - title: 走 1 分钟
+    say: 1 分钟，两人共走 {v1} + {v2} = {v1 + v2} 米。
+    do:
+      - set: { target: tr, t: 1, duration: 2s, ease: linear }
+  - title: 越走越近
+    say: 每过 1 分钟，两人之间就近 {v1 + v2} 米。
+    do:
+      - set: { target: tr, t: '{t}', duration: '{t}s', ease: linear }
+  - title: 相遇
+    say: 相遇时，两人走的路合起来正好是全程。
+    do:
+      - highlight: tr
+      - ask: true
+      - set: { target: eq, show: 99 }
+    try:
+      task: 两家相距多少米？
+      choose:
+        answer: '{s}'
+        min: 100
+        max: 1200
+        show: [tr]
+      hints:
+        - 速度和 × 时间。
+
+keyPoints:
+  - 相遇问题中，两人每分钟一起走的路程叫速度和
+  - 路程 = 速度和 × 相遇时间

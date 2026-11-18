@@ -337,6 +337,18 @@ scene:
       color2: orange
       overlapColor: green
       grid: true
+    track:                              # 行程图：相遇问题、追及问题、速度×时间=路程
+      length: 600
+      distance: 500
+      unitText: 米
+      ends: [甲地, 乙地]
+      movers: []
+      t: 0
+      showGap: true
+      marks: []
+      labels:
+        gap: '还差 {d} {u}'
+        minute: '第 {n} 分'
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:

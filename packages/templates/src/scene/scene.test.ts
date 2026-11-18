@@ -3067,4 +3067,55 @@ describe('沿路径移动（follow）', () => {
       expect(bad.some((i) => i.message.includes('量角器的 highlight 只能是'))).toBe(true);
     });
   });
+
+  describe('B22 行程图零件 track 场景求值与配置检查', () => {
+    it('set 动作连续推进 track.t 并在超过相遇时间后保持相遇位置', () => {
+      const def: SceneDef = {
+        stage: { width: 800, height: 450 },
+        objects: [
+          {
+            id: 'tr',
+            type: 'track',
+            length: 600,
+            distance: 500,
+            movers: [
+              { from: 0, speed: 60 },
+              { from: 1, speed: 40 },
+            ],
+            t: 0,
+            at: [100, 160],
+          },
+        ],
+        steps: [[{ set: { target: 'tr', t: 6, ease: 'linear' } }]],
+      };
+
+      const midObj = obj(def, 0, 0.5, 'tr')!;
+      expect(midObj.props.t).toBeCloseTo(3, 5);
+
+      const endObj = obj(def, 0, 1, 'tr')!;
+      expect(endObj.props.t).toBeCloseTo(6, 5);
+    });
+
+    it('checkScene 校验 track 的属性及子项引用合法性', () => {
+      const ok = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'tr',
+            type: 'track',
+            length: 600,
+            distance: 500,
+            movers: [
+              { from: 0, speed: 60 },
+              { from: 1, speed: 40 },
+            ],
+            t: 0,
+            at: [100, 160],
+          },
+        ],
+        steps: [{ say: '高亮', do: [{ highlight: ['tr.mover.1', 'tr.mover.2', 'tr.gap'] }] }],
+      });
+      expect(ok).toEqual([]);
+    });
+  });
 });

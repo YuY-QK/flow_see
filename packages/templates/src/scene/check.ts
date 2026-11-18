@@ -1120,6 +1120,93 @@ function checkProps(
         }
       }
     }
+    if (part.type === 'track') {
+      const isParamExpr = typeof v === 'string' && v.includes('{');
+      if (k === 'length' && !isParamExpr) {
+        if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) {
+          out.push({ path: [...path, k], message: '行程图的 length 必须大于 0' });
+        }
+      }
+      if (k === 'distance' && !isParamExpr) {
+        if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) {
+          out.push({ path: [...path, k], message: '行程图的 distance 必须大于 0' });
+        }
+      }
+      if (k === 't' && !isParamExpr) {
+        if (typeof v !== 'number' || !Number.isFinite(v) || v < 0) {
+          out.push({ path: [...path, k], message: '行程图的 t 不能小于 0' });
+        }
+      }
+      if (k === 'ends') {
+        if (!Array.isArray(v) || v.length !== 2) {
+          out.push({
+            path: [...path, k],
+            message: '行程图的 ends 必须是包含两个地名的列表，如 [甲地, 乙地]',
+          });
+        }
+      }
+      if (k === 'showGap' && !isParamExpr) {
+        if (typeof v !== 'boolean') {
+          out.push({ path: [...path, k], message: '行程图的 showGap 必须是布尔值' });
+        }
+      }
+      if (k === 'marks') {
+        if (!Array.isArray(v)) {
+          out.push({ path: [...path, k], message: '行程图的 marks 必须是时刻数列表' });
+        } else {
+          v.forEach((mk, idx) => {
+            if (typeof mk === 'string' && mk.includes('{')) return;
+            if (typeof mk !== 'number' || !Number.isFinite(mk) || mk < 0) {
+              out.push({
+                path: [...path, k, idx],
+                message: 'marks 里的每个时刻必须是大于等于 0 的数',
+              });
+            }
+          });
+        }
+      }
+      if (k === 'movers') {
+        if (!Array.isArray(v)) {
+          out.push({ path: [...path, k], message: '行程图的 movers 必须是列表' });
+        } else {
+          v.forEach((mv, idx) => {
+            if (!mv || typeof mv !== 'object' || Array.isArray(mv)) {
+              out.push({ path: [...path, k, idx], message: 'movers 的每一项必须是对象' });
+              return;
+            }
+            const item = mv as Record<string, unknown>;
+            const fromIsParam = typeof item.from === 'string' && item.from.includes('{');
+            if (!fromIsParam && item.from !== 0 && item.from !== 1) {
+              out.push({
+                path: [...path, k, idx, 'from'],
+                message: 'mover 的 from 只能是 0（左端出发）或 1（右端出发）',
+              });
+            }
+            const speedIsParam = typeof item.speed === 'string' && item.speed.includes('{');
+            if (!speedIsParam) {
+              const sp =
+                typeof item.speed === 'number'
+                  ? item.speed
+                  : typeof item.speed === 'string' && item.speed.trim() !== ''
+                    ? Number(item.speed)
+                    : NaN;
+              if (!Number.isFinite(sp) || sp < 0) {
+                out.push({
+                  path: [...path, k, idx, 'speed'],
+                  message: 'mover 的 speed 必须是大于等于 0 的数',
+                });
+              }
+            }
+            if (item.color !== undefined && !colorOk(item.color, alive)) {
+              out.push({
+                path: [...path, k, idx, 'color'],
+                message: 'mover 的颜色写颜色名、#RRGGBB 或 "@零件id"',
+              });
+            }
+          });
+        }
+      }
+    }
   }
   if (type === 'chance' && path[0] === 'objects') {
     const effKind = typeof props.kind === 'string' ? props.kind : 'bag';

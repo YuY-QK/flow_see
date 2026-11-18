@@ -45,6 +45,7 @@ import { chancePart } from './parts/chance';
 import { chartPart } from './parts/chart';
 import { protractorPart } from './parts/protractor';
 import { fractionAreaPart } from './parts/fraction-area';
+import { trackPart } from './parts/track';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -424,6 +425,32 @@ export {
   type FractionAreaLayout,
 } from './parts/fraction-area';
 
+export {
+  TRACK_END_FONT_SIZE,
+  TRACK_END_GAP,
+  TRACK_END_POST_HALF,
+  TRACK_GAP_FONT_SIZE,
+  TRACK_ICON_SIZE,
+  TRACK_LINE_WIDTH,
+  TRACK_MARK_FONT_SIZE,
+  TRACK_MOVER_LABEL_SIZE,
+  TRACK_TRAVELED_FONT_SIZE,
+  TRACK_TRAVELED_WIDTH,
+  trackLabelsOf,
+  trackLayout,
+  trackPart,
+  type TrackEndLayout,
+  type TrackGapLayout,
+  type TrackLabels,
+  type TrackLane,
+  type TrackLayoutResult,
+  type TrackMarkItem,
+  type TrackMoverFrom,
+  type TrackMoverInput,
+  type TrackMoverLayout,
+  type TrackTraveledLineLayout,
+} from './parts/track';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -475,6 +502,7 @@ export const PARTS: readonly PartDef[] = [
   chartPart,
   protractorPart,
   fractionAreaPart,
+  trackPart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */
