@@ -2883,5 +2883,71 @@ describe('沿路径移动（follow）', () => {
       expect(badIssues.some((i) => i.message.includes('marks 必须是二维数组'))).toBe(true);
       expect(badIssues.some((i) => i.message.includes('markColor 写颜色名'))).toBe(true);
     });
+
+    it('B13 路径（path）配置检查与 follow 引用', () => {
+      // 合法配置与 follow path 零件引用
+      const okIssues = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'myPath',
+            type: 'path',
+            points: [
+              [100, 100],
+              [200, 100],
+              [200, 200],
+            ],
+            closed: true,
+            draw: 0.5,
+            marker: 'dot',
+            markerSize: 40,
+            lengths: ['10', '10', '14'],
+            width: 5,
+            color: 'accent',
+            dashed: false,
+          },
+          { id: 'ant', type: 'image', asset: 'ant', at: [100, 100] },
+        ],
+        steps: [
+          {
+            say: '蚂蚁沿着路径走',
+            do: [
+              {
+                follow: {
+                  target: 'ant',
+                  path: 'myPath',
+                  draw: 'myPath',
+                },
+              },
+            ],
+          },
+        ],
+      });
+      expect(okIssues).toEqual([]);
+
+      // 非法属性检查
+      const badIssues = checkScene({
+        params: {},
+        objects: [
+          {
+            id: 'badPath',
+            type: 'path',
+            points: [[100, 100]], // 少于 2 个点
+            draw: 1.5, // 超过 1
+            marker: 123, // 必须是字符串
+            lengths: 'not-an-array',
+            closed: 'yes',
+            width: -2,
+          },
+        ],
+        steps: [{ say: '测试', do: [{ wait: '1s' }] }],
+      });
+      expect(badIssues.some((i) => i.message.includes('路径的 points 必须至少包含 2 个坐标点'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('路径的 draw 进度必须在 0 到 1 之间'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('路径的 marker 必须是'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('路径的 lengths 必须是文字列表'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('路径的 closed 必须是布尔值'))).toBe(true);
+      expect(badIssues.some((i) => i.message.includes('路径的 width 必须大于 0'))).toBe(true);
+    });
   });
 });

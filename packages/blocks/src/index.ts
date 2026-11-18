@@ -25,6 +25,7 @@ import { fractionPart, labelPart, textPart } from './parts/text';
 import { itemSetPart } from './parts/item-set';
 import { numberBondPart } from './parts/number-bond';
 import { polygonPart } from './parts/polygon';
+import { pathPart } from './parts/path';
 import { moneyPart } from './parts/money';
 import { cubeStackPart } from './parts/cube-stack';
 import { solidPart } from './parts/solid';
@@ -119,6 +120,13 @@ export {
   type NumberBondNode,
 } from './parts/number-bond';
 export { polygonLayout, polygonPart, type PolygonLayoutResult } from './parts/polygon';
+export {
+  pathLayout,
+  pathPart,
+  type PathLayoutResult,
+  type PathMarkerLayout,
+  type PathSegment,
+} from './parts/path';
 export {
   DEFAULT_MONEY_COLORS,
   MONEY_LAYOUTS,
@@ -290,6 +298,7 @@ export const PARTS: readonly PartDef[] = [
   itemSetPart,
   numberBondPart,
   polygonPart,
+  pathPart,
   moneyPart,
   cubeStackPart,
   solidPart,

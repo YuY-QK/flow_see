@@ -144,6 +144,7 @@ scene:
     item-set: { layout: row, cols: 5, size: 56, gap: 12, color: blue, hiddenItems: [] }   # 物品组：一组各不相同的物品（水果、图形等），用于点数、分类
     number-bond: { dir: down, show: 2, size: 44, blank: [], colors: { whole: ink, p: blue, q: orange } }   # 分合图：数的组成、想加算减、一图四式
     polygon: { fill: true, color: blue, sideLabels: [], vertexLabels: [], angles: [], angleLabels: [], rightAngles: [], heights: [], dashed: false }   # 多边形：fill 填充；color 主色；sideLabels 边长；vertexLabels 顶点字母；angles 角弧；rightAngles 直角符号；heights 垂线；dashed 虚线轮廓
+    path: { closed: false, draw: 1, marker: none, markerSize: 40, lengths: [], width: 5, color: accent, dashed: false }   # 路径：points 顶点；closed 闭合；draw 绘制比例；marker 前端标记；markerSize 标记大小；lengths 边长标注；width 线宽；color 颜色；dashed 虚线
     base-ten: { style: stick, ones: 0, tens: 0, hundreds: 0, thousands: 0, columns: true, labels: [个, 十, 百, 千], unit: 16, color: blue }   # 十进制块：小棒/方块，用于数位、进位（捆小棒）与退位
     number-chart: { from: 1, to: 100, cols: 10, cell: 38, marks: [], reveal: 0, size: 18 }   # 百数表：数序、找规律、倍数特征、质数筛
     money:                               # 人民币（示意）：面值示意图，用于认识货币、换钱、购物

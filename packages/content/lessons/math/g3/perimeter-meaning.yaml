@@ -1,0 +1,117 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+# 周长的含义：沿着图形的边线围一周的长度，就是周长。
+# 样板知识点（status: draft，任务卡 B13）
+id: perimeter-meaning
+title: 周长的含义
+summary: 沿着图形的边线围一周的长度，就是周长
+status: draft
+duration: 2分钟
+tags: [周长, 一周, 边线]
+cover: { step: 1, text: 一周 }
+keyPoints:
+  - 封闭图形一周的长度，就是它的周长
+  - 量周长要从一点出发，沿边线围一周回到起点
+related: [rect-perimeter, area-meaning]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 420 }
+
+objects:
+  - id: leaf
+    type: image
+    asset: leaf
+    width: 260
+    height: 200
+    at: [240, 200]
+  - id: edge
+    type: path
+    points:
+      - [240, 120]
+      - [266, 134]
+      - [292, 154]
+      - [318, 180]
+      - [328, 212]
+      - [318, 238]
+      - [287, 256]
+      - [254, 264]
+      - [240, 264]
+      - [226, 264]
+      - [193, 256]
+      - [162, 238]
+      - [152, 212]
+      - [162, 180]
+      - [188, 154]
+      - [214, 134]
+      - [240, 120]
+    closed: true
+    draw: 0
+    marker: ant
+    markerSize: 40
+    width: 5
+    color: orange
+  - id: rope
+    type: path
+    points:
+      - [460, 300]
+      - [760, 300]
+    draw: 0
+    width: 5
+    color: orange
+    hidden: true
+  - id: rope-label
+    type: text
+    text: 拉直的线：树叶的周长
+    size: 22
+    at: [610, 340]
+    hidden: true
+  - id: face
+    type: polygon
+    points:
+      - [240, 150]
+      - [280, 200]
+      - [240, 240]
+      - [200, 200]
+    fill: green
+    color: green
+    hidden: true
+  - id: vein
+    type: line
+    from: [240, 130]
+    to: [240, 260]
+    width: 4
+    color: green
+    hidden: true
+  - id: tip
+    type: text
+    text: 周长：封闭图形一周的长度
+    size: 26
+    at: [600, 140]
+
+steps:
+  - title: 小蚂蚁爬一圈
+    say: 小蚂蚁从这里出发，沿着树叶的边爬一圈。
+    do:
+      - set: { target: edge, draw: 1, duration: 4s, ease: linear }
+  - title: 回到起点
+    say: 爬了一整圈，又回到起点。
+    do:
+      - highlight: edge
+  - title: 拉直量一量
+    say: 把这一圈边线拉直，量出的长度就是树叶的周长。
+    do:
+      - show: [rope, rope-label]
+      - set: { target: rope, draw: 1, duration: 2s }
+  - title: 哪个是周长
+    say: 周长是边线一周，不是里面的面。
+    do:
+      - show: [face, vein]
+      - highlight: edge
+      - ask: true
+    try:
+      task: 点出表示周长的那条线。
+      tap:
+        answer: edge
+        among: [face, edge, vein]
+      hints:
+        - 沿着最外面的边一整圈。

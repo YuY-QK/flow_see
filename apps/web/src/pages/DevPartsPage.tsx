@@ -121,6 +121,20 @@ function getInitialProps(part: ResolvedPart): Props {
     if (initial.cell === undefined) initial.cell = 48;
     if (initial.marks === undefined) initial.marks = [[5, 1], [5, 4], [5, 28]];
     if (initial.markColor === undefined) initial.markColor = 'red';
+  } else if (part.type === 'path') {
+    delete initial.at;
+    if (initial.points === undefined) {
+      initial.points = [
+        [150, 120],
+        [450, 120],
+        [550, 280],
+        [150, 280],
+      ];
+    }
+    if (initial.closed === undefined) initial.closed = true;
+    if (initial.draw === undefined) initial.draw = 1;
+    if (initial.marker === undefined) initial.marker = 'dot';
+    if (initial.lengths === undefined) initial.lengths = ['300', '200', '400', '160'];
   }
   return initial;
 }

@@ -433,6 +433,30 @@ function checkProps(
       if (!Array.isArray(v) || v.length < 3 || !v.every(isPoint))
         out.push({ path: [...path, k], message: '多边形的 points 必须至少包含 3 个顶点坐标 [x, y]' });
     }
+    if (k === 'points' && part.type === 'path') {
+      if (!Array.isArray(v) || v.length < 2 || !v.every(isPoint))
+        out.push({ path: [...path, k], message: '路径的 points 必须至少包含 2 个坐标点 [x, y]' });
+    }
+    if (k === 'draw' && part.type === 'path') {
+      if (typeof v === 'number' && (v < 0 || v > 1))
+        out.push({ path: [...path, k], message: '路径的 draw 进度必须在 0 到 1 之间' });
+    }
+    if (k === 'marker' && part.type === 'path') {
+      if (typeof v !== 'string')
+        out.push({ path: [...path, k], message: '路径的 marker 必须是 "dot"、"none" 或素材 id 字符串' });
+    }
+    if (k === 'lengths' && part.type === 'path') {
+      if (!Array.isArray(v))
+        out.push({ path: [...path, k], message: '路径的 lengths 必须是文字列表' });
+    }
+    if (k === 'closed' && part.type === 'path') {
+      if (typeof v !== 'boolean')
+        out.push({ path: [...path, k], message: '路径的 closed 必须是布尔值' });
+    }
+    if (k === 'width' && part.type === 'path') {
+      if (typeof v === 'number' && v <= 0)
+        out.push({ path: [...path, k], message: '路径的 width 必须大于 0' });
+    }
     if (k === 'cut' && part.type === 'polygon') {
       if (!Array.isArray(v) || v.length !== 2 || !isPoint(v[0]) || !isPoint(v[1]))
         out.push({ path: [...path, k], message: '剪开线 cut 要写成两个坐标 [[x1, y1], [x2, y2]]' });
