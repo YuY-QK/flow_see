@@ -4,7 +4,8 @@ import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { buildIndex, findEntry, findLesson, highlightParts, searchLessons } from './catalog';
 import { generateSchemas, CONTENT_ROOT } from './json-schema';
-import { loadContent, sampleLessonCombos } from './load';
+import { loadContent, sampleLessonCombos, stripRichMarks } from './load';
+import { displayText } from '@flow-see/blocks';
 import { evalExpr } from '@flow-see/core/params.ts';
 import { TEMPLATE_IDS } from '@flow-see/templates';
 
@@ -547,5 +548,205 @@ describe('3.0 新字段校验与索引（D1）', () => {
       { id: 'geometry', name: '图形与几何' },
       { id: 'stats', name: '统计与概率' },
     ]);
+  });
+});
+
+describe('讲解与提示字数检查（sayWarnLength）', () => {
+  const sayWarnings = (lessonYaml: string, filePath = 'lessons/math/g3/fraction-intro.yaml') => {
+    const r = sandbox({ [filePath]: lessonYaml });
+    const { issues } = loadContent(r, { templateIds: TEMPLATE_IDS, sayWarnLength: 30 });
+    expect(issues.filter((i) => i.level === 'error')).toEqual([]);
+    return issues.filter(
+      (i) => i.level === 'warning' && i.file === filePath && i.message.includes('自校清单建议一句不超过约 30 字'),
+    );
+  };
+
+  it('stripRichMarks 与 @flow-see/blocks 的 displayText 在颜色、@零件、blank、frac、sup 标记上完全一致', () => {
+    const samples = [
+      '把 [9](blue @left) 和 [1](orange @one) 凑成 [10](green)。',
+      '面积是 12cm[2](sup)，体积是 8cm[3](sup)。',
+      '带分数 [1 3/4](red frac) 加 [1/4](frac) 等于 [2](blank)。',
+      '普通文字 [不带括号] 保持原样。',
+    ];
+    for (const text of samples) {
+      expect(stripRichMarks(text)).toBe(displayText({ text }));
+    }
+  });
+
+  it('含 sel 文字函数（如 compare-within-10）：代入参数后只数实际显示的字，不再误提醒', () => {
+    const compareWithin10 = `
+id: fraction-intro
+title: 比大小
+summary: 一个对一个，多出来的那边就多
+status: draft
+duration: 1分钟
+tags: [比大小, 大于, 小于, 等于]
+cover: { text: 5 > 3 }
+template: scene
+stage: { width: 800, height: 360 }
+params: { a: 5, b: 3 }
+explore:
+  - { param: a, control: slider, label: 上面几个, min: 1, max: 9 }
+  - { param: b, control: slider, label: 下面几个, min: 1, max: 9 }
+objects:
+  - { id: top, type: counters, count: '{a}', layout: row, size: 48, color: blue, at: [60, 70] }
+  - { id: bottom, type: counters, count: '{b}', layout: row, size: 48, color: orange, at: [60, 190] }
+  - { id: sign, type: text, text: '[{a}](@top) [>](blank) [{b}](@bottom)', size: 56, at: [640, 150] }
+steps:
+  - title: 哪边多
+    say: 上面 {a} 个，下面 {b} 个，哪边多？
+    do:
+      - highlight: top
+  - title: 多出来的
+    say: "{sel(a == b, '一样多，用等号。', '多出来的那边多。')}"
+    do:
+      - highlight: sign
+      - ask: true
+    try:
+      task: '{a} 和 {b} 中间填什么？'
+      choose:
+        answer: "{sel(a > b, '>', sel(a < b, '<', '='))}"
+        options: ['>', '=', '<']
+      hints:
+        - "{sel(a == b, '两边数量相等时用等号。', '开口朝着多的那边。')}"
+keyPoints: [一个对一个，多出来的那边多, 开口朝着大数]
+`;
+    expect(sayWarnings(compareWithin10)).toEqual([]);
+  });
+
+  it('含 cn 文字函数与 derived：按代入后的汉字读法统计实际字数', () => {
+    const cnLesson = `
+id: fraction-intro
+title: 读数练习
+summary: 读出算式得数
+status: draft
+template: message
+params: { a: 8, b: 7 }
+derived:
+  sum: a + b
+steps:
+  - say: "{cn(a)}加{cn(b)}等于{cn(sum)}，大家一起大声读出来吧。"
+keyPoints: [按数位读数, 认清十位和个位]
+`;
+    // 代入后为 "八加七等于十五，大家一起大声读出来吧。"（19 个字），原文 33 字符但实际不超过 30 字
+    expect(sayWarnings(cnLesson)).toEqual([]);
+  });
+
+  it('含颜色、@零件、blank、frac、sup 标记（含 mixed 生成的 frac）：去掉标记后只数实际显示的字', () => {
+    const markLesson = `
+id: fraction-intro
+title: 标记字数测试
+summary: 去掉富文本标记后统计字数
+status: draft
+template: message
+params: { a: 7, b: 4 }
+steps:
+  - say: "把 [9](blue @left) 和 [1](orange @one) 凑成 [10](green)，面积 5cm[2](sup)，得 [10](blank)。"
+  - say: "假分数化成带分数是 {mixed(a, b)}，再加上 [1/4](red frac) 正好是 2。"
+keyPoints: [凑成整十, 带分数化简]
+`;
+    // 第 1 步去标记后："把 9 和 1 凑成 10，面积 5cm2，得 10。"（27 个字 <= 30）
+    // 第 2 步代入并去标记后："假分数化成带分数是 1 3/4，再加上 1/4 正好是 2。"（30 个字 <= 30）
+    expect(sayWarnings(markLesson)).toEqual([]);
+  });
+
+  it('含 repeat / when 步骤：按展开后的每一步数，指出展开后的准确步号', () => {
+    const repeatLesson = `
+id: fraction-intro
+title: 重复步骤字数测试
+summary: 按展开后的每一步统计字数
+status: draft
+template: message
+params: { n: 3 }
+explore:
+  - { param: n, control: slider, label: 轮数, min: 2, max: 3 }
+steps:
+  - say: 先看准备步骤。
+  - when: "{n == 2}"
+    say: 两轮时的简短过渡。
+  - repeat: "{n}"
+    say: "第 {i} 步：{sel(i == 3, '这一步展开后讲解文字写得非常非常长已经明显超过了三十个字的建议上限啦。', '简短讲解。')}"
+keyPoints: [逐步观察, 总结规律]
+`;
+    // 当 n=3 时：第 1 步（准备步骤，7 字），when(n==2) 跳过，repeat 展开为第 2、3、4 步；
+    // 其中 i=1、i=2 不超过 30 字，i=3（展开后第 4 步）为 41 字 > 30 字
+    const warns = sayWarnings(repeatLesson);
+    expect(warns).toHaveLength(1);
+    expect(warns[0].message).toContain('第 4 步讲解有 41 个字');
+  });
+
+  it('配了 explore：按会被检查到的参数组合里最长的一种来数', () => {
+    const exploreMaxLesson = `
+id: fraction-intro
+title: Explore 最长组合测试
+summary: 标准取值不超长但 explore 某组合超长
+status: draft
+template: message
+params: { n: 5 }
+explore:
+  - param: n
+    control: buttons
+    label: 选择数字
+    options:
+      - { value: 5, label: '5' }
+      - { value: 20, label: '20' }
+      - { value: 2468, label: '2468' }
+steps:
+  - say: "看这个数，它的汉字读法是“{cn(n)}”，请你先试着自己读一读吧！"
+keyPoints: [分级读数, 万以内数的读法]
+`;
+    // n=5 -> cn(n)="五"（28 字 <= 30）；n=2468 -> cn(n)="两千四百六十八"（34 字 > 30）
+    const warns = sayWarnings(exploreMaxLesson);
+    expect(warns).toHaveLength(1);
+    expect(warns[0].message).toContain('第 1 步讲解有 34 个字');
+    expect(warns[0].message).toContain('n=2468');
+  });
+
+  it('配了 presets：按会被检查到的参数组合里最长的一种来数', () => {
+    const presetMaxLesson = `
+id: fraction-intro
+title: Presets 最长组合测试
+summary: 标准取值不超长但 preset 组合超长
+status: draft
+template: message
+params: { n: 8 }
+presets:
+  - { label: 小数, params: { n: 8 } }
+  - { label: 多位数, params: { n: 10203 } }
+steps:
+  - say: "看这个数，它的汉字读法是“{cn(n)}”，请你先试着自己读一读吧！"
+keyPoints: [中间零的读法, 多位数读法]
+`;
+    // n=8 -> "八"（28 字 <= 30）；preset 多位数 n=10203 -> "一万零二百零三"（34 字 > 30）
+    const warns = sayWarnings(presetMaxLesson);
+    expect(warns).toHaveLength(1);
+    expect(warns[0].message).toContain('第 1 步讲解有 34 个字');
+    expect(warns[0].message).toContain('例子“多位数”');
+  });
+
+  it('真正超过 30 字的讲解、任务提示、错误提示仍会准确提醒', () => {
+    const trulyLongLesson = `
+id: fraction-intro
+title: 超长讲解测试
+summary: 真正超过三十字的句子仍会提醒
+status: draft
+template: message
+params: { a: 6 }
+steps:
+  - say: 这是一句真正超过了三十个字的讲解内容，哪怕代入了参数 {a} 并去掉 [蓝色](blue) 标记依然有四十三个字。
+    try:
+      task: 这也是一句真正超过了三十个字的任务提示文字，需要提醒编写配置的人把句子改得更简短好懂一些。
+      choose:
+        answer: 6
+        options: [5, 6, 7]
+      hints:
+        - 这是一条真正超过了三十个字的错误提示文字，孩子们读起来会觉得太长太费劲需要精简一下。
+keyPoints: [一句不超过约三十字, 简明清晰]
+`;
+    const warns = sayWarnings(trulyLongLesson);
+    expect(warns).toHaveLength(3);
+    expect(warns[0].message).toMatch(/第 1 步讲解有 4\d 个字/);
+    expect(warns[1].message).toMatch(/第 1 步任务提示有 4\d 个字/);
+    expect(warns[2].message).toMatch(/第 1 步第 1 条提示有 4\d 个字/);
   });
 });

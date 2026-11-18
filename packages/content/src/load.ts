@@ -24,7 +24,7 @@ import {
   textFuncParamNames,
   TEXT_FUNC_RE,
 } from '@flow-see/core/format.ts';
-import { expandSteps } from './steps.ts';
+import { expandSteps, expandStepsWithMeta } from './steps.ts';
 import type { z } from 'zod';
 import {
   SCHEMAS,
@@ -259,8 +259,15 @@ function readYamlWithLines<N extends SchemaName>(
   return undefined;
 }
 
-/** 讲解词里的 {参数名} */
-const PLACEHOLDER = /\{([A-Za-z_]\w*)\}/g;
+const RICH_MARK = /\[([^\]]*)\]\(([^)]*)\)/g;
+
+/**
+ * 去掉颜色 / @零件 / blank / frac / sup 标记，保留实际显示的字（规则与 @flow-see/blocks 的 displayText 一致；
+ * load.ts 会被 vite.config.ts 在 Node ESM 阶段直接加载，不能引入含 JSX 的 @flow-see/blocks）。
+ */
+export function stripRichMarks(text: string): string {
+  return text.replace(RICH_MARK, '$1');
+}
 
 /**
  * 读取全部配置。返回的 bundle 只在没有 error 时可用（有 error 时为 undefined）。
@@ -448,19 +455,6 @@ export function loadContent(
           }
         }
       }
-      const lines: [string, string][] = [['讲解', st.say]];
-      if (st.try) {
-        lines.push(['任务提示', st.try.task]);
-        st.try.hints?.forEach((h, k) => lines.push([`第 ${k + 1} 条提示`, h]));
-      }
-      for (const [what, line] of lines) {
-        const len = line.replace(PLACEHOLDER, '00').length;
-        if (opts.sayWarnLength && len > opts.sayWarnLength)
-          warn(
-            name,
-            `第 ${si + 1} 步${what}有 ${len} 个字，自校清单建议一句不超过约 ${opts.sayWarnLength} 字`,
-          );
-      }
     });
 
     // 标准取值、点选的例子、滑块能取到的每一种组合，都要能正常画出来
@@ -544,6 +538,17 @@ export function loadContent(
     }
     const maxSteps = site?.scene?.maxSteps ?? 20;
     const seen = new Set<string>();
+    interface SayLengthStat {
+      sourceIndex: number;
+      repeatIndex: number;
+      fieldOrder: number;
+      stepNo: number;
+      what: string;
+      len: number;
+      whenSuffix: string;
+      path: (string | number)[];
+    }
+    const maxSayLengths = new Map<string, SayLengthStat>();
     for (const v of variants) {
       const vScope = resolveParams(v.params, derived);
       const std0 = v.params === lesson.params;
@@ -617,7 +622,8 @@ export function loadContent(
         }
       }
 
-      const expandedSteps = expandSteps(lesson.steps, vScope);
+      const expandedEntries = expandStepsWithMeta(lesson.steps, vScope);
+      const expandedSteps = expandedEntries.map((entry) => entry.step);
       if (expandedSteps.length === 0) {
         const key = `steps-zero-${whenSuffix}`;
         if (!seen.has(key)) {
@@ -632,6 +638,64 @@ export function loadContent(
             name,
             `步骤展开后有 ${expandedSteps.length} 步，超过了上限 ${maxSteps} 步${whenSuffix}`,
           );
+        }
+      }
+
+      if (opts.sayWarnLength) {
+        for (let ei = 0; ei < expandedEntries.length; ei++) {
+          const entry = expandedEntries[ei];
+          const stepNo = ei + 1;
+          const st = entry.step;
+          const fields: {
+            key: string;
+            order: number;
+            what: string;
+            text: string;
+            path: (string | number)[];
+          }[] = [
+            {
+              key: 'say',
+              order: 0,
+              what: '讲解',
+              text: String(st.say),
+              path: ['steps', entry.sourceIndex, 'say'],
+            },
+          ];
+          if (st.try) {
+            fields.push({
+              key: 'task',
+              order: 1,
+              what: '任务提示',
+              text: String(st.try.task),
+              path: ['steps', entry.sourceIndex, 'try', 'task'],
+            });
+            st.try.hints?.forEach((h, k) => {
+              fields.push({
+                key: `hint-${k}`,
+                order: 2 + k,
+                what: `第 ${k + 1} 条提示`,
+                text: String(h),
+                path: ['steps', entry.sourceIndex, 'try', 'hints', k],
+              });
+            });
+          }
+          for (const f of fields) {
+            const len = stripRichMarks(f.text).length;
+            const statKey = `${entry.sourceIndex}:${entry.repeatIndex}:${f.key}`;
+            const prev = maxSayLengths.get(statKey);
+            if (!prev || len > prev.len) {
+              maxSayLengths.set(statKey, {
+                sourceIndex: entry.sourceIndex,
+                repeatIndex: entry.repeatIndex,
+                fieldOrder: f.order,
+                stepNo,
+                what: f.what,
+                len,
+                whenSuffix,
+                path: f.path,
+              });
+            }
+          }
         }
       }
 
@@ -652,6 +716,23 @@ export function loadContent(
             name,
             (i.path.length ? `${formatPath(i.path)}：` : '') + i.message + whenSuffix,
             read.line(i.path),
+          );
+        }
+      }
+    }
+    if (opts.sayWarnLength) {
+      const sortedStats = [...maxSayLengths.values()].sort(
+        (a, b) =>
+          a.sourceIndex - b.sourceIndex ||
+          a.repeatIndex - b.repeatIndex ||
+          a.fieldOrder - b.fieldOrder,
+      );
+      for (const item of sortedStats) {
+        if (item.len > opts.sayWarnLength) {
+          warn(
+            name,
+            `第 ${item.stepNo} 步${item.what}有 ${item.len} 个字，自校清单建议一句不超过约 ${opts.sayWarnLength} 字${item.whenSuffix}`,
+            read.line(item.path),
           );
         }
       }

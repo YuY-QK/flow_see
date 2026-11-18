@@ -10,6 +10,8 @@ import {
   checkEarlyAnswer,
   checkTextOverlaps,
   checkTopLeftArea,
+  createPageErrorCollector,
+  getIgnoredFaviconUrl,
   type FrameObjectInfo,
 } from './walk';
 
@@ -120,6 +122,106 @@ describe('walk check rules', () => {
       const problems = checkEarlyAnswer(texts, trySpec, 2);
       expect(problems).toHaveLength(1);
       expect(problems[0].message).toContain('answer "锐角" before the question is asked');
+    });
+  });
+
+  describe('createPageErrorCollector (404 & console error handling)', () => {
+    const baseUrl = 'http://localhost:5241';
+
+    it('resolves exact origin-root /favicon.ico URL', () => {
+      expect(getIgnoredFaviconUrl('http://localhost:5241')).toBe('http://localhost:5241/favicon.ico');
+      expect(getIgnoredFaviconUrl('http://localhost:5241/learn/1/math/make-ten')).toBe(
+        'http://localhost:5241/favicon.ico',
+      );
+    });
+
+    it('ignores only the origin-root /favicon.ico 404 and passes cleanly', () => {
+      const collector = createPageErrorCollector(baseUrl);
+      collector.onConsole({
+        type: () => 'error',
+        text: () => 'Failed to load resource: the server responded with a status of 404 (Not Found)',
+        location: () => ({ url: 'http://localhost:5241/favicon.ico', lineNumber: 0, columnNumber: 0 }),
+      });
+      collector.onResponse({
+        status: () => 404,
+        url: () => 'http://localhost:5241/favicon.ico',
+      });
+      expect(collector.getProblems()).toEqual([]);
+    });
+
+    it('reports real 404 asset errors with the exact failing URL and deduplicates response + console', () => {
+      const collector = createPageErrorCollector(baseUrl);
+      const missingAssetUrl =
+        'http://localhost:5241/@fs/packages/content/assets/math/fruits/missing-apple.svg';
+      collector.onResponse({
+        status: () => 404,
+        url: () => missingAssetUrl,
+      });
+      collector.onConsole({
+        type: () => 'error',
+        text: () => 'Failed to load resource: the server responded with a status of 404 (Not Found)',
+        location: () => ({ url: missingAssetUrl, lineNumber: 0, columnNumber: 0 }),
+      });
+
+      const problems = collector.getProblems();
+      expect(problems).toHaveLength(1);
+      expect(problems[0].severity).toBe('error');
+      expect(problems[0].message).toContain('404');
+      expect(problems[0].message).toContain(missingAssetUrl);
+    });
+
+    it('does not ignore non-root favicon 404, cross-origin 404, or 500 on /favicon.ico', () => {
+      const collector = createPageErrorCollector(baseUrl);
+      collector.onConsole({
+        type: () => 'error',
+        text: () => 'Failed to load resource: the server responded with a status of 404 (Not Found)',
+        location: () => ({ url: 'http://localhost:5241/assets/favicon.ico' }),
+      });
+      collector.onConsole({
+        type: () => 'error',
+        text: () => 'Failed to load resource: the server responded with a status of 404 (Not Found)',
+        location: () => ({ url: 'https://example.com/favicon.ico' }),
+      });
+      collector.onConsole({
+        type: () => 'error',
+        text: () =>
+          'Failed to load resource: the server responded with a status of 500 (Internal Server Error)',
+        location: () => ({ url: 'http://localhost:5241/favicon.ico' }),
+      });
+
+      const problems = collector.getProblems();
+      expect(problems).toHaveLength(3);
+      expect(problems[0].message).toContain('http://localhost:5241/assets/favicon.ico');
+      expect(problems[1].message).toContain('https://example.com/favicon.ico');
+      expect(problems[2].message).toContain('http://localhost:5241/favicon.ico');
+    });
+
+    it('falls back to response event URL if a 404 response did not emit a console location URL', () => {
+      const collector = createPageErrorCollector(baseUrl);
+      const url = 'http://localhost:5241/assets/silent-404.svg';
+      collector.onResponse({
+        status: () => 404,
+        url: () => url,
+      });
+
+      const problems = collector.getProblems();
+      expect(problems).toHaveLength(1);
+      expect(problems[0].message).toContain('404');
+      expect(problems[0].message).toContain(url);
+    });
+
+    it('preserves regular runtime console.error messages', () => {
+      const collector = createPageErrorCollector(baseUrl);
+      collector.onConsole({
+        type: () => 'error',
+        text: () => 'Uncaught render failure in part',
+        location: () => ({ url: 'http://localhost:5241/src/main.tsx', lineNumber: 42 }),
+      });
+
+      const problems = collector.getProblems();
+      expect(problems).toEqual([
+        { message: 'Console error: Uncaught render failure in part', severity: 'error' },
+      ]);
     });
   });
 });

@@ -268,6 +268,82 @@ export function visibleText(props: Record<string, unknown>): string {
     .join('');
 }
 
+export interface ConsoleMessageLike {
+  type(): string;
+  text(): string;
+  location?(): { url?: string; lineNumber?: number; columnNumber?: number };
+}
+
+export interface ResponseLike {
+  status(): number;
+  url(): string;
+}
+
+/**
+ * Return the single ignored 404 URL for a walk session.
+ *
+ * `apps/web/index.html` does not declare `<link rel="icon">`. When running full Chromium
+ * (e.g. via `CHROMIUM_PATH` / `--executable-path`), Chromium automatically requests `/favicon.ico`
+ * at the origin root on the first navigation in a BrowserContext and emits a 404 console error.
+ * Only this exact origin-root `/favicon.ico` 404 is ignored; all other 404 responses are reported
+ * with their full URLs.
+ */
+export function getIgnoredFaviconUrl(baseUrl: string): string {
+  return new URL('/favicon.ico', baseUrl).href;
+}
+
+export function createPageErrorCollector(baseUrl: string) {
+  const ignoredFaviconUrl = getIgnoredFaviconUrl(baseUrl);
+  const consoleErrors: string[] = [];
+  const reportedResourceUrls = new Set<string>();
+  const failedResourceUrls = new Map<string, number>();
+
+  return {
+    onConsole(msg: ConsoleMessageLike): void {
+      if (msg.type() !== 'error') return;
+      const text = msg.text();
+      const locUrl = msg.location?.()?.url ?? '';
+      if (text.startsWith('Failed to load resource')) {
+        if (locUrl === ignoredFaviconUrl && /\b404\b/.test(text)) {
+          return;
+        }
+        if (locUrl) {
+          reportedResourceUrls.add(locUrl);
+          consoleErrors.push(text.includes(locUrl) ? text : `${text} (${locUrl})`);
+          return;
+        }
+      }
+      consoleErrors.push(text);
+    },
+    onResponse(res: ResponseLike): void {
+      const status = res.status();
+      if (status < 400) return;
+      const resUrl = res.url();
+      if (status === 404 && resUrl === ignoredFaviconUrl) {
+        return;
+      }
+      if (!failedResourceUrls.has(resUrl)) {
+        failedResourceUrls.set(resUrl, status);
+      }
+    },
+    getProblems(): WalkProblem[] {
+      const problems: WalkProblem[] = consoleErrors.map((err) => ({
+        message: `Console error: ${err}`,
+        severity: 'error',
+      }));
+      for (const [resUrl, status] of failedResourceUrls) {
+        if (!reportedResourceUrls.has(resUrl)) {
+          problems.push({
+            message: `Console error: Failed to load resource: the server responded with a status of ${status} (${resUrl})`,
+            severity: 'error',
+          });
+        }
+      }
+      return problems;
+    },
+  };
+}
+
 export function checkEarlyAnswer(
   texts: string[],
   trySpec: TrySpec,
@@ -423,10 +499,13 @@ export async function runWalk(opts: WalkOptions = {}): Promise<number> {
     mkdirSync(lessonDir, { recursive: true });
 
     const page = await context.newPage();
-    const consoleErrors: string[] = [];
+    const errorCollector = createPageErrorCollector(baseUrl);
     const pageErrors: string[] = [];
-    page.on('console', (msg: { type(): string; text(): string }) => {
-      if (msg.type() === 'error') consoleErrors.push(msg.text());
+    page.on('console', (msg: ConsoleMessageLike) => {
+      errorCollector.onConsole(msg);
+    });
+    page.on('response', (res: ResponseLike) => {
+      errorCollector.onResponse(res);
     });
     page.on('pageerror', (err: { message: string }) => {
       pageErrors.push(err.message);
@@ -671,8 +750,8 @@ export async function runWalk(opts: WalkOptions = {}): Promise<number> {
         }
       }
 
-      for (const err of consoleErrors) {
-        lessonProblems.push({ message: `Console error: ${err}`, severity: 'error' });
+      for (const p of errorCollector.getProblems()) {
+        lessonProblems.push(p);
       }
 
       const durationMs = Date.now() - lessonStart;
@@ -707,8 +786,8 @@ export async function runWalk(opts: WalkOptions = {}): Promise<number> {
       } else {
         lessonProblems.push({ message: primaryErr, severity: 'error' });
       }
-      for (const err of consoleErrors) {
-        lessonProblems.push({ message: `Console error: ${err}`, severity: 'error' });
+      for (const p of errorCollector.getProblems()) {
+        lessonProblems.push(p);
       }
       results.push({
         id: lessonId,
