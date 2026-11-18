@@ -24,7 +24,7 @@ objects:
   - id: toy
     type: image
     asset: toy-car
-    width: 140
+    width: 150
     height: 100
     at: [140, 110]
   - id: tag

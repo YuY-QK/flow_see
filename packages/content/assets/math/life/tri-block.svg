@@ -1,15 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-  <!-- 三棱柱积木 -->
+  <!-- 三棱柱积木（横放桌面，正面尖朝上三角形 + 斜向后方长方形侧面） -->
   <g stroke-linecap="round" stroke-linejoin="round">
-    <!-- 顶面三角形 -->
-    <path d="M 18 24 L 82 24 L 50 48 Z" fill="#FDE68A" stroke="#92400E" stroke-width="3"/>
-    <!-- 左侧矩形面 -->
-    <path d="M 18 24 L 50 48 L 50 88 L 18 64 Z" fill="#F59E0B" stroke="#92400E" stroke-width="3"/>
-    <!-- 右侧矩形面 -->
-    <path d="M 82 24 L 50 48 L 50 88 L 82 64 Z" fill="#D97706" stroke="#92400E" stroke-width="3"/>
-
-    <!-- 棱边与表面高光 -->
-    <line x1="24" y1="26" x2="48" y2="44" stroke="#FFFFFF" stroke-width="2.5" opacity="0.45"/>
-    <line x1="50" y1="52" x2="50" y2="84" stroke="#FFFFFF" stroke-width="2" opacity="0.35"/>
+    <!-- 右后侧长方形侧面 -->
+    <path d="M 29 38 L 71 20 L 92 62 L 50 80 Z" fill="#F59E0B" stroke="#B45309" stroke-width="3"/>
+    <!-- 正对观众的三角形面（尖朝上，底边平放桌面） -->
+    <path d="M 29 38 L 50 80 L 8 80 Z" fill="#FCD34D" stroke="#B45309" stroke-width="3"/>
+    <!-- 顶棱受光高光 -->
+    <line x1="34" y1="40.4" x2="68" y2="25.8" stroke="#FFFFFF" stroke-width="2.5" opacity="0.45"/>
   </g>
 </svg>
