@@ -1,0 +1,74 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: angle-intro
+title: 角的初步认识
+summary: 角有一个顶点两条边，大小和边长无关；比直角小是锐角，大是钝角
+status: draft
+duration: 1.5分钟
+tags: [角, 直角, 锐角, 钝角, 顶点]
+cover: { text: ∠ }
+related: [line-ray-segment, protractor-use]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  g: 60
+
+explore:
+  - param: g
+    control: slider
+    label: 角的大小
+    min: 30
+    max: 150
+    step: 15
+
+objects:
+  - id: ang
+    type: angle
+    from: 0
+    size: '{g}'
+    length: 160
+    arc: true
+    at: [200, 300]
+  - id: name
+    type: label
+    text: 角
+    at: [200, 340]
+  - id: tri
+    type: image
+    asset: set-square
+    width: 140
+    height: 140
+    at: [560, 220]
+    hidden: true
+  - id: right
+    type: angle
+    from: 0
+    size: 90
+    length: 140
+    kindLabel: true
+    at: [500, 330]
+    hidden: true
+
+steps:
+  - title: 认识角
+    say: 角有一个顶点，两条边。
+    do:
+      - highlight: ang.vertex
+      - highlight: [ang.side1, ang.side2]
+  - title: 张口变大
+    say: 两条边张得越开，角越大。
+    do:
+      - set: { target: ang, size: 120, duration: 1s }
+      - set: { target: ang, size: '{g}', duration: 1s }
+  - title: 边长不影响
+    say: 把边画长，角的大小不变。
+    do:
+      - set: { target: ang, length: 240, duration: 1s }
+      - highlight: ang
+
+keyPoints:
+  - 角有一个顶点和两条边
+  - 角的大小和边张开的大小有关，和边的长短无关
+  - 比直角小的是锐角，比直角大的是钝角

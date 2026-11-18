@@ -256,6 +256,7 @@ scene:
         month: '{m} 月'
         days: '{d} 天'
         title: '{y} 年 {m} 月'
+    angle: { from: 0, size: 60, length: 180, arc: true, label: false, rays: false, color: ink, arcColor: accent, kindLabel: false, labels: { acute: 锐角, right: 直角, obtuse: 钝角, straight: 平角, round: 周角 } }   # 角：from 起始边方向（逆时针为正）；size 角大小；length 边长；arc 角弧；label 度数；rays 射线箭头；kindLabel 角的种类
 
 # ───────── 知识点播放器的时间和行为 ─────────
 player:

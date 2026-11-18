@@ -135,6 +135,13 @@ function getInitialProps(part: ResolvedPart): Props {
     if (initial.draw === undefined) initial.draw = 1;
     if (initial.marker === undefined) initial.marker = 'dot';
     if (initial.lengths === undefined) initial.lengths = ['300', '200', '400', '160'];
+  } else if (part.type === 'angle') {
+    initial.at = [320, 260];
+    if (initial.from === undefined) initial.from = 0;
+    if (initial.size === undefined) initial.size = 60;
+    if (initial.length === undefined) initial.length = 180;
+    if (initial.label === undefined) initial.label = true;
+    if (initial.kindLabel === undefined) initial.kindLabel = true;
   }
   return initial;
 }

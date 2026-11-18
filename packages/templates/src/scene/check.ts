@@ -260,6 +260,24 @@ function checkProps(
       });
     }
   }
+  if (type === 'angle') {
+    if (props.size !== undefined && typeof props.size === 'number') {
+      if (props.size < 0 || props.size > 360) {
+        out.push({
+          path: [...path, 'size'],
+          message: '角的 size 必须在 0–360 范围内',
+        });
+      }
+    }
+    if (props.length !== undefined && typeof props.length === 'number') {
+      if (props.length <= 0) {
+        out.push({
+          path: [...path, 'length'],
+          message: '角的 length 必须大于 0',
+        });
+      }
+    }
+  }
   const known = new Set<string>([...COMMON_PROPS, ...part.props]);
   for (const [k, v] of Object.entries(props)) {
     if (!known.has(k)) {
@@ -273,7 +291,7 @@ function checkProps(
       out.push({ path: [...path, k], message: 'at 要写成 [x, y]，如 [400, 225]' });
     if ((k === 'from' || k === 'to') && (type === 'line' || type === 'arrow') && !isPoint(v))
       out.push({ path: [...path, k], message: `${k} 要写成 [x, y]` });
-    if (k === 'color' && !colorOk(v, alive))
+    if ((k === 'color' || k === 'arcColor') && !colorOk(v, alive))
       out.push({
         path: [...path, k],
         message: `颜色写颜色名（blue、orange、red、green、purple、yellow、pink、gray、ink、accent）、#RRGGBB，或 "@零件id"`,

@@ -37,6 +37,7 @@ import { rulerPart } from './parts/ruler';
 import { balancePart } from './parts/balance';
 import { tablePart } from './parts/table';
 import { calendarPart } from './parts/calendar';
+import { anglePart } from './parts/angle';
 
 export * from './base';
 export { configureScene, sceneStyle, type SceneStyle } from './style';
@@ -267,6 +268,18 @@ export {
   type CalendarWeekdayHeader,
 } from './parts/calendar';
 
+export {
+  defaultAngleLabels,
+  angleLayout,
+  anglePart,
+  anglePoint,
+  getAngleKind,
+  type AngleKind,
+  type AngleLabels,
+  type AngleLayout,
+  type AngleRayLayout,
+} from './parts/angle';
+
 /** 第一批零件（需求设计 5.5） */
 export const PARTS: readonly PartDef[] = [
   textPart,
@@ -310,6 +323,7 @@ export const PARTS: readonly PartDef[] = [
   balancePart,
   tablePart,
   calendarPart,
+  anglePart,
 ];
 
 /** 配置里也可以用的别名：数字、算式都是文字零件 */
