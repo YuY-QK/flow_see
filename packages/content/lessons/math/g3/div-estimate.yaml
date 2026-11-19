@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: div-estimate
+title: 除法的估算
+summary: 把被除数看成接近的、能整除的整十整百数
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [估算, 除法, 约等于]
+cover: { text: 182÷3≈60 }
+related: [mult-estimate]
+
+template: scene
+stage: { width: 800, height: 380 }
+
+params:
+  a: 182
+  d: 3
+  ap: 180
+
+presets:
+  - { label: '182 ÷ 3', params: { a: 182, d: 3, ap: 180 } }
+  - { label: '245 ÷ 6', params: { a: 245, d: 6, ap: 240 } }
+  - { label: '398 ÷ 4', params: { a: 398, d: 4, ap: 400 } }
+  - { label: '638 ÷ 8', params: { a: 638, d: 8, ap: 640 } }
+
+objects:
+  - id: line
+    type: numberline
+    from: '{ap - 20}'
+    to: '{ap + 20}'
+    step: 2
+    labelEvery: 5
+    length: 560
+    marks: ['{a}', '{ap}']
+    at: [120, 120]
+  - id: est
+    type: text
+    text: '{a} ÷ {d} ≈ [{ap / d}](blank)'
+    size: 40
+    at: [400, 250]
+
+steps:
+  - title: 大约多少
+    say: '{a} ÷ {d} 大约是多少？'
+    do:
+      - highlight: est
+  - title: 找好算的数
+    say: '{a} 接近 {ap}，{ap} 正好能被 {d} 整除。'
+    do:
+      - highlight: line
+  - title: 估一估
+    say: '{ap} ÷ {d} = {ap / d}，所以大约是 {ap / d}。'
+    do:
+      - ask: true
+      - set: { target: est, text: '{a} ÷ {d} ≈ {ap / d}' }
+    try:
+      task: '{a} ÷ {d} 大约是多少？'
+      choose:
+        answer: '{ap / d}'
+        options:
+          - '{ap / d}'
+          - '{ap / d * 10}'
+          - '{ap / d + 10}'
+
+keyPoints:
+  - 除法估算，把被除数看成和它接近、又能被除数整除的整十或整百数
+  - 估算结果用“≈”连接

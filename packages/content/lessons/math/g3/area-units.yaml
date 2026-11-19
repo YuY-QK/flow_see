@@ -1,0 +1,85 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: area-units
+title: 常用面积单位
+summary: 边长 1 厘米的正方形面积是 1 平方厘米
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [面积单位, 平方厘米, 平方分米, 平方米]
+cover: { text: 1cm² }
+related: [area-meaning, area-unit-convert]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+objects:
+  - id: cm
+    type: shape
+    shape: rect
+    width: 40
+    height: 40
+    color: blue
+    at: [70, 180]
+  - id: cml
+    type: label
+    text: '1 cm[2](sup)'
+    at: [70, 235]
+  - id: dm
+    type: shape
+    shape: rect
+    width: 140
+    height: 140
+    color: orange
+    at: [220, 180]
+  - id: dml
+    type: label
+    text: '1 dm[2](sup)'
+    at: [220, 280]
+  - id: m
+    type: text
+    text: '1 m[2](sup)：边长 1 米的正方形'
+    size: 24
+    at: [560, 160]
+  - id: m2
+    type: text
+    text: '能站下 8–10 个同学'
+    size: 22
+    at: [560, 205]
+  - id: q
+    type: text
+    text: '课桌面大约 24 [平方分米](blank)'
+    size: 28
+    at: [400, 360]
+
+steps:
+  - title: 平方厘米
+    say: 边长 1 厘米的正方形面积是 1 平方厘米，大约指甲盖大。
+    do:
+      - highlight: cm
+      - highlight: cml
+  - title: 平方分米
+    say: 边长 1 分米的正方形，面积是 1 平方分米，大约一个手掌。
+    do:
+      - highlight: dm
+      - highlight: dml
+  - title: 平方米
+    say: 边长 1 米的正方形，面积是 1 平方米。
+    do:
+      - highlight: [m, m2]
+  - title: 选单位
+    say: 课桌面用平方分米合适，大约 24 平方分米。
+    do:
+      - ask: true
+      - set: { target: q, text: '课桌面大约 24 平方分米（dm[2](sup)）' }
+    try:
+      task: 课桌面的面积用什么单位合适？
+      choose:
+        answer: 平方分米
+        options:
+          - 平方厘米
+          - 平方分米
+          - 平方米
+
+keyPoints:
+  - 常用的面积单位有平方厘米、平方分米、平方米
+  - 边长 1 厘米的正方形面积是 1 平方厘米，其余同理

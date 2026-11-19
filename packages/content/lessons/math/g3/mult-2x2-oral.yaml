@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: mult-2x2-oral
+title: 两位数乘整十数的口算与估算
+summary: 12 × 20 先算 12 × 2，再在末尾添 0；估算看成整十数
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [口算乘法, 两位数乘整十数, 估算]
+cover: { text: 12×20 }
+related: [mult-column, mult-2x2-area]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  a: 12
+  b: 2
+derived:
+  p: a * b * 10
+
+explore:
+  - { param: a, control: slider, label: 两位数, min: 11, max: 40 }
+  - { param: b, control: slider, label: 几个十, min: 2, max: 9 }
+
+objects:
+  - id: g
+    type: grid
+    rows: '{a}'
+    cols: '{b * 10}'
+    cell: 5
+    filled: 0
+    at: [30, 60]
+  - id: eq1
+    type: text
+    text: '{a} × {b} = {a * b}'
+    size: 32
+    at: [580, 130]
+  - id: eq2
+    type: text
+    text: '{a} × {b * 10} = [{p}](blank)'
+    size: 34
+    at: [580, 210]
+
+steps:
+  - title: '先算 {a} × {b}'
+    say: '{a} × {b} = {a * b}。'
+    do:
+      - highlight: eq1
+  - title: '乘 {b * 10}'
+    say: '{b * 10} 是 {b} 个十，积就是 {a * b} 个十。'
+    do:
+      - set: { target: g, filled: '{a * b * 10}', duration: 2s }
+      - ask: true
+      - set: { target: eq2, text: '{a} × {b * 10} = {p}' }
+    try:
+      task: '{a} × {b * 10} 等于几？'
+      choose:
+        answer: '{p}'
+        options:
+          - '{a * b}'
+          - '{p}'
+          - '{p * 10}'
+  - title: 估一估
+    say: '估算时把两位数看成整十数：{a} 看成 {round(a / 10) * 10}。'
+    do:
+      - highlight: eq2
+
+keyPoints:
+  - 两位数乘整十数，先用两位数乘十位上的数，再在积的末尾添一个 0
+  - 估算时可以把两位数看成整十数

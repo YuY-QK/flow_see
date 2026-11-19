@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: div-word
+title: 除法解决问题
+summary: 每份几个、能分几份，都用除法
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [除法应用, 解决问题, 平均分]
+cover: { text: 分一分 }
+related: [division-two-meanings, div-column-1]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  t: 48
+  g: 4
+derived:
+  e: t / g
+
+presets:
+  - { label: '48 本分 4 班', params: { t: 48, g: 4 } }
+  - { label: '60 本分 5 班', params: { t: 60, g: 5 } }
+  - { label: '84 本分 7 班', params: { t: 84, g: 7 } }
+
+objects:
+  - id: books
+    type: counters
+    count: '{t}'
+    layout: grid
+    cols: 12
+    shape: square
+    size: 22
+    color: blue
+    at: [40, 40]
+  - id: q1
+    type: text
+    text: '{t} 本书平均分给 {g} 个班，每班几本？'
+    size: 26
+    at: [400, 230]
+  - id: a1
+    type: text
+    text: '{t} ÷ {g} = [{e}](blank)（本）'
+    size: 32
+    at: [400, 275]
+  - id: q2
+    type: text
+    text: '{t} 本书，每班 {e} 本，能分给几个班？'
+    size: 26
+    at: [400, 330]
+    hidden: true
+  - id: a2
+    type: text
+    text: '{t} ÷ {e} = [{g}](blank)（个）'
+    size: 32
+    at: [400, 375]
+    hidden: true
+
+steps:
+  - title: 读题
+    say: '{t} 本书平均分给 {g} 个班。'
+    do:
+      - highlight: books
+      - highlight: q1
+  - title: 每班几本
+    say: 平均分，求每份几本，用除法。
+    do:
+      - ask: true
+      - set: { target: a1, text: '{t} ÷ {g} = {e}（本）' }
+    try:
+      task: 每班几本？
+      choose:
+        answer: '{e}'
+        min: 2
+        max: 20
+  - title: 换个问法
+    say: '每班 {e} 本，能分给几个班？'
+    do:
+      - show: q2
+      - show: a2
+      - ask: true
+      - set: { target: a2, text: '{t} ÷ {e} = {g}（个）' }
+    try:
+      task: 能分给几个班？
+      choose:
+        answer: '{g}'
+        min: 2
+        max: 9
+
+keyPoints:
+  - 平均分求每份是多少，用除法
+  - 求一个数里有几个另一个数，也用除法

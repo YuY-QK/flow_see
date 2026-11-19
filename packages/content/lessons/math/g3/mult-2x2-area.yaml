@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: mult-2x2-area
+title: 为什么竖式第二行要错一位
+summary: 第二行是十位上的数去乘，得的是几个十，所以末尾对齐十位
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [两位数乘两位数, 竖式, 错位, 面积模型]
+cover: { text: 14×12 }
+related: [mult-column, mult-2x2-oral]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  a: 14
+  b: 12
+derived:
+  p1: a * (b % 10)
+  p2: a * (b - b % 10)
+  p: a * b
+
+explore:
+  - { param: a, control: slider, label: 第一个数, min: 11, max: 19 }
+  - { param: b, control: slider, label: 第二个数, min: 11, max: 19 }
+
+objects:
+  - id: g
+    type: grid
+    rows: '{b}'
+    cols: '{a}'
+    cell: 18
+    filled: 0
+    at: [40, 40]
+  - id: cut
+    type: line
+    from: [36, '{40 + 10 * 18}']
+    to: ['{44 + a * 18}', '{40 + 10 * 18}']
+    dashed: true
+    color: red
+    hidden: true
+  - id: calc
+    type: column-calc
+    a: '{a}'
+    b: '{b}'
+    op: '×'
+    show: 0
+    at: [560, 200]
+
+steps:
+  - title: 方格长方形
+    say: '{a} × {b} 就是 {b} 行、每行 {a} 格的长方形。'
+    do:
+      - highlight: g
+  - title: 分成两块
+    say: '把 {b} 行分成 {b % 10} 行和 10 行。'
+    do:
+      - show: cut
+  - title: 第一块
+    say: '{b % 10} 行：{a} × {b % 10} = {p1}，是竖式第一行。'
+    do:
+      - repeat: '{b % 10}'
+        do:
+          - highlight: { target: 'g.row.{10 + i}', together: true }
+      - set: { target: calc, show: 2 }
+  - title: 第二块
+    say: '10 行是 {p2}，第二行写 {p2 / 10}，末尾 0 不写对着十位。'
+    do:
+      - repeat: 10
+        do:
+          - highlight: { target: 'g.row.{i}', together: true }
+      - ask: true
+      - set: { target: calc, show: 4 }
+    try:
+      task: 第二块一共几格？
+      choose:
+        answer: '{p2}'
+        options:
+          - '{p2 / 10}'
+          - '{p2}'
+          - '{p2 * 10}'
+      hints:
+        - '10 行，每行 {a} 格。'
+  - title: 合起来
+    say: '两块合起来：{p1} + {p2} = {p}。'
+    do:
+      - set: { target: calc, show: 99 }
+
+keyPoints:
+  - 用乘数十位上的数去乘，得的是几个十，所以积的末位要和十位对齐
+  - 两次乘得的积相加就是结果

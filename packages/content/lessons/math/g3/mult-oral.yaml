@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: mult-oral
+title: 口算乘法（整十、整百乘一位数）
+summary: 几个十乘几，就是几十个十
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [口算乘法, 整十数, 整百数]
+cover: { text: 20×3 }
+related: [mult-column-1]
+
+template: scene
+stage: { width: 800, height: 400 }
+
+params:
+  a: 2
+  k: 3
+derived:
+  p: a * k
+
+explore:
+  - { param: a, control: slider, label: 几个十, min: 1, max: 9 }
+  - { param: k, control: slider, label: 乘几, min: 2, max: 9 }
+
+objects:
+  - repeat: '{k}'
+    id: 'g{i}'
+    type: base-ten
+    tens: '{a}'
+    columns: false
+    at: ['{30 + (i - 1) * (k > 5 ? 75 : (k > 3 ? 110 : 150))}', 60]
+  - id: eq
+    type: text
+    text: '{a * 10} × {k} = [{p * 10}](blank)'
+    size: 40
+    at: [560, 310]
+  - id: think
+    type: label
+    text: '{a} 个十 × {k} = {p} 个十'
+    at: [240, 310]
+    hidden: true
+  - id: eq2
+    type: text
+    text: '{a * 100} × {k} = {p * 100}'
+    size: 30
+    at: [560, 360]
+    hidden: true
+
+steps:
+  - title: '{k} 个 {a * 10}'
+    say: '{a * 10} × {k}，就是 {k} 个 {a * 10}。'
+    do:
+      - repeat: '{k}'
+        do:
+          - highlight: 'g{i}'
+  - title: 几个十
+    say: '{a * 10} 是 {a} 个十，{k} 个就是 {p} 个十。'
+    do:
+      - show: think
+  - title: 得数
+    say: '{p} 个十是 {p * 10}。'
+    do:
+      - ask: true
+      - set: { target: eq, text: '{a * 10} × {k} = {p * 10}' }
+    try:
+      task: '{a * 10} × {k} 等于几？'
+      choose:
+        answer: '{p * 10}'
+        options:
+          - '{p}'
+          - '{p * 10}'
+          - '{p * 100}'
+  - title: 整百也一样
+    say: 整百数也一样：{a} 个百乘 {k} 是 {p} 个百。
+    do:
+      - show: eq2
+
+keyPoints:
+  - 整十数乘一位数，先算几个十乘几，再在积的末尾添 0
+  - 整百数同理，添两个 0

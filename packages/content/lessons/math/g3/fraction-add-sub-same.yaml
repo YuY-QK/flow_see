@@ -1,0 +1,85 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: fraction-add-sub-same
+title: 同分母分数加减、1 减几分之几
+summary: 几个几分之一加减几个几分之一；1 可以看成分母分之分母
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [同分母分数加减, 分数加法, 分数减法]
+cover: { text: 2/8+3/8 }
+related: [fraction-intro, fraction-add-sub-diff]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  n: 8
+  a: 2
+  b: 3
+
+explore:
+  - { param: n, control: slider, label: 分母, min: 4, max: 10 }
+  - { param: a, control: slider, label: 第一个分子, min: 1, max: 'n - 2' }
+  - { param: b, control: slider, label: 第二个分子, min: 1, max: 'n - a - 1' }
+
+objects:
+  - id: bar
+    type: fraction-bar
+    parts: '{n}'
+    take: '{a}'
+    width: 560
+    height: 60
+    color: orange
+    at: [400, 100]
+  - id: eq
+    type: text
+    text: '[{a}/{n}](frac) + [{b}/{n}](frac) = [{a + b}/{n}](frac blank)'
+    size: 44
+    at: [400, 210]
+  - id: eq2
+    type: text
+    text: '1 − [{a + b}/{n}](frac) = [{n - a - b}/{n}](frac blank)'
+    size: 44
+    at: [400, 310]
+    hidden: true
+
+steps:
+  - title: '先涂 {a} 份'
+    say: '{a}/{n} 是 {a} 个 1/{n}。'
+    do:
+      - highlight: bar
+  - title: '再涂 {b} 份'
+    say: '再加 {b} 个 1/{n}，一共 {a + b} 个 1/{n}。'
+    do:
+      - set: { target: bar, take: '{a + b}', duration: 1s }
+      - ask: true
+      - set: { target: eq, text: '[{a}/{n}](frac) + [{b}/{n}](frac) = [{a + b}/{n}](frac)' }
+    try:
+      task: '{a}/{n} + {b}/{n} 等于多少？'
+      choose:
+        answer: '{a + b}/{n}'
+        options:
+          - '{a + b}/{n}'
+          - '{a + b}/{2 * n}'
+          - '{a * b == a + b ? a + b + 1 : a * b}/{n}'
+      hints:
+        - 数一数涂了几份。
+  - title: 1 减几分之几
+    say: '整条是 1，即 {n}/{n}；去掉 {a + b} 份，还剩 {n - a - b}/{n}。'
+    do:
+      - show: eq2
+      - highlight: bar
+      - ask: true
+      - set: { target: eq2, text: '1 − [{a + b}/{n}](frac) = [{n - a - b}/{n}](frac)' }
+    try:
+      task: '1 − {a + b}/{n} 等于多少？'
+      choose:
+        answer: '{n - a - b}/{n}'
+        options:
+          - '{n - a - b}/{n}'
+          - '{n - a - b}/1'
+          - '{n - a - b == a + b ? 1 : a + b}/{n}'
+
+keyPoints:
+  - 同分母分数相加减，分母不变，分子相加减
+  - 计算 1 减几分之几，先把 1 写成分母和分子相同的分数

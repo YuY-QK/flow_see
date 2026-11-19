@@ -9,17 +9,17 @@ units:
     term: 1
     domain: number
     lessons:
-      - { id: mult-oral, title: 口算乘法（整十、整百乘一位数） }
+      - mult-oral
       - { id: mult-column-1, title: 笔算乘法（进位、连续进位、中间或末尾有 0） }
-      - { id: mult-estimate, title: 估算 }
+      - mult-estimate
   - id: div-one-digit
     title: 多位数除以一位数
     term: 1
     domain: number
     lessons:
-      - { id: div-oral, title: 口算除法 }
+      - div-oral
       - { id: div-column-1, title: 笔算除法：从高位除起 }
-      - { id: div-check, title: 除法的验算 }
+      - div-check
   - id: times-concept
     title: 倍的认识
     term: 1
@@ -32,8 +32,8 @@ units:
     domain: number
     lessons:
       - fraction-intro
-      - { id: fraction-compare, title: 分数的大小比较（分子都是 1、同分母） }
-      - { id: fraction-add-sub-same, title: 同分母分数加减、1 减几分之几 }
+      - fraction-compare
+      - fraction-add-sub-same
   - id: mass-2
     title: 吨的认识
     term: 1
@@ -66,23 +66,23 @@ units:
     term: 1
     domain: number
     lessons:
-      - { id: div-word, title: 除法解决问题（平均分的实际问题） }
+      - div-word
   # ───── 下册 ─────
   - id: multiplication-2            # 已有
     title: 两位数乘两位数
     term: 2
     domain: number
     lessons:
-      - { id: mult-2x2-oral, title: 口算与估算（整十乘整十、两位数乘整十） }
+      - mult-2x2-oral
       - mult-column
-      - { id: mult-2x2-area, title: 为什么竖式第二行要错一位 }
+      - mult-2x2-area
   - id: div-one-digit-2
     title: 除数是一位数的除法
     term: 2
     domain: number
     lessons:
       - { id: div-column-zero, title: 商中间或末尾有 0 }
-      - { id: div-estimate, title: 除法的估算 }
+      - div-estimate
   - id: ymd
     title: 年、月、日
     term: 2
@@ -112,9 +112,9 @@ units:
     domain: geometry
     lessons:
       - { id: area-meaning, title: 面积的含义与比较 }
-      - { id: area-units, title: 常用面积单位 }
+      - area-units
       - rect-area
-      - { id: area-unit-convert, title: 面积单位换算 }
+      - area-unit-convert
   - id: average
     title: 数据分析与平均数
     term: 2

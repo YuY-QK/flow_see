@@ -1,0 +1,93 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: fraction-compare
+title: 分数的大小比较
+summary: 分子都是 1，分母越大每份越小；分母相同，分子越大越大
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [分数比较, 分数大小, 几分之一]
+cover: { text: 1/3>1/4 }
+related: [fraction-intro, fraction-add-sub-same]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  m: 3
+  n: 4
+
+explore:
+  - { param: m, control: slider, label: 第一个分母, min: 2, max: 9 }
+  - { param: n, control: slider, label: 第二个分母, min: 'm + 1', max: 10 }
+
+objects:
+  - id: c1
+    type: fraction-circle
+    parts: '{m}'
+    take: 1
+    radius: 100
+    color: orange
+    at: [200, 170]
+  - id: c2
+    type: fraction-circle
+    parts: '{n}'
+    take: 1
+    radius: 100
+    color: blue
+    at: [460, 170]
+  - id: cmp
+    type: text
+    text: '[1/{m}](frac) [>](blank) [1/{n}](frac)'
+    size: 44
+    at: [330, 340]
+  - id: b1
+    type: fraction-bar
+    parts: 6
+    take: 2
+    width: 260
+    height: 36
+    color: orange
+    at: [640, 320]
+    hidden: true
+  - id: b2
+    type: fraction-bar
+    parts: 6
+    take: 5
+    width: 260
+    height: 36
+    color: blue
+    at: [640, 375]
+    hidden: true
+
+steps:
+  - title: 同样大的饼
+    say: '两个同样大的饼，一个平均分成 {m} 份，一个分成 {n} 份。'
+    do:
+      - highlight: c1
+      - highlight: c2
+  - title: 各取一份
+    say: 各取一份，分的份数越多，每份越小。
+    do:
+      - highlight: { target: c1, together: true }
+      - highlight: { target: c2, together: true }
+      - ask: true
+      - set: { target: cmp, text: '[1/{m}](frac) > [1/{n}](frac)' }
+    try:
+      task: '1/{m} 和 1/{n} 哪个大？'
+      choose:
+        answer: '>'
+        options:
+          - '>'
+          - '='
+          - '<'
+      hints:
+        - 分的份数越多，每一份越小。
+  - title: 分母相同
+    say: 分母相同时，分子大的分数大：5/6 > 2/6。
+    do:
+      - show: b1
+      - show: b2
+
+keyPoints:
+  - 分子都是 1 的分数，分母越大，分数越小
+  - 分母相同的分数，分子越大，分数越大

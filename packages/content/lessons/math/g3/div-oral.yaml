@@ -1,0 +1,94 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: div-oral
+title: 口算除法
+summary: 先分整捆，不够分的捆拆开再分
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [口算除法, 整十数除法, 两位数除以一位数]
+cover: { text: 52÷4 }
+related: [div-column-1]
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  a: 52
+  d: 4
+derived:
+  t: floor(a / 10)
+  o: a % 10
+  q1: floor(t / d)
+  rt: t % d
+  q: a / d
+
+explore:
+  - param: a
+    control: buttons
+    label: 题目
+    options:
+      - { value: 48, label: '48 ÷ 4' }
+      - { value: 52, label: '52 ÷ 4' }
+      - { value: 72, label: '72 ÷ 4' }
+      - { value: 96, label: '96 ÷ 4' }
+
+objects:
+  - id: pile
+    type: base-ten
+    tens: '{t}'
+    ones: '{o}'
+    columns: true
+    at: [40, 40]
+  - repeat: '{d}'
+    id: 'p{i}'
+    type: base-ten
+    tens: 0
+    ones: 0
+    columns: false
+    at: ['{40 + (i - 1) * 180}', 260]
+  - id: eq
+    type: text
+    text: '{a} ÷ {d} = [{q}](blank)'
+    size: 40
+    at: [580, 100]
+
+steps:
+  - title: 平均分
+    say: '{a} 根小棒平均分成 {d} 份。'
+    do:
+      - highlight: pile
+  - title: 先分整捆
+    say: '先分整捆：{t} 捆，每份分 {q1} 捆。'
+    do:
+      - set: { target: pile, tens: '{rt}' }
+      - repeat: '{d}'
+        do:
+          - set: { target: 'p{i}', tens: '{q1}', together: true }
+  - title: 拆开再分
+    when: '{rt > 0}'
+    say: '剩下 {rt} 捆拆成 {rt * 10} 根，和 {o} 根合起来。'
+    do:
+      - set: { target: pile, tens: 0 }
+      - set: { target: pile, ones: '{rt * 10 + o}', together: true }
+  - title: 再分根
+    say: '{rt * 10 + o} 根，每份分 {(rt * 10 + o) / d} 根。'
+    do:
+      - set: { target: pile, ones: 0 }
+      - repeat: '{d}'
+        do:
+          - set: { target: 'p{i}', ones: '{(rt * 10 + o) / d}', together: true }
+  - title: 得数
+    say: '每份 {q1} 捆和 {(rt * 10 + o) / d} 根，是 {q}。'
+    do:
+      - ask: true
+      - set: { target: eq, text: '{a} ÷ {d} = {q}' }
+    try:
+      task: '{a} ÷ {d} 等于几？'
+      choose:
+        answer: '{q}'
+        min: 10
+        max: 50
+
+keyPoints:
+  - 两位数除以一位数，先分十位（整捆），再分个位
+  - 十位分剩下的，拆开和个位合起来再分

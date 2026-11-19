@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: area-unit-convert
+title: 面积单位换算
+summary: 1 平方分米 = 100 平方厘米，面积单位进率是 100
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [面积单位换算, 进率, 平方分米, 平方厘米]
+cover: { text: 1dm²=100cm² }
+related: [area-units, rect-area]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 420 }
+
+objects:
+  - id: g
+    type: grid
+    rows: 10
+    cols: 10
+    cell: 26
+    filled: 0
+    at: [40, 60]
+  - id: row
+    type: text
+    text: '一行 10 个 1 cm[2](sup)'
+    size: 26
+    at: [550, 110]
+    hidden: true
+  - id: eq
+    type: text
+    text: '1 dm[2](sup) = [100](blank) cm[2](sup)'
+    size: 36
+    at: [550, 200]
+  - id: cmp
+    type: text
+    text: '长度进率 10，面积进率 10 × 10 = 100'
+    size: 22
+    at: [550, 290]
+    hidden: true
+
+steps:
+  - title: 1 平方分米
+    say: 边长 1 分米，也就是 10 厘米的正方形。
+    do:
+      - highlight: g
+  - title: 铺一行
+    say: 一行能铺 10 个 1 平方厘米。
+    do:
+      - set: { target: g, filled: 10, duration: 1s }
+      - show: row
+  - title: 铺满
+    say: 能铺 10 行，10 × 10 = 100 个。
+    do:
+      - ask: true
+      - set: { target: g, filled: 100, duration: 2s }
+      - set: { target: eq, text: '1 dm[2](sup) = 100 cm[2](sup)', together: true }
+    try:
+      task: 1 平方分米等于多少平方厘米？
+      choose:
+        answer: 100
+        options:
+          - 10
+          - 100
+          - 1000
+      hints:
+        - 一行 10 个，有 10 行。
+  - title: 为什么是 100
+    say: 边长是 10 倍，面积就是 100 倍；平方米也同理。
+    do:
+      - show: cmp
+
+keyPoints:
+  - 1 平方分米 = 100 平方厘米；1 平方米 = 100 平方分米
+  - 相邻两个面积单位的进率是 100

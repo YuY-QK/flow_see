@@ -1,0 +1,78 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: mult-estimate
+title: 乘法估算
+summary: 把接近整百整十的数看成整百整十来估
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [估算, 乘法, 约等于]
+cover: { text: 198×4≈800 }
+related: [mult-column-1, div-estimate]
+
+template: scene
+stage: { width: 800, height: 380 }
+
+params:
+  a: 198
+  k: 4
+derived:
+  ap: round(a / 100) * 100
+  e: ap * k
+  p: a * k
+
+explore:
+  - { param: a, control: slider, label: 被乘数, min: 101, max: 899 }
+  - { param: k, control: slider, label: 乘几, min: 2, max: 9 }
+
+objects:
+  - id: line
+    type: numberline
+    from: '{floor(a / 100) * 100}'
+    to: '{floor(a / 100) * 100 + 100}'
+    step: 10
+    labelEvery: 5
+    length: 600
+    marks: ['{a}']
+    at: [100, 120]
+  - id: est
+    type: text
+    text: '{a} × {k} ≈ [{e}](blank)'
+    size: 40
+    at: [400, 240]
+  - id: real
+    type: text
+    text: '实际：{a} × {k} = {p}'
+    size: 28
+    at: [400, 310]
+    hidden: true
+
+steps:
+  - title: 不用算准
+    say: 只想知道大约多少时，可以估算。
+    do:
+      - highlight: est
+  - title: 看成整百数
+    say: '{a} 接近 {ap}，把它看成 {ap}。'
+    do:
+      - highlight: line
+  - title: 估一估
+    say: '{ap} × {k} = {e}，所以大约是 {e}。'
+    do:
+      - ask: true
+      - set: { target: est, text: '{a} × {k} ≈ {e}' }
+    try:
+      task: '{a} × {k} 大约是多少？'
+      choose:
+        answer: '{e}'
+        options:
+          - '{e}'
+          - '{e / 10}'
+          - '{e * 10}'
+  - title: 比一比
+    say: 实际是 {p}，和估的差不多。
+    do:
+      - show: real
+
+keyPoints:
+  - 估算时，把因数看成接近它的整十、整百数再算
+  - 估算结果用“≈”

@@ -340,9 +340,9 @@
 - 元信息：summary：12 × 20 先算 12 × 2，再在末尾添 0；估算看成整十数；tags [口算乘法, 两位数乘整十数, 估算]；cover “12×20”；related [mult-column, mult-2x2-area]
 - 舞台：800 × 420；params `a: 12`、`b: 2`（乘 b 个十）；derived `p: a * b * 10`；explore a 滑块 11–40，b 滑块 2–9
 - 零件：
-  - `g` = grid，rows `{a}`，cols `{b * 10}`，cell 6，filled 0，at [40, 60]（每行 b×10 格，共 a 行，表示 a × b×10）
-  - `eq1` = text，`'{a} × {b} = {a * b}'`，size 32，at [600, 120]
-  - `eq2` = text，`'{a} × {b * 10} = [{p}](blank)'`，size 36，at [600, 200]
+  - `g` = grid，rows `{a}`，cols `{b * 10}`，cell 5，filled 0，at [30, 40]（每行 b×10 格，共 a 行，表示 a × b×10）
+  - `eq1` = text，`'{a} × {b} = {a * b}'`，size 34，at [580, 120]
+  - `eq2` = text，`'{a} × {b * 10} = [{p}](blank)'`，size 32，at [580, 200]
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|
@@ -588,9 +588,9 @@
 - 元信息：summary：边长 1 厘米的正方形面积是 1 平方厘米；tags [面积单位, 平方厘米, 平方分米, 平方米]；cover “1cm²”；related [area-meaning, area-unit-convert]
 - 舞台：800 × 420；无参数
 - 零件：
-  - `cm` = shape rect，width 40，height 40，color blue，at [100, 200]；`cml` = label，`'1 cm[2](sup)'`，at [100, 260]
-  - `dm` = shape rect，width 160，height 160，color orange，at [320, 200]；`dml` = label，`'1 dm[2](sup)'`，at [320, 310]
-  - `m` = text，`'1 m[2](sup)：边长 1 米的正方形，能站下 8–10 个同学'`，size 26，at [560, 200]
+  - `cm` = shape rect，width 40，height 40，color blue，at [70, 200]；`cml` = label，`'1 cm[2](sup)'`，at [70, 260]
+  - `dm` = shape rect，width 160，height 160，color orange，at [220, 200]；`dml` = label，`'1 dm[2](sup)'`，at [220, 310]
+  - `m` = text，`'1 m[2](sup)：边长 1 米的正方形'`，size 26，at [560, 180]；`m2` = text，`'能站下 8–10 个同学'`，size 22，at [560, 230]
   - `q` = text，`'课桌面大约 [24](blank) dm[2](sup)'`，size 28，at [400, 380]
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
@@ -607,10 +607,10 @@
 - 元信息：summary：1 平方分米 = 100 平方厘米，面积单位进率是 100；tags [面积单位换算, 进率, 平方分米, 平方厘米]；cover “1dm²=100cm²”；related [area-units, rect-area]；recommended
 - 舞台：800 × 420；无参数
 - 零件：
-  - `g` = grid，rows 10，cols 10，cell 30，filled 0，at [60, 50]
+  - `g` = grid，rows 10，cols 10，cell 26，filled 0，at [40, 60]
   - `row` = text，`'一行 10 个 1 cm[2](sup)'`，size 26，at [560, 100]，hidden
   - `eq` = text，`'1 dm[2](sup) = [100](blank) cm[2](sup)'`，size 36，at [560, 200]
-  - `cmp` = text，`'长度进率 10，面积进率 10 × 10 = 100'`，size 24，at [560, 300]，hidden
+  - `cmp` = text，`'长度进率 10，面积进率 10 × 10 = 100'`，size 22，at [550, 290]，hidden
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|
