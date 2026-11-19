@@ -221,6 +221,25 @@ describe('B4 计数器 / 数位表（place-value）', () => {
     expect(chartBlanks).toHaveLength(1);
   });
 
+  it('表格底色用主题的 labelBg，不和数字同色', () => {
+    const Render = placeValuePart.Render as (p: { p: unknown; ctx: unknown }) => ReactNode;
+    for (const style of ['abacus', 'chart'] as const) {
+      const els = flatten(
+        Render({ p: { at: [400, 200], places: 3, value: 123, style }, ctx: { theme } }),
+      );
+      const fills = els.filter((e) => e.type === 'rect').map((e) => e.props.fill);
+      expect(fills).toContain(theme.labelBg);
+      expect(fills).not.toContain(theme.ink);
+    }
+  });
+
+  it('十亿位以上有位名，不显示内部键名', () => {
+    const layout = placeValueLayout({ at: [400, 200], places: 11, value: 0, style: 'chart' });
+    const labels = layout.columns.map((c) => c.label);
+    expect(labels).toContain('千亿位');
+    expect(labels.some((l) => /^d\d+$/.test(String(l)))).toBe(false);
+  });
+
   it('showDigits 为 false 时不画数字', () => {
     const props = {
       at: [400, 200] as [number, number],

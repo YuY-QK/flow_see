@@ -1635,7 +1635,7 @@ describe('沿路径移动（follow）', () => {
               tap: {
                 pick: 2,
                 among: ['chart.row.*'],
-                valid: '{1 == 1}',
+                valid: '{n == n}',
               },
             },
           },
@@ -1665,7 +1665,7 @@ describe('沿路径移动（follow）', () => {
               tap: {
                 pick: 5,
                 among: ['chart.row.*'],
-                valid: '{1 == 1}',
+                valid: '{n == n}',
               },
             },
           },

@@ -360,6 +360,14 @@ describe('列表生成（range）', () => {
     expect(range(5, 1, 1)).toEqual([]);
   });
 
+  it('fillParams 不带括号的比较、逻辑算式也能算出来', () => {
+    expect(fillParams('{e == 1}', { e: 1 })).toBe(1);
+    expect(fillParams('{e == 1}', { e: 2 })).toBe(0);
+    expect(fillParams('{p >= 5}', { p: 3 })).toBe(0);
+    expect(fillParams('{a != b}', { a: 1, b: 2 })).toBe(1);
+    expect(fillParams({ opacity: '{e == 2}' }, { e: 1 })).toEqual({ opacity: 0 });
+  });
+
   it('fillParams 识别整个字符串是 {range(...)} 时返回数组', () => {
     expect(fillParams('{range(2, 2 * n, 2)}', { n: 4 })).toEqual([2, 4, 6, 8]);
     expect(fillParams('{range(1, 5, 1)}', {})).toEqual([1, 2, 3, 4, 5]);

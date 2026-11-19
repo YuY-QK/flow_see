@@ -523,7 +523,7 @@ export const placeValuePart: PartDef = {
             width={base.w}
             height={base.h}
             rx={6}
-            fill={color('labelBg', ctx.theme)}
+            fill={ctx.theme.labelBg}
             stroke={color('line', ctx.theme)}
             strokeWidth={2}
           />
@@ -603,7 +603,7 @@ export const placeValuePart: PartDef = {
           width={tableW}
           height={tableH}
           rx={6}
-          fill={color('labelBg', ctx.theme)}
+          fill={ctx.theme.labelBg}
           stroke={color('line', ctx.theme)}
           strokeWidth={1}
         />

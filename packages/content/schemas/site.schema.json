@@ -425,6 +425,11 @@
               "minimum": 0,
               "description": "顶部给左上角的“时长 · 第几步”留的高度（像素）"
             },
+            "bottomPx": {
+              "type": "number",
+              "minimum": 0,
+              "description": "底部给右下角菜单按钮留的高度（像素）"
+            },
             "minRatio": {
               "type": "number",
               "exclusiveMinimum": 0,
@@ -435,6 +440,7 @@
             "phone",
             "margin",
             "topPx",
+            "bottomPx",
             "minRatio"
           ],
           "additionalProperties": false,

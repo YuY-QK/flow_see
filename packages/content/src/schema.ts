@@ -60,6 +60,7 @@ const sceneStyleSchema = z
         phone: z.boolean().describe('手机上舞台是否贴合内容（画面范围收到所有零件的包围盒并集）'),
         margin: nonNeg.describe('包围盒外再留多少（舞台坐标）'),
         topPx: nonNeg.describe('顶部给左上角的“时长 · 第几步”留的高度（像素）'),
+        bottomPx: nonNeg.describe('底部给右下角菜单按钮留的高度（像素）'),
         minRatio: z.number().positive().describe('贴合后宽高比（宽 ÷ 高）的下限'),
       })
       .strict()

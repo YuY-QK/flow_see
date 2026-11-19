@@ -22,7 +22,7 @@ export interface SceneStyle {
   /** 文字宽度估算：各类字符的宽度（字号的倍数） */
   textMetrics: { digit: number; latin: number; space: number; operator: number; wide: number };
   /** 手机上舞台贴合内容 */
-  fit: { phone: boolean; margin: number; topPx: number; minRatio: number };
+  fit: { phone: boolean; margin: number; topPx: number; bottomPx: number; minRatio: number };
   /** 要孩子答的数：虚线空框和闪烁 */
   blank: {
     strokeWidth: number;

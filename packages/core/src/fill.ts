@@ -94,7 +94,8 @@ function valueOf(src: string, params: Record<string, unknown>): unknown {
     if (typeof val === 'number') return Number(val.toPrecision(10));
     return val;
   }
-  if (!/[-+*/%()]/.test(k)) return undefined;
+  // 含运算符（算术、比较、逻辑、三元）才当算式算，如 {a + b}、{e == 1}、{p >= 5}
+  if (!/[-+*/%()=<>!&|?]/.test(k)) return undefined;
   const v = evalExpr(k, params);
   // 去掉浮点误差（0.1 + 0.2）
   return v === undefined ? undefined : Number(v.toPrecision(10));

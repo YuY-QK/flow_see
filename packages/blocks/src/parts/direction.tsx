@@ -573,7 +573,7 @@ export const directionPart: PartDef = {
     const redColor = color('red', ctx.theme);
     const accentColor = color('accent', ctx.theme);
     const whiteColor = color('white', ctx.theme);
-    const labelBgColor = color('labelBg', ctx.theme);
+    const labelBgColor = ctx.theme.labelBg;
 
     return (
       <g className="direction-part" style={{ pointerEvents: 'none' }}>

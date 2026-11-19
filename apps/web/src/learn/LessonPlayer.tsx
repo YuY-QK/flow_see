@@ -1158,9 +1158,12 @@ export function LessonPlayer({
   const viewBox = useMemo(() => {
     const box = phone ? template.viewBox?.(animation) : undefined;
     if (!box || stageW <= 0) return box;
-    // 顶部给左上角的信息留 fit.topPx 像素：按当前舞台宽度换算成舞台坐标，往上多留出这一条
-    const extra = site.scene.fit.topPx / (stageW / box.w);
-    return { ...box, y: box.y - extra, h: box.h + extra };
+    // 顶部给左上角的信息留 fit.topPx 像素、底部给右下角的菜单按钮留 fit.bottomPx 像素：
+    // 按当前舞台宽度换算成舞台坐标，上下各多留出一条
+    const scale = stageW / box.w;
+    const top = site.scene.fit.topPx / scale;
+    const bottom = site.scene.fit.bottomPx / scale;
+    return { ...box, y: box.y - top, h: box.h + top + bottom };
   }, [phone, template, animation, stageW]);
   const stageRatio = viewBox ? `${viewBox.w} / ${viewBox.h}` : `${stage.width} / ${stage.height}`;
   const position = state.index + state.progress;
