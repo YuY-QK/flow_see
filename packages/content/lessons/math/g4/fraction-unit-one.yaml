@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: fraction-unit-one
+title: 单位“1”与分数单位
+summary: 一个物体、一些物体都可以看作一个整体，用自然数 1 表示，叫单位“1”
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [分数的意义, 单位1, 分数单位]
+cover: { text: 单位1 }
+related: [fraction-intro, fraction-and-division]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  t: 12
+  n: 4
+  k: 3
+
+derived:
+  e: t / n
+
+presets:
+  - { label: 12 个分 4 份, params: { t: 12, n: 4, k: 3 } }
+  - { label: 12 个分 3 份, params: { t: 12, n: 3, k: 2 } }
+  - { label: 10 个分 5 份, params: { t: 10, n: 5, k: 2 } }
+  - { label: 8 个分 4 份, params: { t: 8, n: 4, k: 3 } }
+
+objects:
+  - id: pie
+    type: fraction-circle
+    parts: '{n}'
+    take: 0
+    radius: 80
+    at: [140, 150]
+  - id: bar
+    type: fraction-bar
+    parts: '{n}'
+    take: 0
+    width: 260
+    height: 40
+    at: [450, 150]
+  - id: plate
+    type: counters
+    count: '{t}'
+    layout: grid
+    cols: '{e}'
+    size: 30
+    color: red
+    at: [60, 280]
+  - id: eq
+    type: text
+    text: '{t} 个苹果的 [{k}/{n}](frac) 是 [{k * e}](blank) 个'
+    size: 30
+    at: [520, 330]
+
+steps:
+  - title: 一个整体
+    say: 一个饼、一条线段，都可以看作一个整体。
+    do:
+      - set: { target: pie, take: 1 }
+      - set: { target: bar, take: 1 }
+  - title: 一些物体
+    say: '{t} 个苹果放在一起，也可以看作一个整体，叫单位“1”。'
+    do:
+      - highlight: plate
+  - title: 平均分
+    say: 把它平均分成 {n} 份，每份 {e} 个（一行就是一份），是它的 1/{n}。
+    do:
+      - highlight: plate
+  - title: 取几份
+    say: 取 {k} 份，是 {k}/{n}，有 {k * e} 个。
+    do:
+      - ask: true
+      - set: { target: eq, text: '{t} 个苹果的 [{k}/{n}](frac) 是 {k * e} 个' }
+    try:
+      task: '{t} 个苹果的 {k}/{n} 是几个？'
+      choose:
+        answer: '{k * e}'
+        min: 1
+        max: 12
+      hints:
+        - 先算 1 份是几个。
+  - title: 分数单位
+    say: 1/{n} 是 {k}/{n} 的分数单位，{k}/{n} 里有 {k} 个 1/{n}。
+    do:
+      - highlight: eq
+
+keyPoints:
+  - 一个物体、一个计量单位或一些物体组成的整体，都可以用自然数 1 表示，叫单位“1”
+  - 把单位“1”平均分成若干份，表示其中一份的数叫分数单位

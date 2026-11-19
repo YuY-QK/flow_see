@@ -649,3 +649,7 @@ turn（T2）只用于数值把手（有 `valueAt` 的）；`apply` 型把手只�
 
 - **B11 `calendar`（`month: all` 全年天数条模式）**：在样板知识点 `year-month-day` 中高亮多个月份子项（如 `cal.month.1`、`cal.month.3`、`cal.month.7`、`cal.month.8` 等）时，月份的高亮虚线框会盖住上下相邻月份的文字与横条，连续月份（7 月、8 月）的高亮框也会互相重叠。已尝试调整 `calendar` 的 `at` 坐标（从 `[60, 30]` 调至 `[70, 50]`，仅消除了第 1 月高亮框与舞台左上角步骤胶囊的触碰），无法消除月份之间的高亮框遮挡。原因是 `calendar` 零件内部在 `month: 'all'` 模式下写死 `rowHeight = 32` 且子项 `month.<n>` 的 `box.h = 32`（相邻行包围盒上下紧贴、间距为 0），而全局高亮框（`scene.highlight`）会在子项包围盒上下各外扩 `padY = 10`（加线宽 4），使单个高亮框总高达 56，必然侵入上下相邻月份各约 12 像素；同时舞台高为 450（12 行平均最多约 35 像素/行），靠调知识点坐标无法解决。建议后续单独开卡调整 `calendar` 全年条模式的子项 `box` 高度（例如仅包住 `barH = 18` 的横条/文字核心区）或高亮外扩策略。
   - **已处理**：`month.<n>` 子项的 `box` 改为只包住横条（高 18），高亮外扩后留在本行内；`calendar.test.ts` 加了断言（子项高 18、相邻子项间距 14）。
+- **B10 `place-value`（`style: chart` 数位顺序表模式）**：
+  1. **背景色与文字色冲突**：`packages/blocks/src/parts/place-value.tsx` 表格单元格背景使用 `fill={color('labelBg', ctx.theme)}`，而在 `packages/blocks/src/base.ts` 的 `THEME_COLORS` 中并未定义 `labelBg`，导致回退到 `theme.ink`。而单元格内的数字文字与数位标签同样采用 `fill={color('ink', ctx.theme)}`，造成在 flat、cute、chalk、pro 等所有主题下，数位表格单元格的背景矩形与数字文本颜色完全同色（实心深色覆盖深色字），数字不可见。
+  2. **高位与数级缺失**：`site.yaml` 的 `scene.parts.place-value.labels.places` 仅预设了 9 个数位（个位至亿位），十亿（power 9）及以上数位会回退显示为内部键名 `d9`；且数位表缺少“个级/万级/亿级”分级表头。
+  - **影响知识点**：四年级上册第一单元大数的认识中的 `big-numbers-read`（亿以内、亿以上数的读写）与 `big-numbers-round`（改写与近似数）。因遵循“知识点开发员不得修改零件与 site.yaml”的边界要求，这两个知识点的配置骨架、参数逻辑、步骤与问答交互已全部开发完成并通过自动化走查，但受零件视觉缺陷影响，暂时保持 `draft` 状态，待零件与主题修复后复检。

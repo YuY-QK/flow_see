@@ -1,0 +1,84 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: big-numbers-round
+title: 改写与近似数
+summary: 整万数改写去掉末尾 4 个 0；求近似数用四舍五入
+status: draft
+duration: 1分钟
+tags: [改写, 近似数, 四舍五入, 万作单位, 亿作单位]
+cover: { text: '≈38万' }
+related: [big-numbers-read, compare-10000]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  n: 376800
+
+derived:
+  w: round(n / 10000)
+
+explore:
+  - param: n
+    control: slider
+    label: 数值
+    min: 100000
+    max: 999999
+    step: 100
+
+objects:
+  - id: pv
+    type: place-value
+    value: '{n}'
+    places: 5
+    style: chart
+    at: [400, 80]
+  - id: line
+    type: numberline
+    from: '{floor(n / 10000) * 10000}'
+    to: '{floor(n / 10000) * 10000 + 10000}'
+    step: 1000
+    labelEvery: 5
+    length: 600
+    marks:
+      - '{n}'
+    at: [100, 210]
+  - id: ans
+    type: text
+    text: '{n} ≈ [{w}](blank) 万'
+    size: 36
+    at: [400, 330]
+  - id: rule
+    type: text
+    text: "看千位：{digit(n, 3)} {sel(digit(n, 3) >= 5, '≥ 5，向万位进 1', '< 5，舍去')}"
+    size: 26
+    at: [400, 390]
+    hidden: true
+
+steps:
+  - title: 改写成“万”
+    say: 整万数改写成用“万”作单位，去掉末尾 4 个 0，加上“万”字。
+    do:
+      - highlight: pv
+  - title: 求近似数
+    say: 不是整万数，可以求近似数：看千位上的数。
+    do:
+      - highlight: pv.d3
+      - show: rule
+  - title: 四舍五入
+    say: "千位上是 {digit(n, 3)}，{sel(digit(n, 3) >= 5, '五入', '四舍')}，{n} 更接近 {w} 万。"
+    do:
+      - highlight: line
+      - ask: true
+      - set: { target: ans, text: '{n} ≈ {w} 万' }
+    try:
+      task: '{n} 约等于多少万？'
+      choose:
+        answer: '{w}'
+        min: 10
+        max: 100
+      hints:
+        - 看千位，小于 5 舍去，大于或等于 5 进 1。
+
+keyPoints:
+  - 整万数改写成用“万”作单位，去掉末尾 4 个 0
+  - 求近似数用“四舍五入”法：看省略部分的最高位，小于 5 舍去，大于或等于 5 向前一位进 1

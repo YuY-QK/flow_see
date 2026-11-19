@@ -1,0 +1,112 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: mixed-order
+title: 运算顺序（小括号、中括号）
+summary: 先乘除后加减，有括号先算括号里的，中括号外、小括号里
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [四则混合运算, 运算顺序, 小括号, 中括号]
+cover: { text: '[ ( ) ]' }
+related: [continuous-add-sub, simplify-calc, mixed-apply]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  e: 1
+
+explore:
+  - param: e
+    control: buttons
+    label: 算式
+    options:
+      - { value: 1, label: 算式一 }
+      - { value: 2, label: 算式二 }
+      - { value: 3, label: 算式三 }
+
+presets:
+  - { label: 算式一, params: { e: 1 } }
+  - { label: 算式二, params: { e: 2 } }
+  - { label: 算式三, params: { e: 3 } }
+
+objects:
+  - id: x1
+    type: expr-steps
+    expr: '36 + (48 − 12) × 2'
+    show: 1
+    at: [120, 100]
+    opacity: '{(e == 1)}'
+  - id: x2
+    type: expr-steps
+    expr: '[(5 + 3) × 4 − 2] ÷ 3'
+    show: 1
+    at: [120, 100]
+    opacity: '{(e == 2)}'
+  - id: x3
+    type: expr-steps
+    expr: '120 − 45 ÷ 5 × 3'
+    show: 1
+    at: [120, 100]
+    opacity: '{(e == 3)}'
+  - id: rules
+    type: text
+    text: '先乘除，后加减；有括号先算括号里面的'
+    size: 24
+    at: [400, 390]
+
+steps:
+  - title: 看算式
+    say: 先看有没有括号，再看有没有乘除。
+    do:
+      - highlight: rules
+  - when: '{e == 1}'
+    title: 先算哪一步
+    say: 有小括号，先算 48 − 12。
+    do:
+      - ask: true
+      - set: { target: x1, show: 2 }
+    try:
+      task: 点出第一步要算的地方。
+      tap:
+        answer: x1.op.2
+        among: ['x1.op.*']
+      hints:
+        - 括号里的先算。
+  - when: '{e == 2}'
+    title: 先算哪一步
+    say: 小括号在中括号里，先算 5 + 3。
+    do:
+      - ask: true
+      - set: { target: x2, show: 2 }
+    try:
+      task: 点出第一步要算的地方。
+      tap:
+        answer: x2.op.1
+        among: ['x2.op.*']
+      hints:
+        - 括号里的先算。
+  - when: '{e == 3}'
+    title: 先算哪一步
+    say: 没有括号，先算乘除，从左往右，先算 45 ÷ 5。
+    do:
+      - ask: true
+      - set: { target: x3, show: 2 }
+    try:
+      task: 点出第一步要算的地方。
+      tap:
+        answer: x3.op.2
+        among: ['x3.op.*']
+      hints:
+        - 没有括号，先算乘除。
+  - title: 一步一步
+    say: 每一步只算一处，其余照抄。
+    do:
+      - set: { target: x1, show: 99, duration: 2s }
+      - set: { target: x2, show: 99, duration: 2s, together: true }
+      - set: { target: x3, show: 99, duration: 2s, together: true }
+
+keyPoints:
+  - 同级运算从左往右
+  - 先乘除，后加减
+  - 有括号先算小括号里的，再算中括号里的

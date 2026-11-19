@@ -387,10 +387,11 @@ describe('目录索引与搜索', () => {
   it('搜索：多词同时匹配，当前年级在前', () => {
     const { bundle } = loadContent(root());
     const index = buildIndex(bundle!, true);
-    expect(searchLessons(index, '分数', 1, 50).map((h) => h.lesson.id)).toEqual([
-      'make-ten',
-      'fraction-intro',
-    ]);
+    const hits = searchLessons(index, '分数', 1, 50).map((h) => h.lesson.id);
+    expect(hits[0]).toBe('make-ten');
+    expect(hits).toContain('fraction-intro');
+    expect(hits).toContain('fraction-unit-one');
+    expect(hits).toContain('fraction-and-division');
     expect(searchLessons(index, '分数', 3, 50)[0].lesson.id).toBe('fraction-intro');
     expect(searchLessons(index, '分数 钟表', 3, 50)).toEqual([]);
     expect(searchLessons(index, '  ', 3, 50)).toEqual([]);

@@ -1,0 +1,132 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: big-numbers-read
+title: 亿以内、亿以上数的读写
+summary: 从右往左四位一级，按级读、按级写
+status: draft
+duration: 1分钟
+tags: [大数, 亿, 万, 数位顺序表, 读数, 写数]
+cover: { text: 亿 万 个 }
+related: [read-write-10000, big-numbers-round]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  n: 305000060
+
+explore:
+  - param: n
+    control: buttons
+    label: 选择大数
+    options:
+      - { value: 305000060, label: '305000060' }
+      - { value: 40020000, label: '40020000' }
+      - { value: 1200500, label: '1200500' }
+      - { value: 2008000000, label: '2008000000' }
+
+presets:
+  - { label: '305000060', params: { n: 305000060 } }
+  - { label: '40020000', params: { n: 40020000 } }
+  - { label: '1200500', params: { n: 1200500 } }
+  - { label: '2008000000', params: { n: 2008000000 } }
+
+objects:
+  - id: pv
+    type: place-value
+    value: '{n}'
+    places: 9
+    style: chart
+    groups: true
+    labels:
+      places: [个位, 十位, 百位, 千位, 万位, 十万位, 百万位, 千万位, 亿位, 十亿位]
+      groups: [个级, 万级, 亿级]
+    at: [400, 120]
+  - id: read
+    type: text
+    text: '读作：[{cn(n)}](blank)'
+    size: 32
+    at: [400, 300]
+  - id: rule
+    type: text
+    text: '先读亿级，再读万级，最后读个级'
+    size: 24
+    at: [400, 370]
+    hidden: true
+
+steps:
+  - title: 数位顺序表
+    say: 从右往左，每四位是一级：个级、万级、亿级。
+    do:
+      - highlight: pv
+  - title: 分级
+    say: '{n} 从右往左四位一分。'
+    do:
+      - highlight: pv.d0
+      - highlight: { target: pv.d4, together: true }
+      - highlight: { target: pv.d8, together: true }
+  - when: '{n == 305000060}'
+    title: 按级读
+    say: 先读亿级，再读万级，最后读个级；每级末尾的 0 不读，中间的 0 只读一个零。
+    do:
+      - show: rule
+      - ask: true
+      - set: { target: read, text: '读作：{cn(n)}' }
+    try:
+      task: '{n} 怎么读？'
+      choose:
+        answer: 三亿零五百万零六十
+        options:
+          - 三亿零五百万零六十
+          - 三亿五百万六十
+          - 三亿零五百零六十
+  - when: '{n == 40020000}'
+    title: 按级读
+    say: 先读亿级，再读万级，最后读个级；每级末尾的 0 不读，中间的 0 只读一个零。
+    do:
+      - show: rule
+      - ask: true
+      - set: { target: read, text: '读作：{cn(n)}' }
+    try:
+      task: '{n} 怎么读？'
+      choose:
+        answer: 四千零二万
+        options:
+          - 四千零二万
+          - 四千二万
+          - 四千万零二万
+  - when: '{n == 1200500}'
+    title: 按级读
+    say: 先读亿级，再读万级，最后读个级；每级末尾的 0 不读，中间的 0 只读一个零。
+    do:
+      - show: rule
+      - ask: true
+      - set: { target: read, text: '读作：{cn(n)}' }
+    try:
+      task: '{n} 怎么读？'
+      choose:
+        answer: 一百二十万零五百
+        options:
+          - 一百二十万零五百
+          - 一百二十万五百
+          - 一百二十万零五百零
+  - when: '{n == 2008000000}'
+    title: 按级读
+    say: 先读亿级，再读万级，最后读个级；每级末尾的 0 不读，中间的 0 只读一个零。
+    do:
+      - show: rule
+      - ask: true
+      - set: { target: read, text: '读作：{cn(n)}' }
+    try:
+      task: '{n} 怎么读？'
+      choose:
+        answer: 二十亿零八百万
+        options:
+          - 二十亿零八百万
+          - 二十亿八百万
+          - 两亿零八百万
+
+keyPoints:
+  - 从个位起，每四个数位是一级
+  - 读数时从高位读起，先读亿级、万级，再读个级
+  - 每级末尾的 0 不读，其他数位上连续几个 0 只读一个零

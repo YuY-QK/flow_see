@@ -1,0 +1,103 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: fraction-and-division
+title: 分数与除法
+summary: 3 张饼平均分给 4 人，每人 3/4 张，被除数 ÷ 除数 = 除数分之被除数
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [分数与除法, 分数的意义]
+cover: { text: 3÷4=3/4 }
+related: [fraction-unit-one, proper-improper]
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  a: 3
+  b: 4
+
+explore:
+  - param: b
+    control: slider
+    label: 几人
+    min: 2
+    max: 6
+    step: 1
+  - param: a
+    control: slider
+    label: 几张饼
+    min: 1
+    max: '{b - 1}'
+    step: 1
+
+objects:
+  - repeat: '{a}'
+    id: 'c{i}'
+    type: fraction-circle
+    parts: '{b}'
+    take: 0
+    radius: 50
+    at: ['{80 + (i - 1) * 115}', 120]
+  - id: mine
+    type: fraction-circle
+    parts: '{b}'
+    take: 0
+    radius: 50
+    color: green
+    at: [670, 120]
+  - id: eq
+    type: text
+    text: '{a} ÷ {b} = [{a}/{b}](frac blank)（张）'
+    size: 34
+    at: [400, 300]
+  - id: rule-pre
+    type: text
+    text: '被除数 ÷ 除数 ='
+    size: 26
+    at: [340, 380]
+    hidden: true
+  - id: rule-frac
+    type: fraction
+    num: 被除数
+    den: 除数
+    size: 20
+    at: [490, 380]
+    hidden: true
+
+steps:
+  - title: 分饼
+    say: '{a} 张饼平均分给 {b} 个人，每人分多少？'
+    do:
+      - repeat: '{a}'
+        do:
+          - highlight: { target: 'c{i}', together: true }
+  - title: 一张一张分
+    say: 每张饼平均分成 {b} 份，每人从每张饼里拿 1 份。
+    do:
+      - repeat: '{a}'
+        do:
+          - set: { target: 'c{i}', take: 1, together: true }
+      - set: { target: mine, take: '{a}', duration: 1.5s }
+  - title: 每人多少
+    say: 每人拿到 {a} 个 1/{b} 张，合起来是多少张？
+    do:
+      - highlight: mine
+      - ask: true
+      - set: { target: eq, text: '{a} ÷ {b} = [{a}/{b}](frac)（张）' }
+    try:
+      task: 每人分到几分之几张？
+      choose:
+        answer: '{a}/{b}'
+        options:
+          - '{a}/{b}'
+          - '{b}/{a}'
+          - '1/{b}'
+  - title: 关系
+    say: 被除数相当于分子，除数相当于分母。
+    do:
+      - show: rule-pre
+      - show: rule-frac
+
+keyPoints:
+  - 两个整数相除，商可以用分数表示：被除数 ÷ 除数 = 除数分之被除数
+  - 被除数相当于分数的分子，除数相当于分数的分母，除数不能为 0

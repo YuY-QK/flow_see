@@ -409,19 +409,20 @@
 - 元信息：summary：3 张饼平均分给 4 人，每人 3/4 张，被除数 ÷ 除数 = 除数分之被除数；tags [分数与除法, 分数的意义]；cover “3÷4=3/4”；related [fraction-unit-one, proper-improper]
 - 舞台：800 × 450；params `a: 3`、`b: 4`；explore b 滑块“几人” 2–6，a 滑块“几张饼” 1–`b - 1`
 - 零件：
-  - `c{i}`（repeat `{a}`）= fraction-circle，parts `{b}`，take 0，radius 60，at [`{100 + (i - 1) * 140}`, 120]
-  - `mine` = fraction-circle，parts `{b}`，take 0，radius 60，color green，at [640, 120]
+  - `c{i}`（repeat `{a}`）= fraction-circle，parts `{b}`，take 0，radius 50，at [`{80 + (i - 1) * 115}`, 120]
+  - `mine` = fraction-circle，parts `{b}`，take 0，radius 50，color green，at [670, 120]
   - `eq` = text，`'{a} ÷ {b} = [{a}/{b}](frac blank)（张）'`，size 34，at [400, 300]
-  - `rule` = text，`'被除数 ÷ 除数 = [被除数/除数](frac)'`，size 26，at [400, 380]，hidden
+  - `rule-pre` = text，`'被除数 ÷ 除数 ='`，size 26，at [340, 380]，hidden
+  - `rule-frac` = fraction，num 被除数，den 除数，size 20，at [490, 380]，hidden
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|
 | 1 | 分饼 | {a} 张饼平均分给 {b} 个人，每人分多少？ | 重复 a 次：高亮 c{i}（together） | — |
 | 2 | 一张一张分 | 每张饼平均分成 {b} 份，每人从每张饼里拿 1 份。 | 重复 a 次：c{i}.take → 1（together）；mine.take → {a}（1.5s） | — |
-| 3 | 每人多少 | 每人拿到 {a} 个 1/{b} 张，就是 {a}/{b} 张。 | 高亮 mine ‖ eq.text → `'{a} ÷ {b} = [{a}/{b}](frac)（张）'` | choose 答案 `{a}/{b}`（选项 `{a}/{b}`、`{b}/{a}`、`1/{b}`）“每人分到几分之几张？” |
-| 4 | 关系 | 被除数相当于分子，除数相当于分母。 | 显示 rule | — |
+| 3 | 每人多少 | 每人拿到 {a} 个 1/{b} 张，合起来是多少张？ | 高亮 mine ‖ eq.text → `'{a} ÷ {b} = [{a}/{b}](frac)（张）'` | choose 答案 `{a}/{b}`（选项 `{a}/{b}`、`{b}/{a}`、`1/{b}`）“每人分到几分之几张？” |
+| 4 | 关系 | 被除数相当于分子，除数相当于分母。 | 显示 rule-pre；显示 rule-frac | — |
 
-- 要点：两个整数相除，商可以用分数表示：被除数 ÷ 除数 = 除数分之被除数（除数不为 0）
+- 要点：两个整数相除，商可以用分数表示：被除数 ÷ 除数 = 除数分之被除数；被除数相当于分数的分子，除数相当于分数的分母，除数不能为 0
 
 ### `decimal-meaning` 小数的意义
 - 位置：四下 · `decimal-meaning` · 3.3 · ruler（zoom）、grid、place-value（decimals）

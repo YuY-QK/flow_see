@@ -1,0 +1,120 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: simplify-calc
+title: 简便运算
+summary: 把接近整百的数拆开，用运算定律凑整
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [简便运算, 乘法分配律, 拆数, 凑整]
+cover: { text: 102×35 }
+related: [distributive-law, add-laws, mult-laws]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  e: 1
+
+explore:
+  - param: e
+    control: buttons
+    label: 算式
+    options:
+      - { value: 1, label: 102 × 35 }
+      - { value: 2, label: 99 × 25 }
+      - { value: 3, label: 480 − 76 − 24 }
+
+presets:
+  - { label: 102 × 35, params: { e: 1 } }
+  - { label: 99 × 25, params: { e: 2 } }
+  - { label: 480 − 76 − 24, params: { e: 3 } }
+
+objects:
+  - id: x1
+    type: expr-steps
+    lines:
+      - '102 × 35'
+      - '(100 + 2) × 35'
+      - '100 × 35 + 2 × 35'
+      - '3500 + 70'
+      - '3570'
+    notes:
+      - ''
+      - 把 102 拆成 100 + 2
+      - 乘法分配律
+      - ''
+      - ''
+    show: 1
+    at: [100, 70]
+    opacity: '{(e == 1)}'
+  - id: x2
+    type: expr-steps
+    lines:
+      - '99 × 25'
+      - '(100 − 1) × 25'
+      - '100 × 25 − 1 × 25'
+      - '2500 − 25'
+      - '2475'
+    notes:
+      - ''
+      - 把 99 看成 100 − 1
+      - 乘法分配律
+      - ''
+      - ''
+    show: 1
+    at: [100, 70]
+    opacity: '{(e == 2)}'
+  - id: x3
+    type: expr-steps
+    lines:
+      - '480 − 76 − 24'
+      - '480 − (76 + 24)'
+      - '480 − 100'
+      - '380'
+    notes:
+      - ''
+      - 连续减两个数，等于减它们的和
+      - ''
+      - ''
+    show: 1
+    at: [100, 70]
+    opacity: '{(e == 3)}'
+
+steps:
+  - title: 看数
+    say: 先看算式里有没有接近整十、整百的数。
+    do:
+      - highlight: x1
+      - highlight: { target: x2, together: true }
+      - highlight: { target: x3, together: true }
+  - title: 拆一拆
+    say: 把它拆成整百数和一个小数。
+    do:
+      - set: { target: x1, show: 2 }
+      - set: { target: x2, show: 2, together: true }
+      - set: { target: x3, show: 2, together: true }
+  - title: 用定律
+    say: 用运算定律变形。
+    do:
+      - set: { target: x1, show: 3 }
+      - set: { target: x2, show: 3, together: true }
+      - set: { target: x3, show: 3, together: true }
+  - title: 算出结果
+    say: 凑成整百后，口算就能算出来。
+    do:
+      - ask: true
+      - set: { target: x1, show: 99 }
+      - set: { target: x2, show: 99, together: true }
+      - set: { target: x3, show: 99, together: true }
+    try:
+      task: 结果是多少？
+      choose:
+        answer: "{sel(e == 1, '3570', sel(e == 2, '2475', '380'))}"
+        options:
+          - "{sel(e == 1, '3570', sel(e == 2, '2475', '380'))}"
+          - "{sel(e == 1, '3507', sel(e == 2, '2457', '480'))}"
+          - "{sel(e == 1, '357', sel(e == 2, '2500', '400'))}"
+
+keyPoints:
+  - 把接近整十、整百的数拆成整十、整百数加（减）一个数，再用乘法分配律
+  - 连续减去两个数，可以减去它们的和
