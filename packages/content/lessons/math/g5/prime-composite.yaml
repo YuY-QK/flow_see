@@ -1,0 +1,82 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: prime-composite
+title: 质数与合数
+summary: 只有 1 和它本身两个因数的是质数；1 既不是质数也不是合数
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 2分钟
+recommended: true
+tags: [质数, 合数, 素数, 筛法]
+cover: { text: 2 3 5 7 }
+related: [factor-multiple, gcf]
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params: {}
+
+objects:
+  - id: chart
+    type: number-chart
+    from: 1
+    to: 100
+    cols: 10
+    cell: 38
+    marks:
+      - { multiplesOf: 2, color: gray, style: cross, keepSelf: true }
+      - { multiplesOf: 3, color: gray, style: cross, keepSelf: true }
+      - { multiplesOf: 5, color: gray, style: cross, keepSelf: true }
+      - { multiplesOf: 7, color: gray, style: cross, keepSelf: true }
+    reveal: 0
+    at: [20, 30]
+  - id: one
+    type: text
+    text: 1 既不是质数也不是合数
+    size: 24
+    at: [600, 80]
+    hidden: true
+  - id: blk
+    type: counters
+    count: 7
+    layout: row
+    shape: square
+    size: 26
+    at: [440, 300]
+  - id: q
+    type: text
+    text: 1–100 的质数有 [25](blank) 个
+    size: 26
+    at: [600, 400]
+
+steps:
+  - title: 拼不了长方形
+    say: 7 个方块只能拼成一排，7 只有 1 和 7 两个因数。
+    do:
+      - highlight: blk
+  - title: 质数和合数
+    say: 只有 1 和它本身两个因数的数叫质数；还有别的因数的叫合数。
+  - title: 1 不算
+    say: 1 只有一个因数，既不是质数也不是合数。
+    do:
+      - highlight: chart.n.1
+      - show: one
+  - title: 筛一筛
+    say: 留下 2，划去 2 的倍数；留下 3，划去 3 的倍数；再划去 5、7 的倍数。
+    do:
+      - set: { target: chart, reveal: 4, duration: 8s }
+  - title: 剩下的是质数
+    say: 没被划去的（除了 1）都是质数，一共 25 个。
+    do:
+      - ask: true
+      - set: { target: q, text: 1–100 的质数有 25 个 }
+    try:
+      task: 1 到 100 的质数有几个？
+      choose:
+        answer: 25
+        options: [15, 25, 35]
+
+keyPoints:
+  - 一个数只有 1 和它本身两个因数，这个数叫质数
+  - 除了 1 和它本身还有别的因数的数叫合数
+  - 1 既不是质数也不是合数
+  - 2 是唯一的偶质数

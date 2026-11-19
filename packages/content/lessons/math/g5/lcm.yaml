@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: lcm
+title: 公倍数与最小公倍数
+summary: 两只青蛙一次跳 4 格、6 格，同时落到的点是公倍数，第一个是最小公倍数
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [公倍数, 最小公倍数, 倍数]
+cover: { text: '[4,6]=12' }
+related: [factor-multiple, gcf, simplify-common-denominator]
+
+template: scene
+stage: { width: 800, height: 400 }
+
+params:
+  a: 4
+  b: 6
+
+derived:
+  m: lcm(a, b)
+
+presets:
+  - { label: '4 和 6', params: { a: 4, b: 6 } }
+  - { label: '3 和 4', params: { a: 3, b: 4 } }
+  - { label: '6 和 8', params: { a: 6, b: 8 } }
+  - { label: '2 和 5', params: { a: 2, b: 5 } }
+
+objects:
+  - id: line
+    type: numberline
+    from: 0
+    to: '{2 * m}'
+    step: 1
+    labelEvery: '{m > 15 ? 4 : 2}'
+    length: 680
+    at: [60, 200]
+  - id: ans
+    type: text
+    text: '{a} 和 {b} 的最小公倍数是 [{m}](blank)'
+    size: 30
+    at: [400, 320]
+
+steps:
+  - title: 两只青蛙
+    say: 橙色青蛙一次跳 {a} 格，绿色青蛙一次跳 {b} 格。
+    do:
+      - highlight: line
+  - title: 跳一跳
+    say: 它们落下的点，分别是 {a} 的倍数和 {b} 的倍数。
+    do:
+      - repeat: '{2 * m / a}'
+        do:
+          - hop: { target: line, from: '{(i - 1) * a}', to: '{i * a}', color: orange, duration: 0.4s }
+      - repeat: '{2 * m / b}'
+        do:
+          - hop: { target: line, from: '{(i - 1) * b}', to: '{i * b}', color: green, duration: 0.4s }
+  - title: 同时落到
+    say: 两只都落到的点是公倍数：{m}、{2 * m}……
+    do:
+      - set: { target: line, marks: ['{m}', '{2 * m}'] }
+  - title: 最小的
+    say: 第一个同时落到的点是 {m}，就是最小公倍数。
+    do:
+      - ask: true
+      - set: { target: ans, text: '{a} 和 {b} 的最小公倍数是 {m}' }
+    try:
+      task: '{a} 和 {b} 的最小公倍数是多少？'
+      choose:
+        answer: '{m}'
+        min: 2
+        max: 30
+
+keyPoints:
+  - 两个数公有的倍数叫公倍数，其中最小的一个叫最小公倍数
+  - 公倍数有无限多个

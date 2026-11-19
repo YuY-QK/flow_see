@@ -1,0 +1,65 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: product-round
+title: 积的近似数
+summary: 保留几位小数，就看它的下一位，四舍五入
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [积的近似数, 四舍五入, 保留小数]
+cover: { text: '≈2.35' }
+related: [big-numbers-round, quotient-round-repeating]
+
+template: scene
+stage: { width: 800, height: 400 }
+
+params:
+  n: 2.346
+
+presets:
+  - { label: '2.346', params: { n: 2.346 } }
+  - { label: '0.875', params: { n: 0.875 } }
+  - { label: '5.168', params: { n: 5.168 } }
+
+objects:
+  - id: line
+    type: numberline
+    from: '{floor(n * 100) / 100}'
+    to: '{floor(n * 100) / 100 + 0.01}'
+    step: 0.001
+    labelEvery: 5
+    labels: decimal
+    length: 600
+    marks: ['{n}']
+    at: [100, 140]
+  - id: ans
+    type: text
+    text: '{n} ≈ [{dec(n, 2)}](blank)（保留两位小数）'
+    size: 32
+    at: [400, 290]
+
+steps:
+  - title: 保留两位小数
+    say: 保留两位小数，要看第三位小数。
+    do:
+      - highlight: ans
+  - title: 看下一位
+    say: "第三位是 {digit(n, -3)}，{sel(digit(n, -3) >= 5, '大于或等于 5，进 1', '小于 5，舍去')}。"
+    do:
+      - highlight: line
+  - title: 结果
+    say: 所以 {n} ≈ {dec(n, 2)}。
+    do:
+      - ask: true
+      - set: { target: ans, text: '{n} ≈ {dec(n, 2)}（保留两位小数）' }
+    try:
+      task: 保留两位小数是多少？
+      choose:
+        answer: '{dec(n, 2)}'
+        options:
+          - '{dec(n, 2)}'
+          - '{floor(n * 100) / 100}'
+          - '{dec(n, 1)}'
+
+keyPoints:
+  - 求积的近似数，要看保留位数的下一位，用四舍五入法
+  - 表示近似数时，末尾的 0 不能去掉

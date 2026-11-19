@@ -11,7 +11,7 @@ units:
     lessons:
       - { id: decimal-times-int, title: 小数乘整数 }
       - { id: decimal-times-decimal, title: 小数乘小数 }
-      - { id: product-round, title: 积的近似数 }
+      - product-round
   - id: decimal-div
     title: 小数除法
     term: 1
@@ -25,7 +25,7 @@ units:
     term: 1
     domain: number
     lessons:
-      - { id: decimal-mixed, title: 小数四则混合与简便运算 }
+      - decimal-mixed
   - id: transformations-1
     title: 图形的运动（二）
     term: 1
@@ -63,10 +63,10 @@ units:
     term: 2
     domain: number
     lessons:
-      - { id: factor-multiple, title: 因数和倍数 }
-      - { id: multiples-2-3-5, title: 2、3、5 的倍数特征 }
-      - { id: prime-composite, title: 质数与合数 }
-      - { id: lcm, title: 公倍数与最小公倍数 }
+      - factor-multiple
+      - multiples-2-3-5
+      - prime-composite
+      - lcm
   - id: fraction-forms
     title: 分数的意义和性质（二）
     term: 2

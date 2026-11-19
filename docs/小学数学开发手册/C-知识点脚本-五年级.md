@@ -381,10 +381,10 @@
 - 元信息：summary：个位是 0、2、4、6、8 的是 2 的倍数；个位是 0 或 5 的是 5 的倍数；各位数字之和是 3 的倍数的是 3 的倍数；tags [2的倍数, 3的倍数, 5的倍数, 倍数特征, 奇数, 偶数]；cover “2 3 5”；related [factor-multiple, prime-composite]；recommended
 - 舞台：800 × 450；params `k: 3`；explore k 按钮组“找谁的倍数” 2 / 3 / 5（options 写成 `[{ value: 2, label: '2' }, { value: 3, label: '3' }, { value: 5, label: '5' }]`）
 - 零件：
-  - `chart` = number-chart，from 1，to 100，cols 10，cell 38，marks [{ multiplesOf: 2, color: blue, style: fill }, { multiplesOf: 5, color: orange, style: circle }, { multiplesOf: 3, color: green, style: circle }]，reveal 0，at [20, 30]
-  - `t2` = text，`'个位是 0、2、4、6、8'`，size 24，color blue，at [600, 80]，hidden
-  - `t5` = text，`'个位是 0 或 5'`，size 24，color orange，at [600, 140]，hidden
-  - `t3` = text，`'各位数字之和是 3 的倍数：如 57，5 + 7 = 12'`，size 22，color green，at [600, 200]，hidden
+  - `chart` = number-chart，from 1，to 100，cols 10，cell 36，marks [{ multiplesOf: 2, color: blue, style: fill }, { multiplesOf: 5, color: orange, style: circle }, { multiplesOf: 3, color: green, style: circle }]，reveal 0，at [10, 35]
+  - `t2` = text，`'个位是 0、2、4、6、8'`，size 24，color blue，at [585, 80]，hidden
+  - `t5` = text，`'个位是 0 或 5'`，size 24，color orange，at [585, 140]，hidden
+  - `t3` = text，`'各位数字之和是 3 的倍数：如 57，5 + 7 = 12'`，size 18，color green，at [585, 200]，hidden
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|

@@ -1,0 +1,78 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: factor-multiple
+title: 因数和倍数
+summary: 12 个方块能拼成 1 × 12、2 × 6、3 × 4，1、2、3、4、6、12 都是 12 的因数
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+recommended: true
+tags: [因数, 倍数, 找因数, 找倍数]
+cover: { text: 12的因数 }
+related: [multiples-2-3-5, prime-composite]
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params: {}
+
+objects:
+  - id: blk
+    type: counters
+    count: 12
+    layout: grid
+    cols: 12
+    shape: square
+    size: 30
+    at: [40, 60]
+  - id: fs
+    type: text
+    text: '12 的因数：1, 12'
+    size: 28
+    at: [520, 300]
+  - id: chart
+    type: number-chart
+    from: 1
+    to: 60
+    cols: 10
+    cell: 30
+    marks:
+      - { multiplesOf: 12, color: blue, style: circle }
+    reveal: 0
+    at: [460, 40]
+    hidden: true
+
+steps:
+  - title: 拼长方形
+    say: 12 个小方块拼成长方形：一行 12 个，1 × 12。
+    do:
+      - highlight: blk
+  - title: 换一种
+    say: 一行 6 个，拼 2 行：2 × 6。
+    do:
+      - set: { target: blk, cols: 6, duration: 1s }
+      - set: { target: fs, text: '12 的因数：1, 2, 6, 12' }
+  - title: 再换一种
+    say: 一行 4 个，拼 3 行：3 × 4。
+    do:
+      - ask: true
+      - set: { target: blk, cols: 4, duration: 1s }
+      - set: { target: fs, text: '12 的因数：1, 2, 3, 4, 6, 12' }
+    try:
+      task: 一行 4 个，能拼几行？
+      choose:
+        answer: 3
+        options: [3, 5, 7]
+  - title: 因数成对
+    say: 12 的因数一对一对地找：1 和 12、2 和 6、3 和 4。
+    do:
+      - highlight: fs
+  - title: 倍数
+    say: 12 是 1、2、3、4、6、12 的倍数；12 的倍数有 12、24、36……无限多个。
+    do:
+      - show: chart
+      - set: { target: chart, reveal: 1, duration: 2s }
+
+keyPoints:
+  - 如果 a × b = c（a、b、c 都是非 0 自然数），那么 a 和 b 是 c 的因数，c 是 a 和 b 的倍数
+  - 一个数的因数个数有限，最小是 1，最大是它本身
+  - 倍数的个数无限，最小是它本身

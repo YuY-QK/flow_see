@@ -1,0 +1,98 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: multiples-2-3-5
+title: 2、3、5 的倍数特征
+summary: 个位是 0、2、4、6、8 的是 2 的倍数；个位是 0 或 5 的是 5 的倍数；各位数字之和是 3 的倍数的是 3 的倍数
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 2分钟
+recommended: true
+tags: [2的倍数, 3的倍数, 5的倍数, 倍数特征, 奇数, 偶数]
+cover: { text: 2 3 5 }
+related: [factor-multiple, prime-composite]
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  k: 3
+
+explore:
+  - param: k
+    control: buttons
+    label: 找谁的倍数
+    options:
+      - { value: 2, label: '2' }
+      - { value: 3, label: '3' }
+      - { value: 5, label: '5' }
+
+objects:
+  - id: chart
+    type: number-chart
+    from: 1
+    to: 100
+    cols: 10
+    cell: 36
+    marks:
+      - { multiplesOf: 2, color: blue, style: fill }
+      - { multiplesOf: 5, color: orange, style: circle }
+      - { multiplesOf: 3, color: green, style: circle }
+    reveal: 0
+    at: [10, 35]
+  - id: t2
+    type: text
+    text: 个位是 0、2、4、6、8
+    size: 24
+    color: blue
+    at: [585, 80]
+    hidden: true
+  - id: t5
+    type: text
+    text: 个位是 0 或 5
+    size: 24
+    color: orange
+    at: [585, 140]
+    hidden: true
+  - id: t3
+    type: text
+    text: '各位数字之和是 3 的倍数：如 57，5 + 7 = 12'
+    size: 18
+    color: green
+    at: [585, 200]
+    hidden: true
+
+steps:
+  - title: 2 的倍数
+    say: 把 2 的倍数涂上颜色，排成整齐的竖列。
+    do:
+      - set: { target: chart, reveal: 1, duration: 3s }
+  - title: 看个位
+    say: 个位是 0、2、4、6、8 的数，都是 2 的倍数，也叫偶数。
+    do:
+      - highlight: [chart.col.2, chart.col.4, chart.col.6, chart.col.8, chart.col.10]
+      - show: t2
+  - title: 5 的倍数
+    say: 5 的倍数，个位不是 0 就是 5。
+    do:
+      - set: { target: chart, reveal: 2, duration: 3s }
+      - show: t5
+  - title: 3 的倍数
+    say: 3 的倍数斜着排，看个位看不出来，要看各位数字的和。
+    do:
+      - set: { target: chart, reveal: 3, duration: 3s }
+      - show: t3
+  - title: 找一找
+    say: 在表里点出 3 个 {k} 的倍数。
+    try:
+      task: 点出 3 个 {k} 的倍数。
+      tap:
+        pick: 3
+        among:
+          - 'chart.n.*'
+        valid: '{n % k == 0}'
+      hints:
+        - "{sel(k == 3, '把各位上的数加起来，看是不是 3 的倍数。', sel(k == 2, '看个位是不是双数。', '看个位是不是 0 或 5。'))}"
+
+keyPoints:
+  - 个位上是 0、2、4、6、8 的数都是 2 的倍数
+  - 个位上是 0 或 5 的数都是 5 的倍数
+  - 一个数各位上的数的和是 3 的倍数，这个数就是 3 的倍数

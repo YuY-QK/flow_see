@@ -1,0 +1,85 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: decimal-mixed
+title: 小数四则混合与简便运算
+summary: 小数四则混合运算的顺序和整数一样；运算定律对小数同样适用
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [小数混合运算, 简便运算, 运算定律]
+cover: { text: 0.25×4 }
+related: [mixed-order, simplify-calc]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  e: 1
+
+presets:
+  - { label: '0.25 × 3.2', params: { e: 1 } }
+  - { label: '1.25 × 2.5 × 8', params: { e: 2 } }
+
+objects:
+  - id: x1
+    type: expr-steps
+    lines:
+      - 0.25 × 3.2
+      - 0.25 × (4 × 0.8)
+      - (0.25 × 4) × 0.8
+      - 1 × 0.8
+      - '0.8'
+    notes:
+      - ''
+      - 把 3.2 拆成 4 × 0.8
+      - 乘法结合律
+      - ''
+      - ''
+    show: 1
+    at: [100, 70]
+    opacity: '{e == 1}'
+  - id: x2
+    type: expr-steps
+    lines:
+      - 1.25 × 2.5 × 8
+      - 1.25 × 8 × 2.5
+      - 10 × 2.5
+      - '25'
+    notes:
+      - ''
+      - 乘法交换律
+      - ''
+      - ''
+    show: 1
+    at: [100, 70]
+    opacity: '{e == 2}'
+
+steps:
+  - title: 找好朋友数
+    say: 0.25 和 4、1.25 和 8 相乘得整数，是“好朋友”。
+    do:
+      - highlight: { target: x1 }
+      - highlight: { target: x2, together: true }
+  - title: 变形
+    say: 用运算定律把好朋友凑到一起。
+    do:
+      - set: { target: x1, show: 3 }
+      - set: { target: x2, show: 2, together: true }
+  - title: 算出来
+    say: 凑整后口算。
+    do:
+      - ask: true
+      - set: { target: x1, show: 99 }
+      - set: { target: x2, show: 99, together: true }
+    try:
+      task: 凑整后口算，结果是多少？
+      choose:
+        answer: "{sel(e == 1, '0.8', '25')}"
+        options:
+          - "{sel(e == 1, '0.8', '25')}"
+          - "{sel(e == 1, '8', '2.5')}"
+          - "{sel(e == 1, '0.08', '250')}"
+
+keyPoints:
+  - 小数四则混合运算的顺序与整数相同
+  - 整数乘法的运算定律对小数乘法同样适用
+  - 0.25 × 4 = 1，1.25 × 8 = 10
