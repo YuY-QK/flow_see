@@ -31,6 +31,14 @@ objects:
     width: 540
     height: 270
     at: [270, 220]
+  - id: windows
+    type: shape
+    shape: rect
+    width: 290
+    height: 60
+    at: [230, 198]
+    fill: false
+    stroke: false
   - id: people
     type: item-set
     items:
@@ -54,7 +62,7 @@ steps:
   - title: 车上原来
     say: 车上原来有 {a} 人。
     do:
-      - highlight: people
+      - highlight: windows
   - title: 上车
     say: 到站了，上来 {b} 人。
     do:
@@ -62,7 +70,7 @@ steps:
   - title: 先算前两个
     say: 从左往右，先算 {a} + {b} = {m}。
     do:
-      - highlight: eq.op.1
+      - highlight: eq.line.1
       - ask: true
       - set: { target: eq, show: 2 }
     try:

@@ -66,7 +66,7 @@ steps:
     do:
       - set: { target: chart, reveal: 1, duration: 3s }
   - title: 看个位
-    say: 个位是 0、2、4、6、8 的数，都是 2 的倍数，也叫偶数。
+    say: 个位是 0、2、4、6、8 的数是 2 的倍数，也叫偶数。
     do:
       - highlight: [chart.col.2, chart.col.4, chart.col.6, chart.col.8, chart.col.10]
       - show: t2

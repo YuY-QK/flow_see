@@ -67,9 +67,9 @@
 - 元信息：summary：先分整捆，不够分的捆拆开再分；tags [口算除法, 整十数除法, 两位数除以一位数]；cover “52÷4”；related [div-column-1]
 - 舞台：800 × 450；params `a: 52`、`d: 4`；derived `t: floor(a / 10)`、`o: a % 10`、`q1: floor(t / d)`、`rt: t % d`、`q: a / d`；presets（整除）：`60 ÷ 3`、`42 ÷ 2`、`52 ÷ 4`、`72 ÷ 3`、`96 ÷ 4`
 - 零件：
-  - `pile` = base-ten，tens `{t}`，ones `{o}`，columns true，at [40, 40]
-  - `p{i}`（repeat `{d}`）= base-ten，tens 0，ones 0，columns false，at [`{40 + (i - 1) * 180}`, 260]
-  - `eq` = text，`'{a} ÷ {d} = [{q}](blank)'`，size 40，at [600, 100]
+  - `pile` = base-ten，tens `{t}`，ones `{o}`，columns true，unit 12，at [30, 40]
+  - `p{i}`（repeat `{d}`）= base-ten，tens 0，ones 0，columns false，unit 12，at [`{30 + (i - 1) * 180}`, 260]
+  - `eq` = text，`'{a} ÷ {d} = [{q}](blank)'`，size 38，at [650, 90]
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|
@@ -358,6 +358,8 @@
 - 舞台：800 × 450；params `a: 14`、`b: 12`；derived `p1: a * (b % 10)`、`p2: a * (b - b % 10)`、`p: a * b`；explore a 滑块 11–19，b 滑块 11–19
 - 零件：
   - `g` = grid，rows `{b}`，cols `{a}`，cell 18，filled 0，at [40, 40]
+  - `g_top` = shape rect，width `'{a * 18}'`，height `'{10 * 18}'`，at [`'{40 + a * 18 / 2}'`，`'{40 + 10 * 18 / 2}'`]，fill false，stroke false
+  - `g_bottom` = shape rect，width `'{a * 18}'`，height `'{(b - 10) * 18}'`，at [`'{40 + a * 18 / 2}'`，`'{40 + 10 * 18 + (b - 10) * 18 / 2}'`]，fill false，stroke false
   - `cut` = line，from [36, `{40 + 10 * 18}`]，to [`{44 + a * 18}`, `{40 + 10 * 18}`]，dashed，color red，hidden（把 b 行分成 10 行和 b%10 行）
   - `calc` = column-calc，a `{a}`，b `{b}`，op ×，show 0，at [560, 200]
 
@@ -365,8 +367,8 @@
 |---|---|---|---|---|
 | 1 | 方格长方形 | {a} × {b} 就是 {b} 行、每行 {a} 格的长方形。 | 高亮 g | — |
 | 2 | 分成两块 | 把 {b} 行分成 {b % 10} 行和 10 行。 | 显示 cut | — |
-| 3 | 第一块 | {b % 10} 行：{a} × {b % 10} = {p1}，是竖式第一行。 | 高亮 g.row.{b}（下面 b%10 行逐行高亮：重复 b%10 次 高亮 g.row.{10 + i}，together）；calc.show → 2（个位乘完） | — |
-| 4 | 第二块 | 10 行：{a} × 10 = {p2}，竖式第二行写 {p2 / 10}，末尾的 0 不写，所以对着十位。 | 重复 10 次：高亮 g.row.{i}（together） ‖ calc.show → 4 | choose 答案 {p2}（选项 {p2 / 10}、{p2}、{p2 * 10}）“第二块一共几格？”；提示：10 行，每行 {a} 格。 |
+| 3 | 第一块 | {b % 10} 行：{a} × {b % 10} = {p1}，是竖式第一行。 | 高亮 g_bottom；calc.show → 2（个位乘完） | — |
+| 4 | 第二块 | 10 行：{a} × 10 = {p2}，竖式第二行写 {p2 / 10}，末尾的 0 不写，所以对着十位。 | 高亮 g_top ‖ calc.show → 4 | choose 答案 {p2}（选项 {p2 / 10}、{p2}、{p2 * 10}）“第二块一共几格？”；提示：10 行，每行 {a} 格。 |
 | 5 | 合起来 | 两块合起来：{p1} + {p2} = {p}。 | calc.show → 99 | — |
 
 - 说明：`calc.show → 99` 表示全部写出（超过总步数时显示全部，已有行为）；第 3、4 步的 `show` 值对应 column-calc 两位乘两位的小步：个位乘两步、十位乘两步——写配置时用 `columnCalcPlan` 核对，以它为准。

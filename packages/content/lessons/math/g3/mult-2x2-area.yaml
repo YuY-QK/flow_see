@@ -33,6 +33,22 @@ objects:
     cell: 18
     filled: 0
     at: [40, 40]
+  - id: g_top
+    type: shape
+    shape: rect
+    width: '{a * 18}'
+    height: '{10 * 18}'
+    at: ['{40 + a * 18 / 2}', '{40 + 10 * 18 / 2}']
+    fill: false
+    stroke: false
+  - id: g_bottom
+    type: shape
+    shape: rect
+    width: '{a * 18}'
+    height: '{(b - 10) * 18}'
+    at: ['{40 + a * 18 / 2}', '{40 + 10 * 18 + (b - 10) * 18 / 2}']
+    fill: false
+    stroke: false
   - id: cut
     type: line
     from: [36, '{40 + 10 * 18}']
@@ -60,16 +76,12 @@ steps:
   - title: 第一块
     say: '{b % 10} 行：{a} × {b % 10} = {p1}，是竖式第一行。'
     do:
-      - repeat: '{b % 10}'
-        do:
-          - highlight: { target: 'g.row.{10 + i}', together: true }
+      - highlight: g_bottom
       - set: { target: calc, show: 2 }
   - title: 第二块
     say: '10 行是 {p2}，第二行写 {p2 / 10}，末尾 0 不写对着十位。'
     do:
-      - repeat: 10
-        do:
-          - highlight: { target: 'g.row.{i}', together: true }
+      - highlight: g_top
       - ask: true
       - set: { target: calc, show: 4 }
     try:

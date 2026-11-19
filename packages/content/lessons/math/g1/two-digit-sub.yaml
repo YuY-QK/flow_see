@@ -29,12 +29,13 @@ objects:
     type: base-ten
     tens: '{floor(a / 10)}'
     ones: '{a % 10}'
-    at: [40, 80]
+    unit: 13
+    at: [30, 80]
   - id: eq
     type: text
     text: '[{a}](blue) − [{b}](orange) = [{r}](blank)'
     size: 44
-    at: [600, 160]
+    at: [640, 160]
 
 steps:
   - title: 摆小棒

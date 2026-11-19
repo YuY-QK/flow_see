@@ -2,7 +2,8 @@
 id: big-numbers-read
 title: 亿以内、亿以上数的读写
 summary: 从右往左四位一级，按级读、按级写
-status: draft
+status: reviewed
+reviewedAt: '2026-11-19'
 duration: 1分钟
 tags: [大数, 亿, 万, 数位顺序表, 读数, 写数]
 cover: { text: 亿 万 个 }
@@ -14,6 +15,20 @@ stage: { width: 800, height: 420 }
 
 params:
   n: 305000060
+
+derived:
+  places: len(n) - 1
+  totalCols: len(n)
+  hasYi: len(n) > 8
+  cols_yi: max(0, totalCols - 8)
+  cols_wan: 'totalCols <= 8 ? totalCols - 4 : 4'
+  w_yi: max(0, cols_yi * 70 - 50)
+  w_wan: max(0, cols_wan * 70 - 50)
+  w_ge: 230
+  leftX: 400 - totalCols * 35
+  x_yi: leftX + (cols_yi * 70) / 2
+  x_wan: 120 + totalCols * 35 - (cols_wan * 70) / 2
+  x_ge: 260 + totalCols * 35
 
 explore:
   - param: n
@@ -35,13 +50,38 @@ objects:
   - id: pv
     type: place-value
     value: '{n}'
-    places: 9
+    places: '{places}'
     style: chart
     groups: true
     labels:
       places: [个位, 十位, 百位, 千位, 万位, 十万位, 百万位, 千万位, 亿位, 十亿位]
       groups: [个级, 万级, 亿级]
     at: [400, 120]
+  - id: g_yi
+    type: shape
+    shape: rect
+    width: '{w_yi}'
+    height: 118
+    at: ['{x_yi}', 120]
+    fill: false
+    stroke: false
+    hidden: '{!hasYi}'
+  - id: g_wan
+    type: shape
+    shape: rect
+    width: '{w_wan}'
+    height: 118
+    at: ['{x_wan}', 120]
+    fill: false
+    stroke: false
+  - id: g_ge
+    type: shape
+    shape: rect
+    width: '{w_ge}'
+    height: 118
+    at: ['{x_ge}', 120]
+    fill: false
+    stroke: false
   - id: read
     type: text
     text: '读作：[{cn(n)}](blank)'
@@ -59,15 +99,22 @@ steps:
     say: 从右往左，每四位是一级：个级、万级、亿级。
     do:
       - highlight: pv
-  - title: 分级
+  - when: '{hasYi}'
+    title: 分级
     say: '{n} 从右往左四位一分。'
     do:
-      - highlight: pv.d0
-      - highlight: { target: pv.d4, together: true }
-      - highlight: { target: pv.d8, together: true }
+      - highlight: g_yi
+      - highlight: { target: g_wan, together: true }
+      - highlight: { target: g_ge, together: true }
+  - when: '{!hasYi}'
+    title: 分级
+    say: '{n} 从右往左四位一分。'
+    do:
+      - highlight: g_wan
+      - highlight: { target: g_ge, together: true }
   - when: '{n == 305000060}'
     title: 按级读
-    say: 先读亿级，再读万级，最后读个级；每级末尾的 0 不读，中间的 0 只读一个零。
+    say: 从高位起按级读，每级末尾的 0 不读，中间的 0 只读一个。
     do:
       - show: rule
       - ask: true
@@ -82,7 +129,7 @@ steps:
           - 三亿零五百零六十
   - when: '{n == 40020000}'
     title: 按级读
-    say: 先读亿级，再读万级，最后读个级；每级末尾的 0 不读，中间的 0 只读一个零。
+    say: 从高位起按级读，每级末尾的 0 不读，中间的 0 只读一个。
     do:
       - show: rule
       - ask: true
@@ -97,7 +144,7 @@ steps:
           - 四千万零二万
   - when: '{n == 1200500}'
     title: 按级读
-    say: 先读亿级，再读万级，最后读个级；每级末尾的 0 不读，中间的 0 只读一个零。
+    say: 从高位起按级读，每级末尾的 0 不读，中间的 0 只读一个。
     do:
       - show: rule
       - ask: true
@@ -112,7 +159,7 @@ steps:
           - 一百二十万零五百零
   - when: '{n == 2008000000}'
     title: 按级读
-    say: 先读亿级，再读万级，最后读个级；每级末尾的 0 不读，中间的 0 只读一个零。
+    say: 从高位起按级读，每级末尾的 0 不读，中间的 0 只读一个。
     do:
       - show: rule
       - ask: true

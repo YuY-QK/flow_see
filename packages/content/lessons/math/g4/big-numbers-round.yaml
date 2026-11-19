@@ -2,7 +2,8 @@
 id: big-numbers-round
 title: 改写与近似数
 summary: 整万数改写去掉末尾 4 个 0；求近似数用四舍五入
-status: draft
+status: reviewed
+reviewedAt: '2026-11-19'
 duration: 1分钟
 tags: [改写, 近似数, 四舍五入, 万作单位, 亿作单位]
 cover: { text: '≈38万' }
@@ -56,7 +57,7 @@ objects:
 
 steps:
   - title: 改写成“万”
-    say: 整万数改写成用“万”作单位，去掉末尾 4 个 0，加上“万”字。
+    say: 整万数改写成“万”：去掉末尾 4 个 0，加上“万”字。
     do:
       - highlight: pv
   - title: 求近似数

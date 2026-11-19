@@ -66,7 +66,7 @@ steps:
     do:
       - highlight: plate
   - title: 平均分
-    say: 把它平均分成 {n} 份，每份 {e} 个（一行就是一份），是它的 1/{n}。
+    say: 平均分成 {n} 份，每份 {e} 个，是它的 1/{n}。
     do:
       - highlight: plate
   - title: 取几份
@@ -83,7 +83,7 @@ steps:
       hints:
         - 先算 1 份是几个。
   - title: 分数单位
-    say: 1/{n} 是 {k}/{n} 的分数单位，{k}/{n} 里有 {k} 个 1/{n}。
+    say: 1/{n} 是分数单位，{k}/{n} 里面有 {k} 个 1/{n}。
     do:
       - highlight: eq
 

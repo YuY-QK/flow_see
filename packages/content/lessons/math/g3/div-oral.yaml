@@ -38,19 +38,21 @@ objects:
     tens: '{t}'
     ones: '{o}'
     columns: true
-    at: [40, 40]
+    unit: 12
+    at: [30, 40]
   - repeat: '{d}'
     id: 'p{i}'
     type: base-ten
     tens: 0
     ones: 0
     columns: false
-    at: ['{40 + (i - 1) * 180}', 260]
+    unit: 12
+    at: ['{30 + (i - 1) * 180}', 260]
   - id: eq
     type: text
     text: '{a} ÷ {d} = [{q}](blank)'
-    size: 40
-    at: [580, 100]
+    size: 38
+    at: [650, 90]
 
 steps:
   - title: 平均分

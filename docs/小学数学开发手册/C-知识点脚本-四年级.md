@@ -12,15 +12,18 @@
 - 元信息：summary：从右往左四位一级，按级读、按级写；tags [大数, 亿, 万, 数位顺序表, 读数, 写数]；cover “亿 万 个”；related [read-write-10000, big-numbers-round]；recommended
 - 舞台：800 × 420；params `n: 305000060`；presets：`305000060`、`40020000`、`1200500`、`2008000000`
 - 零件：
-  - `pv` = place-value，value `{n}`，places 9，style chart，groups true，at [400, 120]
+  - `pv` = place-value，value `{n}`，places `{places}`，style chart，groups true，at [400, 120]
+  - `g_yi` = shape rect，width `{w_yi}`，height 118，at [`{x_yi}`, 120]，fill false，stroke false
+  - `g_wan` = shape rect，width `{w_wan}`，height 118，at [`{x_wan}`, 120]，fill false，stroke false
+  - `g_ge` = shape rect，width `{w_ge}`，height 118，at [`{x_ge}`, 120]，fill false，stroke false
   - `read` = text，`'读作：[{cn(n)}](blank)'`，size 32，at [400, 300]
   - `rule` = text，`'先读亿级，再读万级，最后读个级'`，size 24，at [400, 370]，hidden
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|
 | 1 | 数位顺序表 | 从右往左，每四位是一级：个级、万级、亿级。 | 高亮 pv | — |
-| 2 | 分级 | {n} 从右往左四位一分。 | 高亮 pv.d0 ＋ 高亮 pv.d4 ＋ 高亮 pv.d8（每级最低位） | — |
-| 3 | 按级读 | 先读亿级，再读万级，最后读个级；每级末尾的 0 不读，中间的 0 只读一个零。 | 显示 rule ‖ read.text → `'读作：{cn(n)}'` | choose 答案 `{cn(n)}`（选项：每个 preset 的三个读法写在下面）“{n} 怎么读？” |
+| 2 | 分级 | {n} 从右往左四位一分。 | 条件 hasYi：高亮 g_yi ＋ 高亮 g_wan ＋ 高亮 g_ge；否则高亮 g_wan ＋ 高亮 g_ge | — |
+| 3 | 按级读 | 从高位起按级读，每级末尾的 0 不读，中间的 0 只读一个。 | 显示 rule ‖ read.text → `'读作：{cn(n)}'` | choose 答案 `{cn(n)}`（选项：每个 preset 的三个读法写在下面）“{n} 怎么读？” |
 
 - choose 的选项（按 preset，用 E2 把第 3 步拆成四个带 `when` 的步骤 3a–3d，条件 `{n == 305000060}` 等，讲解、画面相同，只有选项不同）：
   - 305000060：三亿零五百万零六十 / 三亿五百万六十 / 三亿零五百零六十
@@ -41,7 +44,7 @@
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|
-| 1 | 改写成“万” | 整万数改写成用“万”作单位，去掉末尾 4 个 0，加上“万”字。 | 高亮 pv | — |
+| 1 | 改写成“万” | 整万数改写成“万”：去掉末尾 4 个 0，加上“万”字。 | 高亮 pv | — |
 | 2 | 求近似数 | 不是整万数，可以求近似数：看千位上的数。 | 高亮 pv.d3；显示 rule | — |
 | 3 | 四舍五入 | 千位上是 {digit(n, 3)}，{sel(digit(n, 3) >= 5, '五入', '四舍')}，{n} 更接近 {w} 万。 | 高亮 line ‖ ans.text → `'{n} ≈ {w} 万'` | choose 答案 {w}（min 10，max 100）“{n} 约等于多少万？”；提示：看千位，小于 5 舍去，大于或等于 5 进 1。 |
 

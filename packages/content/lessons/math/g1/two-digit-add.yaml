@@ -30,18 +30,20 @@ objects:
     tens: '{t}'
     ones: '{o}'
     columns: true
-    at: [40, 60]
+    unit: 14
+    at: [30, 60]
   - id: y
     type: base-ten
     ones: '{b}'
     columns: true
     color: orange
-    at: [40, 270]
+    unit: 14
+    at: [30, 270]
   - id: eq
     type: text
     text: '[{a}](blue) + [{b}](orange) = [{s}](blank)'
     size: 44
-    at: [620, 140]
+    at: [640, 140]
 
 steps:
   - title: 摆小棒

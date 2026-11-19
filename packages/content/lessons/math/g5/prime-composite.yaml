@@ -61,7 +61,7 @@ steps:
       - highlight: chart.n.1
       - show: one
   - title: 筛一筛
-    say: 留下 2，划去 2 的倍数；留下 3，划去 3 的倍数；再划去 5、7 的倍数。
+    say: 留下 2、3，划掉它们的倍数；再划掉 5、7 的倍数。
     do:
       - set: { target: chart, reveal: 4, duration: 8s }
   - title: 剩下的是质数

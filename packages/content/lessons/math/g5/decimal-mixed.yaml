@@ -55,7 +55,7 @@ objects:
 
 steps:
   - title: 找好朋友数
-    say: 0.25 和 4、1.25 和 8 相乘得整数，是“好朋友”。
+    say: 0.25 和 4、1.25 和 8 相乘能凑整，是好朋友。
     do:
       - highlight: { target: x1 }
       - highlight: { target: x2, together: true }

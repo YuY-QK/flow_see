@@ -75,6 +75,7 @@ steps:
     say: 10 个一千是一万。
     do:
       - set: { target: b, unit: 4, thousands: 10 }
+      - move: { target: cnt, to: [400, 240], together: true }
       - set: { target: cnt, value: 10000, together: true }
       - show: chain
 

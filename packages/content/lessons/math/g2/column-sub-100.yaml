@@ -36,14 +36,15 @@ objects:
     tens: '{a1}'
     ones: '{a0}'
     columns: true
-    at: [40, 70]
+    unit: 12
+    at: [30, 70]
   - id: calc
     type: column-calc
     a: '{a}'
     b: '{b}'
     op: −
     show: 0
-    at: [620, 190]
+    at: [640, 190]
 
 steps:
   - title: 列竖式

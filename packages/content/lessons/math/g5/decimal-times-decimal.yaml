@@ -56,7 +56,7 @@ objects:
 
 steps:
   - title: 边长 1 的正方形
-    say: 一个边长 1 的正方形，平均分成 100 个小格，每格是 0.01。
+    say: 边长 1 的正方形平均分成 100 格，每格是 0.01。
     do:
       - highlight: sq
 
@@ -66,7 +66,7 @@ steps:
       - set: { target: sq, shadeRows: '{x}', duration: 1s }
 
   - title: 再取 0.{y}
-    say: 竖着取 0.{y}，就是 {y} 列；重叠的部分就是 0.{x} × 0.{y}。
+    say: 竖着取 {y} 列，重叠部分就是 0.{x}×0.{y}。
     do:
       - set: { target: sq, shadeCols: '{y}', duration: 1s }
       - highlight: sq.overlap

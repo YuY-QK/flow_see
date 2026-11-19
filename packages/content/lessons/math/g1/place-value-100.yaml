@@ -27,18 +27,19 @@ objects:
     style: stick
     tens: '{t}'
     ones: '{o}'
-    at: [40, 60]
+    unit: 13
+    at: [20, 60]
   - id: abacus
     type: place-value
     value: 0
     places: 1
     style: abacus
-    at: [580, 190]
+    at: [440, 190]
   - id: num
     type: text
     text: '[{n}](blank)'
-    size: 56
-    at: [580, 380]
+    size: 48
+    at: [660, 200]
 
 steps:
   - title: 几个十几个一

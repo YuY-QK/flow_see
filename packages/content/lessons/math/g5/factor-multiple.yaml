@@ -63,11 +63,11 @@ steps:
         answer: 3
         options: [3, 5, 7]
   - title: 因数成对
-    say: 12 的因数一对一对地找：1 和 12、2 和 6、3 和 4。
+    say: 12 的因数成对找：1 和 12，2 和 6，3 和 4。
     do:
       - highlight: fs
   - title: 倍数
-    say: 12 是 1、2、3、4、6、12 的倍数；12 的倍数有 12、24、36……无限多个。
+    say: 12 是这些因数的倍数；它的倍数有 12、24……无限多个。
     do:
       - show: chart
       - set: { target: chart, reveal: 1, duration: 2s }

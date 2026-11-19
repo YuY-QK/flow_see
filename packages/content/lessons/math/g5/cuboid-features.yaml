@@ -61,7 +61,7 @@ steps:
       - highlight: box.face.right
       - set: { target: cnt, text: '面：6　棱：[12](blank)　顶点：[8](blank)' }
   - title: 棱
-    say: 两个面相交的线段是棱，一共 12 条，分成 3 组，每组 4 条长度相等。
+    say: 两个面相交的线段是棱，共 12 条，相对的棱长度相等。
     try:
       choose:
         answer: 12

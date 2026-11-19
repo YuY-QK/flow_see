@@ -321,9 +321,9 @@
 - 元信息：summary：十位写几个十，个位写几个一；tags [数位, 十位, 个位, 计数器, 读数, 写数]；cover “35”；related [count-to-100, order-compare-100]
 - 舞台：800 × 420；params `t: 3`、`o: 5`；derived `n: t * 10 + o`；explore t 滑块“几个十” 1–9，o 滑块“几个一” 1–9
 - 零件：
-  - `blocks` = base-ten，style stick，tens `{t}`，ones `{o}`，at [40, 60]
-  - `abacus` = place-value，value 0，places 1，style abacus，at [580, 190]
-  - `num` = text，text `'[{n}](blank)'`，size 56，at [580, 380]
+  - `blocks` = base-ten，style stick，tens `{t}`，ones `{o}`，unit 13，at [20, 60]
+  - `abacus` = place-value，value 0，places 1，style abacus，at [440, 190]
+  - `num` = text，text `'[{n}](blank)'`，size 48，at [660, 200]
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|
@@ -395,9 +395,9 @@
 - 元信息：summary：相同数位对齐，个位加个位，满十进一；tags [两位数加一位数, 进位, 口算]；cover “36+8”；related [tens-add-sub, column-intro, make-ten]
 - 舞台：800 × 420；params `a: 36`、`b: 8`；derived `t: floor(a / 10)`、`o: a % 10`、`s: a + b`、`carry: o + b >= 10`；explore a 滑块“两位数” 11–89，b 滑块“一位数” 1–9
 - 零件：
-  - `x` = base-ten，tens `{t}`，ones `{o}`，columns true，at [40, 60]
-  - `y` = base-ten，ones `{b}`，columns true，color orange，at [40, 270]
-  - `eq` = text，`'[{a}](blue) + [{b}](orange) = [{s}](blank)'`，size 44，at [620, 140]
+  - `x` = base-ten，tens `{t}`，ones `{o}`，columns true，unit 14，at [30, 60]
+  - `y` = base-ten，ones `{b}`，columns true，color orange，unit 14，at [30, 270]
+  - `eq` = text，`'[{a}](blue) + [{b}](orange) = [{s}](blank)'`，size 44，at [640, 140]
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|
@@ -413,8 +413,8 @@
 - 元信息：summary：个位减个位，十位减十位；tags [两位数减一位数, 减整十数, 口算]；cover “48−5”；related [break-ten, two-digit-add]
 - 舞台：800 × 400；params `a: 48`、`b: 5`；derived `r: a - b`；presets（不用 explore，保证不退位）：`48 − 5`、`67 − 4`、`39 − 6`、`85 − 30`、`76 − 50`
 - 零件：
-  - `x` = base-ten，tens `{floor(a / 10)}`，ones `{a % 10}`，at [40, 80]
-  - `eq` = text，`'[{a}](blue) − [{b}](orange) = [{r}](blank)'`，size 44，at [600, 160]
+  - `x` = base-ten，tens `{floor(a / 10)}`，ones `{a % 10}`，unit 13，at [30, 80]
+  - `eq` = text，`'[{a}](blue) − [{b}](orange) = [{r}](blank)'`，size 44，at [640, 160]
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|
@@ -448,14 +448,15 @@
 - 舞台：800 × 420；params `a: 8`、`b: 5`、`c: 3`；derived `m: a + b`、`r: a + b - c`；explore a 滑块“车上原来” 3–10，b 滑块“上车” 1–6，c 滑块“下车” 1–`a + b - 1`
 - 零件：
   - `bus` = image asset bus，width 540，height 270，at [270, 220]
+  - `windows` = shape rect，width 290，height 60，at [230, 198]，fill false，stroke false
   - `people` = item-set，items `[{ repeat: '{m}', asset: kid }]`，layout grid，cols 8，size 25，show `{a}`，at [85, 171]
   - `eq` = expr-steps，lines [`'{a} + {b} − {c}'`, `'{m} − {c}'`, `'{r}'`]，show 1，underline true，at [550, 70]
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|
-| 1 | 车上原来 | 车上原来有 {a} 人。 | 高亮 people | — |
+| 1 | 车上原来 | 车上原来有 {a} 人。 | 高亮 windows | — |
 | 2 | 上车 | 到站了，上来 {b} 人。 | people.show → {m}（1.5s） | — |
-| 3 | 先算前两个 | 从左往右，先算 {a} + {b} = {m}。 | 高亮 eq.op.1 ‖ eq.show → 2 | choose 答案 {m}（min 2，max 20）“车上现在有几人？” |
+| 3 | 先算前两个 | 从左往右，先算 {a} + {b} = {m}。 | 高亮 eq.line.1 ‖ eq.show → 2 | choose 答案 {m}（min 2，max 20）“车上现在有几人？” |
 | 4 | 下车 | 又下去 {c} 人，{m} − {c} = {r}。 | people.show → {r}（1.5s） ‖ eq.show → 3 | choose 答案 {r}（min 0，max 19）“现在车上有几人？” |
 
 - 要点：连加、连减、加减混合，都从左往右依次算；前一步的得数是下一步的开头
