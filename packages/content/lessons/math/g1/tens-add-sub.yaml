@@ -1,0 +1,83 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: tens-add-sub
+title: 整十数加减整十数
+summary: 几个十加减几个十
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [整十数, 口算, 加法, 减法]
+cover: { text: 30+20 }
+related: [count-to-100, two-digit-add]
+
+template: scene
+stage: { width: 800, height: 400 }
+
+params:
+  a: 3
+  b: 2
+derived:
+  s: a + b
+explore:
+  - { param: a, control: slider, label: 第一个整十数, min: 1, max: 8 }
+  - { param: b, control: slider, label: 第二个整十数, min: 1, max: '{9 - a}' }
+
+objects:
+  - id: x
+    type: base-ten
+    tens: '{a}'
+    columns: false
+    color: blue
+    at: [40, 70]
+  - id: y
+    type: base-ten
+    tens: '{b}'
+    columns: false
+    color: orange
+    at: [380, 70]
+  - id: think
+    type: label
+    text: '{a} 个十 + {b} 个十 = {s} 个十'
+    at: [400, 240]
+    hidden: true
+  - id: eq
+    type: text
+    text: '{a * 10} + {b * 10} = [{s * 10}](blank)'
+    size: 44
+    at: [400, 305]
+  - id: eq2
+    type: text
+    text: '{s * 10} − {b * 10} = {a * 10}'
+    size: 36
+    at: [400, 360]
+    hidden: true
+
+steps:
+  - title: 几捆
+    say: '{a * 10} 是 {a} 捆，{b * 10} 是 {b} 捆。'
+    do:
+      - highlight: x
+      - highlight: y
+  - title: 合起来
+    say: '合起来一共 {s} 捆。'
+    do:
+      - move: { target: y, to: ['{60 + a * 22}', 70] }
+      - show: think
+  - title: 得数
+    say: '{s} 个十是 {s * 10}。'
+    do:
+      - highlight: think
+      - ask: true
+      - set: { target: eq, text: '{a * 10} + {b * 10} = [{s * 10}](green)' }
+    try:
+      task: '{a * 10} + {b * 10} 等于几？'
+      choose:
+        answer: '{s * 10}'
+        options: ['{s}', '{s * 10}', '{s * 10 + 10}']
+  - title: 减法也一样
+    say: '减法也一样：{s} 个十减 {b} 个十，是 {a} 个十。'
+    do:
+      - show: eq2
+
+keyPoints:
+  - '整十数加减，想几个十加减几个十'
+  - 算出几个十，就是几十

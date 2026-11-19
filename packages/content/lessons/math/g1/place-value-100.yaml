@@ -2,7 +2,8 @@
 id: place-value-100
 title: 数的组成与读写
 summary: 十位写几个十，个位写几个一
-status: draft
+status: reviewed
+reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [数位, 十位, 个位, 计数器, 读数, 写数]
 cover: { text: '35' }
@@ -21,19 +22,30 @@ explore:
   - { param: o, control: slider, label: 几个一, min: 0, max: 9 }
 
 objects:
+  - id: blocks
+    type: base-ten
+    style: stick
+    tens: '{t}'
+    ones: '{o}'
+    at: [40, 60]
   - id: abacus
     type: place-value
     value: 0
     places: 1
     style: abacus
-    at: [320, 200]
+    at: [580, 190]
   - id: num
     type: text
     text: '[{n}](blank)'
     size: 56
-    at: [580, 200]
+    at: [580, 380]
 
 steps:
+  - title: 几个十几个一
+    say: '{t} 捆是 {t} 个十，{o} 根是 {o} 个一。'
+    do:
+      - highlight: blocks.tens
+      - highlight: blocks.ones
   - title: 拨十位
     say: 计数器十位上拨 {t} 颗珠子。
     do:
@@ -46,9 +58,6 @@ steps:
         answer: '{t}'
         min: 1
         max: 9
-        show: [abacus.d1]
-      hints:
-        - 十位上表示有几个十。
   - title: 拨个位
     say: 个位上拨 {o} 颗。
     do:
@@ -61,9 +70,6 @@ steps:
         answer: '{o}'
         min: 0
         max: 9
-        show: [abacus.d0]
-      hints:
-        - 个位上表示有几个一。
   - title: 写出来
     say: 这个数是 {n}，读作{cn(n)}。
     do:
@@ -76,9 +82,12 @@ steps:
         answer: '{n}'
         min: 10
         max: 99
-        show: [abacus]
-      hints:
-        - 十位和个位合起来是多少？
+  - title: 0 占位
+    say: 如果个位一颗也没有，要写 0 占位。
+    do:
+      - set: { target: abacus, value: '{t * 10}' }
+      - set: { target: num, text: '{t * 10}', together: true }
+      - highlight: abacus.d0
 
 keyPoints:
   - 两位数由几个十和几个一组成

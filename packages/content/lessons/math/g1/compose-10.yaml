@@ -2,7 +2,8 @@
 id: compose-10
 title: 10 以内数的组成
 summary: 一个数可以分成两个数，按顺序分不重复不遗漏
-status: draft
+status: reviewed
+reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [分与合, 数的组成, 分成, 合成]
 recommended: true
@@ -29,7 +30,7 @@ objects:
     whole: '{n}'
     parts: [1, '{n - 1}']
     show: 0
-    at: [620, 70]
+    at: [620, 160]
   - repeat: '{n - 1}'
     id: 'w{i}'
     type: text
@@ -73,6 +74,18 @@ steps:
         show: [bond]
       hints:
         - '{n} 个里拿走 2 个，还剩几个？'
+  - title: 按顺序分完
+    say: 按顺序一直分下去，就不会漏掉。
+    do:
+      - repeat: '{n - 3}'
+        do:
+          - show: { target: 'w{i + 2}', duration: 0.4s }
+          - set: { target: bond, parts: ['{i + 2}', '{n - i - 2}'], together: true }
+  - title: 合起来
+    say: '两部分合起来，又是 {n}。'
+    do:
+      - set: { target: bond, dir: up }
+      - highlight: bond
 
 keyPoints:
   - '{n} 可以分成 1 和 {n - 1}、2 和 {n - 2}……'

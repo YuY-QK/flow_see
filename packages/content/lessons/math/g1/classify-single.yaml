@@ -2,18 +2,22 @@
 id: classify-single
 title: 按一个标准分类
 summary: 按同一个标准分，每样只放进一类
-status: draft
+status: reviewed
+reviewedAt: 2026-11-19
 duration: 1分钟
-tags: [分类, 整理, 标准]
+tags: [分类, 整理, 标准, 统计表]
 cover: { text: 分一分 }
-related: [count-to-10]
+related: [classify-count, classify-multi]
 
 template: scene
 stage: { width: 800, height: 420 }
 
 params:
   r: 4
-  y: 2
+  y: 3
+explore:
+  - { param: r, control: slider, label: 红色几个, min: 1, max: 5 }
+  - { param: y, control: slider, label: 黄色几个, min: 1, max: 5 }
 
 objects:
   - id: items
@@ -23,7 +27,7 @@ objects:
       - { repeat: '{y}', shape: circle, color: yellow, tags: { color: yellow } }
     layout: pile
     size: 52
-    at: [160, 60]
+    at: [80, 60]
   - id: binR
     type: shape
     shape: rect
@@ -40,18 +44,19 @@ objects:
     fill: false
     color: yellow
     at: [520, 330]
-  - id: labelR
-    type: label
-    text: 红色
-    at: [180, 240]
-  - id: labelY
-    type: label
-    text: 黄色
-    at: [520, 240]
+  - id: tbl
+    type: table
+    rows:
+      - [颜色, 红色, 黄色]
+      - [个数, '[{r}](blank)', '[{y}](blank)']
+    headerCol: true
+    colWidth: 100
+    at: [460, 60]
+    hidden: true
 
 steps:
-  - title: 一堆水果
-    say: 水果乱乱的，按颜色分一分。
+  - title: 一堆圆片
+    say: 圆片乱乱的，按颜色分一分。
     do:
       - highlight: items
   - title: 放进筐里
@@ -64,7 +69,7 @@ steps:
         do:
           - move: { target: 'items.{r + i}', to: binY }
     try:
-      task: 按颜色把水果放进筐里。
+      task: 按颜色把圆片放进筐里。
       sort:
         from: items
         by: color
@@ -72,13 +77,27 @@ steps:
           red: binR
           yellow: binY
       hints:
-        - 红色的放进左边红色的筐里。
-        - 黄色的放进右边黄色的筐里。
+        - 红色的放进红框里。
   - title: 数一数
-    say: 红色有 4 个，黄色有 2 个。
+    say: '红色 {r} 个，黄色 {y} 个。'
     do:
-      - highlight: binR
-      - highlight: binY
+      - show: tbl
+      - ask: true
+      - set:
+          target: tbl
+          rows:
+            - [颜色, 红色, 黄色]
+            - [个数, '{r}', '{y}']
+    try:
+      task: 红色有几个？
+      choose:
+        answer: '{r}'
+        min: 1
+        max: 6
+  - title: 记下来
+    say: 分好、数好，记在统计表里。
+    do:
+      - highlight: tbl
 
 keyPoints:
   - 分类时要按同一个标准

@@ -9,12 +9,12 @@ units:
     term: 1
     domain: number
     lessons:
-      - { id: count-to-10, title: 数一数 }
+      - count-to-10
       - compare-within-10
-      - { id: cardinal-ordinal, title: 几个和第几个 }
+      - cardinal-ordinal
       - zero
       - order-within-10
-      - { id: compose-10, title: 10 以内数的组成 }
+      - compose-10
   - id: add-sub-10
     title: 10 以内的加减法
     term: 1
@@ -22,7 +22,7 @@ units:
     lessons:
       - add-meaning
       - sub-meaning
-      - { id: add-sub-by-bond, title: 用数的组成算加减 }
+      - add-sub-by-bond
   - id: add-within-20            # 已有
     title: 20 以内的进位加法
     term: 1
@@ -56,7 +56,7 @@ units:
     term: 1
     domain: stats
     lessons:
-      - { id: classify-single, title: 按一个标准分类 }
+      - classify-single
       - { id: classify-count, title: 分类后数一数 }
   # ───── 下册 ─────
   - id: numbers-100
@@ -64,9 +64,9 @@ units:
     term: 2
     domain: number
     lessons:
-      - { id: count-to-100, title: 数数：十个十是一百 }
-      - { id: place-value-100, title: 数的组成与读写 }
-      - { id: order-compare-100, title: 数的顺序与大小比较 }
+      - count-to-100
+      - place-value-100
+      - order-compare-100
   - id: subtract-within-20            # 已有
     title: 20 以内的退位减法
     term: 2
@@ -74,17 +74,17 @@ units:
     lessons:
       - borrow-ten
       - level-ten
-      - { id: think-add-for-sub, title: 想加算减法 }
+      - think-add-for-sub
   - id: add-sub-100-oral
     title: 100 以内的加法和减法（一）
     term: 2
     domain: number
     lessons:
-      - { id: tens-add-sub, title: 整十数加减整十数 }
-      - { id: two-digit-add, title: 两位数加一位数、整十数 }
-      - { id: two-digit-sub, title: 两位数减一位数、整十数（不退位） }
-      - { id: column-intro, title: 竖式初步 }
-      - { id: continuous-add-sub, title: 连加、连减与加减混合 }
+      - tens-add-sub
+      - two-digit-add
+      - two-digit-sub
+      - column-intro
+      - continuous-add-sub
   - id: money-1
     title: 认识人民币
     term: 2
@@ -104,5 +104,5 @@ units:
     term: 2
     domain: stats
     lessons:
-      - { id: classify-multi, title: 按不同标准分类 }
+      - classify-multi
       - { id: data-collect-1, title: 简单数据的收集与整理 }

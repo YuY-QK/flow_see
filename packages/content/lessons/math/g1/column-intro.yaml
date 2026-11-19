@@ -1,0 +1,82 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: column-intro
+title: 竖式初步
+summary: 竖式里相同数位对齐，从个位算起
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [竖式, 笔算, 数位对齐]
+cover: { text: 竖式 }
+related: [two-digit-add, column-add-100]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  a: 34
+  b: 25
+presets:
+  - { label: '34 + 25', params: { a: 34, b: 25 } }
+  - { label: '47 + 2', params: { a: 47, b: 2 } }
+  - { label: '52 + 36', params: { a: 52, b: 36 } }
+  - { label: '61 + 8', params: { a: 61, b: 8 } }
+
+objects:
+  - id: x
+    type: base-ten
+    tens: '{floor(a / 10)}'
+    ones: '{a % 10}'
+    at: [40, 60]
+  - id: y
+    type: base-ten
+    tens: '{floor(b / 10)}'
+    ones: '{b % 10}'
+    color: orange
+    at: [40, 240]
+  - id: calc
+    type: column-calc
+    a: '{a}'
+    b: '{b}'
+    op: +
+    show: 0
+    at: [600, 200]
+
+steps:
+  - title: 横式变竖式
+    say: 竖着写，十位对十位，个位对个位。
+    do:
+      - highlight: calc
+  - title: 先算个位
+    say: '先算个位：{a % 10} + {b % 10} = {a % 10 + b % 10}。'
+    do:
+      - highlight: x.ones
+      - highlight: { target: y.ones, together: true }
+      - ask: true
+      - set: { target: calc, show: 1 }
+    try:
+      task: 个位上写几？
+      choose:
+        answer: '{a % 10 + b % 10}'
+        min: 0
+        max: 9
+  - title: 再算十位
+    say: '再算十位：{floor(a / 10)} + {floor(b / 10)} = {floor(a / 10) + floor(b / 10)}。'
+    do:
+      - highlight: x.tens
+      - highlight: { target: y.tens, together: true }
+      - ask: true
+      - set: { target: calc, show: 2 }
+    try:
+      task: 十位上写几？
+      choose:
+        answer: '{floor(a / 10) + floor(b / 10)}'
+        min: 0
+        max: 9
+  - title: 得数
+    say: '所以 {a} + {b} = {a + b}。'
+    do:
+      - highlight: calc
+
+keyPoints:
+  - 用竖式计算，相同数位要对齐
+  - 从个位算起

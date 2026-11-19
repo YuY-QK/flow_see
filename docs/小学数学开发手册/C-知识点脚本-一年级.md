@@ -106,7 +106,7 @@
 - 舞台：800 × 400；params `n: 6`；explore n 滑块“分哪个数” 3–10
 - 零件：
   - `pile` = counters，count `{n}`，row，size 44，at [40, 60]
-  - `bond` = number-bond，whole `{n}`，parts [1, `{n - 1}`]，show 0，at [620, 70]
+  - `bond` = number-bond，whole `{n}`，parts [1, `{n - 1}`]，show 0，at [620, 160]
   - `w{i}`（repeat `{n - 1}`）= text，text `'[{i}](blue) 和 [{n - i}](orange)'`，size 26，at [`{60 + floor((i - 1) / 5) * 170}`, `{190 + ((i - 1) % 5) * 38}`]，hidden
   - `w2q` = text，text `'[2](blue) 和 [?](blank)'`，size 26，at 与 w2 相同，hidden
 
@@ -377,9 +377,9 @@
 - 零件：
   - `x` = base-ten，tens `{a}`，columns false，color blue，at [40, 70]
   - `y` = base-ten，tens `{b}`，columns false，color orange，at [380, 70]
-  - `think` = label，`'{a} 个十 + {b} 个十 = {s} 个十'`，at [400, 260]，hidden
-  - `eq` = text，`'{a * 10} + {b * 10} = [{s * 10}](blank)'`，size 44，at [400, 340]
-  - `eq2` = text，`'{s * 10} − {b * 10} = {a * 10}'`，size 36，at [400, 390]，hidden
+  - `think` = label，`'{a} 个十 + {b} 个十 = {s} 个十'`，at [400, 240]，hidden
+  - `eq` = text，`'{a * 10} + {b * 10} = [{s * 10}](blank)'`，size 44，at [400, 305]
+  - `eq2` = text，`'{s * 10} − {b * 10} = {a * 10}'`，size 36，at [400, 360]，hidden
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|

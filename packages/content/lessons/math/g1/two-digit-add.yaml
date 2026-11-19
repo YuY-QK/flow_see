@@ -1,0 +1,83 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: two-digit-add
+title: 两位数加一位数、整十数
+summary: 相同数位对齐，个位加个位，满十进一
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [两位数加一位数, 进位, 口算]
+cover: { text: 36+8 }
+related: [tens-add-sub, column-intro, make-ten]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  a: 36
+  b: 8
+derived:
+  t: floor(a / 10)
+  o: a % 10
+  s: a + b
+  carry: o + b >= 10
+explore:
+  - { param: a, control: slider, label: 两位数, min: 11, max: 89 }
+  - { param: b, control: slider, label: 一位数, min: 1, max: 9 }
+
+objects:
+  - id: x
+    type: base-ten
+    tens: '{t}'
+    ones: '{o}'
+    columns: true
+    at: [40, 60]
+  - id: y
+    type: base-ten
+    ones: '{b}'
+    columns: true
+    color: orange
+    at: [40, 270]
+  - id: eq
+    type: text
+    text: '[{a}](blue) + [{b}](orange) = [{s}](blank)'
+    size: 44
+    at: [620, 140]
+
+steps:
+  - title: 摆小棒
+    say: '{a} 是 {t} 捆和 {o} 根，再加 {b} 根。'
+    do:
+      - highlight: x
+      - highlight: y
+  - title: 个位和个位加
+    say: '根和根放一起：{o} 加 {b} 是 {o + b} 根。'
+    do:
+      - set: { target: x, ones: '{o + b}' }
+      - set: { target: y, opacity: 0, together: true }
+  - title: 满十捆一捆
+    when: '{carry}'
+    say: 满 10 根，捆成一捆，放到十位。
+    do:
+      - ask: true
+      - set: { target: x, ones: '{o + b - 10}', tens: '{t + 1}' }
+    try:
+      task: 满十了，点一下捆起来。
+      tap:
+        answer: x.ones
+        among: [x.ones]
+  - title: 得数
+    say: '一共 {floor(s / 10)} 捆和 {s % 10} 根，是 {s}。'
+    do:
+      - highlight: x
+      - ask: true
+      - set: { target: eq, text: '[{a}](blue) + [{b}](orange) = [{s}](green)' }
+    try:
+      task: 一共是多少？
+      choose:
+        answer: '{s}'
+        min: 12
+        max: 98
+
+keyPoints:
+  - 相同数位对齐，个位加个位
+  - 个位满十，向十位进一

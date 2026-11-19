@@ -2,7 +2,8 @@
 id: continuous-add-sub
 title: 连加、连减与加减混合
 summary: 从左往右一步一步算，上一步的得数接着算
-status: draft
+status: reviewed
+reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [连加, 连减, 加减混合, 运算顺序]
 cover: { text: 8+5−3 }

@@ -2,7 +2,8 @@
 id: count-to-100
 title: 数数：十个十是一百
 summary: 10 根捆成一捆是 1 个十，10 个十是一百
-status: draft
+status: reviewed
+reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [数数, 一百, 十个一, 捆小棒, 计数单位]
 cover: { text: 10个十 }
@@ -60,6 +61,24 @@ steps:
         do:
           - set: { target: sticks, tens: '{i + 1}', duration: 0.4s }
           - set: { target: cnt, value: '{(i + 1) * 10}', together: true }
+  - title: 接着数
+    say: 九十九再添一根，是一百。
+    do:
+      - set: { target: sticks, ones: 9 }
+      - set: { target: cnt, value: 99, together: true }
+      - set: { target: sticks, ones: 10 }
+      - ask: true
+      - set: { target: sticks, ones: 0, tens: 10 }
+      - set: { target: cnt, value: 100, together: true }
+    try:
+      task: 九十九再添一是多少？
+      choose:
+        answer: 100
+        options: [99, 100, 110]
+  - title: 十个十
+    say: 10 个十是一百。
+    do:
+      - highlight: sticks.tens
 
 keyPoints:
   - 10 个一是 1 个十

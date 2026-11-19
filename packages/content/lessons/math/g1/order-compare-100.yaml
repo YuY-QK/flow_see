@@ -2,11 +2,12 @@
 id: order-compare-100
 title: 数的顺序与大小比较
 summary: 百数表横看多 1、竖看多 10；比大小先比十位
-status: draft
+status: reviewed
+reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [百数表, 数的顺序, 比大小, 十位]
 cover: { text: 百数表 }
-related: [place-value-100, count-to-100]
+related: [place-value-100, compare-within-10]
 
 template: scene
 stage: { width: 800, height: 450 }
@@ -30,8 +31,7 @@ objects:
     type: text
     text: '[{a}](blue) [>](blank) [{b}](orange)'
     size: 44
-    at: [600, 200]
-    hidden: true
+    at: [620, 200]
 
 steps:
   - title: 百数表
@@ -46,6 +46,29 @@ steps:
     say: 竖着往下，每次多 10。
     do:
       - highlight: chart.col.7
+  - title: 找一找
+    say: '{a} 在这里。'
+    do:
+      - ask: true
+      - highlight: 'chart.n.{a}'
+    try:
+      task: '在表里点出 {a}。'
+      tap:
+        answer: 'chart.n.{a}'
+        among: ['chart.n.*']
+      hints:
+        - '先找十位是 {floor(a / 10)} 的那一行。'
+  - title: 比大小
+    say: 先比十位，十位大的就大；十位一样再比个位。
+    do:
+      - highlight: cmp
+      - ask: true
+      - set: { target: cmp, text: '[{a}](blue) {sel(a > b, ''>'', sel(a < b, ''<'', ''=''))} [{b}](orange)' }
+    try:
+      task: '{a} 和 {b} 比大小。'
+      choose:
+        answer: '{sel(a > b, ''>'', sel(a < b, ''<'', ''=''))}'
+        options: ['>', '=', '<']
 
 keyPoints:
   - 百数表横着看相邻两个数差 1，竖着看差 10

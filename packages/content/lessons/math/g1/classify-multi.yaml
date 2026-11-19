@@ -1,0 +1,111 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: classify-multi
+title: 按不同标准分类
+summary: 标准不同，分法不同，总数不变
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [分类, 标准, 按形状, 按颜色]
+cover: { text: 分两次 }
+related: [classify-single]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+objects:
+  - id: items
+    type: item-set
+    items:
+      - { repeat: 2, shape: circle, color: red, tags: { color: red, shape: circle } }
+      - { repeat: 2, shape: square, color: red, tags: { color: red, shape: square } }
+      - { repeat: 3, shape: circle, color: blue, tags: { color: blue, shape: circle } }
+      - { repeat: 1, shape: square, color: blue, tags: { color: blue, shape: square } }
+    layout: pile
+    size: 52
+    at: [80, 60]
+  - id: b1
+    type: shape
+    shape: rect
+    width: 240
+    height: 130
+    fill: false
+    at: [180, 330]
+  - id: b2
+    type: shape
+    shape: rect
+    width: 240
+    height: 130
+    fill: false
+    at: [520, 330]
+  - id: l1
+    type: label
+    text: 红色
+    at: [180, 250]
+  - id: l2
+    type: label
+    text: 蓝色
+    at: [520, 250]
+
+steps:
+  - title: 按颜色分
+    say: 先按颜色分。
+    do:
+      - ask: true
+      - move: { target: items.1, to: b1 }
+      - move: { target: items.2, to: b1 }
+      - move: { target: items.3, to: b1 }
+      - move: { target: items.4, to: b1 }
+      - move: { target: items.5, to: b2 }
+      - move: { target: items.6, to: b2 }
+      - move: { target: items.7, to: b2 }
+      - move: { target: items.8, to: b2 }
+    try:
+      task: 按颜色分。
+      sort:
+        from: items
+        by: color
+        bins:
+          red: b1
+          blue: b2
+  - title: 数一数
+    say: 红色 4 个，蓝色 4 个，一共 8 个。
+    do:
+      - highlight: b1
+      - highlight: { target: b2, together: true }
+  - title: 按形状分
+    say: 再按形状分。
+    do:
+      - set: { target: l1, text: 圆形 }
+      - set: { target: l2, text: 方形, together: true }
+      - ask: true
+      - move: { target: items.1, to: b1 }
+      - move: { target: items.2, to: b1 }
+      - move: { target: items.5, to: b1 }
+      - move: { target: items.6, to: b1 }
+      - move: { target: items.7, to: b1 }
+      - move: { target: items.3, to: b2 }
+      - move: { target: items.4, to: b2 }
+      - move: { target: items.8, to: b2 }
+    try:
+      task: 这次按形状分。
+      sort:
+        from: items
+        by: shape
+        bins:
+          circle: b1
+          square: b2
+  - title: 比一比
+    say: 分法不一样，但总数还是 8 个。
+    do:
+      - ask: true
+      - highlight: b1
+    try:
+      task: 圆形有几个？
+      choose:
+        answer: 5
+        min: 1
+        max: 8
+
+keyPoints:
+  - 分类的标准不同，分出的结果不同
+  - 不管怎么分，总数不变

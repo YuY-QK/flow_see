@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: two-digit-sub
+title: 两位数减一位数、整十数（不退位）
+summary: 个位减个位，十位减十位
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [两位数减一位数, 减整十数, 口算]
+cover: { text: 48−5 }
+related: [break-ten, two-digit-add]
+
+template: scene
+stage: { width: 800, height: 400 }
+
+params:
+  a: 48
+  b: 5
+derived:
+  r: a - b
+presets:
+  - { label: '48 − 5', params: { a: 48, b: 5 } }
+  - { label: '67 − 4', params: { a: 67, b: 4 } }
+  - { label: '39 − 6', params: { a: 39, b: 6 } }
+  - { label: '85 − 30', params: { a: 85, b: 30 } }
+  - { label: '76 − 50', params: { a: 76, b: 50 } }
+
+objects:
+  - id: x
+    type: base-ten
+    tens: '{floor(a / 10)}'
+    ones: '{a % 10}'
+    at: [40, 80]
+  - id: eq
+    type: text
+    text: '[{a}](blue) − [{b}](orange) = [{r}](blank)'
+    size: 44
+    at: [600, 160]
+
+steps:
+  - title: 摆小棒
+    say: '{a} 是 {floor(a / 10)} 捆和 {a % 10} 根。'
+    do:
+      - highlight: x
+  - title: 拿走
+    say: 减一位数从根里拿，减整十数拿走几捆。
+    do:
+      - set: { target: x, ones: '{a % 10 - b % 10}' }
+      - set: { target: x, tens: '{floor(a / 10) - floor(b / 10)}', together: true }
+  - title: 得数
+    say: '还剩 {r}。'
+    do:
+      - highlight: x
+      - ask: true
+      - set: { target: eq, text: '[{a}](blue) − [{b}](orange) = [{r}](green)' }
+    try:
+      task: 还剩多少？
+      choose:
+        answer: '{r}'
+        min: 1
+        max: 99
+
+keyPoints:
+  - 减一位数，个位减个位；减整十数，十位减十位
+  - 个位不够减时用“破十法”

@@ -2,7 +2,8 @@
 id: count-to-10
 title: 数一数
 summary: 一个一个数，最后数到几就是几个
-status: draft
+status: reviewed
+reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [数数, 1到10, 认数, 点数]
 recommended: true

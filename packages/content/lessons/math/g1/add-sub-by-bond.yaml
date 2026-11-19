@@ -1,0 +1,99 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: add-sub-by-bond
+title: 用数的组成算加减
+summary: 想“几和几组成几”，一幅图能写四个算式
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [一图四式, 数的组成, 加减法]
+cover: { text: 3+4=7 }
+related: [compose-10, think-add-for-sub]
+
+template: scene
+stage: { width: 800, height: 400 }
+
+params:
+  w: 7
+  p: 3
+derived:
+  q: w - p
+explore:
+  - { param: w, control: slider, label: 总数, min: 3, max: 10 }
+  - { param: p, control: slider, label: 一部分, min: 1, max: '{w - 1}' }
+
+objects:
+  - id: bond
+    type: number-bond
+    whole: '{w}'
+    parts: ['{p}', '{q}']
+    colors: { whole: green, p: blue, q: orange }
+    at: [200, 80]
+  - id: e1
+    type: text
+    text: '[{p}](blue) + [{q}](orange) = [{w}](green)'
+    size: 34
+    at: [580, 70]
+    hidden: true
+  - id: e2
+    type: text
+    text: '[{q}](orange) + [{p}](blue) = [{w}](green)'
+    size: 34
+    at: [580, 130]
+    hidden: true
+  - id: e3
+    type: text
+    text: '[{w}](green) − [{p}](blue) = [{q}](blank)'
+    size: 34
+    at: [580, 190]
+    hidden: true
+  - id: e4
+    type: text
+    text: '[{w}](green) − [{q}](orange) = [{p}](blank)'
+    size: 34
+    at: [580, 250]
+    hidden: true
+
+steps:
+  - title: 看分合图
+    say: '{p} 和 {q} 组成 {w}。'
+    do:
+      - highlight: bond
+  - title: 两道加法
+    say: '合起来用加法：{p} + {q} = {w}，{q} + {p} = {w}。'
+    do:
+      - show: e1
+      - show: e2
+      - highlight: bond.whole
+  - title: 第一道减法
+    say: '从 {w} 里去掉 {p}，剩下 {q}。'
+    do:
+      - show: e3
+      - highlight: bond.p
+      - ask: true
+      - set: { target: e3, text: '[{w}](green) − [{p}](blue) = [{q}](orange)' }
+    try:
+      task: '{w} − {p} 等于几？'
+      choose:
+        answer: '{q}'
+        min: 0
+        max: 10
+        show: [bond]
+      hints:
+        - 看分合图，{w} 分成 {p} 和几？
+  - title: 第二道减法
+    say: '从 {w} 里去掉 {q}，剩下 {p}。'
+    do:
+      - show: e4
+      - highlight: bond.q
+      - ask: true
+      - set: { target: e4, text: '[{w}](green) − [{q}](orange) = [{p}](blue)' }
+    try:
+      task: '{w} − {q} 等于几？'
+      choose:
+        answer: '{p}'
+        min: 0
+        max: 10
+
+keyPoints:
+  - 想“几和几组成几”就能算加减
+  - 一幅分合图可以写两道加法、两道减法

@@ -1,0 +1,73 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: think-add-for-sub
+title: 想加算减法
+summary: 算减法时想“几加几等于这个数”
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [想加算减, 退位减法, 十几减几]
+cover: { text: 13−9 }
+related: [borrow-ten, level-ten, add-sub-by-bond]
+
+template: scene
+stage: { width: 800, height: 360 }
+
+params:
+  a: 13
+  b: 9
+derived:
+  r: a - b
+explore:
+  - { param: a, control: slider, label: 被减数, min: 11, max: 18 }
+  - { param: b, control: slider, label: 减数, min: '{a - 9}', max: 9 }
+
+objects:
+  - id: bond
+    type: number-bond
+    whole: '{a}'
+    parts: ['{b}', '{r}']
+    show: 1
+    blank: [q]
+    colors: { whole: green, p: blue, q: orange }
+    at: [200, 70]
+  - id: add
+    type: text
+    text: '[{b}](blue) + [?](blank) = [{a}](green)'
+    size: 40
+    at: [580, 110]
+  - id: sub
+    type: text
+    text: '[{a}](green) − [{b}](blue) = [?](blank)'
+    size: 40
+    at: [580, 210]
+
+steps:
+  - title: 提出问题
+    say: '{a} 减 {b} 等于几？'
+    do:
+      - highlight: sub
+  - title: 想加法
+    say: '想：{b} 加几等于 {a}？{b} 加 {r} 等于 {a}。'
+    do:
+      - set: { target: bond, show: 2 }
+      - highlight: { target: add, together: true }
+      - ask: true
+      - set: { target: add, text: '[{b}](blue) + [{r}](orange) = [{a}](green)' }
+      - set: { target: bond, blank: [], together: true }
+    try:
+      task: '{b} 加几等于 {a}？'
+      choose:
+        answer: '{r}'
+        min: 1
+        max: 9
+      hints:
+        - '从 {b} 往后数到 {a}，数了几下？'
+  - title: 得出减法
+    say: '所以 {a} − {b} = {r}。'
+    do:
+      - set: { target: sub, text: '[{a}](green) − [{b}](blue) = [{r}](orange)' }
+      - highlight: sub
+
+keyPoints:
+  - '做减法可以想加法：{b} 加几等于 {a}，{a} 减 {b} 就等于几'
+  - 加法和减法互相联系
