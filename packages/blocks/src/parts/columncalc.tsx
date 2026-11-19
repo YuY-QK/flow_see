@@ -471,6 +471,9 @@ export function columnCalcPlan(p: Props): ColumnCalcPlan {
               borrowedCols.add(k);
             }
             cur[k] -= 1;
+            // 连续退位：只留借来后的数（同上）
+            const prev = smallValues.findIndex((v) => v.col === pCol);
+            if (prev >= 0) smallValues.splice(prev, 1);
             smallValues.push({ col: pCol, text: String(10 + ai) });
             cur[pCol] += 10;
           }
@@ -568,6 +571,10 @@ export function columnCalcPlan(p: Props): ColumnCalcPlan {
             borrowedCols.add(k);
           }
           cur[k] -= 1;
+          // 连续退位：这一列刚被右边借走过（已记了剩下的数），自己又不够减再向左借，
+          // 只留借来后的数，不然两个小字叠在同一位置
+          const prev = smallValues.findIndex((v) => v.col === pCol);
+          if (prev >= 0) smallValues.splice(prev, 1);
           smallValues.push({ col: pCol, text: String(10 + ai) });
           cur[pCol] += 10;
         }

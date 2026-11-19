@@ -121,6 +121,19 @@ describe('竖式减法（任务卡 X1）', () => {
     ]);
   });
 
+  it('连续退位：同一列只留一个小字（借来后的数）', () => {
+    // 523 − 247：十位先被个位借走剩 1，自己又不够减向百位借，十位只写 11
+    const plan = columnCalcPlan({ at: [400, 200], a: 523, b: 247, op: '−', size: 44 });
+    expect(plan.steps[1].smallValues).toEqual([{ col: 1, text: '11' }]);
+    for (const [a, b] of [[305, 128], [400, 156], [523, 247], [612, 385], [1000, 1]]) {
+      const pl = columnCalcPlan({ at: [400, 200], a, b, op: '−', size: 44 });
+      for (const st of pl.steps) {
+        const cols = (st.smallValues ?? []).map((v) => v.col);
+        expect(new Set(cols).size).toBe(cols.length);
+      }
+    }
+  });
+
   it('52 − 27（个位退位）：计划与每一步画面元素', () => {
     const props = { at: [400, 200], a: 52, b: 27, op: '−', size: 44 };
     const plan = columnCalcPlan(props);
