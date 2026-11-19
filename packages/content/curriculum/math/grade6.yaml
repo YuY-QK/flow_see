@@ -32,7 +32,7 @@ units:
     term: 1
     domain: number
     lessons:
-      - { id: percent-meaning, title: 百分数的意义与读写 }
+      - percent-meaning
       - { id: percent-convert, title: 百分数与分数、小数的互化 }
       - { id: percent-apply, title: 百分数的简单应用 }
   - id: position-pairs
@@ -50,7 +50,7 @@ units:
       - { id: circle-circumference, title: 圆的周长与圆周率 }
       - circle-area
       - { id: sector-intro, title: 扇形的初步认识 }
-      - { id: ring-area, title: 圆环的面积 }
+      - ring-area
   - id: pie-chart
     title: 扇形统计图
     term: 1
@@ -63,8 +63,8 @@ units:
     term: 2
     domain: number
     lessons:
-      - { id: negative-meaning, title: 负数的意义与读写 }
-      - { id: negative-numberline, title: 在数轴上表示正负数与比较大小 }
+      - negative-meaning
+      - negative-numberline
   - id: proportion-2
     title: 比例（二）
     term: 2

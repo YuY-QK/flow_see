@@ -301,9 +301,9 @@
 - 元信息：summary：圆环面积 = 外圆面积 − 内圆面积；tags [圆环, 圆环面积, 外圆, 内圆]；cover “S=π(R²−r²)”；related [circle-area]
 - 舞台：800 × 420；params `R: 5`、`r: 3`；derived `S: round(3.14 * (R * R - r * r) * 100) / 100`；presets：`{5, 3}`、`{4, 2}`、`{6, 4}`
 - 零件：
-  - `outer` = shape，shape circle，radius `{R * 28}`，color blue，at [240, 210]
-  - `inner` = shape，shape circle，radius `{r * 28}`，color white，at [240, 210]，hidden
-  - `eq` = expr-steps，lines [`'3.14 × {R}[2](sup) − 3.14 × {r}[2](sup)'`, `'3.14 × ({R * R} − {r * r})'`, `'3.14 × {R * R - r * r}'`, `'{S}'`]，show 1，at [500, 140]
+  - `outer` = shape，shape circle，radius `{R * 28}`，color blue，at [200, 210]
+  - `inner` = shape，shape circle，radius `{r * 28}`，color white，at [200, 210]，hidden
+  - `eq` = expr-steps，lines [`'3.14 × {R}² − 3.14 × {r}²'`, `'3.14 × ({R * R} − {r * r})'`, `'3.14 × {R * R - r * r}'`, `'{S}'`]，show 1，size 28，at [410, 130]
 
 | # | 标题 | 讲解 | 画面 | 动手做 |
 |---|---|---|---|---|

@@ -1,0 +1,79 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: ring-area
+title: 圆环的面积
+summary: 圆环面积 = 外圆面积 − 内圆面积
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1.5分钟
+tags: [圆环, 圆环面积, 外圆, 内圆]
+cover: { text: 'S=π(R²−r²)' }
+related: [circle-area]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  R: 5
+  r: 3
+
+derived:
+  S: round(3.14 * (R * R - r * r) * 100) / 100
+  S_wrong1: round(3.14 * (R - r) * (R - r) * 100) / 100
+  S_wrong2: round(3.14 * R * R * 100) / 100
+
+presets:
+  - { label: 'R=5, r=3', params: { R: 5, r: 3 } }
+  - { label: 'R=4, r=2', params: { R: 4, r: 2 } }
+  - { label: 'R=6, r=4', params: { R: 6, r: 4 } }
+
+objects:
+  - id: outer
+    type: shape
+    shape: circle
+    radius: '{R * 28}'
+    color: blue
+    at: [200, 210]
+  - id: inner
+    type: shape
+    shape: circle
+    radius: '{r * 28}'
+    color: white
+    at: [200, 210]
+    hidden: true
+  - id: eq
+    type: expr-steps
+    lines:
+      - '3.14 × {R}² − 3.14 × {r}²'
+      - '3.14 × ({R * R} − {r * r})'
+      - '3.14 × {R * R - r * r}'
+      - '{S}'
+    show: 1
+    size: 28
+    at: [410, 130]
+
+steps:
+  - title: 大圆
+    say: 先看外面的大圆，半径 {R}。
+    do:
+      - highlight: outer
+  - title: 挖掉小圆
+    say: 从中间挖掉半径 {r} 的小圆，剩下的是圆环。
+    do:
+      - show: inner
+  - title: 面积
+    say: 圆环面积 = 大圆面积 − 小圆面积。
+    do:
+      - set: { target: eq, show: 3 }
+      - ask: true
+      - set: { target: eq, show: 4 }
+    try:
+      task: 圆环的面积是多少？
+      choose:
+        answer: '{S}'
+        options: ['{S}', '{S_wrong1}', '{S_wrong2}']
+      hints:
+        - 圆环面积 = 外圆面积 − 内圆面积。
+
+keyPoints:
+  - 圆环由两个同心圆组成，从大圆中挖去同圆心的小圆就是圆环。
+  - 圆环的面积 = 外圆面积 − 内圆面积，S = π(R² − r²)。

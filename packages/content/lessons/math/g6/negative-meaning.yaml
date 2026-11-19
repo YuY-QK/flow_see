@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: negative-meaning
+title: 负数的意义与读写
+summary: 0 上和 0 下、收入和支出这样相反意义的量，用正数和负数表示；0 既不是正数也不是负数
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1.5分钟
+tags: [负数, 正数, 相反意义的量, 温度]
+cover: { text: '−5℃' }
+related: [negative-numberline]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  t: -5
+
+presets:
+  - { label: '−5 ℃', params: { t: -5 } }
+  - { label: '−12 ℃', params: { t: -12 } }
+  - { label: '−2 ℃', params: { t: -2 } }
+
+objects:
+  - id: th
+    type: thermometer
+    value: 8
+    min: -20
+    max: 30
+    showValue: true
+    at: [200, 210]
+  - id: say
+    type: text
+    text: '零下 {abs(t)} 摄氏度，记作 [{t}](blank) ℃'
+    size: 30
+    at: [540, 120]
+  - id: money
+    type: text
+    text: '收入 +100 元　支出 −60 元'
+    size: 28
+    at: [540, 220]
+    hidden: true
+  - id: zero
+    type: text
+    text: '0 既不是正数，也不是负数'
+    size: 26
+    at: [540, 300]
+    hidden: true
+
+steps:
+  - title: 零上
+    say: 白天 8 ℃，比 0 ℃ 高，是零上 8 摄氏度。
+    do:
+      - highlight: th
+  - title: 零下
+    say: 夜里降到比 0 ℃ 还低 {abs(t)} 度，是零下 {abs(t)} 摄氏度。
+    do:
+      - set: { target: th, value: '{t}', duration: 2s }
+      - ask: true
+      - set: { target: say, text: '零下 {abs(t)} 摄氏度，记作 {t} ℃' }
+    try:
+      task: '零下 {abs(t)} 摄氏度怎么记？'
+      choose:
+        answer: '{t}'
+        options: ['{t}', '{abs(t)}', '+{abs(t)}']
+        show: [th]
+      hints:
+        - 比 0 ℃ 低的温度用负数表示。
+  - title: 相反意义
+    say: 收入和支出、上升和下降，意义相反，可以用正数和负数表示。
+    do:
+      - show: money
+  - title: '0'
+    say: 0 是正数和负数的分界，既不是正数也不是负数。
+    do:
+      - show: zero
+
+keyPoints:
+  - 像 +8、+100 这样的数是正数，正号可以省略；像 −5、−60 这样的数是负数。
+  - 0 是正数和负数的分界点，0 既不是正数也不是负数。

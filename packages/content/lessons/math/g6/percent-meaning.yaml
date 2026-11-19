@@ -1,0 +1,73 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: percent-meaning
+title: 百分数的意义与读写
+summary: 表示一个数是另一个数的百分之几；只表示两个数的关系，后面不带单位
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1.5分钟
+tags: [百分数, 百分率, 百分号]
+cover: { text: 25% }
+related: [percent-convert, decimal-meaning]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  k: 25
+
+explore:
+  - { param: k, control: slider, label: 涂几格, min: 1, max: 99 }
+
+presets:
+  - { label: 25 格, params: { k: 25 } }
+  - { label: 50 格, params: { k: 50 } }
+  - { label: 75 格, params: { k: 75 } }
+
+objects:
+  - id: g
+    type: grid
+    rows: 10
+    cols: 10
+    cell: 30
+    filled: 0
+    at: [60, 60]
+  - id: t
+    type: text
+    text: '[{k}/100](frac) = [{k}%](blank)'
+    size: 36
+    at: [580, 140]
+  - id: note
+    type: text
+    text: '百分数不能带单位：不能说“25% 米”'
+    size: 24
+    at: [560, 260]
+    hidden: true
+
+steps:
+  - title: 百格图
+    say: 一个正方形平均分成 100 格。
+    do:
+      - highlight: g
+  - title: 涂一涂
+    say: 涂了 {k} 格，占 {k}/100。
+    do:
+      - set: { target: g, filled: '{k}', duration: 1.5s }
+  - title: 百分数
+    say: 分母是 100 的这种分数，写作 {k}%，读作百分之{cn(k)}。
+    do:
+      - ask: true
+      - set: { target: t, text: '[{k}/100](frac) = {k}%' }
+    try:
+      task: 涂色部分占百分之几？
+      choose:
+        answer: '{k}%'
+        options: ['{k}%', '{k / 10}%', '{100 - k}%']
+  - title: 不带单位
+    say: 百分数只表示两个数的关系，后面不能带单位。
+    do:
+      - show: note
+
+keyPoints:
+  - 表示一个数是另一个数的百分之几的数叫百分数，也叫百分率或百分比。
+  - 百分数后面不能带单位名称。

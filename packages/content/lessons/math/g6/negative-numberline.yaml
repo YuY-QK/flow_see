@@ -1,0 +1,82 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: negative-numberline
+title: 在数轴上表示正负数与比较大小
+summary: 数轴上 0 左边是负数；左边的数总比右边的数小
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1.5分钟
+tags: [数轴, 负数, 比大小]
+cover: { text: '−3<−1' }
+related: [negative-meaning, order-within-10]
+
+template: scene
+stage: { width: 800, height: 400 }
+
+params:
+  a: -3
+  b: -1
+
+explore:
+  - { param: a, control: slider, label: 第一个数, min: -6, max: 6 }
+  - { param: b, control: slider, label: 第二个数, min: -6, max: 6 }
+
+presets:
+  - { label: '−3 和 −1', params: { a: -3, b: -1 } }
+  - { label: '−5 和 2', params: { a: -5, b: 2 } }
+  - { label: '−4 和 −6', params: { a: -4, b: -6 } }
+
+objects:
+  - id: line
+    type: numberline
+    from: -6
+    to: 6
+    step: 1
+    labelEvery: 1
+    length: 700
+    marks: ['{a}', '{b}']
+    at: [50, 150]
+  - id: cmp
+    type: text
+    text: '{a} [<](blank) {b}'
+    size: 36
+    at: [400, 280]
+
+steps:
+  - title: 向左延伸
+    say: 数轴从 0 向左延伸，左边是负数：−1、−2、−3……
+    do:
+      - highlight: line
+  - title: 找一找
+    say: "{a} 在 0 的{sel(a < 0, '左边', sel(a > 0, '右边', '位置上'))}。"
+    do:
+      - ask: true
+      - highlight: 'line.tick.{a}'
+    try:
+      task: 在数轴上点出 {a}。
+      tap:
+        answer: 'line.tick.{a}'
+        among: ['line.tick.*']
+      hints:
+        - 负数在 0 的左边。
+  - title: 比大小
+    say: 数轴上左边的数小，右边的数大。
+    do:
+      - highlight: cmp
+      - ask: true
+      - set: { target: cmp, text: "{a} {sel(a > b, '>', sel(a < b, '<', '='))} {b}" }
+    try:
+      task: '{a} 和 {b} 比大小。'
+      choose:
+        answer: "{sel(a > b, '>', sel(a < b, '<', '='))}"
+        options: ['>', '=', '<']
+        show: [line]
+      hints:
+        - 看谁在左边。
+  - title: 负数比大小
+    say: 两个负数，离 0 越远的越小。
+    do:
+      - highlight: line
+
+keyPoints:
+  - 在数轴上，0 左边的数是负数，右边的数是正数。
+  - 数轴上左边的数总比右边的数小；负数都比 0 小，正数都比 0 大。
