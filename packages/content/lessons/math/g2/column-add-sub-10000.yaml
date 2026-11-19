@@ -1,0 +1,99 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: column-add-sub-10000
+title: 三位数加减（连续进位、连续退位、中间有 0 的退位）
+summary: 从个位算起，哪一位满十就进一，不够减就退一
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 2分钟
+tags: [三位数加法, 三位数减法, 连续进位, 连续退位, 竖式]
+cover: { text: 305−128 }
+related: [column-add-100, column-sub-100]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  case: 1
+derived:
+  a: 'case == 1 ? 305 : (case == 2 ? 400 : (case == 3 ? 523 : 612))'
+  b: 'case == 1 ? 128 : (case == 2 ? 156 : (case == 3 ? 247 : 385))'
+  b0: digit(a, 0) < digit(b, 0)
+  b1: (digit(a, 1) - b0) < digit(b, 1)
+  r: a - b
+
+explore:
+  - param: case
+    control: buttons
+    label: 例题
+    options:
+      - { value: 1, label: 305 − 128 }
+      - { value: 2, label: 400 − 156 }
+      - { value: 3, label: 523 − 247 }
+      - { value: 4, label: 612 − 385 }
+
+presets:
+  - { label: 305 − 128, params: { case: 1 } }
+  - { label: 400 − 156, params: { case: 2 } }
+  - { label: 523 − 247, params: { case: 3 } }
+  - { label: 612 − 385, params: { case: 4 } }
+
+objects:
+  - id: calc
+    type: column-calc
+    a: '{a}'
+    b: '{b}'
+    op: −
+    show: 0
+    at: [400, 200]
+
+steps:
+  - title: 列竖式
+    say: '{a} 减 {b}，数位对齐，从个位减起。'
+    do:
+      - highlight: calc
+  - title: 个位
+    say: "个位{sel(b0, '不够减，向十位退 1', '够减')}，得 {digit(r, 0)}。"
+    do:
+      - ask: true
+      - set: { target: calc, show: 1 }
+    try:
+      task: 个位上写几？
+      choose:
+        answer: '{digit(r, 0)}'
+        min: 0
+        max: 9
+  - when: '{b0 && digit(a, 1) == 0}'
+    title: 十位是 0
+    say: 十位是 0，先从百位退 1 变成 10，再退给个位剩 9。
+    do:
+      - highlight: [calc.borrow.1, calc.borrow.2]
+  - title: 十位
+    say: "十位{sel(b1, '不够减，再向百位退 1', '够减')}，得 {digit(r, 1)}。"
+    do:
+      - ask: true
+      - set: { target: calc, show: 2 }
+    try:
+      task: 十位上写几？
+      choose:
+        answer: '{digit(r, 1)}'
+        min: 0
+        max: 9
+  - title: 百位
+    say: 百位要先减去退走的 1，得 {digit(r, 2)}。
+    do:
+      - ask: true
+      - set: { target: calc, show: 3 }
+    try:
+      task: 百位上写几？
+      choose:
+        answer: '{digit(r, 2)}'
+        min: 0
+        max: 9
+  - title: 得数
+    say: 所以 {a} − {b} = {r}。
+    do:
+      - highlight: calc
+
+keyPoints:
+  - 从个位算起，哪一位不够减就从前一位退 1
+  - 中间是 0 不够退时，要再向更高一位退 1，0 变成 9

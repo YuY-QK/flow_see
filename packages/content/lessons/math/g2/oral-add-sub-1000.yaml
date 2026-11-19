@@ -1,0 +1,76 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: oral-add-sub-1000
+title: 整百、整千数加减
+summary: 几个百加减几个百，几个千加减几个千
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [整百数, 整千数, 口算]
+cover: { text: 300+500 }
+related: [tens-add-sub, column-add-sub-10000]
+
+template: scene
+stage: { width: 800, height: 400 }
+
+params:
+  a: 3
+  b: 5
+derived:
+  s: a + b
+
+explore:
+  - { param: a, control: slider, label: 第一个加数, min: 1, max: 8 }
+  - { param: b, control: slider, label: 第二个加数, min: 1, max: '9 - a' }
+
+objects:
+  - id: x
+    type: base-ten
+    style: block
+    hundreds: '{a}'
+    columns: false
+    unit: 6
+    at: [40, 70]
+  - id: y
+    type: base-ten
+    style: block
+    hundreds: '{b}'
+    columns: false
+    unit: 6
+    color: orange
+    at: [40, 220]
+  - id: eq
+    type: text
+    text: '{a * 100} + {b * 100} = [{s * 100}](blank)'
+    size: 40
+    at: [600, 160]
+  - id: eq2
+    type: text
+    text: '{a * 1000} + {b * 1000} = {s * 1000}'
+    size: 32
+    at: [600, 260]
+    hidden: true
+
+steps:
+  - title: 几个百
+    say: '{a * 100} 是 {a} 个百，{b * 100} 是 {b} 个百。'
+    do:
+      - highlight: [x, y]
+  - title: 合起来
+    say: 合起来是 {s} 个百，就是 {s * 100}。
+    do:
+      - move: { target: y, to: ['{60 + a * 70}', 70] }
+      - ask: true
+      - set: { target: eq, text: '{a * 100} + {b * 100} = {s * 100}' }
+    try:
+      task: '{a * 100} + {b * 100} 等于几？'
+      choose:
+        answer: '{s * 100}'
+        options: ['{s}', '{s * 10}', '{s * 100}']
+  - title: 整千也一样
+    say: 整千数也一样：{a} 个千加 {b} 个千是 {s} 个千。
+    do:
+      - show: eq2
+
+keyPoints:
+  - 整百数加减，想几个百加减几个百
+  - 整千数加减，想几个千加减几个千

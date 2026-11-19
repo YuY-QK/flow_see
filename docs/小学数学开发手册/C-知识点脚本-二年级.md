@@ -267,7 +267,7 @@
 | 2 | 十个一是一十 | 10 个一是一十，排成一条。 | b.ones → 10 ＋ cnt.value → 10；b.ones → 0 ＋ b.tens → 1 | — |
 | 3 | 十个十是一百 | 10 个十是一百，拼成一片。 | b.tens → 9 ＋ cnt.value → 90；b.tens → 10 ＋ cnt.value → 100；b.tens → 0 ＋ b.hundreds → 1 | — |
 | 4 | 十个一百是一千 | 10 个一百是一千，摞成一个大正方体。 | b.hundreds → 9 ＋ cnt.value → 900 ‖ b.hundreds → 10 ＋ cnt.value → 1000；b.hundreds → 0 ＋ b.thousands → 1 | choose 答案 1000（选项 100 1000 10000）“10 个一百是多少？” |
-| 5 | 十个一千是一万 | 10 个一千是一万。 | b.thousands → 10 ＋ cnt.value → 10000；显示 chain | — |
+| 5 | 十个一千是一万 | 10 个一千是一万。 | b.unit → 4 ＋ b.thousands → 10 ＋ cnt.value → 10000；显示 chain | — |
 
 - 说明：base-ten 的“捆”约定是一次改 10（B3），这里 tens 10 → 0、hundreds 0 → 1 同理适用于方块的“拼”。B3 对 block 的拼合过程按同样规则画（10 条并成一片，10 片摞成一块）。
 - 要点：一、十、百、千、万都是计数单位；相邻两个计数单位之间满十进一

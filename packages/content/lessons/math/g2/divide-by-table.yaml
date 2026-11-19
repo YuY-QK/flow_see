@@ -1,0 +1,82 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: divide-by-table
+title: 用乘法口诀求商
+summary: 求商时想乘法口诀
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 1分钟
+tags: [表内除法, 用口诀求商, 乘除关系]
+cover: { text: 12÷3 }
+related: [divide-equal, times-table-2-5]
+
+template: scene
+stage: { width: 800, height: 400 }
+
+params:
+  d: 3
+  q: 4
+derived:
+  t: d * q
+
+explore:
+  - { param: d, control: slider, label: 除数, min: 2, max: 9 }
+  - { param: q, control: slider, label: 商, min: 2, max: 9 }
+
+objects:
+  - id: dots
+    type: counters
+    count: '{t}'
+    layout: grid
+    cols: '{d}'
+    size: 34
+    color: blue
+    at: [60, 50]
+  - id: div
+    type: text
+    text: '{t} ÷ {d} = [{q}](blank)'
+    size: 44
+    at: [600, 120]
+  - id: rhyme
+    type: text
+    text: '想：[?](blank) × {d} = {t}'
+    size: 36
+    at: [600, 210]
+  - id: two
+    type: text
+    text: '{q} × {d} = {t}　{t} ÷ {q} = {d}'
+    size: 30
+    at: [600, 300]
+    hidden: true
+
+steps:
+  - title: 提出问题
+    say: '{t} 个圆片，每行 {d} 个，能排几行？'
+    do:
+      - highlight: [dots, div]
+  - title: 想口诀
+    say: 想：几乘 {d} 等于 {t}？
+    do:
+      - highlight: rhyme
+      - ask: true
+      - set: { target: rhyme, text: '想：{q} × {d} = {t}' }
+    try:
+      task: 几乘 {d} 等于 {t}？
+      choose:
+        answer: '{q}'
+        min: 1
+        max: 9
+      hints:
+        - 背一背 {d} 的口诀。
+  - title: 得出商
+    say: 所以 {t} ÷ {d} = {q}，排 {q} 行。
+    do:
+      - set: { target: div, text: '{t} ÷ {d} = {q}' }
+      - highlight: dots
+  - title: 一图三式
+    say: 一个点阵，能写一道乘法、两道除法。
+    do:
+      - show: two
+
+keyPoints:
+  - 用乘法口诀求商：想“几乘除数等于被除数”
+  - 乘法和除法互相联系

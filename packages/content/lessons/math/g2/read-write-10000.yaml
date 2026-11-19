@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: read-write-10000
+title: 读数和写数（中间、末尾有 0）
+summary: 从高位读起；中间一个或几个 0 只读一个零，末尾的 0 不读
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 2分钟
+tags: [读数, 写数, 万以内的数, 0的读法]
+cover: { text: '3005' }
+related: [count-to-10000, place-value-100]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  n: 3005
+
+objects:
+  - id: abacus
+    type: place-value
+    value: '{n}'
+    places: 3
+    style: abacus
+    at: [240, 210]
+  - id: read
+    type: text
+    text: '读作：[{cn(n)}](blank)'
+    size: 36
+    at: [600, 160]
+  - id: rule
+    type: text
+    text: 中间有 0 读一个零，末尾的 0 不读
+    size: 24
+    at: [600, 260]
+    hidden: true
+
+steps:
+  - title: 看计数器
+    say: 千位 {digit(n, 3)}、百位 {digit(n, 2)}、十位 {digit(n, 1)}、个位 {digit(n, 0)}。
+    do:
+      - highlight: abacus.d3
+      - highlight: abacus.d2
+      - highlight: abacus.d1
+      - highlight: abacus.d0
+  - title: 写数
+    say: 哪一位一颗珠子也没有，就写 0。这个数写作 {n}。
+    do:
+      - highlight: abacus
+  - title: 读数
+    say: 从高位读起：{cn(n)}。
+    do:
+      - show: rule
+      - ask: true
+      - set: { target: read, text: '读作：{cn(n)}' }
+    try:
+      task: '{n} 怎么读？'
+      choose:
+        answer: 三千零五
+        options: [三千零五, 三千五, 三千零零五]
+      hints:
+        - 中间的 0 读一个“零”，末尾的 0 不读。
+  - title: 末尾的 0 不读
+    say: 2700 末尾的两个 0 都不读，读作两千七百。
+    do:
+      - set: { target: abacus, value: 2700, places: 3 }
+      - set: { target: read, text: '读作：两千七百' }
+
+keyPoints:
+  - 读万以内的数，从高位读起
+  - 中间有一个 0 或连续两个 0，只读一个“零”
+  - 末尾不管有几个 0 都不读

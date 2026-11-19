@@ -1,0 +1,91 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: remainder-meaning
+title: 有余数的除法（余数比除数小）
+summary: 分到不够再分一份时停下，剩下的是余数，余数比除数小
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 2分钟
+tags: [有余数的除法, 余数, 平均分]
+cover: { text: 13÷4 }
+related: [divide-equal, remainder-column]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  t: 13
+  g: 4
+derived:
+  q: floor(t / g)
+  r: t % g
+  totalShared: q * g
+
+explore:
+  - { param: t, control: slider, label: 一共几个, min: 7, max: 23 }
+
+objects:
+  - id: pool
+    type: counters
+    count: '{t}'
+    layout: grid
+    cols: 8
+    size: 32
+    color: orange
+    at: [40, 40]
+  - repeat: '{g}'
+    id: 'p{i}'
+    type: counters
+    count: 0
+    layout: grid
+    cols: 3
+    capacity: '{q + 1}'
+    size: 28
+    at: ['{40 + (i - 1) * 140}', 200]
+  - id: eq
+    type: text
+    text: '{t} ÷ {g} = [{q}](blank) …… [{r}](blank)'
+    size: 36
+    at: [400, 390]
+
+steps:
+  - title: 平均分
+    say: '{t} 个平均分给 {g} 个盘子。'
+    do:
+      - highlight: pool
+  - title: 一个一个分
+    say: 一轮一轮地分，每个盘子分到 {q} 个。
+    do:
+      - ask: true
+      - deal: { target: pool, into: [p1, p2, p3, p4], count: '{totalShared}' }
+    try:
+      task: 一个一个分到盘子里，分到不够再分一轮为止。
+      drag:
+        from: pool
+        to: [p1, p2, p3, p4]
+        count: '{totalShared}'
+        each: '{q}'
+      hints:
+        - 每个盘子轮流放一个。
+  - title: 还剩几个
+    say: 还剩 {r} 个，不够每个盘子再分一个了。
+    do:
+      - highlight: pool
+      - ask: true
+      - set: { target: eq, text: '{t} ÷ {g} = {q} …… {r}' }
+    try:
+      task: 还剩几个？
+      choose:
+        answer: '{r}'
+        min: 0
+        max: 3
+      hints:
+        - 数一数没分出去的。
+  - title: 余数比除数小
+    say: 剩下的要是够分，就还能再分一轮，所以余数一定比除数小。
+    do:
+      - highlight: eq
+
+keyPoints:
+  - 平均分后有剩余，剩下的数叫余数
+  - 余数一定比除数小

@@ -1,0 +1,83 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: count-to-10000
+title: 千和万：计数单位
+summary: 十个一百是一千，十个一千是一万，每满十进一
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 2分钟
+tags: [千, 万, 计数单位, 十进制]
+cover: { text: 10个千 }
+related: [count-to-100, read-write-10000]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+objects:
+  - id: b
+    type: base-ten
+    style: block
+    ones: 0
+    tens: 0
+    hundreds: 0
+    thousands: 0
+    columns: true
+    unit: 8
+    at: [40, 40]
+  - id: chain
+    type: text
+    text: 个 → 十 → 百 → 千 → 万
+    size: 32
+    at: [400, 410]
+    hidden: true
+  - id: cnt
+    type: text
+    text: '{value}'
+    value: 0
+    size: 48
+    at: [660, 80]
+
+steps:
+  - title: 一个一个数
+    say: 1 个小方块是一个一。
+    do:
+      - set: { target: b, ones: 9, duration: 2s, ease: linear }
+      - count: { target: cnt, from: 0, to: 9, duration: 2s, together: true }
+  - title: 十个一是一十
+    say: 10 个一是一十，排成一条。
+    do:
+      - set: { target: b, ones: 10 }
+      - set: { target: cnt, value: 10, together: true }
+      - set: { target: b, ones: 0, tens: 1 }
+  - title: 十个十是一百
+    say: 10 个十是一百，拼成一片。
+    do:
+      - set: { target: b, tens: 9 }
+      - set: { target: cnt, value: 90, together: true }
+      - set: { target: b, tens: 10 }
+      - set: { target: cnt, value: 100, together: true }
+      - set: { target: b, tens: 0, hundreds: 1 }
+  - title: 十个一百是一千
+    say: 10 个一百是一千，摞成一个大正方体。
+    do:
+      - set: { target: b, hundreds: 9 }
+      - set: { target: cnt, value: 900, together: true }
+      - ask: true
+      - set: { target: b, hundreds: 10 }
+      - set: { target: cnt, value: 1000, together: true }
+      - set: { target: b, hundreds: 0, thousands: 1 }
+    try:
+      task: 10 个一百是多少？
+      choose:
+        answer: 1000
+        options: [100, 1000, 10000]
+  - title: 十个一千是一万
+    say: 10 个一千是一万。
+    do:
+      - set: { target: b, unit: 4, thousands: 10 }
+      - set: { target: cnt, value: 10000, together: true }
+      - show: chain
+
+keyPoints:
+  - 一、十、百、千、万都是计数单位
+  - 相邻两个计数单位之间满十进一

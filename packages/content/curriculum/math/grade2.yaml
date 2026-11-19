@@ -9,14 +9,14 @@ units:
     term: 1
     domain: number
     lessons:
-      - { id: column-add-100, title: 进位加法竖式 }
+      - column-add-100
   - id: subtract-within-100            # 已有
     title: 100 以内的退位减法
     term: 1
     domain: number
     lessons:
       - break-ten
-      - { id: column-sub-100, title: 退位减法竖式 }
+      - column-sub-100
   - id: multiplication-1            # 已有
     title: 表内乘法（一）
     term: 1
@@ -37,8 +37,8 @@ units:
     domain: number
     lessons:
       - divide-equal
-      - { id: divide-by-table, title: 用乘法口诀求商 }
-      - { id: division-two-meanings, title: 除法的两种分法 }
+      - divide-by-table
+      - division-two-meanings
   - id: money-2
     title: 人民币的应用
     term: 1
@@ -75,23 +75,23 @@ units:
     term: 2
     domain: number
     lessons:
-      - { id: count-to-10000, title: 千和万：计数单位 }
-      - { id: read-write-10000, title: 读数和写数（中间、末尾有 0） }
-      - { id: compare-10000, title: 大小比较与近似数 }
+      - count-to-10000
+      - read-write-10000
+      - compare-10000
   - id: division-remainder
     title: 有余数的除法
     term: 2
     domain: number
     lessons:
-      - { id: remainder-meaning, title: 有余数的除法（余数比除数小） }
+      - remainder-meaning
       - { id: remainder-column, title: 有余数除法的竖式 }
   - id: add-sub-10000
     title: 万以内的加法和减法
     term: 2
     domain: number
     lessons:
-      - { id: oral-add-sub-1000, title: 整百、整千数加减 }
-      - { id: column-add-sub-10000, title: 三位数加减（连续进位、连续退位、中间有 0 的退位） }
+      - oral-add-sub-1000
+      - column-add-sub-10000
   - id: mass-1
     title: 克和千克
     term: 2

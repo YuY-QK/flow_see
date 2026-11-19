@@ -1,0 +1,96 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: column-sub-100
+title: 退位减法竖式
+summary: 个位不够减，从十位退 1 当 10
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 2分钟
+tags: [竖式, 退位减法, 笔算, 退位点]
+cover: { text: 52−27 }
+related: [break-ten, column-add-100]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  a: 52
+  b: 27
+derived:
+  a0: a % 10
+  b0: b % 10
+  a1: floor(a / 10)
+  b1: floor(b / 10)
+  br: a0 < b0
+  r0: a0 + 10 * br - b0
+  r1: a1 - br - b1
+  r: a - b
+
+explore:
+  - { param: a, control: slider, label: 被减数, min: 20, max: 99 }
+  - { param: b, control: slider, label: 减数, min: 11, max: 'a - 1' }
+
+objects:
+  - id: x
+    type: base-ten
+    tens: '{a1}'
+    ones: '{a0}'
+    columns: true
+    at: [40, 70]
+  - id: calc
+    type: column-calc
+    a: '{a}'
+    b: '{b}'
+    op: −
+    show: 0
+    at: [620, 190]
+
+steps:
+  - title: 列竖式
+    say: '{a} 减 {b}，相同数位对齐，从个位减起。'
+    do:
+      - highlight: calc
+  - when: '{br}'
+    title: 个位不够减
+    say: 个位 {a0} 减 {b0} 不够减，从十位退 1 当 10。
+    do:
+      - highlight: x.ones
+      - set: { target: x, ones: '{a0 + 10}', tens: '{a1 - 1}' }
+  - title: 个位相减
+    say: 个位 {a0 + 10 * br} 减 {b0} 等于 {r0}。
+    do:
+      - set: { target: calc, blank: [r2c0] }
+      - ask: true
+      - set: { target: calc, show: 1, blank: [] }
+      - set: { target: x, ones: '{r0}' }
+    try:
+      task: 个位上写几？
+      choose:
+        answer: '{r0}'
+        min: 0
+        max: 9
+      hints:
+        - 个位不够减时，十位退 1 当 10。
+  - title: 十位相减
+    say: 十位剩下 {a1 - br}，减 {b1} 等于 {r1}。
+    do:
+      - ask: true
+      - set: { target: calc, show: 2 }
+      - set: { target: x, tens: '{r1}' }
+    try:
+      task: 十位上写几？
+      choose:
+        answer: '{r1}'
+        min: 0
+        max: 9
+      hints:
+        - 十位已经退走 1 了。
+  - title: 得数
+    say: 所以 {a} − {b} = {r}。
+    do:
+      - highlight: calc
+
+keyPoints:
+  - 相同数位对齐，从个位减起
+  - 个位不够减，从十位退 1，在个位上加 10 再减
+  - 十位上的数要先减去退走的 1

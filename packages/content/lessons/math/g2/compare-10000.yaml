@@ -1,0 +1,79 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: compare-10000
+title: 大小比较与近似数
+summary: 位数多的大；位数相同从最高位比
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 2分钟
+tags: [比大小, 万以内的数, 近似数, 约等于]
+cover: { text: 3980≈4000 }
+related: [read-write-10000, order-compare-100]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  a: 3980
+  b: 4020
+
+explore:
+  - { param: a, control: slider, label: 第一个数, min: 3000, max: 5000, step: 20 }
+  - { param: b, control: slider, label: 第二个数, min: 3000, max: 5000, step: 20 }
+
+objects:
+  - id: pa
+    type: place-value
+    value: '{a}'
+    places: 3
+    style: chart
+    at: [220, 90]
+  - id: pb
+    type: place-value
+    value: '{b}'
+    places: 3
+    style: chart
+    at: [220, 200]
+  - id: cmp
+    type: text
+    text: '{a} [>](blank) {b}'
+    size: 40
+    at: [620, 140]
+  - id: line
+    type: numberline
+    from: '{floor(a / 1000) * 1000}'
+    to: '{floor(a / 1000) * 1000 + 1000}'
+    step: 100
+    labelEvery: 1
+    length: 600
+    marks: ['{a}']
+    at: [100, 340]
+
+steps:
+  - title: 比位数
+    say: 先看位数，位数多的数大。
+    do:
+      - highlight: [pa, pb]
+  - title: 从最高位比
+    say: 位数一样，从千位比起，千位一样再比百位。
+    do:
+      - highlight: [pa.d3, pb.d3]
+  - title: 比一比
+    say: '{a} 和 {b} 比。'
+    do:
+      - highlight: cmp
+      - ask: true
+      - set: { target: cmp, text: "{a} {sel(a > b, '>', sel(a < b, '<', '='))} {b}" }
+    try:
+      task: '{a} 和 {b} 哪个大？'
+      choose:
+        answer: "{sel(a > b, '>', sel(a < b, '<', '='))}"
+        options: ['>', '=', '<']
+  - title: 近似数
+    say: '数轴上 {a} 离 {round(a / 1000) * 1000} 近，{a} ≈ {round(a / 1000) * 1000}。'
+    do:
+      - highlight: line
+
+keyPoints:
+  - 位数不同，位数多的数大
+  - 位数相同，从最高位比起
+  - 接近整千数的数，可以说“大约是”几千，用“≈”表示

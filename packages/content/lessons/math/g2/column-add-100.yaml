@@ -1,0 +1,104 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: column-add-100
+title: 进位加法竖式
+summary: 个位满十，向十位进 1，十位相加时加上进位
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 2分钟
+tags: [竖式, 进位加法, 笔算, 两位数加法]
+cover: { text: 38+45 }
+related: [column-intro, two-digit-add, column-sub-100]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  a: 38
+  b: 45
+derived:
+  a0: a % 10
+  b0: b % 10
+  a1: floor(a / 10)
+  b1: floor(b / 10)
+  c: a0 + b0 >= 10
+  s0: (a0 + b0) % 10
+  s1: a1 + b1 + c
+  s: a + b
+
+explore:
+  - { param: a, control: slider, label: 第一个数, min: 11, max: 89 }
+  - { param: b, control: slider, label: 第二个数, min: 11, max: '99 - a' }
+
+objects:
+  - id: x
+    type: base-ten
+    tens: '{a1}'
+    ones: '{a0}'
+    columns: true
+    at: [40, 50]
+  - id: y
+    type: base-ten
+    tens: '{b1}'
+    ones: '{b0}'
+    columns: true
+    color: orange
+    at: [40, 230]
+  - id: calc
+    type: column-calc
+    a: '{a}'
+    b: '{b}'
+    op: +
+    show: 0
+    at: [620, 190]
+
+steps:
+  - title: 列竖式
+    say: '{a} 加 {b}，相同数位对齐。'
+    do:
+      - highlight: calc
+  - title: 个位相加
+    say: 个位 {a0} 加 {b0} 等于 {a0 + b0}。
+    do:
+      - highlight: [x.ones, y.ones]
+      - set: { target: calc, blank: [r2c0] }
+      - ask: true
+      - set: { target: calc, show: 1, blank: [] }
+    try:
+      task: 个位上写几？
+      choose:
+        answer: '{s0}'
+        min: 0
+        max: 9
+      hints:
+        - "{sel(c, '满十了，写个位上的数。', '直接写和。')}"
+  - when: '{c}'
+    title: 满十进一
+    say: 满十进一：10 根捆成一捆，送到十位，竖式上记一个小 1。
+    do:
+      - set: { target: x, ones: '{a0 + b0}' }
+      - set: { target: y, ones: 0, together: true }
+      - set: { target: x, ones: '{s0}', tens: '{a1 + 1}' }
+  - title: 十位相加
+    say: "十位 {a1} 加 {b1}{sel(c, '，再加进上来的 1', '')}，等于 {s1}。"
+    do:
+      - highlight: [x.tens, y.tens]
+      - ask: true
+      - set: { target: calc, show: 2 }
+    try:
+      task: 十位上写几？
+      choose:
+        answer: '{s1}'
+        min: 1
+        max: 9
+      hints:
+        - "{sel(c, '别忘了加进位的 1。', '把十位上的数相加。')}"
+  - title: 得数
+    say: 所以 {a} + {b} = {s}。
+    do:
+      - highlight: calc
+
+keyPoints:
+  - 相同数位对齐，从个位加起
+  - 个位满十，向十位进 1
+  - 十位相加时，别忘了加进位的 1

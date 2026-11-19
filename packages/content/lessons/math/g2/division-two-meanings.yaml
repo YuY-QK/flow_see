@@ -1,0 +1,121 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: division-two-meanings
+title: 除法的两种分法
+summary: 平均分成几份、每几个一份，都用除法
+status: reviewed
+reviewedAt: 2026-11-19
+duration: 2分钟
+tags: [除法, 平均分, 包含除, 等分除]
+cover: { text: 12÷4 }
+related: [divide-equal, divide-by-table]
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  t: 12
+  g: 4
+derived:
+  e: t / g
+
+presets:
+  - { label: 12 ÷ 4, params: { t: 12, g: 4 } }
+  - { label: 8 ÷ 4, params: { t: 8, g: 4 } }
+  - { label: 16 ÷ 4, params: { t: 16, g: 4 } }
+  - { label: 20 ÷ 4, params: { t: 20, g: 4 } }
+
+objects:
+  - id: pool
+    type: counters
+    count: '{t}'
+    layout: grid
+    cols: 6
+    size: 34
+    color: orange
+    at: [40, 40]
+  - repeat: '{g}'
+    id: 'p{i}'
+    type: counters
+    count: 0
+    layout: grid
+    cols: 3
+    capacity: '{e}'
+    size: 30
+    at: ['{40 + (i - 1) * 140}', 200]
+  - id: eq1
+    type: text
+    text: '{t} ÷ {g} = [{e}](blank)'
+    size: 36
+    at: [620, 70]
+  - id: eq2
+    type: text
+    text: '{t} ÷ {e} = [{g}](blank)'
+    size: 36
+    at: [620, 380]
+    hidden: true
+  - id: pool2
+    type: counters
+    count: '{t}'
+    layout: row
+    size: 30
+    color: green
+    at: [40, 330]
+    hidden: true
+
+steps:
+  - title: 平均分成 {g} 份
+    say: '{t} 个平均分成 {g} 份，每份几个？'
+    do:
+      - highlight: pool
+  - title: 一个一个分
+    say: 一个一个轮流分，每份分到 {e} 个。
+    do:
+      - ask: true
+      - deal: { target: pool, into: [p1, p2, p3, p4], count: '{t}' }
+    try:
+      task: 把圆片一个一个分到盘子里。
+      drag:
+        from: pool
+        to: [p1, p2, p3, p4]
+        count: '{t}'
+        each: '{e}'
+      hints:
+        - 每个盘子轮流放一个。
+  - title: 写算式
+    say: '{t} ÷ {g} = {e}。'
+    do:
+      - ask: true
+      - set: { target: eq1, text: '{t} ÷ {g} = {e}' }
+    try:
+      task: 每份几个？
+      choose:
+        answer: '{e}'
+        min: 1
+        max: 9
+  - title: 每 {e} 个一份
+    say: 换个分法：每 {e} 个一份，能分几份？
+    do:
+      - show: pool2
+      - show: eq2
+      - repeat: '{g}'
+        do:
+          - split:
+              target: pool2
+              take: '{e}'
+              as: 'grp{i}'
+              offset: ['{(i - 1) * 20}', 50]
+  - title: 也是除法
+    say: 能分 {g} 份，{t} ÷ {e} = {g}。
+    do:
+      - ask: true
+      - set: { target: eq2, text: '{t} ÷ {e} = {g}' }
+    try:
+      task: 能分几份？
+      choose:
+        answer: '{g}'
+        min: 1
+        max: 9
+
+keyPoints:
+  - 把一些东西平均分成几份，求每份几个，用除法
+  - 每几个一份，求能分几份，也用除法
