@@ -73,8 +73,9 @@ steps:
   - title: 调商
     say: '把商改成 {q}。'
     do:
-      - set: { target: calc, show: 99 }
+      - highlight: calc
       - ask: true
+      - set: { target: calc, show: 99 }
       - set: { target: res, text: '{a} ÷ {d} = {q}' }
     try:
       task: 把商改成几？

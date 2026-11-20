@@ -13,12 +13,12 @@ template: scene
 stage: { width: 800, height: 450 }
 
 params:
-  a: 145
-  b: 12
+  a: 236
+  b: 34
 
 presets:
-  - { label: 145 × 12, params: { a: 145, b: 12 } }
   - { label: 236 × 34, params: { a: 236, b: 34 } }
+  - { label: 145 × 12, params: { a: 145, b: 12 } }
   - { label: 350 × 24, params: { a: 350, b: 24 } }
   - { label: 408 × 15, params: { a: 408, b: 15 } }
 
