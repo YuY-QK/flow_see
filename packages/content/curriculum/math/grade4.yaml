@@ -16,14 +16,14 @@ units:
     term: 1
     domain: number
     lessons:
-      - { id: mult-3x2, title: 三位数乘两位数的笔算（末尾有 0 的简写） }
+      - mult-3x2
   - id: div-2digit
     title: 除数是两位数的除法
     term: 1
     domain: number
     lessons:
-      - { id: div-2digit, title: 除数是两位数的笔算（试商） }
-      - { id: div-adjust, title: 调商 }
+      - div-2digit
+      - div-adjust
   - id: mixed-ops
     title: 四则混合运算
     term: 1
@@ -36,7 +36,7 @@ units:
     domain: number
     lessons:
       - { id: add-laws, title: 加法交换律、结合律 }
-      - { id: mult-laws, title: 乘法交换律、结合律 }
+      - mult-laws
       - { id: distributive-law, title: 乘法分配律 }
       - simplify-calc
   - id: angle-measure

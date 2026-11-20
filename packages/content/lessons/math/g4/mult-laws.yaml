@@ -1,0 +1,98 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: mult-laws
+title: 乘法交换律、结合律
+summary: 点阵转一转，行列互换个数不变；三个数相乘先乘哪两个积不变
+status: reviewed
+reviewedAt: '2026-11-20'
+duration: 2分钟
+tags: [乘法交换律, 乘法结合律, 运算定律, 凑整]
+cover: { text: a×b=b×a }
+related: [add-laws, distributive-law]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  r: 3
+  c: 5
+
+explore:
+  - { param: r, control: slider, label: 行数, min: 2, max: 5 }
+  - { param: c, control: slider, label: 列数, min: '{r + 1}', max: 7 }
+
+objects:
+  - id: dots
+    type: counters
+    count: '{r * c}'
+    layout: grid
+    cols: '{c}'
+    size: 34
+    color: blue
+    at: [80, 80]
+  - id: f1
+    type: text
+    text: '{r} × {c} = {c} × {r}'
+    size: 32
+    at: [560, 100]
+    hidden: true
+  - id: law1
+    type: text
+    text: a × b = b × a
+    size: 28
+    color: accent
+    at: [560, 150]
+    hidden: true
+  - id: f2
+    type: text
+    text: '25 × 4 × 7 = 25 × (4 × 7)？　(25 × 4) × 7 = [700](blank)'
+    size: 26
+    at: [400, 290]
+    hidden: true
+  - id: law2
+    type: text
+    text: '(a × b) × c = a × (b × c)'
+    size: 28
+    color: accent
+    at: [400, 340]
+    hidden: true
+
+steps:
+  - title: 点阵
+    say: '{r} 行，每行 {c} 个，{r} × {c}。'
+    do:
+      - highlight: dots
+  - title: 转一转
+    say: '把点阵转 90 度，变成 {c} 行、每行 {r} 个，个数没变。'
+    do:
+      - rotate:
+          target: dots
+          by: 90
+          around: ['{80 + c * 17}', '{80 + r * 17}']
+      - show: f1
+  - title: 交换律
+    say: 两个数相乘，交换位置，积不变。
+    do:
+      - show: law1
+  - title: 凑整
+    say: 25×4×7：先算 25×4=100，再乘 7，更简便。
+    do:
+      - show: f2
+      - ask: true
+      - set: { target: f2, text: '25 × 4 × 7 = 25 × (4 × 7)？　(25 × 4) × 7 = 700' }
+    try:
+      task: 25 × 4 × 7 等于多少？
+      choose:
+        answer: 700
+        options: [175, 700, 2800]
+        show: [f2]
+      hints:
+        - 先算 25 × 4。
+  - title: 结合律
+    say: 三个数相乘，先乘前两个或后两个，积不变，叫乘法结合律。
+    do:
+      - show: law2
+
+keyPoints:
+  - 乘法交换律：a × b = b × a。
+  - 乘法结合律：(a × b) × c = a × (b × c)。
+  - 25 × 4 = 100，125 × 8 = 1000，计算时可以先算它们凑整。

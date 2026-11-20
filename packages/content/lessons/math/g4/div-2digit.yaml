@@ -1,0 +1,89 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: div-2digit
+title: 除数是两位数的笔算（试商）
+summary: 把除数看作接近的整十数来试商
+status: reviewed
+reviewedAt: '2026-11-20'
+duration: 2分钟
+tags: [除数是两位数, 试商, 笔算除法, 四舍五入]
+cover: { text: 156÷12 }
+related: [div-column-1, div-adjust]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  a: 156
+  d: 12
+
+derived:
+  q: 'floor(a / d)'
+  r: 'a % d'
+
+presets:
+  - { label: 92 ÷ 23, params: { a: 92, d: 23 } }
+  - { label: 156 ÷ 12, params: { a: 156, d: 12 } }
+  - { label: 378 ÷ 42, params: { a: 378, d: 42 } }
+  - { label: 912 ÷ 38, params: { a: 912, d: 38 } }
+
+objects:
+  - id: calc
+    type: column-calc
+    a: '{a}'
+    b: '{d}'
+    op: ÷
+    show: 0
+    at: [300, 220]
+  - id: think
+    type: text
+    text: '把 {d} 看作 {round(d / 10) * 10}'
+    size: 28
+    at: [600, 100]
+  - id: res
+    type: text
+    text: '{a} ÷ {d} = [{q}](blank) …… {r}'
+    size: 32
+    at: [600, 400]
+
+steps:
+  - title: 看前几位
+    say: 除数是两位数，先看被除数前两位，不够除就看前三位。
+    do:
+      - highlight: calc
+  - title: 试商
+    say: '把 {d} 看作 {round(d / 10) * 10} 来试商。'
+    do:
+      - highlight: think
+  - repeat: '{len(q)}'
+    title: '第 {i} 次除'
+    say: '这一位商 {digit(q, len(q) - i)}，再乘、减{sel(i < len(q), "、落", "")}。'
+    do:
+      - set: { target: calc, show: '{i * 4 - 4}' }
+      - ask: true
+      - set: { target: calc, show: '{i * 4}' }
+    try:
+      task: 这一位商几？
+      choose:
+        answer: '{digit(q, len(q) - i)}'
+        min: 0
+        max: 9
+        show: [calc]
+      hints:
+        - '想 {round(d / 10) * 10} 乘几接近。'
+  - title: 得数
+    say: '所以 {a} ÷ {d} = {q}，余数是 {r}。'
+    do:
+      - ask: true
+      - set: { target: res, text: '{a} ÷ {d} = {q} …… {r}' }
+    try:
+      task: 得数是多少？
+      choose:
+        answer: '{q}'
+        min: 1
+        max: 99
+        show: [calc]
+
+keyPoints:
+  - 除数是两位数的除法，先看被除数的前两位，前两位不够除再看前三位。
+  - 试商时把除数看作和它接近的整十数。

@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: mult-3x2
+title: 三位数乘两位数的笔算
+summary: 先用个位乘，再用十位乘，积对齐十位，最后相加；末尾有 0 的先不管 0
+status: reviewed
+reviewedAt: '2026-11-20'
+duration: 2分钟
+tags: [三位数乘两位数, 笔算乘法, 竖式, 末尾有0]
+cover: { text: 145×12 }
+related: [mult-column, mult-2x2-area]
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  a: 145
+  b: 12
+
+presets:
+  - { label: 145 × 12, params: { a: 145, b: 12 } }
+  - { label: 236 × 34, params: { a: 236, b: 34 } }
+  - { label: 350 × 24, params: { a: 350, b: 24 } }
+  - { label: 408 × 15, params: { a: 408, b: 15 } }
+
+objects:
+  - id: calc
+    type: column-calc
+    a: '{a}'
+    b: '{b}'
+    op: ×
+    trimZeros: '{a % 10 == 0}'
+    show: 0
+    at: [400, 220]
+  - id: res
+    type: text
+    text: '{a} × {b} = [{a * b}](blank)'
+    size: 34
+    at: [400, 420]
+
+steps:
+  - title: 列竖式
+    say: '数位对齐{sel(a % 10 == 0, "；被乘数末尾的 0 先写在外面", "")}。'
+    do:
+      - highlight: calc
+  - title: 个位去乘
+    say: '先用 {b % 10} 去乘 {a}，得 {a * (b % 10)}。'
+    do:
+      - ask: true
+      - set: { target: calc, show: '{a % 10 == 0 ? 2 : 3}' }
+    try:
+      task: '{a} × {b % 10} 等于多少？'
+      choose: { answer: '{a * (b % 10)}', min: 0, max: 9000, show: [calc] }
+  - title: 十位去乘
+    say: '再用 {floor(b / 10)} 去乘，得 {a * floor(b / 10)} 个十，末位对齐十位。'
+    do:
+      - ask: true
+      - set: { target: calc, show: '{a % 10 == 0 ? 4 : 6}' }
+    try:
+      task: '{a} × {floor(b / 10)} 等于多少？'
+      choose: { answer: '{a * floor(b / 10)}', min: 0, max: 9000, show: [calc] }
+      hints:
+        - 这是几个十，末位写在十位上。
+  - title: 相加
+    say: '两次的积相加{sel(a % 10 == 0, "，再把 0 补在末尾", "")}。'
+    do:
+      - set: { target: calc, show: 99 }
+      - ask: true
+      - set: { target: res, text: '{a} × {b} = {a * b}' }
+    try:
+      task: '{a} × {b} 等于多少？'
+      choose: { answer: '{a * b}', min: 100, max: 30000, show: [calc] }
+
+keyPoints:
+  - 三位数乘两位数，先用乘数个位上的数去乘，再用十位上的数去乘，所得的积末位与十位对齐，最后把两次的积相加。
+  - 因数末尾有 0 时，先把 0 前面的数相乘，再在积的末尾添上 0。

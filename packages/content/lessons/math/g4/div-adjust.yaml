@@ -1,0 +1,88 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: div-adjust
+title: 调商
+summary: 乘积比被除数大，商大了改小；余数比除数大，商小了改大
+status: reviewed
+reviewedAt: '2026-11-20'
+duration: 2分钟
+tags: [调商, 试商, 除数是两位数]
+cover: { text: 商大了 }
+related: [div-2digit]
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  a: 384
+  d: 48
+  tq: 7
+
+derived:
+  q: 'floor(a / d)'
+
+presets:
+  - { label: 384 ÷ 48, params: { a: 384, d: 48, tq: 7 } }
+  - { label: 252 ÷ 36, params: { a: 252, d: 36, tq: 8 } }
+
+objects:
+  - id: calc
+    type: column-calc
+    a: '{a}'
+    b: '{d}'
+    op: ÷
+    trial: { place: 0, value: '{tq}' }
+    show: 0
+    at: [300, 220]
+  - id: chk
+    type: text
+    text: '{tq} × {d} = {tq * d}'
+    size: 30
+    at: [600, 120]
+  - id: cmp
+    type: text
+    text: '{sel(tq > q, "商大了", "商小了")}'
+    size: 32
+    at: [600, 200]
+    hidden: true
+  - id: res
+    type: text
+    text: '{a} ÷ {d} = [{q}](blank)'
+    size: 34
+    at: [600, 400]
+
+steps:
+  - title: 试商
+    say: '把 {d} 看作整十数试商，先试 {tq}。'
+    do:
+      - set: { target: calc, show: 1 }
+  - title: 检查
+    say: '{tq} × {d} = {tq * d}，{sel(tq > q, "比被除数大，不够减", "减完剩下的不比除数小")}。'
+    do:
+      - set: { target: calc, show: 2 }
+      - highlight: { target: chk, together: true }
+      - ask: true
+      - show: cmp
+    try:
+      task: 试的商大了还是小了？
+      choose:
+        answer: '{sel(tq > q, "商大了", "商小了")}'
+        options: [商大了, 商小了]
+        show: [chk]
+      hints:
+        - '{sel(tq > q, "积比被除数大，减不了。", "减完剩下的不比除数小，还能再分。")}'
+  - title: 调商
+    say: '把商改成 {q}。'
+    do:
+      - set: { target: calc, show: 99 }
+      - ask: true
+      - set: { target: res, text: '{a} ÷ {d} = {q}' }
+    try:
+      task: 把商改成几？
+      choose:
+        answer: '{q}'
+        options: ['{q - 1}', '{q}', '{q + 1}']
+        show: [calc]
+
+keyPoints:
+  - 试商后，如果乘积比被除数大，说明商大了，要改小。
+  - 如果余数比除数大，说明商小了，要改大。
