@@ -1,0 +1,105 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: times-table-6-9
+title: 6～9 的乘法口诀
+summary: 用记得的口诀推出新口诀
+status: reviewed
+reviewedAt: 2026-11-20
+duration: 2分钟
+tags: [乘法口诀, 7的口诀, 9的口诀, 表内乘法]
+cover: { text: 七六四十二 }
+related: [times-table-2-5, times-table-map]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  n: 7
+  k: 6
+derived:
+  p: n * k
+  q: (k - 1) * n
+
+explore:
+  - param: n
+    control: buttons
+    label: 几的口诀
+    options:
+      - { value: 6, label: '6' }
+      - { value: 7, label: '7' }
+      - { value: 8, label: '8' }
+      - { value: 9, label: '9' }
+  - param: k
+    control: slider
+    label: 问第几句
+    min: 2
+    max: 9
+
+objects:
+  - id: dots
+    type: counters
+    count: '{q}'
+    layout: grid
+    cols: '{n}'
+    size: 26
+    color: blue
+    at: [40, 40]
+  - id: extra
+    type: counters
+    count: '{n}'
+    layout: row
+    size: 26
+    color: orange
+    at: [40, '{40 + (k - 1) * 30}']
+    hidden: true
+  - id: known
+    type: text
+    text: '{k - 1} × {n} = {q}'
+    size: 36
+    at: [580, 80]
+  - id: ask
+    type: text
+    text: '{k} × {n} = [{p}](blank)'
+    size: 40
+    at: [580, 170]
+  - id: nine
+    type: text
+    text: '9 的口诀：积的十位 + 个位 = 9'
+    size: 26
+    at: [560, 300]
+    hidden: true
+
+steps:
+  - title: 记得的口诀
+    say: '{k - 1} 个 {n} 是 {q}，这句我们记得。'
+    do:
+      - highlight: dots
+      - highlight: known
+  - title: 再多一行
+    say: '{k} 个 {n}，就是再多一行 {n} 个。'
+    do:
+      - show: extra
+      - highlight: extra
+  - title: 推出新口诀
+    say: '{q} 加 {n} 等于 {p}，所以 {k} × {n} = {p}。'
+    do:
+      - highlight: ask
+      - ask: true
+      - set: { target: ask, text: '{k} × {n} = {p}' }
+    try:
+      task: '{k} × {n} 等于几？'
+      choose:
+        answer: '{p}'
+        min: 12
+        max: 81
+      hints:
+        - '{q} 再加 {n}。'
+  - when: '{n == 9}'
+    title: 9 的规律
+    say: 9 的口诀，积的十位和个位加起来是 9。
+    do:
+      - show: nine
+
+keyPoints:
+  - 不会的口诀，可以用前一句口诀再加一个几推出来
+  - 9 的口诀里，积的两位数字加起来是 9

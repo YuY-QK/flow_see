@@ -23,14 +23,14 @@ units:
     domain: number
     lessons:
       - mult-meaning
-      - { id: times-table-2-5, title: 2～5 的乘法口诀 }
+      - times-table-2-5
   - id: multiplication-2-table
     title: 表内乘法（二）
     term: 1
     domain: number
     lessons:
-      - { id: times-table-6-9, title: 6～9 的乘法口诀 }
-      - { id: times-table-map, title: 乘法口诀表的规律 }
+      - times-table-6-9
+      - times-table-map
   - id: division-1            # 已有
     title: 表内除法（一）
     term: 1

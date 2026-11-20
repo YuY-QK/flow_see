@@ -1,0 +1,110 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: times-table-2-5
+title: 2～5 的乘法口诀
+summary: 每多一行就多几个，口诀一句一句编出来
+status: reviewed
+reviewedAt: 2026-11-20
+duration: 2分钟
+tags: [乘法口诀, 2的口诀, 5的口诀, 表内乘法]
+cover: { text: 二三得六 }
+related: [mult-meaning, times-table-6-9]
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  n: 4
+  k: 6
+derived:
+  p: n * k
+
+explore:
+  - param: n
+    control: buttons
+    label: 几的口诀
+    options:
+      - { value: 2, label: '2' }
+      - { value: 3, label: '3' }
+      - { value: 4, label: '4' }
+      - { value: 5, label: '5' }
+  - param: k
+    control: slider
+    label: 问第几句
+    min: 2
+    max: 9
+
+objects:
+  - id: dots
+    type: counters
+    count: '{n}'
+    layout: grid
+    cols: '{n}'
+    size: 30
+    color: blue
+    at: [40, 40]
+  - id: tbl
+    type: table
+    rows:
+      - ['1 × {n} = {1 * n}']
+      - ['2 × {n} = {2 * n}']
+      - ['3 × {n} = {3 * n}']
+      - ['4 × {n} = {4 * n}']
+      - ['5 × {n} = {5 * n}']
+      - ['6 × {n} = {6 * n}']
+      - ['7 × {n} = {7 * n}']
+      - ['8 × {n} = {8 * n}']
+      - ['9 × {n} = {9 * n}']
+    header: false
+    colWidth: 220
+    rowHeight: 36
+    size: 22
+    show: 1
+    at: [520, 30]
+  - id: q
+    type: text
+    text: '{k} × {n} = [{p}](blank)'
+    size: 40
+    at: [260, 400]
+    hidden: true
+
+steps:
+  - title: 一行几个
+    say: 每行 {n} 个，1 行是 {n} 个。
+    do:
+      - highlight: dots
+  - title: 一行一行加
+    say: 每多一行，就多 {n} 个。
+    do:
+      - repeat: 8
+        do:
+          - set: { target: dots, count: '{(i + 1) * n}', duration: 0.5s }
+          - set: { target: tbl, show: '{i + 1}', duration: 0.5s, together: true }
+  - title: 编口诀
+    say: 一句算式编一句口诀，从小到大背。
+    do:
+      - highlight: tbl
+  - title: 考考你
+    say: '{k} 个 {n} 是 {p}。'
+    do:
+      - show: q
+      - highlight: 'tbl.row.{k}'
+      - ask: true
+      - set: { target: q, text: '{k} × {n} = {p}' }
+    try:
+      task: '{k} × {n} 等于几？'
+      choose:
+        answer: '{p}'
+        min: 2
+        max: 45
+      hints:
+        - '从 {k - 1} × {n} = {(k - 1) * n} 再加 {n}。'
+  - when: '{n == 5}'
+    title: 5 的规律
+    say: 5 的口诀，积的个位不是 5 就是 0。
+    do:
+      - highlight: tbl
+
+keyPoints:
+  - 几个几相加，可以用乘法口诀算
+  - 每多一个 {n}，积就多 {n}
+  - 口诀可以从前一句推出后一句

@@ -1,0 +1,94 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: times-table-map
+title: 乘法口诀表的规律
+summary: 口诀表左右对称，横着看每格多一个因数
+status: reviewed
+reviewedAt: 2026-11-20
+duration: 2分钟
+tags: [乘法口诀表, 规律, 对称]
+cover: { text: 九九表 }
+related: [times-table-6-9]
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  a: 3
+  b: 7
+derived:
+  p: a * b
+
+explore:
+  - param: a
+    control: slider
+    label: 第一个数
+    min: 1
+    max: 9
+  - param: b
+    control: slider
+    label: 第二个数
+    min: a
+    max: 9
+
+objects:
+  - id: tbl
+    type: table
+    rows:
+      - ['1×1=1', '', '', '', '', '', '', '', '']
+      - ['1×2=2', '2×2=4', '', '', '', '', '', '', '']
+      - ['1×3=3', '2×3=6', '3×3=9', '', '', '', '', '', '']
+      - ['1×4=4', '2×4=8', '3×4=12', '4×4=16', '', '', '', '', '']
+      - ['1×5=5', '2×5=10', '3×5=15', '4×5=20', '5×5=25', '', '', '', '']
+      - ['1×6=6', '2×6=12', '3×6=18', '4×6=24', '5×6=30', '6×6=36', '', '', '']
+      - ['1×7=7', '2×7=14', '3×7=21', '4×7=28', '5×7=35', '6×7=42', '7×7=49', '', '']
+      - ['1×8=8', '2×8=16', '3×8=24', '4×8=32', '5×8=40', '6×8=48', '7×8=56', '8×8=64', '']
+      - ['1×9=9', '2×9=18', '3×9=27', '4×9=36', '5×9=45', '6×9=54', '7×9=63', '8×9=72', '9×9=81']
+    header: false
+    colWidth: 80
+    rowHeight: 40
+    size: 16
+    at: [40, 40]
+  - id: ask
+    type: text
+    text: '{a} × {b} = [{p}](blank)'
+    size: 36
+    at: [600, 420]
+    hidden: true
+
+steps:
+  - title: 口诀表
+    say: 把 81 句里不重复的 45 句排成一张表。
+    do:
+      - highlight: tbl
+  - title: 横着看
+    say: 横着看，每往右一格，第一个数多 1。
+    do:
+      - highlight: 'tbl.row.6'
+  - title: 竖着看
+    say: 竖着看，每往下一格，积多一个这一列的数。
+    do:
+      - highlight: 'tbl.col.3'
+  - title: 斜着看
+    say: '斜着的这一条，两个数一样：1×1、2×2……9×9。'
+    do:
+      - repeat: 9
+        do:
+          - highlight: { target: 'tbl.cell.{i}.{i}', together: true }
+  - title: 找一找
+    say: '{a} × {b} 在第 {b} 行第 {a} 格。'
+    do:
+      - show: ask
+      - ask: true
+      - highlight: 'tbl.cell.{b}.{a}'
+      - set: { target: ask, text: '{a} × {b} = {p}', together: true }
+    try:
+      task: 在表里点出 {a} × {b}。
+      tap:
+        answer: 'tbl.cell.{b}.{a}'
+        among: ['tbl.cell.*']
+      hints:
+        - 先找第 {b} 行。
+
+keyPoints:
+  - 乘法口诀表横着看、竖着看、斜着看都有规律
+  - 两个因数交换位置积不变，所以表里只写一半
