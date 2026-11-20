@@ -47,8 +47,11 @@ function getInitialProps(part: ResolvedPart): Props {
     if (initial.b === undefined) initial.b = 5;
     if (initial.parts === undefined) initial.parts = [2, 3];
   } else if (part.type === 'column-calc') {
-    if (initial.a === undefined) initial.a = 24;
-    if (initial.b === undefined) initial.b = 18;
+    if (initial.a === undefined) initial.a = 384;
+    if (initial.b === undefined) initial.b = 48;
+    if (initial.op === undefined) initial.op = '÷';
+    if (initial.trial === undefined) initial.trial = { place: 0, value: 7 };
+    if (initial.show === undefined) initial.show = 3;
   } else if (part.type === 'money') {
     if (initial.items === undefined) {
       initial.items = [100, 50, 20, 10, 5, '1n', 1, 0.5, 0.1, 0.05, 0.01];

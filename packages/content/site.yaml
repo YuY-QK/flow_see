@@ -140,7 +140,7 @@ scene:
     bulb: { radius: 26, lead: 18, lit: 0, color: yellow }
     switch: { width: 90, on: 0, color: ink }
     wire: { width: 6, flow: 0, t: 0, speed: 90, spacing: 36, color: ink }
-    column-calc: { size: 44, op: '×', show: 0, accent: red, focus: true, color: ink }
+    column-calc: { size: 44, op: '×', show: 0, accent: red, focus: true, color: ink, adjustGap: 0.15 }   # adjustGap：调商数字与试商（连同斜线）之间的最小间隙（字号的倍数）
     split-calc: { size: 40, show: 0, op: '+', split: b, color: ink, partColor: blue, accent: red }
     item-set: { layout: row, cols: 5, size: 56, gap: 12, color: blue, hiddenItems: [] }   # 物品组：一组各不相同的物品（水果、图形等），用于点数、分类
     number-bond: { dir: down, show: 2, size: 44, blank: [], colors: { whole: ink, p: blue, q: orange } }   # 分合图：数的组成、想加算减、一图四式

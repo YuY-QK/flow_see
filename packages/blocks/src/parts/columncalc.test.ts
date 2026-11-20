@@ -855,6 +855,72 @@ describe('竖式除法（长除法，任务卡 X2）', () => {
     const boxAfterAdj = columnCalcPart.bbox({ ...trialProps, show: 3 });
     expect(boxAfterAdj.y).toBeLessThan(boxBeforeAdj.y);
   });
+
+  it('调商与试商间隙与包围盒：调商数字与试商（含斜线）包围盒不相交，间隙至少 0.15 * size，bbox 完整包住调商数字且只在有 trial 时才向上扩', () => {
+    const size = 44;
+    const trialProps = {
+      at: [400, 200],
+      a: 384,
+      b: 48,
+      op: '÷',
+      size,
+      trial: { place: 0, value: 7 },
+    };
+    const plan = columnCalcPlan(trialProps);
+    const L = layoutOf(trialProps, plan);
+
+    // 试商（字号 size，中心 yQ）的垂直区间及斜线（高度 0.35 * size，中心 yQ）
+    const trialTop = L.yQ! - size / 2;
+    const trialBottom = L.yQ! + size / 2;
+    const slashTop = L.yQ! - size * 0.35;
+    const slashBottom = L.yQ! + size * 0.35;
+    expect(slashTop).toBeGreaterThanOrEqual(trialTop);
+    expect(slashBottom).toBeLessThanOrEqual(trialBottom);
+
+    // 调商数字（字号 0.8 * size，中心 yTrialAdj）的垂直区间
+    const adjTop = L.yTrialAdj! - (size * 0.8) / 2;
+    const adjBottom = L.yTrialAdj! + (size * 0.8) / 2;
+
+    // 1. 两者包围盒不相交：调商数字的底边严格在试商顶边之上
+    expect(adjBottom).toBeLessThan(trialTop);
+    const hasIntersection = Math.max(adjTop, trialTop) <= Math.min(adjBottom, trialBottom);
+    expect(hasIntersection).toBe(false);
+
+    // 2. 空隙至少 0.15 * size
+    const clearGap = trialTop - adjBottom;
+    expect(clearGap).toBeGreaterThanOrEqual(0.15 * size - 1e-6);
+
+    // 3. bbox 包住调商数字
+    const boxAdj = columnCalcPart.bbox({ ...trialProps, show: 3 });
+    expect(boxAdj.y).toBeLessThanOrEqual(adjTop);
+    expect(boxAdj.y + boxAdj.h).toBeGreaterThanOrEqual(adjBottom);
+
+    const boxDone = columnCalcPart.bbox({ ...trialProps, show: 99 });
+    expect(boxDone.y).toBeLessThanOrEqual(adjTop);
+    expect(boxDone.y + boxDone.h).toBeGreaterThanOrEqual(adjBottom);
+
+    // 4. 只在有 trial 且调商步骤生效时才向上扩
+    const noTrialProps = { at: [400, 200], a: 384, b: 48, op: '÷', size };
+    const planNoTrial = columnCalcPlan(noTrialProps);
+    const LNoTrial = layoutOf(noTrialProps, planNoTrial);
+    const boxNoTrial = columnCalcPart.bbox({ ...noTrialProps, show: 99 });
+    expect(boxNoTrial.y).toBe(LNoTrial.yQ! - LNoTrial.rh / 2);
+    expect(boxNoTrial.y).toBeGreaterThan(boxDone.y);
+
+    // trial 存在但在调商步骤之前（show = 1 或 2）时，不向上扩
+    const boxStep1 = columnCalcPart.bbox({ ...trialProps, show: 1 });
+    const boxStep2 = columnCalcPart.bbox({ ...trialProps, show: 2 });
+    expect(boxStep1.y).toBe(L.yQ! - L.rh / 2);
+    expect(boxStep2.y).toBe(L.yQ! - L.rh / 2);
+    expect(boxStep2.y).toBeGreaterThan(boxAdj.y);
+
+    // 5. 验证可配的 adjustGap 参数覆盖
+    const customProps = { ...trialProps, adjustGap: 0.25 };
+    const LCustom = layoutOf(customProps, columnCalcPlan(customProps));
+    const customAdjBottom = LCustom.yTrialAdj! + (size * 0.8) / 2;
+    const customTrialTop = LCustom.yQ! - size / 2;
+    expect(customTrialTop - customAdjBottom).toBeCloseTo(0.25 * size, 5);
+  });
 });
 
 describe('竖式小数、多位数乘法、简写与 blank（任务卡 X3）', () => {

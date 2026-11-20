@@ -37,6 +37,7 @@ import {
   type Props,
   type Subitem,
 } from '../base';
+import { sceneStyle } from '../style';
 import { BlankBox } from './mark';
 
 export const COLUMN_CALC_OPS = ['×', '+', '−', '÷'] as const;
@@ -1460,6 +1461,16 @@ export interface Layout {
   shiftArrowDividend?: { from: [number, number]; to: [number, number] };
 }
 
+function getSiteAdjustGap(): number {
+  try {
+    const gap = sceneStyle().parts['column-calc']?.adjustGap;
+    if (typeof gap === 'number') return gap;
+  } catch {
+    // sceneStyle 未注入时的保底
+  }
+  return 0.15;
+}
+
 export function layoutOf(p: Props, plan: ColumnCalcPlan): Layout {
   const size = num(p.size, 44);
   const [cx, cy] = pt(p.at);
@@ -1482,7 +1493,8 @@ export function layoutOf(p: Props, plan: ColumnCalcPlan): Layout {
     const xDivisor = (dCol: number) => xDiv0 - dCol * cw;
 
     const hasTrial = plan.steps.some((s) => s.trial);
-    const spaceAboveQ = hasTrial ? size * 0.75 : rh * 0.4;
+    const adjustGap = typeof p.adjustGap === 'number' ? p.adjustGap : getSiteAdjustGap();
+    const spaceAboveQ = hasTrial ? (1.3 + adjustGap) * size + rh * 0.2 : rh * 0.4;
     const spaceQToBar = rh * 0.55;
     const spaceBarToA = rh * 0.55;
 
@@ -1492,7 +1504,7 @@ export function layoutOf(p: Props, plan: ColumnCalcPlan): Layout {
 
     const top = cy - totalH / 2;
     const yQ = top + spaceAboveQ;
-    const yTrialAdj = yQ - size * 0.65;
+    const yTrialAdj = yQ - (0.9 + adjustGap) * size;
     const yBar = yQ + spaceQToBar;
     const yA = yBar + spaceBarToA;
 
@@ -1693,6 +1705,7 @@ export const columnCalcPart: PartDef = {
     'focus',
     'blank',
     'trial',
+    'adjustGap',
     'decimals',
     'trimZeros',
   ],
