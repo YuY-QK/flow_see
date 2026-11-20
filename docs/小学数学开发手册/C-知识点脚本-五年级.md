@@ -106,7 +106,7 @@
 - 元信息：summary：有的除法除不尽，余数重复出现，商的数字也重复出现；tags [循环小数, 商的近似数, 除不尽]；cover “0.333…”；related [decimal-div-int, product-round]
 - 舞台：800 × 450；params `a: 1`、`d: 3`；presets `1 ÷ 3`、`2 ÷ 3`、`5 ÷ 6`
 - 零件：
-  - `calc` = column-calc，a `{a}`，b `{d}`，op ÷，decimals [4, 0]（除到第四位小数为止），show 0，at [280, 240]
+  - `calc` = column-calc，a `{a}`，b `{d}`，op ÷，decimals [4, 0]（除到第四位小数为止），size 22，show 0，at [280, 225]
   - `rep` = text，`'{a} ÷ {d} = {fixed(a / d, 4)}…'`，size 32，at [600, 120]
   - `dot` = text，`'{fixed(a / d, 3)}…（最后一位一直重复）'`，size 26，at [600, 190]，hidden
   - `near` = text，`'{a} ÷ {d} ≈ [{dec(a / d, 2)}](blank)'`，size 32，at [600, 300]

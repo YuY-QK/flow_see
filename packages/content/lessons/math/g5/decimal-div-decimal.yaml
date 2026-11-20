@@ -1,0 +1,107 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+id: decimal-div-decimal
+title: 除数是小数的除法
+summary: 被除数和除数同时扩大相同的倍数，商不变，把除数变成整数
+status: reviewed
+reviewedAt: '2026-11-20'
+duration: 2分钟
+tags: [除数是小数, 商不变的规律, 小数除法]
+cover: { step: 3, text: '2.52÷0.6' }
+related: [decimal-div-int, decimal-point-move]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  e: 1
+
+derived:
+  a: 'e == 1 ? 2.52 : (e == 2 ? 7.65 : 12.6)'
+  d: 'e == 1 ? 0.6 : (e == 2 ? 0.85 : 0.18)'
+
+explore:
+  - param: e
+    control: buttons
+    label: 题目
+    options:
+      - { value: 1, label: 2.52 ÷ 0.6 }
+      - { value: 2, label: 7.65 ÷ 0.85 }
+      - { value: 3, label: 12.6 ÷ 0.18 }
+
+presets:
+  - { label: '2.52 ÷ 0.6', params: { e: 1 } }
+  - { label: '7.65 ÷ 0.85', params: { e: 2 } }
+  - { label: '12.6 ÷ 0.18', params: { e: 3 } }
+
+objects:
+  - id: rule
+    type: text
+    text: '被除数和除数同时乘 {sel(d * 10 == floor(d * 10), "10", "100")}，商不变'
+    size: 26
+    at: [560, 80]
+  - id: e1
+    type: text
+    text: '{a} ÷ {d}'
+    size: 32
+    at: [560, 150]
+  - id: e2a
+    type: text
+    text: '= {a * 10} ÷ {d * 10}'
+    size: 32
+    at: [560, 200]
+    hidden: true
+  - id: e2b
+    type: text
+    text: '= {a * 100} ÷ {d * 100}'
+    size: 32
+    at: [560, 200]
+    hidden: true
+  - id: calc
+    type: column-calc
+    a: '{a}'
+    b: '{d}'
+    op: ÷
+    show: 0
+    at: [260, 250]
+  - id: res
+    type: text
+    text: '{a} ÷ {d} = [{a / d}](blank)'
+    size: 34
+    at: [600, 400]
+
+steps:
+  - title: 除数是小数
+    say: 除数是小数，先把它变成整数。
+    do:
+      - highlight: calc
+
+  - title: 同时乘 10
+    when: '{d * 10 == floor(d * 10)}'
+    say: 被除数和除数同时乘 10，小数点都向右移动一位，商不变。
+    do:
+      - show: e2a
+      - set: { target: calc, show: 1 }
+
+  - title: 同时乘 100
+    when: '{d * 10 != floor(d * 10)}'
+    say: 除数有两位小数，同时乘 100，小数点都向右移动两位。
+    do:
+      - show: e2b
+      - set: { target: calc, show: 1 }
+
+  - title: 按整数除
+    say: 现在除数是整数，按除数是整数的方法除。
+    do:
+      - ask: true
+      - set: { target: calc, show: 99 }
+      - set: { target: res, text: '{a} ÷ {d} = {a / d}', together: true }
+    try:
+      task: '{a} ÷ {d} 等于多少？'
+      choose:
+        answer: '{a / d}'
+        options: ['{a / d}', '{a / d * 10}', '{a / d / 10}']
+
+keyPoints:
+  - 除数是小数的除法，先移动除数的小数点使它变成整数
+  - 除数的小数点向右移动几位，被除数的小数点也向右移动几位，位数不够的在末尾用 0 补足

@@ -1,0 +1,76 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+id: decimal-add-sub
+title: 小数加减法
+summary: 小数点对齐就是相同数位对齐；位数不够补 0；整数运算定律对小数同样适用
+status: reviewed
+reviewedAt: '2026-11-20'
+duration: 2分钟
+tags: [小数加法, 小数减法, 竖式, 小数点对齐]
+cover: { step: 3, text: '10−2.35' }
+related: [decimal-add-sub-1, decimal-mixed]
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  a: 10
+  b: 2.35
+
+presets:
+  - { label: '10 − 2.35', params: { a: 10, b: 2.35 } }
+  - { label: '8.2 − 3.67', params: { a: 8.2, b: 3.67 } }
+  - { label: '5 − 0.08', params: { a: 5, b: 0.08 } }
+
+objects:
+  - id: calc
+    type: column-calc
+    a: '{a}'
+    b: '{b}'
+    op: '−'
+    show: 0
+    at: [300, 220]
+  - id: res
+    type: text
+    text: '{a} − {b} = [{a - b}](blank)'
+    size: 34
+    at: [600, 380]
+  - id: law
+    type: text
+    text: '5.6 + 2.8 + 4.4 = 5.6 + (2.8 + 4.4) = 12.8'
+    size: 26
+    at: [400, 80]
+    hidden: true
+
+steps:
+  - title: 对齐
+    say: 小数点对齐，就是相同数位对齐。
+    do:
+      - highlight: calc
+
+  - title: 补 0
+    say: 被减数位数不够，末尾补 0。
+    do:
+      - set: { target: calc, show: 1 }
+
+  - title: 从低位减
+    say: 从最低位减起，不够减向前一位退 1。
+    do:
+      - ask: true
+      - set: { target: calc, show: 99 }
+      - set: { target: res, text: '{a} − {b} = {a - b}', together: true }
+    try:
+      task: '{a} − {b} 等于多少？'
+      choose:
+        answer: '{a - b}'
+        options: ['{a - b}', '{a - b + 1}', '{(a - b) * 10}']
+
+  - title: 运算定律
+    say: 整数的运算定律，小数也适用。
+    do:
+      - show: law
+
+keyPoints:
+  - 计算小数加减法，小数点要对齐
+  - 位数不同时在末尾补 0
+  - 从低位算起
+  - 整数加法的运算定律对小数同样适用

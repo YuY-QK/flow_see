@@ -1,0 +1,82 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+id: quotient-round-repeating
+title: 商的近似数与循环小数
+summary: 有的除法除不尽，余数重复出现，商的数字也重复出现
+status: reviewed
+reviewedAt: '2026-11-20'
+duration: 2分钟
+tags: [循环小数, 商的近似数, 除不尽]
+cover: { step: 2, text: '0.333…' }
+related: [decimal-div-int, product-round]
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  a: 1
+  d: 3
+
+presets:
+  - { label: '1 ÷ 3', params: { a: 1, d: 3 } }
+  - { label: '2 ÷ 3', params: { a: 2, d: 3 } }
+  - { label: '5 ÷ 6', params: { a: 5, d: 6 } }
+
+objects:
+  - id: calc
+    type: column-calc
+    a: '{a}'
+    b: '{d}'
+    op: ÷
+    decimals: [4, 0]
+    size: 22
+    show: 0
+    at: [280, 225]
+  - id: rep
+    type: text
+    text: '{a} ÷ {d} = {fixed(a / d, 4)}…'
+    size: 32
+    at: [600, 120]
+    hidden: true
+  - id: dot
+    type: text
+    text: '{fixed(a / d, 3)}…（最后一位一直重复）'
+    size: 26
+    at: [600, 190]
+    hidden: true
+  - id: near
+    type: text
+    text: '{a} ÷ {d} ≈ [{dec(a / d, 2)}](blank)'
+    size: 32
+    at: [600, 300]
+
+steps:
+  - title: 除一除
+    say: '{a} ÷ {d}，添 0 继续除。'
+    do:
+      - set: { target: calc, show: 99, duration: 4s }
+
+  - title: 余数重复
+    say: 每次的余数都一样，商的数字也一样，永远除不完。
+    do:
+      - highlight: calc
+      - show: rep
+
+  - title: 循环小数
+    say: 从某一位起，一个或几个数字依次不断重复出现，叫循环小数。
+    do:
+      - show: dot
+
+  - title: 取近似数
+    say: '实际计算时，按要求取近似值，保留两位小数是 {dec(a / d, 2)}。'
+    do:
+      - ask: true
+      - set: { target: near, text: '{a} ÷ {d} ≈ {dec(a / d, 2)}' }
+    try:
+      task: 保留两位小数约是多少？
+      choose:
+        answer: '{dec(a / d, 2)}'
+        options: ['{dec(a / d, 2)}', '{dec(a / d, 1)}', '{fixed(a / d, 3)}']
+
+keyPoints:
+  - 一个数的小数部分，从某一位起，一个数字或几个数字依次不断重复出现，这样的小数叫循环小数
+  - 除不尽时可以按要求求商的近似数

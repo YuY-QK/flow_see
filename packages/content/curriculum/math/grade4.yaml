@@ -104,7 +104,7 @@ units:
     term: 2
     domain: number
     lessons:
-      - { id: decimal-add-sub, title: 小数加减（竖式、简便运算） }
+      - decimal-add-sub
   - id: meeting
     title: 相遇问题
     term: 2

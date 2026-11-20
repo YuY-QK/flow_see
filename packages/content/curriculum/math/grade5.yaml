@@ -9,7 +9,7 @@ units:
     term: 1
     domain: number
     lessons:
-      - { id: decimal-times-int, title: 小数乘整数 }
+      - decimal-times-int
       - { id: decimal-times-decimal, title: 小数乘小数 }
       - product-round
   - id: decimal-div
@@ -18,8 +18,8 @@ units:
     domain: number
     lessons:
       - { id: decimal-div-int, title: 除数是整数的小数除法 }
-      - { id: decimal-div-decimal, title: 除数是小数的除法 }
-      - { id: quotient-round-repeating, title: 商的近似数与循环小数 }
+      - decimal-div-decimal
+      - quotient-round-repeating
   - id: decimal-mixed
     title: 小数混合运算
     term: 1

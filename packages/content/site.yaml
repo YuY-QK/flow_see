@@ -25,7 +25,7 @@ learning:
   prevNextCrossSubject: false
   term: { firstFromMonth: 9, secondFromMonth: 2 }
 search:
-  hints: [分数, 钟表, 凑十, 植物, 水]
+  hints: [凑十, 口诀, 竖式, 分数, 面积, 植物, 水]
   maxResults: 50
 share:
   apiBase: /api          # 分享接口地址；换到自己的服务器时只改这里

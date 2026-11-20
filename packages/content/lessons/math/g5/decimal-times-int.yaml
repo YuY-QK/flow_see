@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=../../../../schemas/lesson.schema.json
+id: decimal-times-int
+title: 小数乘整数
+summary: 先按整数乘，再看因数有几位小数，就从积的右边数出几位点上小数点
+status: reviewed
+reviewedAt: '2026-11-20'
+duration: 2分钟
+tags: [小数乘整数, 小数乘法, 竖式]
+cover: { step: 3, text: '0.8×3' }
+related: [decimal-point-move, decimal-times-decimal]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  a: 0.8
+  k: 3
+
+derived:
+  intStep: 'a == 0.8 ? 1 : (a == 2.35 ? 3 : 2)'
+
+presets:
+  - { label: '0.8 × 3', params: { a: 0.8, k: 3 } }
+  - { label: '2.35 × 4', params: { a: 2.35, k: 4 } }
+  - { label: '0.25 × 6', params: { a: 0.25, k: 6 } }
+
+objects:
+  - id: g
+    type: grid
+    rows: 1
+    cols: 10
+    cell: 40
+    filled: '{a * 10}'
+    at: [60, 70]
+    opacity: '{a * 10 == floor(a * 10)}'
+  - id: think
+    type: text
+    text: 先看成整数乘，再点小数点
+    size: 26
+    at: [560, 80]
+  - id: calc
+    type: column-calc
+    a: '{a}'
+    b: '{k}'
+    op: ×
+    show: 0
+    at: [300, 250]
+  - id: res
+    type: text
+    text: '{a} × {k} = [{a * k}](blank)'
+    size: 34
+    at: [600, 360]
+
+steps:
+  - title: '{k} 个 {a}'
+    say: '{a} × {k} 就是 {k} 个 {a} 相加。'
+    do:
+      - highlight: g
+
+  - title: 看成整数
+    say: 先不看小数点，按整数相乘。
+    do:
+      - highlight: think
+      - set: { target: calc, show: '{intStep}' }
+
+  - title: 点小数点
+    say: 因数里有几位小数，积就从右边数出几位，点上小数点。
+    do:
+      - ask: true
+      - set: { target: calc, show: 99 }
+      - set: { target: res, text: '{a} × {k} = {a * k}', together: true }
+    try:
+      task: '{a} × {k} 等于多少？'
+      choose:
+        answer: '{a * k}'
+        options: ['{a * k}', '{a * k * 10}', '{a * k / 10}']
+
+keyPoints:
+  - 小数乘整数，先按整数乘法算出积
+  - 看因数中有几位小数，就从积的右边起数出几位点上小数点
