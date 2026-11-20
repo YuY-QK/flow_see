@@ -2,7 +2,7 @@
 id: simplify-calc
 title: 简便运算
 summary: 把接近整百的数拆开，用运算定律凑整
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [简便运算, 乘法分配律, 拆数, 凑整]

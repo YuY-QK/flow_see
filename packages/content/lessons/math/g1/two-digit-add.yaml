@@ -2,7 +2,7 @@
 id: two-digit-add
 title: 两位数加一位数、整十数
 summary: 相同数位对齐，个位加个位，满十进一
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [两位数加一位数, 进位, 口算]

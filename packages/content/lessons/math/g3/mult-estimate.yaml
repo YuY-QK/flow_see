@@ -2,7 +2,7 @@
 id: mult-estimate
 title: 乘法估算
 summary: 把接近整百整十的数看成整百整十来估
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [估算, 乘法, 约等于]

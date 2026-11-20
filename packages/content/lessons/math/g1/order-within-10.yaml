@@ -3,7 +3,7 @@
 id: order-within-10
 title: 10 以内数的顺序
 summary: 数轴上越往右数越大；前一个少 1，后一个多 1
-status: reviewed
+status: published
 reviewedAt: 2026-11-18
 duration: 1分钟
 tags: [数的顺序, 数轴, 前一个, 后一个]

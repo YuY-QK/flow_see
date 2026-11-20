@@ -2,7 +2,7 @@
 id: read-write-10000
 title: 读数和写数（中间、末尾有 0）
 summary: 从高位读起；中间一个或几个 0 只读一个零，末尾的 0 不读
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 2分钟
 tags: [读数, 写数, 万以内的数, 0的读法]

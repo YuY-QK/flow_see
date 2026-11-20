@@ -2,7 +2,7 @@
 id: fraction-compare
 title: 分数的大小比较
 summary: 分子都是 1，分母越大每份越小；分母相同，分子越大越大
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [分数比较, 分数大小, 几分之一]
@@ -47,7 +47,7 @@ objects:
     width: 260
     height: 36
     color: orange
-    at: [640, 320]
+    at: [600, 320]
     hidden: true
   - id: b2
     type: fraction-bar
@@ -56,7 +56,7 @@ objects:
     width: 260
     height: 36
     color: blue
-    at: [640, 375]
+    at: [600, 375]
     hidden: true
 
 steps:

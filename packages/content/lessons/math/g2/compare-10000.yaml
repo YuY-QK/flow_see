@@ -2,7 +2,7 @@
 id: compare-10000
 title: 大小比较与近似数
 summary: 位数多的大；位数相同从最高位比
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 2分钟
 tags: [比大小, 万以内的数, 近似数, 约等于]

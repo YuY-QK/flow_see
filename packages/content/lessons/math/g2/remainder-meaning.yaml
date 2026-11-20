@@ -2,7 +2,7 @@
 id: remainder-meaning
 title: 有余数的除法（余数比除数小）
 summary: 分到不够再分一份时停下，剩下的是余数，余数比除数小
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 2分钟
 tags: [有余数的除法, 余数, 平均分]

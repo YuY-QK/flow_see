@@ -2,7 +2,7 @@
 id: two-digit-sub
 title: 两位数减一位数、整十数（不退位）
 summary: 个位减个位，十位减十位
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [两位数减一位数, 减整十数, 口算]

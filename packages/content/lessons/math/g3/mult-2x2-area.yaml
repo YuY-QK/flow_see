@@ -2,7 +2,7 @@
 id: mult-2x2-area
 title: 为什么竖式第二行要错一位
 summary: 第二行是十位上的数去乘，得的是几个十，所以末尾对齐十位
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [两位数乘两位数, 竖式, 错位, 面积模型]

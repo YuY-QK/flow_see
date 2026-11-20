@@ -2,7 +2,7 @@
 id: product-round
 title: 积的近似数
 summary: 保留几位小数，就看它的下一位，四舍五入
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [积的近似数, 四舍五入, 保留小数]

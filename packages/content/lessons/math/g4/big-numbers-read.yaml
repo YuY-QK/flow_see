@@ -2,7 +2,7 @@
 id: big-numbers-read
 title: 亿以内、亿以上数的读写
 summary: 从右往左四位一级，按级读、按级写
-status: reviewed
+status: published
 reviewedAt: '2026-11-19'
 duration: 1分钟
 tags: [大数, 亿, 万, 数位顺序表, 读数, 写数]

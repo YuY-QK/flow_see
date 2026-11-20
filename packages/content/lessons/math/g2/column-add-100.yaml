@@ -2,7 +2,7 @@
 id: column-add-100
 title: 进位加法竖式
 summary: 个位满十，向十位进 1，十位相加时加上进位
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 2分钟
 tags: [竖式, 进位加法, 笔算, 两位数加法]

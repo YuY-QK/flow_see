@@ -2,7 +2,7 @@
 id: lcm
 title: 公倍数与最小公倍数
 summary: 两只青蛙一次跳 4 格、6 格，同时落到的点是公倍数，第一个是最小公倍数
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [公倍数, 最小公倍数, 倍数]

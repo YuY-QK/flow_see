@@ -3,7 +3,7 @@
 id: count-on
 title: 点数法与接着数
 summary: 不用从 1 数起，记住大数，接着往后数
-status: reviewed
+status: published
 reviewedAt: 2026-11-18
 duration: 1分钟
 tags: [接着数, 点数法, 进位加法, 加法, 数轴]

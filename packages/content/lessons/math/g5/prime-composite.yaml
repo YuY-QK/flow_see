@@ -2,7 +2,7 @@
 id: prime-composite
 title: 质数与合数
 summary: 只有 1 和它本身两个因数的是质数；1 既不是质数也不是合数
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 2分钟
 recommended: true

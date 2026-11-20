@@ -2,7 +2,7 @@
 id: multiples-2-3-5
 title: 2、3、5 的倍数特征
 summary: 个位是 0、2、4、6、8 的是 2 的倍数；个位是 0 或 5 的是 5 的倍数；各位数字之和是 3 的倍数的是 3 的倍数
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 2分钟
 recommended: true

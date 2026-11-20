@@ -3,7 +3,7 @@
 id: commute-add
 title: 交换加数的位置
 summary: 两个数交换位置，和不变；大数在前更好凑十
-status: reviewed
+status: published
 reviewedAt: 2026-11-18
 duration: 1分钟
 tags: [交换加数, 加法交换, 凑十]

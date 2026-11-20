@@ -2,7 +2,7 @@
 id: place-value-100
 title: 数的组成与读写
 summary: 十位写几个十，个位写几个一
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [数位, 十位, 个位, 计数器, 读数, 写数]

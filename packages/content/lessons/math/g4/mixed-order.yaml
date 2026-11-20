@@ -2,7 +2,7 @@
 id: mixed-order
 title: 运算顺序（小括号、中括号）
 summary: 先乘除后加减，有括号先算括号里的，中括号外、小括号里
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [四则混合运算, 运算顺序, 小括号, 中括号]

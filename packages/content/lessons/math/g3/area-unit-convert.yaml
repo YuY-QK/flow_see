@@ -2,7 +2,7 @@
 id: area-unit-convert
 title: 面积单位换算
 summary: 1 平方分米 = 100 平方厘米，面积单位进率是 100
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 1分钟
 tags: [面积单位换算, 进率, 平方分米, 平方厘米]

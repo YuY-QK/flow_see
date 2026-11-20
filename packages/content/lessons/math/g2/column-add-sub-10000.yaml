@@ -2,7 +2,7 @@
 id: column-add-sub-10000
 title: 三位数加减（连续进位、连续退位、中间有 0 的退位）
 summary: 从个位算起，哪一位满十就进一，不够减就退一
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 2分钟
 tags: [三位数加法, 三位数减法, 连续进位, 连续退位, 竖式]

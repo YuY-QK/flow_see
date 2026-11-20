@@ -2,7 +2,7 @@
 id: big-numbers-round
 title: 改写与近似数
 summary: 整万数改写去掉末尾 4 个 0；求近似数用四舍五入
-status: reviewed
+status: published
 reviewedAt: '2026-11-19'
 duration: 1分钟
 tags: [改写, 近似数, 四舍五入, 万作单位, 亿作单位]

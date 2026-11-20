@@ -2,7 +2,7 @@
 id: count-to-10000
 title: 千和万：计数单位
 summary: 十个一百是一千，十个一千是一万，每满十进一
-status: reviewed
+status: published
 reviewedAt: 2026-11-19
 duration: 2分钟
 tags: [千, 万, 计数单位, 十进制]
