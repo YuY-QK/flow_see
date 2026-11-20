@@ -86,8 +86,8 @@
 - 元信息：summary：从高位除起，每次“商、乘、减、落”；tags [笔算除法, 竖式, 除数是一位数]；cover “72÷3”；related [div-oral, div-column-zero, remainder-column]；recommended
 - 舞台：800 × 450；params `a: 72`、`d: 3`；derived `q: floor(a / d)`、`r: a % d`；presets：`72 ÷ 3`、`84 ÷ 4`、`95 ÷ 4`、`156 ÷ 3`、`438 ÷ 6`
 - 零件：
-  - `calc` = column-calc，a `{a}`，b `{d}`，op ÷，show 0，at [240, 220]
-  - `pile` = base-ten，hundreds `{digit(a, 2)}`，tens `{digit(a, 1)}`，ones `{digit(a, 0)}`，columns true，at [470, 40]
+  - `calc` = column-calc，a `{a}`，b `{d}`，op ÷，show 0，at [220, 220]
+  - `pile` = base-ten，style block，hundreds `{digit(a, 2)}`，tens `{digit(a, 1)}`，ones `{digit(a, 0)}`，columns true，unit 8，at [390, 40]
   - `res` = text，`'{a} ÷ {d} = [{q}](blank)'`，size 34，at [560, 400]
 
 | # | 标题 | 讲解 | 画面 | 动手做 |

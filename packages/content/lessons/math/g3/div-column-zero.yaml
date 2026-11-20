@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: div-column-zero
+title: 商中间或末尾有 0 的除法
+summary: 哪一位不够商 1，就商 0 占位
+status: reviewed
+reviewedAt: '2026-11-20'
+duration: 2分钟
+tags: [除法, 商中间有0, 商末尾有0, 竖式]
+cover: { text: 612÷3 }
+related: [div-column-1, div-check]
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  a: 612
+  d: 3
+derived:
+  q: floor(a / d)
+
+presets:
+  - { label: '612 ÷ 3', params: { a: 612, d: 3 } }
+  - { label: '120 ÷ 4', params: { a: 120, d: 4 } }
+  - { label: '824 ÷ 4', params: { a: 824, d: 4 } }
+  - { label: '450 ÷ 5', params: { a: 450, d: 5 } }
+
+objects:
+  - id: calc
+    type: column-calc
+    a: '{a}'
+    b: '{d}'
+    op: ÷
+    show: 0
+    at: [300, 220]
+  - id: res
+    type: text
+    text: '{a} ÷ {d} = [{q}](blank)'
+    size: 34
+    at: [600, 400]
+
+steps:
+  - title: 写竖式
+    say: '{a} 除以 {d}，从最高位除起。'
+    do:
+      - highlight: calc
+  - repeat: '{len(q)}'
+    title: '第 {i} 位商'
+    say: '这一位商 {digit(q, len(q) - i)}{sel(digit(q, len(q) - i) == 0, "，不够商 1 就商 0 占位", "")}。'
+    do:
+      - set: { target: calc, show: '{i == 1 ? 0 : (i == 2 ? 4 : 6)}' }
+      - ask: true
+      - set: { target: calc, show: '{i == len(q) ? 99 : (i == 1 ? 4 : 6)}' }
+    try:
+      task: 这一位商几？
+      choose:
+        answer: '{digit(q, len(q) - i)}'
+        min: 0
+        max: 9
+      hints:
+        - 不够商 1 的时候商 0。
+  - title: 得数
+    say: '所以 {a} ÷ {d} = {q}。'
+    do:
+      - ask: true
+      - set: { target: res, text: '{a} ÷ {d} = {q}' }
+    try:
+      task: '{a} ÷ {d} 等于几？'
+      choose:
+        answer: '{q}'
+        min: 10
+        max: 300
+
+keyPoints:
+  - 除到哪一位不够商 1，就在那一位上商 0
+  - 商的末尾有 0 也不能漏写

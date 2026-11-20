@@ -1,0 +1,98 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: remainder-column
+title: 有余数除法的竖式
+summary: 竖式里商是每份几个，减下来的是余数
+status: reviewed
+reviewedAt: '2026-11-20'
+duration: 2分钟
+tags: [除法竖式, 有余数的除法, 余数]
+cover: { text: 竖式÷ }
+related: [remainder-meaning, div-column-1]
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  g: 5
+  t: 23
+derived:
+  q: floor(t / g)
+  r: t % g
+
+explore:
+  - param: g
+    control: slider
+    label: 分几份
+    min: 2
+    max: 9
+  - param: t
+    control: slider
+    label: 一共
+    min: 10
+    max: '{10 * g - 1}'
+
+objects:
+  - id: calc
+    type: column-calc
+    a: '{t}'
+    b: '{g}'
+    op: ÷
+    show: 0
+    at: [220, 200]
+  - id: dots
+    type: counters
+    count: '{t}'
+    layout: grid
+    cols: '{g}'
+    size: 26
+    at: [520, 60]
+  - id: eq
+    type: text
+    text: '{t} ÷ {g} = [{q}](blank) …… [{r}](blank)'
+    size: 34
+    at: [560, 380]
+
+steps:
+  - title: 写成竖式
+    say: '{t} 除以 {g}，写成竖式。'
+    do:
+      - highlight: calc
+  - title: 商
+    say: 想口诀：几乘 {g} 最接近 {t} 又不超过？商 {q}。
+    do:
+      - highlight: dots
+      - ask: true
+      - set: { target: calc, show: 1 }
+    try:
+      task: 商几？
+      choose:
+        answer: '{q}'
+        min: 1
+        max: 9
+      hints:
+        - '{q} × {g} = {q * g}，{q + 1} × {g} = {(q + 1) * g} 就超过了。'
+  - title: 乘
+    say: '{q} 乘 {g} 等于 {q * g}，是分掉的。'
+    do:
+      - set: { target: calc, show: 2 }
+  - title: 减
+    say: '{t} 减 {q * g} 等于 {r}，是剩下的余数。'
+    do:
+      - ask: true
+      - set: { target: calc, show: 3 }
+      - set: { target: eq, text: '{t} ÷ {g} = {q} …… {r}', together: true }
+    try:
+      task: 余数是几？
+      choose:
+        answer: '{r}'
+        min: 0
+        max: 8
+  - title: 检查余数
+    say: '余数 {r} 比除数 {g} 小，对了。'
+    do:
+      - highlight: calc
+
+keyPoints:
+  - 除法竖式里，商写在被除数上面
+  - 商乘除数是分掉的部分
+  - 被除数减去它就是余数，余数要比除数小

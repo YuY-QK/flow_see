@@ -1,0 +1,88 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: mult-column-1
+title: 笔算乘法（多位数乘一位数）
+summary: 用一位数依次乘各位，满几十就向前一位进几
+status: reviewed
+reviewedAt: '2026-11-20'
+duration: 2分钟
+tags: [笔算乘法, 竖式, 进位, 多位数乘一位数]
+cover: { text: 236×3 }
+related: [mult-oral, mult-column]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 420 }
+
+params:
+  a: 236
+  k: 3
+derived:
+  p: a * k
+  n: len(a)
+
+explore:
+  - param: a
+    control: slider
+    label: 被乘数
+    min: 12
+    max: 999
+  - param: k
+    control: slider
+    label: 乘数
+    min: 2
+    max: 9
+
+objects:
+  - id: calc
+    type: column-calc
+    a: '{a}'
+    b: '{k}'
+    op: ×
+    show: 0
+    at: [400, 190]
+  - id: res
+    type: text
+    text: '{a} × {k} = [{p}](blank)'
+    size: 36
+    at: [400, 380]
+
+steps:
+  - title: 列竖式
+    say: 一位数和被乘数的个位对齐。
+    do:
+      - highlight: calc
+  - repeat: '{n}'
+    title: '乘{sel(i == 1, "个", sel(i == 2, "十", sel(i == 3, "百", "千")))}位'
+    say: '{k} 乘 {digit(a, i - 1)}{sel(i > 1, "，再加上进上来的数", "")}，这一位写 {digit(p, i - 1)}。'
+    do:
+      - ask: true
+      - set: { target: calc, show: '{i}' }
+    try:
+      task: 这一位写几？
+      choose:
+        answer: '{digit(p, i - 1)}'
+        min: 0
+        max: 9
+      hints:
+        - 满几十就向前一位进几。
+  - when: '{len(p) > n}'
+    title: 最高位
+    say: '最后进上来的 {floor(p / pow(10, n))} 直接写在最前面。'
+    do:
+      - set: { target: calc, show: '{n + 1}' }
+  - title: 得数
+    say: '所以 {a} × {k} = {p}。'
+    do:
+      - ask: true
+      - set: { target: res, text: '{a} × {k} = {p}' }
+    try:
+      task: '{a} × {k} 等于几？'
+      choose:
+        answer: '{p}'
+        min: 10
+        max: 9000
+
+keyPoints:
+  - 从个位乘起，用一位数依次去乘每一位
+  - 哪一位上乘得的积满几十，就向前一位进几
+  - 中间有 0 时，0 乘任何数得 0，但要加上进位

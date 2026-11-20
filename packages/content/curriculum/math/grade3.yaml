@@ -10,7 +10,7 @@ units:
     domain: number
     lessons:
       - mult-oral
-      - { id: mult-column-1, title: 笔算乘法（进位、连续进位、中间或末尾有 0） }
+      - mult-column-1
       - mult-estimate
   - id: div-one-digit
     title: 多位数除以一位数
@@ -18,7 +18,7 @@ units:
     domain: number
     lessons:
       - div-oral
-      - { id: div-column-1, title: 笔算除法：从高位除起 }
+      - div-column-1
       - div-check
   - id: times-concept
     title: 倍的认识
@@ -81,7 +81,7 @@ units:
     term: 2
     domain: number
     lessons:
-      - { id: div-column-zero, title: 商中间或末尾有 0 }
+      - div-column-zero
       - div-estimate
   - id: ymd
     title: 年、月、日

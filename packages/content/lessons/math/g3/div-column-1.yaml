@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=../../../schemas/lesson.schema.json
+id: div-column-1
+title: 笔算除法：从高位除起
+summary: 从高位除起，每次“商、乘、减、落”
+status: reviewed
+reviewedAt: '2026-11-20'
+duration: 2分钟
+tags: [笔算除法, 竖式, 除数是一位数]
+cover: { text: 72÷3 }
+related: [div-oral, div-column-zero, remainder-column]
+recommended: true
+
+template: scene
+stage: { width: 800, height: 450 }
+
+params:
+  a: 72
+  d: 3
+derived:
+  q: floor(a / d)
+  r: a % d
+
+presets:
+  - { label: '72 ÷ 3', params: { a: 72, d: 3 } }
+  - { label: '84 ÷ 4', params: { a: 84, d: 4 } }
+  - { label: '95 ÷ 4', params: { a: 95, d: 4 } }
+  - { label: '156 ÷ 3', params: { a: 156, d: 3 } }
+  - { label: '438 ÷ 6', params: { a: 438, d: 6 } }
+
+objects:
+  - id: calc
+    type: column-calc
+    a: '{a}'
+    b: '{d}'
+    op: ÷
+    show: 0
+    at: [220, 220]
+  - id: pile
+    type: base-ten
+    style: block
+    hundreds: '{digit(a, 2)}'
+    tens: '{digit(a, 1)}'
+    ones: '{digit(a, 0)}'
+    columns: true
+    unit: 8
+    at: [390, 40]
+  - id: res
+    type: text
+    text: '{a} ÷ {d} = [{q}](blank)'
+    size: 34
+    at: [560, 400]
+
+steps:
+  - title: 写竖式
+    say: 除数写在左边，被除数写在里面，从最高位除起。
+    do:
+      - highlight: calc
+  - repeat: '{len(q)}'
+    title: '第 {i} 次除'
+    say: '前面剩下的和这一位合起来除以 {d}，商 {digit(q, len(q) - i)}，再乘、减、落。'
+    do:
+      - set: { target: calc, show: '{i * 4 - 4}' }
+      - ask: true
+      - set: { target: calc, show: '{i * 4 - 3}' }
+      - set: { target: calc, show: '{i * 4 - 2}' }
+      - set: { target: calc, show: '{i * 4 - 1}' }
+      - set: { target: calc, show: '{i * 4}' }
+    try:
+      task: 这一位商几？
+      choose:
+        answer: '{digit(q, len(q) - i)}'
+        min: 0
+        max: 9
+      hints:
+        - '想 {d} 的乘法口诀，几乘 {d} 最接近又不超过。'
+  - title: 得数
+    say: '所以 {a} ÷ {d} = {q}，余数是 {a % d}。'
+    do:
+      - highlight: calc
+      - ask: true
+      - set: { target: res, text: '{a} ÷ {d} = {q}' }
+    try:
+      task: '{a} ÷ {d} 等于几？'
+      choose:
+        answer: '{q}'
+        min: 1
+        max: 200
+
+keyPoints:
+  - 除数是一位数的除法，从被除数的最高位除起
+  - 每次除都是“商、乘、减、落”
+  - 每次减下来的数要比除数小

@@ -84,7 +84,7 @@ units:
     domain: number
     lessons:
       - remainder-meaning
-      - { id: remainder-column, title: 有余数除法的竖式 }
+      - remainder-column
   - id: add-sub-10000
     title: 万以内的加法和减法
     term: 2
