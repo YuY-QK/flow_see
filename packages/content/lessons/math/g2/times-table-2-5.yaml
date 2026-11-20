@@ -86,9 +86,12 @@ steps:
   - title: 考考你
     say: '{k} 个 {n} 是 {p}。'
     do:
+      - set: { target: tbl, show: '{k - 1}' }
+      - highlight: 'tbl.row.{k - 1}'
       - show: q
-      - highlight: 'tbl.row.{k}'
       - ask: true
+      - set: { target: tbl, show: 9 }
+      - highlight: 'tbl.row.{k}'
       - set: { target: q, text: '{k} × {n} = {p}' }
     try:
       task: '{k} × {n} 等于几？'
